@@ -3,17 +3,34 @@ import './App.css'
 import {
   QueryClient,
   QueryClientProvider,
+  useMutation,
   useQuery,
 } from '@tanstack/react-query'
+import {
+  Button,
+  CssBaseline,
+  Container,
+  Stack,
+  Box,
+  createTheme,
+  ThemeProvider,
+  Paper,
+  Card,
+  TextField,
+  Typography,
+  Avatar,
+  AppBar,
+} from '@mui/material'
+import digitalTheme from './blueDigitalTheme'
+import LoginBar from './LoginBar'
+const log = console.log.bind(console)
 const queryClient = new QueryClient()
 
-async function acquireToken() {
+async function acquireToken({ email, password }) {
+  console.log('acquiring token with credentials: ', email, password)
   const response = await fetch('http://localhost:3000/login', {
     method: 'POST',
-    body: JSON.stringify({
-      email: 'shredman1212@slice.dice',
-      password: 'oozy123',
-    }),
+    body: JSON.stringify({ email, password }),
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
@@ -23,80 +40,95 @@ async function acquireToken() {
 
 function Wrapp() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <App />
-    </QueryClientProvider>
+    <ThemeProvider theme={digitalTheme}>
+      <CssBaseline>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </CssBaseline>
+    </ThemeProvider>
   )
 }
 
 function parseToken(token) {
-  return JSON.parse(atob(token.split('.')[1]))
+  try {
+    if (!token) {
+      return
+    }
+    return JSON.parse(atob(token.split('.')[1]))
+  } catch (e) {
+    return { name: 'Not Authorized 😦' }
+  }
 }
 
 function App() {
-  const [count, setCount] = useState(0)
   const [reply, setReply] = useState('')
-  const buttonStyle = { marginRight: '0.5rem', marginBottom: '0.5rem' }
+  const [user, setUser] = useState('')
+  const [invalid, setInvalid] = useState(false)
 
-  const tokenQuery = useQuery({
-    queryKey: ['queriedToken'],
-    queryFn: acquireToken,
-    staleTime: 6 * 1000,
-    placeholderData: '',
-    enabled: false,
+  const loginUser = useMutation({
+    mutationFn: acquireToken,
+    onSuccess: (data, variables, context) => {
+      log('☢️🙂 Mutation succeeded with data: ', data)
+      if (data.token) {
+        const parsed = parseToken(data.token)
+        setUser(parsed)
+      } else {
+        log("... but the server didn't like it:", data.error)
+        setUser('')
+        setInvalid(true)
+      }
+    },
+    onError: (error, variables, context) => {
+      log('☢️😡 Mutation failed with error: ', error)
+    },
   })
-
-  console.log('tokenQuery.data = ', tokenQuery.data)
 
   return (
     <>
-      <h1>Test Client</h1>
-      <h2>Query status: {tokenQuery.status}</h2>
-      {tokenQuery.data.token && (
-        <h3>User: {parseToken(tokenQuery.data.token).name}</h3>
-      )}
-      <div
-        style={{
-          backgroundColor: '#ddd',
-          color: '#422',
-          overflowWrap: 'anywhere',
-        }}
-      >
-        Query data: {tokenQuery.data.token}
-      </div>
-      <div className="card">
-        <button onClick={() => setCount(count => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-      <pre
-        onClick={e => navigator.clipboard.writeText(e.target.textContent)}
-        style={{
-          padding: '0.75rem',
-          border: '1px solid gray',
-          maxWidth: '400px',
-          overflow: 'scroll',
-        }}
-      >
-        {/* {token} */}
-      </pre>
-      <button style={buttonStyle} onClick={() => ringServer(setReply)}>
-        👋 Ring Server
-      </button>
-      <button style={buttonStyle} onClick={tokenQuery.refetch}>
-        🍕 Enquire Token
-      </button>
-      {/* <button style={buttonStyle} onClick={() => tryLogin(setToken)}>
-        Acquire Token
-      </button> */}
-      {/* <button style={buttonStyle} onClick={() => pokeServer(setReply, token)}>
-        🎯 Post to server
-      </button> */}
-      <form action="http://localhost:3000/mock" method="post">
-        <input type="text" defaultValue={'Some Text Here'}></input>
-        <button>Post</button>
-      </form>
-      <pre>{reply}</pre>
+      <LoginBar
+        user={user}
+        invalid={invalid}
+        sending={loginUser.isLoading}
+        onLogin={({ email, password }) => loginUser.mutate({ email, password })}
+        onLogout={() => setUser('')}
+        clearInvalid={() => setInvalid(false)}
+      />
+      <Container maxWidth="md">
+        <h1>
+          {loginUser.isLoading && 'Mutation is loading'}
+          {loginUser.isError && 'Mutation error: ' + loginUser.error}
+          {loginUser.isSuccess && 'Mutation successful'}
+        </h1>
+        <Paper elevation={1} sx={{ p: 2 }}>
+          <Typography
+            sx={{
+              maxWidth: '100%',
+              p: 1,
+              mb: 2,
+              backgroundColor: 'primary.light',
+              color: 'primary.contrastText',
+              overflowWrap: 'anywhere',
+            }}
+          >
+            {!user && 'Awaiting token.'}{' '}
+            {user && 'User: ' + user.name + ', ' + user.email}
+          </Typography>
+
+          <Button
+            sx={{ mr: 2 }}
+            variant="outlined"
+            onClick={() => ringServer(setReply)}
+          >
+            👋 Ring Server
+          </Button>
+        </Paper>
+        <form action="http://localhost:3000/mock" method="post">
+          <input type="text" defaultValue={'Some Text Here'}></input>
+          <button>Post</button>
+        </form>
+        <pre>{reply}</pre>
+      </Container>
     </>
   )
 }
