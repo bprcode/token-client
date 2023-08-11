@@ -20,6 +20,11 @@ import {
   Typography,
   Avatar,
   AppBar,
+  FormGroup,
+  FormControl,
+  InputLabel,
+  Input,
+  Divider,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import LoginBar from './LoginBar'
@@ -28,7 +33,7 @@ const queryClient = new QueryClient()
 
 async function acquireToken({ email, password }) {
   console.log('acquiring token with credentials: ', email, password)
-  const response = await fetch('http://localhost:3000/login', {
+  const response = await fetch(import.meta.env.VITE_BACKEND + 'login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: {
@@ -101,6 +106,48 @@ function App() {
           {loginUser.isSuccess && 'Mutation successful'}
         </h1>
         <Paper elevation={1} sx={{ p: 2 }}>
+          <FormGroup>
+            <TextField label="first"></TextField>
+            <TextField label="second"></TextField>
+            <Button>Send Me</Button>
+          </FormGroup>
+          <FormControl>
+            <TextField label="first"></TextField>
+            <TextField label="second"></TextField>
+            <Button>Send Me</Button>
+          </FormControl>
+          <form>
+            <TextField label="first" name="alfie"></TextField>
+            <TextField label="second" name="better"></TextField>
+            <Button type="submit">Send Me</Button>
+          </form>
+          <form>
+            <FormGroup row>
+            <TextField label="first" name="alfie"></TextField>
+            <TextField label="second" name="better"></TextField>
+            <Button type="submit">Send Me</Button>
+            </FormGroup>
+          </form>
+<Divider sx={{mb:3, mt:3}} />
+          <form>
+            <FormGroup row>
+              <FormControl>
+                <InputLabel htmlFor="tex-ex">First</InputLabel>
+                <Input id="tex-ex" />
+              </FormControl>
+              <FormControl variant="standard">
+                <InputLabel htmlFor="tex-ex2">Second</InputLabel>
+                <Input id="tex-ex2" />
+              </FormControl>
+              <FormControl>
+            <Button type="submit">Send Me</Button>
+            </FormControl>
+            </FormGroup>
+          </form>
+<Divider sx={{mb:3, mt:3}} />
+
+
+
           <Typography
             sx={{
               maxWidth: '100%',

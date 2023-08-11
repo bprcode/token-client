@@ -5,9 +5,11 @@ import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
-import { Avatar, Container } from '@mui/material'
+import { Avatar, Container, FormGroup, useTheme } from '@mui/material'
 import DrawIcon from '@mui/icons-material/Draw'
 import { TextField } from '@mui/material'
+
+console.log(import.meta.env)
 
 export default function LoginBar({
   onLogin,
@@ -19,8 +21,9 @@ export default function LoginBar({
 }) {
   const [email, setEmail] = useState('shredman1212@slice.dice')
   const [password, setPassword] = useState('oozy123')
+  const theme = useTheme()
 
-  let interactivity
+  let interactivity = <></>
 
   if (!user) {
     interactivity = (
@@ -60,7 +63,10 @@ export default function LoginBar({
   } else {
     interactivity = (
       <>
-        <Avatar alt={user.name} sx={{ mr: 2 }}>
+        <Avatar
+          alt={user.name}
+          sx={{ mr: 2, backgroundColor: theme.palette.secondary.main }}
+        >
           {[...user.name][0]}
         </Avatar>
         Welcome, {user.name}{' '}
@@ -72,7 +78,12 @@ export default function LoginBar({
   }
 
   return (
-    <Box sx={{ flexGrow: 1, borderBottom: '1px solid #f806' }}>
+    <Box
+      sx={{
+        flexGrow: 1,
+        borderBottom: `1px solid ${theme.palette.primary.main}`,
+      }}
+    >
       <AppBar position="static">
         <Container maxWidth="md" disableGutters>
           <Toolbar>
