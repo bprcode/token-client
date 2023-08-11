@@ -5,11 +5,20 @@ import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
-import { Avatar, Container, FormGroup, useTheme } from '@mui/material'
+import {
+  Alert,
+  Avatar,
+  Container,
+  FormGroup,
+  Snackbar,
+  useTheme,
+} from '@mui/material'
+import { alpha } from '@mui/material/styles'
 import DrawIcon from '@mui/icons-material/Draw'
 import { TextField } from '@mui/material'
 
-console.log(import.meta.env)
+import { ThemeProvider } from '@mui/material'
+import { barTheme } from './blueDigitalTheme'
 
 export default function LoginBar({
   onLogin,
@@ -77,33 +86,50 @@ export default function LoginBar({
     )
   }
 
+  console.log(theme.palette)
   return (
-    <Box
-      sx={{
-        flexGrow: 1,
-        borderBottom: `1px solid ${theme.palette.primary.main}`,
-      }}
-    >
-      <AppBar position="static">
-        <Container maxWidth="md" disableGutters>
-          <Toolbar>
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              alt="testalt"
-            >
-              <DrawIcon />
-            </IconButton>
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-              Note Scribbler
-            </Typography>
+    <ThemeProvider theme={barTheme}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          // borderBottom: `1px solid ${theme.palette.background}`,
+        }}
+      >
+        <Snackbar
+          open={invalid}
+          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+          sx={{ mt: 7 }}
+        >
+          <Alert severity="error">Invalid Credentials</Alert>
+        </Snackbar>
 
-            {interactivity}
-          </Toolbar>
-        </Container>
-      </AppBar>
-    </Box>
+        <AppBar
+          position="static"
+          sx={{
+            backgroundColor: alpha(theme.palette.background.default, 0.3),
+            backdropFilter: 'blur(3px)',
+          }}
+        >
+          <Container maxWidth="md" disableGutters>
+            <Toolbar>
+              <IconButton
+                size="large"
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                alt="testalt"
+              >
+                <DrawIcon />
+              </IconButton>
+              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                Note Scribbler
+              </Typography>
+
+              {interactivity}
+            </Toolbar>
+          </Container>
+        </AppBar>
+      </Box>
+    </ThemeProvider>
   )
 }

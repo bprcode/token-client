@@ -25,9 +25,11 @@ import {
   InputLabel,
   Input,
   Divider,
+  Toolbar,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import LoginBar from './LoginBar'
+import auroraMesh from './assets/aurora-gradient-2.png'
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
 
@@ -66,6 +68,25 @@ function parseToken(token) {
   }
 }
 
+function Hero() {
+  return (
+    <>
+      <div
+        style={{
+          position: 'absolute',
+          top: '0px',
+          backgroundImage: `url(${auroraMesh})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          height: '60vh',
+          width: '100%',
+          zIndex: -1,
+        }}
+      />
+    </>
+  )
+}
+
 function App() {
   const [reply, setReply] = useState('')
   const [user, setUser] = useState('')
@@ -99,12 +120,14 @@ function App() {
         onLogout={() => setUser('')}
         clearInvalid={() => setInvalid(false)}
       />
+      <Hero />
       <Container maxWidth="md">
-        <h1>
+          <h1 style={{ fontSize: '3.25rem', lineHeight: '1.35em', letterSpacing: '-0.02em'}}>
+            Scribble notes.<br />Test this placeholder app.
+          </h1>
           {loginUser.isLoading && 'Mutation is loading'}
           {loginUser.isError && 'Mutation error: ' + loginUser.error}
           {loginUser.isSuccess && 'Mutation successful'}
-        </h1>
         <Paper elevation={1} sx={{ p: 2 }}>
           <FormGroup>
             <TextField label="first"></TextField>
@@ -123,12 +146,12 @@ function App() {
           </form>
           <form>
             <FormGroup row>
-            <TextField label="first" name="alfie"></TextField>
-            <TextField label="second" name="better"></TextField>
-            <Button type="submit">Send Me</Button>
+              <TextField label="first" name="alfie"></TextField>
+              <TextField label="second" name="better"></TextField>
+              <Button type="submit">Send Me</Button>
             </FormGroup>
           </form>
-<Divider sx={{mb:3, mt:3}} />
+          <Divider sx={{ mb: 3, mt: 3 }} />
           <form>
             <FormGroup row>
               <FormControl>
@@ -140,13 +163,11 @@ function App() {
                 <Input id="tex-ex2" />
               </FormControl>
               <FormControl>
-            <Button type="submit">Send Me</Button>
-            </FormControl>
+                <Button type="submit">Send Me</Button>
+              </FormControl>
             </FormGroup>
           </form>
-<Divider sx={{mb:3, mt:3}} />
-
-
+          <Divider sx={{ mb: 3, mt: 3 }} />
 
           <Typography
             sx={{
