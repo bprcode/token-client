@@ -20,16 +20,14 @@ import { TextField } from '@mui/material'
 import { ThemeProvider } from '@mui/material'
 import { barTheme } from './blueDigitalTheme'
 
-export default function LoginBar({
-  onLogin,
+export default function TopBar({
   onLogout,
+  onGetStarted,
   clearInvalid,
   user,
   sending,
   invalid,
 }) {
-  const [email, setEmail] = useState('shredman1212@slice.dice')
-  const [password, setPassword] = useState('oozy123')
   const theme = useTheme()
 
   let interactivity = <></>
@@ -37,35 +35,8 @@ export default function LoginBar({
   if (!user) {
     interactivity = (
       <>
-        <TextField
-          label="email"
-          variant="standard"
-          disabled={sending}
-          error={invalid}
-          sx={{ mr: 3 }}
-          defaultValue={email}
-          onChange={e => {
-            setEmail(e.target.value)
-            clearInvalid()
-          }}
-        />
-        <TextField
-          label="password"
-          variant="standard"
-          disabled={sending}
-          error={invalid}
-          sx={{ mr: 3 }}
-          defaultValue={password}
-          onChange={e => {
-            setPassword(e.target.value)
-            clearInvalid()
-          }}
-        />
-        <Button
-          variant="contained"
-          onClick={() => onLogin({ email, password })}
-        >
-          Login
+        <Button variant="contained" onClick={onGetStarted}>
+          Get Started
         </Button>
       </>
     )
@@ -95,13 +66,6 @@ export default function LoginBar({
           borderBottom: `1px solid ${theme.palette.background.default}`,
         }}
       >
-        <Snackbar
-          open={invalid}
-          anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
-          sx={{ mt: 7 }}
-        >
-          <Alert severity="error">Invalid Credentials</Alert>
-        </Snackbar>
 
         <AppBar
           position="static"
@@ -117,7 +81,7 @@ export default function LoginBar({
                 edge="start"
                 color="inherit"
                 aria-label="menu"
-                alt="testalt"
+                alt="writing pencil"
               >
                 <DrawIcon />
               </IconButton>

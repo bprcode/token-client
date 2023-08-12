@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import './App.css'
 import {
   QueryClient,
@@ -28,9 +28,10 @@ import {
   Toolbar,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
-import LoginBar from './LoginBar'
+import TopBar from './TopBar'
 import auroraMesh from './assets/aurora-gradient-2.png'
 import LoginForm from './LoginForm'
+import Notes from './Notes'
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
 
@@ -89,9 +90,9 @@ function Hero() {
 }
 
 function App() {
-  const [reply, setReply] = useState('')
   const [user, setUser] = useState('')
   const [invalid, setInvalid] = useState(false)
+  const signInRef = useRef(null)
 
   const loginUser = useMutation({
     mutationFn: acquireToken,
@@ -111,33 +112,57 @@ function App() {
     },
   })
 
+  let mainContent = <></>
+
+  if (user) {
+    mainContent = <Notes />
+  } else {
+    mainContent = (
+      <Stack direction="row" mt={4}>
+        <h1
+          style={{
+            fontSize: '3.25rem',
+            lineHeight: '1.35em',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          Scribble notes.
+          <br />
+          Test this placeholder app.
+        </h1>
+        <LoginForm
+          focusRef={signInRef}
+          invalid={invalid}
+          sending={loginUser.isLoading}
+          onLogin={({ email, password }) =>
+            loginUser.mutate({ email, password })
+          }
+          onLogout={() => setUser('')}
+          clearInvalid={() => setInvalid(false)}
+        />
+      </Stack>
+    )
+  }
+
   return (
     <>
-      <LoginBar
+      <TopBar
         user={user}
         invalid={invalid}
         sending={loginUser.isLoading}
-        onLogin={({ email, password }) => loginUser.mutate({ email, password })}
         onLogout={() => setUser('')}
+        onGetStarted={() => {
+          signInRef.current.scrollIntoView()
+          signInRef.current.focus()
+        }}
         clearInvalid={() => setInvalid(false)}
       />
       <Hero />
       <Container maxWidth="md">
-          <h1 style={{ fontSize: '3.25rem', lineHeight: '1.35em', letterSpacing: '-0.02em'}}>
-            Scribble notes.<br />Test this placeholder app.
-          </h1>
-          {loginUser.isLoading && 'Mutation is loading'}
-          {loginUser.isError && 'Mutation error: ' + loginUser.error}
-          {loginUser.isSuccess && 'Mutation successful'}
-        
-          <LoginForm
-          user={user}
-          invalid={invalid}
-          sending={loginUser.isLoading}
-          onLogin={({ email, password }) => loginUser.mutate({ email, password })}
-          onLogout={() => setUser('')}
-          clearInvalid={() => setInvalid(false)}
-          />
+        {mainContent}
+        {/* {loginUser.isLoading && 'Mutation is loading'}
+        {loginUser.isError && 'Mutation error: ' + loginUser.error}
+        {loginUser.isSuccess && 'Mutation successful'} */}
       </Container>
     </>
   )

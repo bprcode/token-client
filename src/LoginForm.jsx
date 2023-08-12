@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, forwardRef } from 'react'
 import {
   Divider,
   Stack,
@@ -10,26 +10,28 @@ import {
   Typography,
 } from '@mui/material'
 
-export default function LoginForm({
+const LoginForm = function ({
   onLogin,
   onRegister,
   clearInvalid,
   sending,
   invalid,
+  focusRef
 }) {
   const [email, setEmail] = useState('shredman1212@slice.dice')
   const [password, setPassword] = useState('oozy123')
   const theme = useTheme()
 
-  return (<Paper elevation={1} sx={{ p: 6, maxWidth: 500, mx: 'auto'}}>
+  return (<Paper elevation={1} sx={{ py: 6, px: 2, mb: 8, minWidth: 300, maxWidth: 500, mx: 'auto'}}>
     <form>
       <Container maxWidth="xs">
           <Typography variant="h4" component="h2" sx={{mb: 1}}>
             Sign In
           </Typography>
-          <Divider sx={{mb: 4}}/>
+          <Divider sx={{mb: 6}}/>
         <Stack spacing={6}>
           <TextField
+            inputRef={focusRef}
             label="email"
             variant="standard"
             disabled={sending}
@@ -43,6 +45,7 @@ export default function LoginForm({
           <TextField
             label="password"
             variant="standard"
+            helperText={invalid ? 'Invalid email or password.' : ' '}
             disabled={sending}
             error={invalid}
             defaultValue={password}
@@ -76,3 +79,5 @@ export default function LoginForm({
     </Paper>
   )
 }
+
+export default LoginForm
