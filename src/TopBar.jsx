@@ -74,7 +74,7 @@ export default function TopBar({
             backdropFilter: 'blur(3px)',
           }}
         >
-          <Container maxWidth="md" disableGutters>
+          <Container maxWidth="lg" disableGutters>
             <Toolbar>
               <IconButton
                 size="large"

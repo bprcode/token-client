@@ -158,7 +158,7 @@ function App() {
         clearInvalid={() => setInvalid(false)}
       />
       <Hero />
-      <Container maxWidth="md">
+      <Container maxWidth="lg">
         {mainContent}
         {/* {loginUser.isLoading && 'Mutation is loading'}
         {loginUser.isError && 'Mutation error: ' + loginUser.error}
