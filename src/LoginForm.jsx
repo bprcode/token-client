@@ -25,7 +25,15 @@ const LoginForm = function ({
   return (
     <Paper
       elevation={1}
-      sx={{ py: 6, px: 2, mb: 8, flexGrow: 1, minWidth: 300, maxWidth: 450, ml: 'auto' }}
+      sx={{
+        py: 6,
+        px: 2,
+        mb: 8,
+        flexGrow: 1,
+        minWidth: 300,
+        maxWidth: 450,
+        ml: 'auto',
+      }}
     >
       <form onSubmit={e => e.preventDefault()}>
         <Container>

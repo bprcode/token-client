@@ -80,7 +80,7 @@ function Hero() {
           backgroundImage: `url(${auroraMesh})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          height: '60vh',
+          height: 'max(20rem, 55vh)',
           width: '100%',
           zIndex: -1,
         }}
@@ -115,15 +115,16 @@ function App() {
   let mainContent = <></>
 
   if (user) {
-    mainContent = <Notes />
+    mainContent = <Notes {...user} />
   } else {
     mainContent = (
-      <Stack direction="row" mt={4}>
+      <Stack direction="row" mt={4} sx={{ flexWrap: 'wrap' }}>
         <h1
           style={{
             fontSize: '3.25rem',
             lineHeight: '1.35em',
             letterSpacing: '-0.02em',
+            marginRight: '1em',
           }}
         >
           Scribble notes.
@@ -137,7 +138,6 @@ function App() {
           onLogin={({ email, password }) =>
             loginUser.mutate({ email, password })
           }
-          onLogout={() => setUser('')}
           clearInvalid={() => setInvalid(false)}
         />
       </Stack>
@@ -150,7 +150,10 @@ function App() {
         user={user}
         invalid={invalid}
         sending={loginUser.isLoading}
-        onLogout={() => setUser('')}
+        onLogout={() => {
+          console.log('Setting user to blank')
+          setUser('')
+        }}
         onGetStarted={() => {
           signInRef.current.scrollIntoView()
           signInRef.current.focus()

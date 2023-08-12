@@ -57,7 +57,6 @@ export default function TopBar({
     )
   }
 
-  console.log(theme.palette)
   return (
     <ThemeProvider theme={barTheme}>
       <Box
@@ -66,7 +65,6 @@ export default function TopBar({
           borderBottom: `1px solid ${theme.palette.background.default}`,
         }}
       >
-
         <AppBar
           position="static"
           sx={{
