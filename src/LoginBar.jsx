@@ -92,7 +92,7 @@ export default function LoginBar({
       <Box
         sx={{
           flexGrow: 1,
-          // borderBottom: `1px solid ${theme.palette.background}`,
+          borderBottom: `1px solid ${theme.palette.background.default}`,
         }}
       >
         <Snackbar

@@ -30,6 +30,7 @@ import {
 import digitalTheme from './blueDigitalTheme'
 import LoginBar from './LoginBar'
 import auroraMesh from './assets/aurora-gradient-2.png'
+import LoginForm from './LoginForm'
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
 
@@ -128,74 +129,15 @@ function App() {
           {loginUser.isLoading && 'Mutation is loading'}
           {loginUser.isError && 'Mutation error: ' + loginUser.error}
           {loginUser.isSuccess && 'Mutation successful'}
-        <Paper elevation={1} sx={{ p: 2 }}>
-          <FormGroup>
-            <TextField label="first"></TextField>
-            <TextField label="second"></TextField>
-            <Button>Send Me</Button>
-          </FormGroup>
-          <FormControl>
-            <TextField label="first"></TextField>
-            <TextField label="second"></TextField>
-            <Button>Send Me</Button>
-          </FormControl>
-          <form>
-            <TextField label="first" name="alfie"></TextField>
-            <TextField label="second" name="better"></TextField>
-            <Button type="submit">Send Me</Button>
-          </form>
-          <form>
-            <FormGroup row>
-              <TextField label="first" name="alfie"></TextField>
-              <TextField label="second" name="better"></TextField>
-              <Button type="submit">Send Me</Button>
-            </FormGroup>
-          </form>
-          <Divider sx={{ mb: 3, mt: 3 }} />
-          <form>
-            <FormGroup row>
-              <FormControl>
-                <InputLabel htmlFor="tex-ex">First</InputLabel>
-                <Input id="tex-ex" />
-              </FormControl>
-              <FormControl variant="standard">
-                <InputLabel htmlFor="tex-ex2">Second</InputLabel>
-                <Input id="tex-ex2" />
-              </FormControl>
-              <FormControl>
-                <Button type="submit">Send Me</Button>
-              </FormControl>
-            </FormGroup>
-          </form>
-          <Divider sx={{ mb: 3, mt: 3 }} />
-
-          <Typography
-            sx={{
-              maxWidth: '100%',
-              p: 1,
-              mb: 2,
-              backgroundColor: 'primary.light',
-              color: 'primary.contrastText',
-              overflowWrap: 'anywhere',
-            }}
-          >
-            {!user && 'Awaiting token.'}{' '}
-            {user && 'User: ' + user.name + ', ' + user.email}
-          </Typography>
-
-          <Button
-            sx={{ mr: 2 }}
-            variant="outlined"
-            onClick={() => ringServer(setReply)}
-          >
-            👋 Ring Server
-          </Button>
-        </Paper>
-        <form action="http://localhost:3000/mock" method="post">
-          <input type="text" defaultValue={'Some Text Here'}></input>
-          <button>Post</button>
-        </form>
-        <pre>{reply}</pre>
+        
+          <LoginForm
+          user={user}
+          invalid={invalid}
+          sending={loginUser.isLoading}
+          onLogin={({ email, password }) => loginUser.mutate({ email, password })}
+          onLogout={() => setUser('')}
+          clearInvalid={() => setInvalid(false)}
+          />
       </Container>
     </>
   )
