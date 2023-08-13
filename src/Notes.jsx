@@ -49,7 +49,6 @@ export default function NotebookRoot({ uid, name, email }) {
   const [activeNote, setActiveNote] = useState('')
 
   const listQuery = useQuery({
-    retry: 0,
     queryKey: ['note list', uid],
     queryFn: async () => fetchNoteList(uid),
   })
@@ -82,7 +81,7 @@ export default function NotebookRoot({ uid, name, email }) {
         <CircularProgress />
       </Backdrop>
       <LoadingError
-        show={listQuery.status === 'error' && !listQuery.data}
+        show={listQuery.status !== 'loading' && !listQuery.data}
         onRetry={listQuery.refetch}
       />
 
@@ -153,7 +152,6 @@ function ExpandedNote({ id, onReturn }) {
   const [text, setText] = useState('')
 
   const noteQuery = useQuery({
-    retry: 0,
     queryKey: ['note', id],
     queryFn: async () => fetchNote(id),
   })
@@ -171,10 +169,8 @@ function ExpandedNote({ id, onReturn }) {
       </>
     )
   }
-  if (
-    noteQuery.status === 'success' ||
-    (noteQuery.status === 'error' && noteQuery.data)
-  ) {
+
+  if (noteQuery.data) {
     body = (
       <Stack spacing={4}>
         <TextField
@@ -197,8 +193,6 @@ function ExpandedNote({ id, onReturn }) {
         />
       </Stack>
     )
-  } else if (noteQuery.status === 'error') {
-    body = <LoadingError show={true} onRetry={noteQuery.refetch} />
   }
 
   return (
@@ -217,6 +211,10 @@ function ExpandedNote({ id, onReturn }) {
 
         <Box minHeight={100} width="min(90%,80ch)">
           <Typography variant="body">{body}</Typography>
+          <LoadingError
+            show={!noteData && noteQuery.status !== 'loading'}
+            onRetry={noteQuery.refetch}
+          />
         </Box>
       </Paper>
       <Button onClick={onReturn} sx={{ mt: 4 }}>
