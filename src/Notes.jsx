@@ -11,6 +11,7 @@ import {
   CardActions,
   CardMedia,
   Typography,
+  Paper,
   useTheme,
   IconButton,
   CardActionArea,
@@ -37,8 +38,8 @@ function fetchNoteList(uid) {
 }
 
 function fetchNote(id) {
-  return fetch(import.meta.env.VITE_BACKEND + `notes/${id}`).then(
-    result => result.json()
+  return fetch(import.meta.env.VITE_BACKEND + `notes/${id}`).then(result =>
+    result.json()
   )
 }
 
@@ -95,6 +96,16 @@ export default function NotebookRoot({ uid, name, email }) {
 }
 
 function Notebook({ notes, onExpand }) {
+  let list = notes.map(item => (
+    <NoteSummary
+      {...item}
+      key={item.note_id}
+      onExpand={() => onExpand(item.note_id)}
+    />
+  ))
+
+  if (list.length === 0) { list = <>No notes yet.</>}
+
   return (
     <Card
       elevation={0}
@@ -107,13 +118,7 @@ function Notebook({ notes, onExpand }) {
         My Notebook
       </Typography>
       <Stack direction="row" spacing={4}>
-        {notes.map(item => (
-          <NoteSummary
-            {...item}
-            key={item.note_id}
-            onExpand={() => onExpand(item.note_id)}
-          />
-        ))}
+        {list}
       </Stack>
     </Card>
   )
@@ -129,12 +134,14 @@ function NoteSummary({ note_id, summary, onExpand }) {
         </CardContent>
       </CardActionArea>
       <CardActions>
-        <Button size="small">Expand</Button>
+        <Button size="small" onClick={onExpand}>
+          Expand
+        </Button>
         <Box ml="auto">
-          <IconButton aria-label="Edit" onClick={onExpand}>
-            <EditIcon color="primary" />
-          </IconButton>
-          <IconButton aria-label="Delete">
+          <IconButton
+            aria-label="Delete"
+            onClick={() => console.log('Delete placeholder')}
+          >
             <DeleteIcon color="primary" />
           </IconButton>
         </Box>
@@ -187,19 +194,21 @@ function ExpandedNode({ id, onReturn }) {
 
   return (
     <Card
-      elevation={4}
+      elevation={0}
       sx={{
         mt: 6,
-        px: 4,
+        px: 2,
         py: 2,
       }}
     >
-      <Typography variant="h4" mb={4}>
-        Note #{id} -- {noteQuery.status}
-      </Typography>
-      <Box minHeight={100}>
-        <Typography variant="body">{body}</Typography>
-      </Box>
+      <Paper elevation={1} sx={{ p: 2 }}>
+        <Typography variant="h4" mb={4}>
+          Note #{id} -- {noteQuery.status}
+        </Typography>
+        <Box minHeight={100}>
+          <Typography variant="body">{body}</Typography>
+        </Box>
+      </Paper>
       <Button onClick={onReturn} sx={{ mt: 4 }}>
         Back to List
       </Button>

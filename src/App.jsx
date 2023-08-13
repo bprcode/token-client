@@ -35,18 +35,6 @@ import Notes from './Notes'
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
 
-async function acquireToken({ email, password }) {
-  console.log('acquiring token with credentials: ', email, password)
-  const response = await fetch(import.meta.env.VITE_BACKEND + 'login', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-  })
-  return response.json()
-}
-
 function Wrapp() {
   return (
     <ThemeProvider theme={digitalTheme}>
@@ -57,17 +45,6 @@ function Wrapp() {
       </CssBaseline>
     </ThemeProvider>
   )
-}
-
-function parseToken(token) {
-  try {
-    if (!token) {
-      return
-    }
-    return JSON.parse(atob(token.split('.')[1]))
-  } catch (e) {
-    return { name: 'Not Authorized 😦' }
-  }
 }
 
 function Hero() {
@@ -91,26 +68,8 @@ function Hero() {
 
 function App() {
   const [user, setUser] = useState('')
-  const [invalid, setInvalid] = useState(false)
-  const signInRef = useRef(null)
 
-  const loginUser = useMutation({
-    mutationFn: acquireToken,
-    onSuccess: (data, variables, context) => {
-      log('☢️🙂 Mutation succeeded with data: ', data)
-      if (data.token) {
-        const parsed = parseToken(data.token)
-        setUser(parsed)
-      } else {
-        log("... but the server didn't like it:", data.error)
-        setUser('')
-        setInvalid(true)
-      }
-    },
-    onError: (error, variables, context) => {
-      log('☢️😡 Mutation failed with error: ', error)
-    },
-  })
+  const signInRef = useRef(null)
 
   let mainContent = <></>
 
@@ -132,13 +91,9 @@ function App() {
           Test this placeholder app.
         </h1>
         <LoginForm
-          focusRef={signInRef}
-          invalid={invalid}
-          sending={loginUser.isLoading}
-          onLogin={({ email, password }) =>
-            loginUser.mutate({ email, password })
-          }
-          clearInvalid={() => setInvalid(false)}
+          signInRef={signInRef}
+          onLogin={setUser}
+          onRegistered={registrant => setUser(registrant)}
         />
       </Stack>
     )
@@ -148,8 +103,6 @@ function App() {
     <>
       <TopBar
         user={user}
-        invalid={invalid}
-        sending={loginUser.isLoading}
         onLogout={() => {
           console.log('Setting user to blank')
           setUser('')
@@ -158,15 +111,9 @@ function App() {
           signInRef.current.scrollIntoView()
           signInRef.current.focus()
         }}
-        clearInvalid={() => setInvalid(false)}
       />
       <Hero />
-      <Container maxWidth="lg">
-        {mainContent}
-        {/* {loginUser.isLoading && 'Mutation is loading'}
-        {loginUser.isError && 'Mutation error: ' + loginUser.error}
-        {loginUser.isSuccess && 'Mutation successful'} */}
-      </Container>
+      <Container maxWidth="lg">{mainContent}</Container>
     </>
   )
 }

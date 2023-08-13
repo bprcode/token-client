@@ -20,14 +20,7 @@ import { TextField } from '@mui/material'
 import { ThemeProvider } from '@mui/material'
 import { barTheme } from './blueDigitalTheme'
 
-export default function TopBar({
-  onLogout,
-  onGetStarted,
-  clearInvalid,
-  user,
-  sending,
-  invalid,
-}) {
+export default function TopBar({ onLogout, onGetStarted, user }) {
   const theme = useTheme()
 
   let interactivity = <></>
