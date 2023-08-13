@@ -49,7 +49,7 @@ export default function TopBar({
         >
           {[...user.name][0]}
         </Avatar>
-        Welcome, {user.name}{' '}
+        Welcome, {user.name || user.email}
         <Button onClick={onLogout} color="secondary" sx={{ ml: 4 }}>
           Logout
         </Button>

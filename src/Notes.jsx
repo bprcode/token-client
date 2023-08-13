@@ -1,4 +1,6 @@
+import { useState } from 'react'
 import {
+  Box,
   Alert,
   Backdrop,
   Stack,
@@ -10,8 +12,13 @@ import {
   CardMedia,
   Typography,
   useTheme,
+  IconButton,
+  CardActionArea,
+  Skeleton,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
+import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
 import CircularProgress from '@mui/material/CircularProgress'
 
 import {
@@ -29,42 +36,71 @@ function fetchNoteList(uid) {
   )
 }
 
-export default function Notes({ uid, name, email }) {
-  const noteQuery = useQuery({
-    queryKey: ['noteList', uid],
+function fetchNote(id) {
+  return fetch(import.meta.env.VITE_BACKEND + `notes/${id}`).then(
+    result => result.json()
+  )
+}
+
+export default function NotebookRoot({ uid, name, email }) {
+  const [mode, setMode] = useState('note list')
+  const [activeNote, setActiveNote] = useState('')
+
+  const listQuery = useQuery({
+    queryKey: ['note list', uid],
     queryFn: async () => fetchNoteList(uid),
   })
 
-  const noteList = noteQuery.data || []
+  const noteList = listQuery.data || []
+
+  let content = <></>
+
+  switch (mode) {
+    case 'edit note':
+      content = (
+        <ExpandedNode id={activeNote} onReturn={() => setMode('note list')}>
+          Editing
+        </ExpandedNode>
+      )
+      break
+    default:
+      content = (
+        <Notebook
+          notes={noteList}
+          onExpand={id => {
+            setMode('edit note')
+            setActiveNote(id)
+          }}
+        />
+      )
+  }
 
   return (
     <>
-      <Backdrop open={noteQuery.status === 'loading'}>
+      <Backdrop open={listQuery.status === 'loading'}>
         <CircularProgress />
       </Backdrop>
       <LoadingError
-        show={noteQuery.status === 'error'}
-        onRetry={noteQuery.refetch}
+        show={listQuery.status === 'error'}
+        onRetry={listQuery.refetch}
       />
 
-      <Notebook notes={noteList} />
+      {content}
+
       <Typography variant="h6" color="primary">
-        Query: {noteQuery.status}
+        Query: {listQuery.status}
       </Typography>
     </>
   )
 }
 
-function Notebook({ notes }) {
-  const theme = useTheme()
-
+function Notebook({ notes, onExpand }) {
   return (
     <Card
+      elevation={0}
       sx={{
         mt: 6,
         p: 4,
-        backgroundColor: alpha(theme.palette.background.paper, 0.6),
-        backdropFilter: 'blur(4px)',
       }}
     >
       <Typography variant="h4" mb={4}>
@@ -72,23 +108,101 @@ function Notebook({ notes }) {
       </Typography>
       <Stack direction="row" spacing={4}>
         {notes.map(item => (
-          <Note {...item} key={item.note_id} />
+          <NoteSummary
+            {...item}
+            key={item.note_id}
+            onExpand={() => onExpand(item.note_id)}
+          />
         ))}
       </Stack>
     </Card>
   )
 }
 
-function Note({ note_id, summary }) {
+function NoteSummary({ note_id, summary, onExpand }) {
   return (
-    <Card sx={{ maxWidth: 250 }}>
-      <CardMedia component="img" height="100" image={calendarPhoto} alt="" />
-      <CardContent>
-        ID: {note_id}, summary: {summary}
-      </CardContent>
+    <Card sx={{ maxWidth: 250 }} elevation={4}>
+      <CardActionArea onClick={onExpand}>
+        <CardMedia component="img" height="100" image={calendarPhoto} alt="" />
+        <CardContent>
+          ID: {note_id}, summary: {summary}
+        </CardContent>
+      </CardActionArea>
       <CardActions>
         <Button size="small">Expand</Button>
+        <Box ml="auto">
+          <IconButton aria-label="Edit" onClick={onExpand}>
+            <EditIcon color="primary" />
+          </IconButton>
+          <IconButton aria-label="Delete">
+            <DeleteIcon color="primary" />
+          </IconButton>
+        </Box>
       </CardActions>
+    </Card>
+  )
+}
+
+function ExpandedNode({ id, onReturn }) {
+  const noteQuery = useQuery({
+    queryKey: ['note', id],
+    queryFn: async () => fetchNote(id),
+  })
+
+  const noteData = noteQuery.data
+  console.log('got note data:')
+  console.log(noteData)
+
+  let body = <></>
+
+  if (noteQuery.status === 'loading') {
+    body = (
+      <>
+        <Skeleton variant="text" width="50%" />
+        <Skeleton variant="text" width="50%" />
+        <Skeleton variant="text" width="40%" />
+      </>
+    )
+  }
+  if (noteQuery.status === 'success') {
+    body = <>{noteData.content}</>
+  }
+  if (noteQuery.status === 'error') {
+    body = (
+      <Box maxWidth={410}>
+        <Alert
+          severity="error"
+          sx={{ mt: 4 }}
+          action={
+            <Button onClick={noteQuery.refetch} sx={{ ml: 0, mt: -0.5 }}>
+              Retry
+            </Button>
+          }
+        >
+          <span>Unable to load note. Please try again later.</span>
+        </Alert>
+      </Box>
+    )
+  }
+
+  return (
+    <Card
+      elevation={4}
+      sx={{
+        mt: 6,
+        px: 4,
+        py: 2,
+      }}
+    >
+      <Typography variant="h4" mb={4}>
+        Note #{id} -- {noteQuery.status}
+      </Typography>
+      <Box minHeight={100}>
+        <Typography variant="body">{body}</Typography>
+      </Box>
+      <Button onClick={onReturn} sx={{ mt: 4 }}>
+        Back to List
+      </Button>
     </Card>
   )
 }
