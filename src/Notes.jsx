@@ -1,10 +1,8 @@
 import { useState } from 'react'
 import {
   Box,
-  Alert,
   Backdrop,
   Stack,
-  Container,
   Button,
   Card,
   CardContent,
@@ -12,6 +10,7 @@ import {
   CardMedia,
   Typography,
   Paper,
+  TextField,
   useTheme,
   IconButton,
   CardActionArea,
@@ -30,16 +29,18 @@ import {
 } from '@tanstack/react-query'
 
 import calendarPhoto from './assets/notebook-unsplash.jpg'
+import { fetchTimeout } from './fetchTimeout.mjs'
+import { LoadingError } from './LoadingError'
 
 function fetchNoteList(uid) {
-  return fetch(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`).then(
-    result => result.json()
-  )
+  return fetchTimeout(
+    import.meta.env.VITE_BACKEND + `users/${uid}/notebook`
+  ).then(result => result.json())
 }
 
 function fetchNote(id) {
-  return fetch(import.meta.env.VITE_BACKEND + `notes/${id}`).then(result =>
-    result.json()
+  return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${id}`).then(
+    result => result.json()
   )
 }
 
@@ -48,6 +49,7 @@ export default function NotebookRoot({ uid, name, email }) {
   const [activeNote, setActiveNote] = useState('')
 
   const listQuery = useQuery({
+    retry: 0,
     queryKey: ['note list', uid],
     queryFn: async () => fetchNoteList(uid),
   })
@@ -59,9 +61,7 @@ export default function NotebookRoot({ uid, name, email }) {
   switch (mode) {
     case 'edit note':
       content = (
-        <ExpandedNode id={activeNote} onReturn={() => setMode('note list')}>
-          Editing
-        </ExpandedNode>
+        <ExpandedNote id={activeNote} onReturn={() => setMode('note list')} />
       )
       break
     default:
@@ -82,15 +82,11 @@ export default function NotebookRoot({ uid, name, email }) {
         <CircularProgress />
       </Backdrop>
       <LoadingError
-        show={listQuery.status === 'error'}
+        show={listQuery.status === 'error' && !listQuery.data}
         onRetry={listQuery.refetch}
       />
 
       {content}
-
-      <Typography variant="h6" color="primary">
-        Query: {listQuery.status}
-      </Typography>
     </>
   )
 }
@@ -104,7 +100,9 @@ function Notebook({ notes, onExpand }) {
     />
   ))
 
-  if (list.length === 0) { list = <>No notes yet.</>}
+  if (list.length === 0) {
+    list = <>No notes yet.</>
+  }
 
   return (
     <Card
@@ -150,15 +148,17 @@ function NoteSummary({ note_id, summary, onExpand }) {
   )
 }
 
-function ExpandedNode({ id, onReturn }) {
+function ExpandedNote({ id, onReturn }) {
+  const [title, setTitle] = useState('')
+  const [text, setText] = useState('')
+
   const noteQuery = useQuery({
+    retry: 0,
     queryKey: ['note', id],
     queryFn: async () => fetchNote(id),
   })
 
   const noteData = noteQuery.data
-  console.log('got note data:')
-  console.log(noteData)
 
   let body = <></>
 
@@ -171,25 +171,34 @@ function ExpandedNode({ id, onReturn }) {
       </>
     )
   }
-  if (noteQuery.status === 'success') {
-    body = <>{noteData.content}</>
-  }
-  if (noteQuery.status === 'error') {
+  if (
+    noteQuery.status === 'success' ||
+    (noteQuery.status === 'error' && noteQuery.data)
+  ) {
     body = (
-      <Box maxWidth={410}>
-        <Alert
-          severity="error"
-          sx={{ mt: 4 }}
-          action={
-            <Button onClick={noteQuery.refetch} sx={{ ml: 0, mt: -0.5 }}>
-              Retry
-            </Button>
-          }
-        >
-          <span>Unable to load note. Please try again later.</span>
-        </Alert>
-      </Box>
+      <Stack spacing={4}>
+        <TextField
+          label="Title"
+          sx={{ width: '100%' }}
+          value={id}
+          defaultValue=" "
+          onChange={e => setTitle(e.target.value)}
+        />
+        <TextField
+          sx={{ width: '100%' }}
+          minRows={5}
+          maxRows={15}
+          // value={text}
+          defaultValue=" "
+          label="Content"
+          onChange={e => setText(e.target.value)}
+          id="outlined-textarea"
+          multiline
+        />
+      </Stack>
     )
+  } else if (noteQuery.status === 'error') {
+    body = <LoadingError show={true} onRetry={noteQuery.refetch} />
   }
 
   return (
@@ -205,7 +214,8 @@ function ExpandedNode({ id, onReturn }) {
         <Typography variant="h4" mb={4}>
           Note #{id} -- {noteQuery.status}
         </Typography>
-        <Box minHeight={100}>
+
+        <Box minHeight={100} width="min(90%,80ch)">
           <Typography variant="body">{body}</Typography>
         </Box>
       </Paper>
@@ -213,27 +223,5 @@ function ExpandedNode({ id, onReturn }) {
         Back to List
       </Button>
     </Card>
-  )
-}
-
-function LoadingError({ show, onRetry }) {
-  if (!show) {
-    return
-  }
-
-  return (
-    <Container maxWidth="sm">
-      <Alert
-        severity="error"
-        sx={{ mt: 4 }}
-        action={
-          <Button onClick={onRetry} sx={{ ml: 2, mt: -0.5 }}>
-            Retry
-          </Button>
-        }
-      >
-        <span>Notebook failed to load. Please try again later.</span>
-      </Alert>
-    </Container>
   )
 }

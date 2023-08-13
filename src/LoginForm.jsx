@@ -8,19 +8,25 @@ import {
   Button,
   Paper,
   Typography,
+  CircularProgress,
 } from '@mui/material'
 import { useMutation } from '@tanstack/react-query'
+import SpinOrText from './SpinOrText'
+import { fetchTimeout } from './fetchTimeout.mjs'
+
 const log = console.log.bind(console)
 
 async function acquireToken({ email, password }) {
   console.log('acquiring token with credentials: ', email, password)
-  const response = await fetch(import.meta.env.VITE_BACKEND + 'login', {
+
+  const response = await fetchTimeout(import.meta.env.VITE_BACKEND + 'login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
   })
+
   return response.json()
 }
 
@@ -37,7 +43,7 @@ function parseToken(token) {
 
 async function registerUser({ email, password, name }) {
   console.log('attempting to register with: ', email, password, name)
-  return fetch(import.meta.env.VITE_BACKEND + 'register', {
+  return fetchTimeout(import.meta.env.VITE_BACKEND + 'register', {
     method: 'POST',
     body: JSON.stringify({ email, password, name }),
     headers: {
@@ -125,8 +131,10 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
           color="secondary"
           onClick={() => registrationMutation.mutate({ email, password, name })}
         >
-          Register Now
+          <SpinOrText spin={sending} text={'Register Now'} />
         </Button>
+        {registrationMutation.status === 'error' &&
+          'Server unavailable. Try again?'}
         <Button
           variant="text"
           disabled={sending}
@@ -149,8 +157,9 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
           disabled={sending}
           onClick={() => loginUser.mutate({ email, password })}
         >
-          Login
+          <SpinOrText spin={sending} text={'Login'} />
         </Button>
+        {loginUser.status === 'error' && 'Server unavailable. Try again?'}
         <Divider sx={{ mb: 3, mt: 3, color: theme.palette.divider }}>
           OR
         </Divider>
