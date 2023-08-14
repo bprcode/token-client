@@ -68,13 +68,14 @@ function Hero() {
 
 function App() {
   const [user, setUser] = useState('')
+  const [token, setToken] = useState('')
 
   const signInRef = useRef(null)
 
   let mainContent = <></>
 
   if (user) {
-    mainContent = <Notes {...user} />
+    mainContent = <Notes {...user} token={token} />
   } else {
     mainContent = (
       <Stack direction="row" mt={4} sx={{ flexWrap: 'wrap' }}>
@@ -92,8 +93,14 @@ function App() {
         </h1>
         <LoginForm
           signInRef={signInRef}
-          onLogin={setUser}
-          onRegistered={registrant => setUser(registrant)}
+          onLogin={(user, token) => {
+            setUser(user)
+            setToken(token)
+          }}
+          onRegistered={(registrant, token) => {
+            setUser(registrant)
+            setToken(token)
+          }}
         />
       </Stack>
     )

@@ -32,46 +32,55 @@ import calendarPhoto from './assets/notebook-unsplash.jpg'
 import { fetchTimeout } from './fetchTimeout.mjs'
 import { LoadingError } from './LoadingError'
 
-function fetchNoteList(uid) {
-  return fetchTimeout(
-    import.meta.env.VITE_BACKEND + `users/${uid}/notebook`
-  ).then(result => result.json())
+function fetchNoteList(uid, token) {
+  return fetchTimeout(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`, {
+    headers: { Authorization: `Bearer ${token}` },
+  }).then(result => result.json())
 }
 
-function fetchNote(id) {
-  return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${id}`).then(
-    result => result.json()
-  )
+function fetchNote(id, token) {
+  return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  }).then(result => result.json())
 }
 
-export default function NotebookRoot({ uid, name, email }) {
+export default function NotebookRoot({ uid, name, email, token }) {
   const [mode, setMode] = useState('note list')
   const [activeNote, setActiveNote] = useState('')
 
   const listQuery = useQuery({
     queryKey: ['note list', uid],
-    queryFn: async () => fetchNoteList(uid),
+    queryFn: async () => fetchNoteList(uid, token),
   })
 
   const noteList = listQuery.data || []
-
   let content = <></>
 
   switch (mode) {
     case 'edit note':
       content = (
-        <ExpandedNote id={activeNote} onReturn={() => setMode('note list')} />
+        <ExpandedNote
+          id={activeNote}
+          token={token}
+          onReturn={() => setMode('note list')}
+        />
       )
       break
     default:
       content = (
-        <Notebook
-          notes={noteList}
-          onExpand={id => {
-            setMode('edit note')
-            setActiveNote(id)
-          }}
-        />
+        <>
+          {noteList.error ? (
+            noteList.error
+          ) : (
+            <Notebook
+              notes={noteList}
+              onExpand={id => {
+                setMode('edit note')
+                setActiveNote(id)
+              }}
+            />
+          )}
+        </>
       )
   }
 
@@ -147,17 +156,17 @@ function NoteSummary({ note_id, summary, onExpand }) {
   )
 }
 
-function ExpandedNote({ id, onReturn }) {
+function ExpandedNote({ id, onReturn, token }) {
   const [title, setTitle] = useState('')
-  const [text, setText] = useState('')
+  const [content, setContent] = useState('')
 
   const noteQuery = useQuery({
     queryKey: ['note', id],
-    queryFn: async () => fetchNote(id),
+    queryFn: async () => fetchNote(id, token),
   })
 
   const noteData = noteQuery.data
-
+  console.log('> rendering with data: ', noteData)
   let body = <></>
 
   if (noteQuery.status === 'loading') {
@@ -170,29 +179,31 @@ function ExpandedNote({ id, onReturn }) {
     )
   }
 
-  if (noteQuery.data) {
+  if (noteData) {
     body = (
       <Stack spacing={4}>
         <TextField
           label="Title"
           sx={{ width: '100%' }}
-          value={id}
-          defaultValue=" "
+          value={noteData.title}
           onChange={e => setTitle(e.target.value)}
         />
         <TextField
           sx={{ width: '100%' }}
           minRows={5}
           maxRows={15}
-          // value={text}
-          defaultValue=" "
+          value={noteData.content}
           label="Content"
-          onChange={e => setText(e.target.value)}
+          onChange={e => setContent(e.target.value)}
           id="outlined-textarea"
           multiline
         />
       </Stack>
     )
+  }
+
+  if (noteData && noteData.error) {
+    body = <>Permission error: {noteData.error}</>
   }
 
   return (

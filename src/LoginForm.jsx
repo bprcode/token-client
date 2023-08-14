@@ -87,7 +87,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
       log('☢️🙂 Mutation succeeded with data: ', data)
       if (data.token) {
         const parsed = parseToken(data.token)
-        onLogin(parsed)
+        onLogin(parsed, data.token)
       } else {
         log("... but the server didn't like it:", data.error)
         onLogin('')
@@ -108,7 +108,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
       if (data.token) {
         log('Registered, got a token back')
         const parsed = parseToken(data.token)
-        onRegistered(parsed)
+        onRegistered(parsed, data.token)
       }
       console.log('reg mut good, data=', data)
     },
