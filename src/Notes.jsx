@@ -26,11 +26,15 @@ import {
   QueryClientProvider,
   useMutation,
   useQuery,
+  useQueryClient,
 } from '@tanstack/react-query'
 
 import calendarPhoto from './assets/notebook-unsplash.jpg'
 import { fetchTimeout } from './fetchTimeout.mjs'
 import { LoadingError } from './LoadingError'
+import debounce from './debounce.mjs'
+
+const log = console.log.bind(console)
 
 function fetchNoteList(uid, token) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`, {
@@ -41,6 +45,19 @@ function fetchNoteList(uid, token) {
 function fetchNote(id, token) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${id}`, {
     headers: { Authorization: `Bearer ${token}` },
+  }).then(result => result.json())
+}
+
+function updateNote(data, token) {
+  log('updating with data: ', JSON.stringify(data))
+
+  return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${data.note_id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json; charset=utf-8',
+    },
   }).then(result => result.json())
 }
 
@@ -130,13 +147,14 @@ function Notebook({ notes, onExpand }) {
   )
 }
 
-function NoteSummary({ note_id, summary, onExpand }) {
+function NoteSummary({ note_id, title, summary, onExpand }) {
   return (
-    <Card sx={{ maxWidth: 250 }} elevation={4}>
+    <Card sx={{ width: 250 }} elevation={4}>
       <CardActionArea onClick={onExpand}>
         <CardMedia component="img" height="100" image={calendarPhoto} alt="" />
         <CardContent>
-          ID: {note_id}, summary: {summary}
+          <Typography variant="h6">{title}</Typography>
+          summary: {summary}
         </CardContent>
       </CardActionArea>
       <CardActions>
@@ -157,16 +175,38 @@ function NoteSummary({ note_id, summary, onExpand }) {
 }
 
 function ExpandedNote({ id, onReturn, token }) {
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+  const queryClient = useQueryClient()
 
   const noteQuery = useQuery({
     queryKey: ['note', id],
     queryFn: async () => fetchNote(id, token),
   })
+  /*
+  // Optimistic note mutation
+  const mutation = useMutation({
+    mutationFn: data => updateNote(data, token),
+    onMutate: async data => {
+      log('🤢 ABOUT TO embark on a mutation with ', data)
+      await queryClient.cancelQueries({ queryKey: ['note', id] })
+      const backup = queryClient.getQueryData(['note', id])
+
+      // Emulate intended result:
+      queryClient.setQueryData(['note', id], prior => ({ ...prior, ...data }))
+
+      // Return context object:
+      return { backup }
+    },
+    // On unsuccessful mutation, roll back data:
+    onError: (error, data, context) => {
+      queryClient.setQueryData(['note', id], context.backup)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['note', id] })
+    },
+  })*/
 
   const noteData = noteQuery.data
-  console.log('> rendering with data: ', noteData)
+
   let body = <></>
 
   if (noteQuery.status === 'loading') {
@@ -181,24 +221,10 @@ function ExpandedNote({ id, onReturn, token }) {
 
   if (noteData) {
     body = (
-      <Stack spacing={4}>
-        <TextField
-          label="Title"
-          sx={{ width: '100%' }}
-          value={noteData.title}
-          onChange={e => setTitle(e.target.value)}
-        />
-        <TextField
-          sx={{ width: '100%' }}
-          minRows={5}
-          maxRows={15}
-          value={noteData.content}
-          label="Content"
-          onChange={e => setContent(e.target.value)}
-          id="outlined-textarea"
-          multiline
-        />
-      </Stack>
+      <EditableContents
+        initialTitle={noteData.title}
+        initialContent={noteData.content}
+      />
     )
   }
 
@@ -232,5 +258,61 @@ function ExpandedNote({ id, onReturn, token }) {
         Back to List
       </Button>
     </Card>
+  )
+}
+
+function EditableContents({ initialTitle, initialContent }) {
+  const [title, setTitle] = useState(initialTitle || '')
+  const [content, setContent] = useState(initialContent || '')
+  const [lastSaved, setLastSaved] = useState('')
+  const [unsaved, setUnsaved] = useState(false)
+
+  const [color, setColor] = useState(true)
+
+  const debounced = debounce('put', (...stuff) => {
+    console.log('Mock PUT: ', ...stuff)
+    // ...await verified mutation, then:
+    setLastSaved('Mock: ' + new Date().toLocaleTimeString())
+    setUnsaved(false)
+  })
+
+  return (
+    <Stack spacing={4}>
+      <TextField
+        label="Title"
+        value={title}
+        onChange={e => {
+          setTitle(e.target.value)
+          setUnsaved(true)
+          debounced({ content, title: e.target.value })
+        }}
+        sx={{ width: '100%' }}
+      />
+      <TextField
+        label="Content"
+        value={content}
+        onChange={e => {
+          setContent(e.target.value)
+          setUnsaved(true)
+          debounced({ content: e.target.value, title })
+        }}
+        sx={{ width: '100%' }}
+        minRows={5}
+        maxRows={15}
+        // onChange={e =>
+        //   mutation.mutate({ ...noteData, content: e.target.value })
+        // }
+        id="outlined-textarea"
+        multiline
+      />
+      <Box sx={{ display: 'flex', justifyContent: 'end' }}>
+        <Typography variant="caption" color={unsaved ? "warning.main" : 'success.main'}>
+          {unsaved ? 'Unsaved' : 'Saved'}&nbsp;
+        </Typography>
+        <Typography variant="caption">
+          {lastSaved && (unsaved ? 'since '+lastSaved : 'at: ' + lastSaved)}
+        </Typography>
+      </Box>
+    </Stack>
   )
 }
