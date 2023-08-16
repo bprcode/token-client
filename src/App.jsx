@@ -3,29 +3,12 @@ import './App.css'
 import {
   QueryClient,
   QueryClientProvider,
-  useMutation,
-  useQuery,
 } from '@tanstack/react-query'
 import {
-  Button,
   CssBaseline,
   Container,
   Stack,
-  Box,
-  createTheme,
   ThemeProvider,
-  Paper,
-  Card,
-  TextField,
-  Typography,
-  Avatar,
-  AppBar,
-  FormGroup,
-  FormControl,
-  InputLabel,
-  Input,
-  Divider,
-  Toolbar,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import TopBar from './TopBar'
@@ -68,14 +51,13 @@ function Hero() {
 
 function App() {
   const [user, setUser] = useState('')
-  const [token, setToken] = useState('')
 
   const signInRef = useRef(null)
 
   let mainContent = <></>
 
   if (user) {
-    mainContent = <Notes {...user} token={token} />
+    mainContent = <Notes {...user} />
   } else {
     mainContent = (
       <Stack direction="row" mt={4} sx={{ flexWrap: 'wrap' }}>
@@ -93,13 +75,11 @@ function App() {
         </h1>
         <LoginForm
           signInRef={signInRef}
-          onLogin={(user, token) => {
+          onLogin={user => {
             setUser(user)
-            setToken(token)
           }}
-          onRegistered={(registrant, token) => {
+          onRegistered={registrant => {
             setUser(registrant)
-            setToken(token)
           }}
         />
       </Stack>

@@ -8,7 +8,6 @@ import {
   Button,
   Paper,
   Typography,
-  CircularProgress,
 } from '@mui/material'
 import { useMutation } from '@tanstack/react-query'
 import SpinOrText from './SpinOrText'
@@ -25,6 +24,7 @@ async function acquireToken({ email, password }) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
+    credentials: 'include'
   })
 
   return response.json()
@@ -42,13 +42,13 @@ function parseToken(token) {
 }
 
 async function registerUser({ email, password, name }) {
-  console.log('attempting to register with: ', email, password, name)
   return fetchTimeout(import.meta.env.VITE_BACKEND + 'register', {
     method: 'POST',
     body: JSON.stringify({ email, password, name }),
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
+    credentials: 'include'
   }).then(response => response.json())
 }
 
@@ -102,18 +102,24 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
   const registrationMutation = useMutation({
     mutationFn: registerUser,
     onSuccess: data => {
-      if (data.error === 'email already in use.') {
-        setInvalid(true)
+      if (data.error) {
+        console.log('Error in server response: ', data.error)
+        if (data.error === 'email already in use.') {
+          setInvalid(true)
+        } else {
+          throw Error('Server unavailable')
+        }
+        return
       }
       if (data.token) {
         log('Registered, got a token back')
         const parsed = parseToken(data.token)
         onRegistered(parsed, data.token)
       }
-      console.log('reg mut good, data=', data)
+      console.log('registration mutation succeeded, data=', data)
     },
     onError: error => {
-      console.log('bad reg mut, error', error)
+      console.log('registration mutation failed, error', error)
     },
   })
 

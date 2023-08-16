@@ -11,20 +11,14 @@ import {
   Typography,
   Paper,
   TextField,
-  useTheme,
   IconButton,
   CardActionArea,
   Skeleton,
 } from '@mui/material'
-import { alpha } from '@mui/material/styles'
-import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CircularProgress from '@mui/material/CircularProgress'
 
 import {
-  QueryClient,
-  QueryClientProvider,
-  useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
@@ -36,38 +30,38 @@ import debounce from './debounce.mjs'
 
 const log = console.log.bind(console)
 
-function fetchNoteList(uid, token) {
+function fetchNoteList(uid) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
   }).then(result => result.json())
 }
 
-function fetchNote(id, token) {
+function fetchNote(id) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${id}`, {
-    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include'
   }).then(result => result.json())
 }
 
-function updateNote(data, token) {
+function updateNote(data) {
   log('updating with data: ', JSON.stringify(data))
 
   return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${data.note_id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json; charset=utf-8',
     },
+    credentials: 'include'
   }).then(result => result.json())
 }
 
-export default function NotebookRoot({ uid, name, email, token }) {
+export default function NotebookRoot({ uid, name, email }) {
   const [mode, setMode] = useState('note list')
   const [activeNote, setActiveNote] = useState('')
 
   const listQuery = useQuery({
     queryKey: ['note list', uid],
-    queryFn: async () => fetchNoteList(uid, token),
+    queryFn: async () => fetchNoteList(uid),
   })
 
   const noteList = listQuery.data || []
@@ -78,7 +72,6 @@ export default function NotebookRoot({ uid, name, email, token }) {
       content = (
         <ExpandedNote
           id={activeNote}
-          token={token}
           onReturn={() => setMode('note list')}
         />
       )
@@ -174,36 +167,13 @@ function NoteSummary({ note_id, title, summary, onExpand }) {
   )
 }
 
-function ExpandedNote({ id, onReturn, token }) {
+function ExpandedNote({ id, onReturn }) {
   const queryClient = useQueryClient()
 
   const noteQuery = useQuery({
     queryKey: ['note', id],
-    queryFn: async () => fetchNote(id, token),
+    queryFn: async () => fetchNote(id),
   })
-  /*
-  // Optimistic note mutation
-  const mutation = useMutation({
-    mutationFn: data => updateNote(data, token),
-    onMutate: async data => {
-      log('🤢 ABOUT TO embark on a mutation with ', data)
-      await queryClient.cancelQueries({ queryKey: ['note', id] })
-      const backup = queryClient.getQueryData(['note', id])
-
-      // Emulate intended result:
-      queryClient.setQueryData(['note', id], prior => ({ ...prior, ...data }))
-
-      // Return context object:
-      return { backup }
-    },
-    // On unsuccessful mutation, roll back data:
-    onError: (error, data, context) => {
-      queryClient.setQueryData(['note', id], context.backup)
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['note', id] })
-    },
-  })*/
 
   const noteData = noteQuery.data
 

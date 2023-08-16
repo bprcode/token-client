@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import Toolbar from '@mui/material/Toolbar'
@@ -6,16 +5,12 @@ import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import {
-  Alert,
   Avatar,
   Container,
-  FormGroup,
-  Snackbar,
   useTheme,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import DrawIcon from '@mui/icons-material/Draw'
-import { TextField } from '@mui/material'
 
 import { ThemeProvider } from '@mui/material'
 import { barTheme } from './blueDigitalTheme'
