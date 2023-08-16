@@ -25,16 +25,6 @@ export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
   if (!user) {
     interactivity = (
       <>
-      <Button sx={{mr:2}} variant="outlined" color="secondary" onClick={() => {
-        fetchTimeout(import.meta.env.VITE_BACKEND + 'cookie', {
-          credentials: 'include',
-        })
-      }}>🍪</Button>
-      <Button sx={{mr:2}} variant="outlined" color="info" onClick={() => {
-        fetchTimeout(import.meta.env.VITE_BACKEND + 'check', {
-          credentials: 'include',
-        })
-      }}>☑️</Button>
         <Button variant="contained" onClick={onGetStarted}>
           Get Started
         </Button>

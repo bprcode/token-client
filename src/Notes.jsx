@@ -30,15 +30,17 @@ import debounce from './debounce.mjs'
 
 const log = console.log.bind(console)
 
-function fetchNoteList(uid) {
+function fetchNoteList(uid, {signal}) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`, {
-    credentials: 'include'
+    credentials: 'include',
+    signal
   }).then(result => result.json())
 }
 
-function fetchNote(id) {
+function fetchNote(id, {signal}) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${id}`, {
-    credentials: 'include'
+    credentials: 'include',
+    signal
   }).then(result => result.json())
 }
 
@@ -61,7 +63,7 @@ export default function NotebookRoot({ uid, name, email }) {
 
   const listQuery = useQuery({
     queryKey: ['note list', uid],
-    queryFn: async () => fetchNoteList(uid),
+    queryFn: async ({signal}) => fetchNoteList(uid, {signal}),
   })
 
   const noteList = listQuery.data || []
@@ -172,7 +174,7 @@ function ExpandedNote({ id, onReturn }) {
 
   const noteQuery = useQuery({
     queryKey: ['note', id],
-    queryFn: async () => fetchNote(id),
+    queryFn: async ({signal}) => fetchNote(id, {signal}),
   })
 
   const noteData = noteQuery.data

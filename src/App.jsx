@@ -1,10 +1,13 @@
 import { useState, useRef } from 'react'
 import './App.css'
 import {
+  useQuery,
   QueryClient,
   QueryClientProvider,
   useMutation,
+  useQueryClient,
 } from '@tanstack/react-query'
+// import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { CssBaseline, Container, Stack, ThemeProvider } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import TopBar from './TopBar'
@@ -16,12 +19,22 @@ import { fetchTimeout } from './fetchTimeout.mjs'
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
 
-async function fetchLogout() {
-  const response = await fetchTimeout(import.meta.env.VITE_BACKEND + 'login', {
+function fetchLogout({ signal }) {
+  return fetchTimeout(import.meta.env.VITE_BACKEND + 'login', {
     method: 'DELETE',
     credentials: 'include',
+    signal
+  }).then(response => {
+    log('delete resolved. returning.')
+    return response.json()
   })
-  return response.json()
+}
+
+function fetchCurrentUser({ signal }) {
+  return fetchTimeout(import.meta.env.VITE_BACKEND + 'me', {
+    credentials: 'include',
+    signal,
+  }).then(response => response.json())
 }
 
 function Wrapp() {
@@ -56,15 +69,44 @@ function Hero() {
 }
 
 function App() {
-  const [user, setUser] = useState('')
+  const rememberLoginTime = 1000 * 60 * 2
+  const queryClient = useQueryClient()
+
   const signInRef = useRef(null)
+
+  const heartbeatQuery = useQuery({
+    queryKey: ['heartbeat'],
+    queryFn: fetchCurrentUser,
+    initialData: () => {
+      const lastLogin = JSON.parse(
+        localStorage.lastLogin || '{ "error": "No stored login."}'
+      )
+      if (lastLogin.epoch) {
+        log('login age: ', (Date.now() - lastLogin.epoch) / 1000)
+      }
+      if (lastLogin.epoch && Date.now() - lastLogin.epoch < rememberLoginTime) {
+        log('using last login=', lastLogin)
+
+        return lastLogin
+      }
+      return ''
+    },
+  })
+
+  const user = heartbeatQuery.data.error ? '' : heartbeatQuery.data
 
   const logoutMutation = useMutation({
     mutationFn: fetchLogout,
-    onSuccess: () => {
-      setUser('')
-    }
+    onSuccess: async () => {
+      log('>> logout success...')
+      await queryClient.cancelQueries()
+      queryClient.setQueryData(['heartbeat'], '')
+      localStorage.lastLogin = ''
+    },
+    retry: 3,
   })
+
+  log('💓 heartbeat result: ', heartbeatQuery.data)
 
   let mainContent = <></>
 
@@ -87,11 +129,23 @@ function App() {
         </h1>
         <LoginForm
           signInRef={signInRef}
-          onLogin={user => {
-            setUser(user)
+          onLogin={async newUser => {
+            await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
+            queryClient.setQueryData(['heartbeat'], newUser)
+            localStorage.lastLogin = JSON.stringify({
+              ...newUser,
+              epoch: Date.now(),
+            })
+            log('setting lastlogin=', localStorage.lastLogin)
+            log(JSON.parse(localStorage.lastLogin))
           }}
-          onRegistered={registrant => {
-            setUser(registrant)
+          onRegistered={async registrant => {
+            await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
+            queryClient.setQueryData(['heartbeat'], registrant)
+            localStorage.lastLogin = JSON.stringify({
+              ...registrant,
+              epoch: Date.now(),
+            })
           }}
         />
       </Stack>
@@ -100,6 +154,7 @@ function App() {
 
   return (
     <>
+      {/* <QueryClientProvider client={queryClient}> */}
       <TopBar
         user={user}
         onLogout={logoutMutation.mutate}
@@ -111,6 +166,8 @@ function App() {
       />
       <Hero />
       <Container maxWidth="lg">{mainContent}</Container>
+      {/* <ReactQueryDevtools initialIsOpen={true} /> */}
+      {/* </QueryClientProvider> */}
     </>
   )
 }

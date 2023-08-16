@@ -16,8 +16,6 @@ import { fetchTimeout } from './fetchTimeout.mjs'
 const log = console.log.bind(console)
 
 async function acquireToken({ email, password }) {
-  console.log('acquiring token with credentials: ', email, password)
-
   const response = await fetchTimeout(import.meta.env.VITE_BACKEND + 'login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
