@@ -30,17 +30,6 @@ async function acquireToken({ email, password }) {
   return response.json()
 }
 
-function parseToken(token) {
-  try {
-    if (!token) {
-      return
-    }
-    return JSON.parse(atob(token.split('.')[1]))
-  } catch (e) {
-    return { name: 'Not Authorized 😦' }
-  }
-}
-
 async function registerUser({ email, password, name }) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + 'register', {
     method: 'POST',
@@ -84,15 +73,15 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
   const loginUser = useMutation({
     mutationFn: acquireToken,
     onSuccess: (data, variables, context) => {
-      log('☢️🙂 Mutation succeeded with data: ', data)
-      if (data.token) {
-        const parsed = parseToken(data.token)
-        onLogin(parsed, data.token)
-      } else {
-        log("... but the server didn't like it:", data.error)
+      if(data.error) {
+        log('⚠️ Server reported error: ', data.error)
         onLogin('')
         setInvalid(true)
+        return
       }
+
+      log('☢️🙂 Mutation succeeded with data: ', data)
+      onLogin({uid: data.uid, name: data.name, email: data.email})
     },
     onError: (error, variables, context) => {
       log('☢️😡 Mutation failed with error: ', error)
@@ -111,12 +100,9 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
         }
         return
       }
-      if (data.token) {
-        log('Registered, got a token back')
-        const parsed = parseToken(data.token)
-        onRegistered(parsed, data.token)
-      }
+      
       console.log('registration mutation succeeded, data=', data)
+      onRegistered({uid: data.uid, name: data.name, email: data.email})
     },
     onError: error => {
       console.log('registration mutation failed, error', error)
@@ -220,6 +206,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
             <TextField
               label="password"
               variant="standard"
+              type="password"
               helperText={
                 invalid && !newUser ? 'Invalid email or password.' : ' '
               }

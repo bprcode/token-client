@@ -140,7 +140,7 @@ function Notebook({ notes, onExpand }) {
   )
 }
 
-function NoteSummary({ note_id, title, summary, onExpand }) {
+function NoteSummary({ title, summary, onExpand }) {
   return (
     <Card sx={{ width: 250 }} elevation={4}>
       <CardActionArea onClick={onExpand}>
@@ -236,8 +236,6 @@ function EditableContents({ initialTitle, initialContent }) {
   const [content, setContent] = useState(initialContent || '')
   const [lastSaved, setLastSaved] = useState('')
   const [unsaved, setUnsaved] = useState(false)
-
-  const [color, setColor] = useState(true)
 
   const debounced = debounce('put', (...stuff) => {
     console.log('Mock PUT: ', ...stuff)
