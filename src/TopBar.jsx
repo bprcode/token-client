@@ -14,9 +14,10 @@ import DrawIcon from '@mui/icons-material/Draw'
 
 import { ThemeProvider } from '@mui/material'
 import { barTheme } from './blueDigitalTheme'
+import SpinOrText from './SpinOrText'
 import { fetchTimeout } from './fetchTimeout.mjs'
 
-export default function TopBar({ onLogout, onGetStarted, user }) {
+export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
   const theme = useTheme()
 
   let interactivity = <></>
@@ -50,7 +51,7 @@ export default function TopBar({ onLogout, onGetStarted, user }) {
         </Avatar>
         Welcome, {user.name || user.email}
         <Button onClick={onLogout} color="secondary" sx={{ ml: 4 }}>
-          Logout
+          <SpinOrText spin={isLoggingOut} text='Logout' />
         </Button>
       </>
     )

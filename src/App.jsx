@@ -3,20 +3,26 @@ import './App.css'
 import {
   QueryClient,
   QueryClientProvider,
+  useMutation,
 } from '@tanstack/react-query'
-import {
-  CssBaseline,
-  Container,
-  Stack,
-  ThemeProvider,
-} from '@mui/material'
+import { CssBaseline, Container, Stack, ThemeProvider } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import TopBar from './TopBar'
 import auroraMesh from './assets/aurora-gradient-2.png'
 import LoginForm from './LoginForm'
 import Notes from './Notes'
+import { fetchTimeout } from './fetchTimeout.mjs'
+
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
+
+async function fetchLogout() {
+  const response = await fetchTimeout(import.meta.env.VITE_BACKEND + 'login', {
+    method: 'DELETE',
+    credentials: 'include',
+  })
+  return response.json()
+}
 
 function Wrapp() {
   return (
@@ -51,8 +57,14 @@ function Hero() {
 
 function App() {
   const [user, setUser] = useState('')
-
   const signInRef = useRef(null)
+
+  const logoutMutation = useMutation({
+    mutationFn: fetchLogout,
+    onSuccess: () => {
+      setUser('')
+    }
+  })
 
   let mainContent = <></>
 
@@ -90,14 +102,12 @@ function App() {
     <>
       <TopBar
         user={user}
-        onLogout={() => {
-          console.log('Setting user to blank')
-          setUser('')
-        }}
+        onLogout={logoutMutation.mutate}
         onGetStarted={() => {
           signInRef.current.scrollIntoView()
           signInRef.current.focus()
         }}
+        isLoggingOut={logoutMutation.status === 'loading'}
       />
       <Hero />
       <Container maxWidth="lg">{mainContent}</Container>

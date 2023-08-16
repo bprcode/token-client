@@ -24,7 +24,7 @@ async function acquireToken({ email, password }) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
-    credentials: 'include'
+    credentials: 'include',
   })
 
   return response.json()
@@ -37,7 +37,7 @@ async function registerUser({ email, password, name }) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
-    credentials: 'include'
+    credentials: 'include',
   }).then(response => response.json())
 }
 
@@ -70,10 +70,10 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
   const [invalid, setInvalid] = useState(false)
   const theme = useTheme()
 
-  const loginUser = useMutation({
+  const loginMutation = useMutation({
     mutationFn: acquireToken,
     onSuccess: (data, variables, context) => {
-      if(data.error) {
+      if (data.error) {
         log('⚠️ Server reported error: ', data.error)
         onLogin('')
         setInvalid(true)
@@ -81,7 +81,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
       }
 
       log('☢️🙂 Mutation succeeded with data: ', data)
-      onLogin({uid: data.uid, name: data.name, email: data.email})
+      onLogin({ uid: data.uid, name: data.name, email: data.email })
     },
     onError: (error, variables, context) => {
       log('☢️😡 Mutation failed with error: ', error)
@@ -100,9 +100,9 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
         }
         return
       }
-      
+
       console.log('registration mutation succeeded, data=', data)
-      onRegistered({uid: data.uid, name: data.name, email: data.email})
+      onRegistered({ uid: data.uid, name: data.name, email: data.email })
     },
     onError: error => {
       console.log('registration mutation failed, error', error)
@@ -110,7 +110,8 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
   })
 
   const sending =
-    loginUser.status === 'loading' || registrationMutation.status === 'loading'
+    loginMutation.status === 'loading' ||
+    registrationMutation.status === 'loading'
   let buttons = <></>
 
   if (newUser) {
@@ -147,11 +148,11 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
           type="submit"
           variant="contained"
           disabled={sending}
-          onClick={() => loginUser.mutate({ email, password })}
+          onClick={() => loginMutation.mutate({ email, password })}
         >
           <SpinOrText spin={sending} text={'Login'} />
         </Button>
-        {loginUser.status === 'error' && 'Server unavailable. Try again?'}
+        {loginMutation.status === 'error' && 'Server unavailable. Try again?'}
         <Divider sx={{ mb: 3, mt: 3, color: theme.palette.divider }}>
           OR
         </Divider>
