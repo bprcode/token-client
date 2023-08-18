@@ -30,7 +30,7 @@ export function FetchDisplay() {
       <div
         key={s[0]}
         style={{
-          position: 'absolute',
+          position: 'fixed',
           top: y,
           left: 0,
           width: 'max-content',
@@ -47,7 +47,7 @@ export function FetchDisplay() {
   }
 
   return (
-    <div style={{ zIndex: 1, position: 'absolute', top: 0, left: 0 }}>
+    <div style={{ zIndex: 1, position: 'fixed', top: 0, left: 0 }}>
       {displays}
     </div>
   )
@@ -96,12 +96,7 @@ async function fetchLogged(
       'abort',
       () => {
         console.log(`🌼 Chaining abort events...`, tag)
-        dispatch({
-          type: 'set',
-          id: num,
-          message: tag + ' chaining...',
-          color: 'red',
-        })
+        expireStatus(tag + ' cancelled', 'red')
         controller.abort(options.signal.reason)
         clearTimeout(tid)
       },
@@ -111,7 +106,6 @@ async function fetchLogged(
 
   // Track abort events for the primary controller
   controller.signal.onabort = () => {
-    expireStatus(tag + ' aborted', 'chocolate')
     console.log(`primary controller aborting`, tag)
   }
 
@@ -142,14 +136,6 @@ export function FetchStatusProvider({children}) {
       {children}
     </FetchStatusDispatchContext.Provider>
   </FetchStatusContext.Provider>
-}
-
-export function useFetchStatus() {
-  return useContext(FetchStatusContext)
-}
-
-export function useFetchStatusDispatch() {
-  return useContext(FetchStatusDispatchContext)
 }
 
 export function useLoggedFetch() {

@@ -11,7 +11,6 @@ import DrawIcon from '@mui/icons-material/Draw'
 import { ThemeProvider } from '@mui/material'
 import { barTheme } from './blueDigitalTheme'
 import SpinOrText from './SpinOrText'
-import { fetchTimeout } from './fetchTimeout.jsx'
 
 export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
   const theme = useTheme()

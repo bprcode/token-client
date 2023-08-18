@@ -21,21 +21,21 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import calendarPhoto from './assets/notebook-unsplash.jpg'
-import { fetchTimeout } from './fetchTimeout.jsx'
+import { useLoggedFetch } from './fetchTimeout.jsx'
 import { LoadingError } from './LoadingError'
 import debounce from './debounce.mjs'
 
 const log = console.log.bind(console)
 
-function fetchNoteList({ uid, signal }) {
-  return fetchTimeout(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`, {
+function getNoteList(fetcher, signal, {uid}) {
+  return fetcher(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`, {
     credentials: 'include',
     signal,
   }).then(result => result.json())
 }
 
-function fetchNote({ id, signal }) {
-  return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${id}`, {
+function getNote(fetcher, signal, {id}) {
+  return fetcher(import.meta.env.VITE_BACKEND + `notes/${id}`, {
     credentials: 'include',
     signal,
   }).then(result => result.json())
@@ -55,12 +55,13 @@ function updateNote(data) {
 }
 
 export default function NotebookRoot({ uid, name, email }) {
+  const loggedFetch = useLoggedFetch()
   const [mode, setMode] = useState('note list')
   const [activeNote, setActiveNote] = useState('')
 
   const listQuery = useQuery({
     queryKey: ['note list', uid],
-    queryFn: async ({ signal }) => fetchNoteList({ uid, signal }),
+    queryFn: async ({ signal }) => getNoteList(loggedFetch, signal, { uid }),
   })
 
   const noteList = listQuery.data || []
@@ -164,11 +165,12 @@ function NoteSummary({ title, summary, onExpand }) {
 }
 
 function ExpandedNote({ id, onReturn }) {
+  const loggedFetch = useLoggedFetch()
   const queryClient = useQueryClient()
 
   const noteQuery = useQuery({
     queryKey: ['note', id],
-    queryFn: async ({ signal }) => fetchNote({ id, signal }),
+    queryFn: async ({ signal }) => getNote(loggedFetch, signal, { id }),
   })
 
   const noteData = noteQuery.data

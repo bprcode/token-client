@@ -1,4 +1,4 @@
-import { useState, useContext, useRef, useReducer } from 'react'
+import { useState, useContext, useRef } from 'react'
 import './App.css'
 import {
   useQuery,
@@ -7,7 +7,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'
-// import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { CssBaseline, Container, Stack, ThemeProvider } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import TopBar from './TopBar'
@@ -23,15 +23,11 @@ import {
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
 
-function fetchLogout({ signal }) {
-  return fetchTimeout(import.meta.env.VITE_BACKEND + 'login', {
+function deleteLogin(fetcher) {
+  return fetcher(import.meta.env.VITE_BACKEND + 'login', {
     method: 'DELETE',
     credentials: 'include',
-    signal,
-  }).then(response => {
-    log('delete resolved. returning.')
-    return response.json()
-  })
+  }).then(response => response.json())
 }
 
 function getMe(fetcher, signal) {
@@ -109,7 +105,7 @@ function App() {
   const user = heartbeatQuery.data.error ? '' : heartbeatQuery.data
 
   const logoutMutation = useMutation({
-    mutationFn: fetchLogout,
+    mutationFn: () => deleteLogin(loggedFetch),
     onSuccess: async () => {
       log('>> logout success...')
       await queryClient.cancelQueries()
@@ -170,7 +166,7 @@ function App() {
 
   return (
     <>
-      {/* <QueryClientProvider client={queryClient}> */}
+      <QueryClientProvider client={queryClient}>
       <TopBar
         user={user}
         onLogout={logoutMutation.mutate}
@@ -182,8 +178,8 @@ function App() {
       />
       <Hero />
       <Container maxWidth="lg">{mainContent}</Container>
-      {/* <ReactQueryDevtools initialIsOpen={true} /> */}
-      {/* </QueryClientProvider> */}
+      <ReactQueryDevtools initialIsOpen={true} />
+      </QueryClientProvider>
     </>
   )
 }
