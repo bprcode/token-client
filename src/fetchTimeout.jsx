@@ -23,6 +23,10 @@ export function fetchStatusReducer(log, action) {
 export function FetchDisplay() {
   const fetchStatus = useContext(FetchStatusContext)
 
+  if (import.meta.env.VITE_ENV !== 'development') {
+    return
+  }
+
   const displays = []
   let y = 0
   for (const s of fetchStatus) {
@@ -37,7 +41,7 @@ export function FetchDisplay() {
           backgroundColor: s[1].color,
           paddingLeft: '0.25rem',
           paddingRight: '0.25rem',
-          transition: 'background-color 0.5s, top 1s'
+          transition: 'background-color 0.5s, top 1s',
         }}
       >
         {s[1].message}
@@ -61,12 +65,7 @@ function findUnusedKey(map) {
   }
 }
 
-async function fetchLogged(
-  resource,
-  options = {},
-  statusList,
-  dispatch
-) {
+async function fetchLogged(resource, options = {}, statusList, dispatch) {
   const num = findUnusedKey(statusList)
   const method = options.method || 'GET'
   const tag =
@@ -128,21 +127,24 @@ async function fetchLogged(
   return response
 }
 
-export function FetchStatusProvider({children}) {
+export function FetchStatusProvider({ children }) {
   const [fetchStatus, dispatch] = useReducer(fetchStatusReducer, new Map())
 
-  return <FetchStatusContext.Provider value={fetchStatus}>
-    <FetchStatusDispatchContext.Provider value={dispatch}>
-      {children}
-    </FetchStatusDispatchContext.Provider>
-  </FetchStatusContext.Provider>
+  return (
+    <FetchStatusContext.Provider value={fetchStatus}>
+      <FetchStatusDispatchContext.Provider value={dispatch}>
+        {children}
+      </FetchStatusDispatchContext.Provider>
+    </FetchStatusContext.Provider>
+  )
 }
 
 export function useLoggedFetch() {
   const fetchStatus = useContext(FetchStatusContext)
   const fetchStatusDispatch = useContext(FetchStatusDispatchContext)
 
-  return async (resource, options) => fetchLogged(resource, options, fetchStatus, fetchStatusDispatch)
+  return async (resource, options) =>
+    fetchLogged(resource, options, fetchStatus, fetchStatusDispatch)
 }
 
 export async function fetchTimeout() {}

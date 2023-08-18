@@ -15,21 +15,18 @@ import { useLoggedFetch } from './fetchTimeout.jsx'
 
 const log = console.log.bind(console)
 
-function postLogin(fetcher, { email, password}) {
-  return fetcher(
-    import.meta.env.VITE_BACKEND + 'login',
-    {
-      method: 'POST',
-      body: JSON.stringify({email, password}),
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-      credentials: 'include',
-    }
-  ).then(response => response.json())
+function postLogin(fetcher, { email, password }) {
+  return fetcher(import.meta.env.VITE_BACKEND + 'login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    credentials: 'include',
+  }).then(response => response.json())
 }
 
-function postRegister(fetcher, {email, password, name}) {
+function postRegister(fetcher, { email, password, name }) {
   return fetcher(import.meta.env.VITE_BACKEND + 'register', {
     method: 'POST',
     body: JSON.stringify({ email, password, name }),
@@ -85,6 +82,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
     onError: (error, variables, context) => {
       log('☢️😡 Mutation failed with error: ', error)
     },
+    retry: 2,
   })
 
   const registrationMutation = useMutation({
@@ -106,6 +104,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
     onError: error => {
       console.log('registration mutation failed, error', error)
     },
+    retry: 2,
   })
 
   const sending =

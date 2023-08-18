@@ -17,7 +17,7 @@ import Notes from './Notes'
 import {
   FetchDisplay,
   FetchStatusProvider,
-  useLoggedFetch
+  useLoggedFetch,
 } from './fetchTimeout.jsx'
 
 const log = console.log.bind(console)
@@ -31,13 +31,10 @@ function deleteLogin(fetcher) {
 }
 
 function getMe(fetcher, signal) {
-  return fetcher(
-    import.meta.env.VITE_BACKEND + 'me',
-    {
-      credentials: 'include',
-      signal
-    }
-  ).then(response => response.json())
+  return fetcher(import.meta.env.VITE_BACKEND + 'me', {
+    credentials: 'include',
+    signal,
+  }).then(response => response.json())
 }
 
 function Wrapp() {
@@ -84,8 +81,7 @@ function App() {
 
   const heartbeatQuery = useQuery({
     queryKey: ['heartbeat'],
-    queryFn: async ({ signal }) =>
-      getMe(loggedFetch, signal),
+    queryFn: async ({ signal }) => getMe(loggedFetch, signal),
     initialData: () => {
       const lastLogin = JSON.parse(
         localStorage.lastLogin || '{ "error": "No stored login."}'
@@ -100,6 +96,7 @@ function App() {
       }
       return ''
     },
+    staleTime: 30 * 1000,
   })
 
   const user = heartbeatQuery.data.error ? '' : heartbeatQuery.data
@@ -167,18 +164,18 @@ function App() {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-      <TopBar
-        user={user}
-        onLogout={logoutMutation.mutate}
-        onGetStarted={() => {
-          signInRef.current.scrollIntoView()
-          signInRef.current.focus()
-        }}
-        isLoggingOut={logoutMutation.status === 'loading'}
-      />
-      <Hero />
-      <Container maxWidth="lg">{mainContent}</Container>
-      <ReactQueryDevtools initialIsOpen={true} />
+        <TopBar
+          user={user}
+          onLogout={logoutMutation.mutate}
+          onGetStarted={() => {
+            signInRef.current.scrollIntoView()
+            signInRef.current.focus()
+          }}
+          isLoggingOut={logoutMutation.status === 'loading'}
+        />
+        <Hero />
+        <Container maxWidth="lg">{mainContent}</Container>
+        <ReactQueryDevtools initialIsOpen={true} />
       </QueryClientProvider>
     </>
   )
