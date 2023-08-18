@@ -1,4 +1,4 @@
-import { useReducer, useState, useContext, createContext } from 'react'
+import { useReducer, useContext, createContext } from 'react'
 
 export const FetchStatusContext = createContext(null)
 export const FetchStatusDispatchContext = createContext(null)
@@ -61,13 +61,19 @@ function findUnusedKey(map) {
   let key
   while (true) {
     key = (Math.random() * 1000).toFixed(0)
-    if (!map.has(key)) return key
+    if (!map.has(key)) {
+      return key
+    }
   }
 }
 
-async function fetchLogged(resource, options = {}, statusList, dispatch) {
+async function fetchLogged(request, statusList, dispatch) {
+  if (!request.resource) {
+    throw Error('No resource specified for request.')
+  }
+  const resource = request.resource
   const num = findUnusedKey(statusList)
-  const method = options.method || 'GET'
+  const method = request.method || 'GET'
   const tag =
     `(${num}) ` +
     method +
@@ -84,28 +90,21 @@ async function fetchLogged(resource, options = {}, statusList, dispatch) {
   }
 
   const tid = setTimeout(() => {
-    console.log(`⌚ Timed out`, tag)
     expireStatus(tag + ' timed out', 'purple')
     controller.abort('Fetch timed out. ' + tag)
-  }, options.timeout || defaultTime)
+  }, request.timeout || defaultTime)
 
   // Chain additional AbortSignal, if provided
-  if (options.signal) {
-    options.signal.addEventListener(
+  if (request.signal) {
+    request.signal.addEventListener(
       'abort',
       () => {
-        console.log(`🌼 Chaining abort events...`, tag)
         expireStatus(tag + ' cancelled', 'red')
-        controller.abort(options.signal.reason)
+        controller.abort(request.signal.reason)
         clearTimeout(tid)
       },
       { signal: controller.signal }
     )
-  }
-
-  // Track abort events for the primary controller
-  controller.signal.onabort = () => {
-    console.log(`primary controller aborting`, tag)
   }
 
   dispatch({ type: 'set', id: num, message: tag })
@@ -113,11 +112,10 @@ async function fetchLogged(resource, options = {}, statusList, dispatch) {
 
   try {
     response = await fetch(resource, {
-      ...options,
+      ...request,
       signal: controller.signal,
     }).then(result => {
       expireStatus(tag + ' OK', 'green')
-      console.log(`Resolved`, tag)
       return result
     })
   } finally {
@@ -139,72 +137,29 @@ export function FetchStatusProvider({ children }) {
   )
 }
 
-export function useLoggedFetch() {
+export function useWrapFetch() {
   const fetchStatus = useContext(FetchStatusContext)
   const fetchStatusDispatch = useContext(FetchStatusDispatchContext)
 
-  return async (resource, options) =>
-    fetchLogged(resource, options, fetchStatus, fetchStatusDispatch)
-}
+  // wrapFetch(request)...
+  return request => {
+    // ... yields a function of (argument):
+    return argument => {
+      // If the request was dynamic, invoke it:
+      if (typeof request === 'function') {
+        return fetchLogged(
+          request(argument),
+          fetchStatus,
+          fetchStatusDispatch
+        ).then(result => result.json())
+      }
 
-export async function fetchTimeout() {}
-
-/*
-export async function fetchTimeout(resource, options = {}) {
-  let num
-
-  while (true) {
-    num = (Math.random() * 1000).toFixed(0)
-    console.log('trying ', num, ' has? ', fetchMap.has(num))
-    if (!fetchMap.has(num)) {
-      fetchLog =
-        `(${num}) >` + resource.replace(import.meta.env.VITE_BACKEND, '')
-      fetchMap.set(num, fetchLog)
-      break
+      // If the request was a static object, use it directly:
+      return fetchLogged(
+        { ...request, signal: argument.signal },
+        fetchStatus,
+        fetchStatusDispatch
+      ).then(result => result.json())
     }
   }
-
-  console.log('Fetching ', fetchLog)
-
-  const defaultTime = 4000
-  const controller = new AbortController()
-  const id = setTimeout(() => {
-    console.log(`⌚ Timed out`, fetchLog)
-    controller.abort('Fetch timed out. ' + fetchLog)
-  }, options.timeout || defaultTime)
-
-  // Chain additional AbortSignal, if provided
-  if (options.signal) {
-    options.signal.addEventListener(
-      'abort',
-      () => {
-        console.log(`🌼 Chaining abort events...`, fetchLog)
-        controller.abort(options.signal.reason)
-        clearTimeout(id)
-      },
-      { signal: controller.signal }
-    )
-  }
-
-  controller.signal.onabort = () => {
-    fetchMap.delete(num)
-    console.log(`primary controller aborting`, fetchLog)
-  }
-
-  let response
-  try {
-    response = await fetch(resource, {
-      ...options,
-      signal: controller.signal,
-    }).then(x => {
-      fetchMap.delete(num)
-      console.log(`Resolved`, fetchLog)
-      return x
-    })
-  } finally {
-    clearTimeout(id)
-  }
-
-  return response
 }
-*/

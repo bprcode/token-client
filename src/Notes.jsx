@@ -21,26 +21,27 @@ import CircularProgress from '@mui/material/CircularProgress'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import calendarPhoto from './assets/notebook-unsplash.jpg'
-import { useLoggedFetch } from './fetchTimeout.jsx'
+import { useWrapFetch } from './fetchTimeout.jsx'
 import { LoadingError } from './LoadingError'
 import debounce from './debounce.mjs'
 
 const log = console.log.bind(console)
 
-function getNoteList(fetcher, signal, { uid }) {
-  return fetcher(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`, {
+function noteListRequest(uid) {
+  return {
+    resource: import.meta.env.VITE_BACKEND + `users/${uid}/notebook`,
     credentials: 'include',
-    signal,
-  }).then(result => result.json())
+  }
 }
 
-function getNote(fetcher, signal, { id }) {
-  return fetcher(import.meta.env.VITE_BACKEND + `notes/${id}`, {
-    credentials: 'include',
-    signal,
-  }).then(result => result.json())
+function noteRequest(nid) {
+  return {
+    resource: import.meta.env.VITE_BACKEND + `notes/${nid}`,
+    credentials: 'include'
+  }
 }
 
+/*
 function updateNote(data) {
   log('updating with data: ', JSON.stringify(data))
 
@@ -53,15 +54,16 @@ function updateNote(data) {
     credentials: 'include',
   }).then(result => result.json())
 }
+*/
 
 export default function NotebookRoot({ uid, name, email }) {
-  const loggedFetch = useLoggedFetch()
+  const wrapFetch = useWrapFetch()
   const [mode, setMode] = useState('note list')
   const [activeNote, setActiveNote] = useState('')
 
   const listQuery = useQuery({
     queryKey: ['note list', uid],
-    queryFn: async ({ signal }) => getNoteList(loggedFetch, signal, { uid }),
+    queryFn: wrapFetch(noteListRequest(uid)),
     staleTime: 30 * 1000,
   })
 
@@ -166,12 +168,11 @@ function NoteSummary({ title, summary, onExpand }) {
 }
 
 function ExpandedNote({ id, onReturn }) {
-  const loggedFetch = useLoggedFetch()
-  const queryClient = useQueryClient()
+  const wrapFetch = useWrapFetch()
 
   const noteQuery = useQuery({
     queryKey: ['note', id],
-    queryFn: async ({ signal }) => getNote(loggedFetch, signal, { id }),
+    queryFn: wrapFetch(noteRequest(id)),
     staleTime: 30 * 1000,
   })
 

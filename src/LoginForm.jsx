@@ -11,30 +11,32 @@ import {
 } from '@mui/material'
 import { useMutation } from '@tanstack/react-query'
 import SpinOrText from './SpinOrText'
-import { useLoggedFetch } from './fetchTimeout.jsx'
+import { useWrapFetch } from './fetchTimeout.jsx'
 
 const log = console.log.bind(console)
 
-function postLogin(fetcher, { email, password }) {
-  return fetcher(import.meta.env.VITE_BACKEND + 'login', {
+function loginRequest({email, password}) {
+  return {
+    resource: import.meta.env.VITE_BACKEND + 'login',
     method: 'POST',
     body: JSON.stringify({ email, password }),
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
     credentials: 'include',
-  }).then(response => response.json())
+  }
 }
 
-function postRegister(fetcher, { email, password, name }) {
-  return fetcher(import.meta.env.VITE_BACKEND + 'register', {
-    method: 'POST',
-    body: JSON.stringify({ email, password, name }),
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    credentials: 'include',
-  }).then(response => response.json())
+function registerRequest({email, password, name}) {
+  return {
+    resource: import.meta.env.VITE_BACKEND + 'register', 
+      method: 'POST',
+      body: JSON.stringify({ email, password, name }),
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      credentials: 'include',
+  }
 }
 
 function FocusingName({ name, setName, sending, invalid }) {
@@ -59,7 +61,7 @@ function FocusingName({ name, setName, sending, invalid }) {
 }
 
 const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
-  const loggedFetch = useLoggedFetch()
+  const wrapFetch = useWrapFetch()
   const [email, setEmail] = useState('shredman1212@slice.dice')
   const [password, setPassword] = useState('oozy123')
   const [name, setName] = useState('')
@@ -68,7 +70,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
   const theme = useTheme()
 
   const loginMutation = useMutation({
-    mutationFn: data => postLogin(loggedFetch, data),
+    mutationFn: wrapFetch(loginRequest),
     onSuccess: (data, variables, context) => {
       if (data.error) {
         log('⚠️ Server reported error: ', data.error)
@@ -86,7 +88,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
   })
 
   const registrationMutation = useMutation({
-    mutationFn: data => postRegister(loggedFetch, data),
+    mutationFn: wrapFetch(registerRequest),
     onSuccess: data => {
       if (data.error) {
         console.log('Error in server response: ', data.error)

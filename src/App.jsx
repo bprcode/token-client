@@ -17,24 +17,21 @@ import Notes from './Notes'
 import {
   FetchDisplay,
   FetchStatusProvider,
-  useLoggedFetch,
+  useWrapFetch,
 } from './fetchTimeout.jsx'
 
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
 
-function deleteLogin(fetcher) {
-  return fetcher(import.meta.env.VITE_BACKEND + 'login', {
+const logoutRequest = {
+  resource: import.meta.env.VITE_BACKEND + 'login',
     method: 'DELETE',
     credentials: 'include',
-  }).then(response => response.json())
 }
 
-function getMe(fetcher, signal) {
-  return fetcher(import.meta.env.VITE_BACKEND + 'me', {
-    credentials: 'include',
-    signal,
-  }).then(response => response.json())
+const identityRequest = {
+  resource: import.meta.env.VITE_BACKEND + 'me',
+  credentials: 'include',
 }
 
 function Wrapp() {
@@ -72,7 +69,7 @@ function Hero() {
 }
 
 function App() {
-  const loggedFetch = useLoggedFetch()
+  const wrapFetch = useWrapFetch()
 
   const rememberLoginTime = 1000 * 60 * 2
   const queryClient = useQueryClient()
@@ -81,7 +78,7 @@ function App() {
 
   const heartbeatQuery = useQuery({
     queryKey: ['heartbeat'],
-    queryFn: async ({ signal }) => getMe(loggedFetch, signal),
+    queryFn: wrapFetch(identityRequest),
     initialData: () => {
       const lastLogin = JSON.parse(
         localStorage.lastLogin || '{ "error": "No stored login."}'
@@ -102,7 +99,7 @@ function App() {
   const user = heartbeatQuery.data.error ? '' : heartbeatQuery.data
 
   const logoutMutation = useMutation({
-    mutationFn: () => deleteLogin(loggedFetch),
+    mutationFn: wrapFetch(logoutRequest),
     onSuccess: async () => {
       log('>> logout success...')
       await queryClient.cancelQueries()
@@ -112,8 +109,6 @@ function App() {
     },
     retry: 3,
   })
-
-  log('💓 heartbeat result: ', heartbeatQuery.data)
 
   let mainContent = <></>
 
@@ -138,7 +133,7 @@ function App() {
           signInRef={signInRef}
           onLogin={async newUser => {
             await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
-            queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
+            // queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
             queryClient.setQueryData(['heartbeat'], newUser)
             localStorage.lastLogin = JSON.stringify({
               ...newUser,
@@ -149,7 +144,7 @@ function App() {
           }}
           onRegistered={async registrant => {
             await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
-            queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
+            // queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
             queryClient.setQueryData(['heartbeat'], registrant)
             localStorage.lastLogin = JSON.stringify({
               ...registrant,
@@ -175,7 +170,7 @@ function App() {
         />
         <Hero />
         <Container maxWidth="lg">{mainContent}</Container>
-        <ReactQueryDevtools initialIsOpen={true} />
+        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </>
   )
