@@ -18,29 +18,26 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete'
 import CircularProgress from '@mui/material/CircularProgress'
 
-import {
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import calendarPhoto from './assets/notebook-unsplash.jpg'
-import { fetchTimeout } from './fetchTimeout.mjs'
+import { fetchTimeout } from './fetchTimeout.jsx'
 import { LoadingError } from './LoadingError'
 import debounce from './debounce.mjs'
 
 const log = console.log.bind(console)
 
-function fetchNoteList(uid, {signal}) {
+function fetchNoteList({ uid, signal }) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + `users/${uid}/notebook`, {
     credentials: 'include',
-    signal
+    signal,
   }).then(result => result.json())
 }
 
-function fetchNote(id, {signal}) {
+function fetchNote({ id, signal }) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${id}`, {
     credentials: 'include',
-    signal
+    signal,
   }).then(result => result.json())
 }
 
@@ -53,7 +50,7 @@ function updateNote(data) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
-    credentials: 'include'
+    credentials: 'include',
   }).then(result => result.json())
 }
 
@@ -63,7 +60,7 @@ export default function NotebookRoot({ uid, name, email }) {
 
   const listQuery = useQuery({
     queryKey: ['note list', uid],
-    queryFn: async ({signal}) => fetchNoteList(uid, {signal}),
+    queryFn: async ({ signal }) => fetchNoteList({ uid, signal }),
   })
 
   const noteList = listQuery.data || []
@@ -72,10 +69,7 @@ export default function NotebookRoot({ uid, name, email }) {
   switch (mode) {
     case 'edit note':
       content = (
-        <ExpandedNote
-          id={activeNote}
-          onReturn={() => setMode('note list')}
-        />
+        <ExpandedNote id={activeNote} onReturn={() => setMode('note list')} />
       )
       break
     default:
@@ -174,7 +168,7 @@ function ExpandedNote({ id, onReturn }) {
 
   const noteQuery = useQuery({
     queryKey: ['note', id],
-    queryFn: async ({signal}) => fetchNote(id, {signal}),
+    queryFn: async ({ signal }) => fetchNote({ id, signal }),
   })
 
   const noteData = noteQuery.data
@@ -276,11 +270,14 @@ function EditableContents({ initialTitle, initialContent }) {
         multiline
       />
       <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-        <Typography variant="caption" color={unsaved ? "warning.main" : 'success.main'}>
+        <Typography
+          variant="caption"
+          color={unsaved ? 'warning.main' : 'success.main'}
+        >
           {unsaved ? 'Unsaved' : 'Saved'}&nbsp;
         </Typography>
         <Typography variant="caption">
-          {lastSaved && (unsaved ? 'since '+lastSaved : 'at: ' + lastSaved)}
+          {lastSaved && (unsaved ? 'since ' + lastSaved : 'at: ' + lastSaved)}
         </Typography>
       </Box>
     </Stack>

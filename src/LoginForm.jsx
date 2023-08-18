@@ -11,7 +11,7 @@ import {
 } from '@mui/material'
 import { useMutation } from '@tanstack/react-query'
 import SpinOrText from './SpinOrText'
-import { fetchTimeout } from './fetchTimeout.mjs'
+import { fetchTimeout } from './fetchTimeout.jsx'
 
 const log = console.log.bind(console)
 
@@ -73,7 +73,6 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
     onSuccess: (data, variables, context) => {
       if (data.error) {
         log('⚠️ Server reported error: ', data.error)
-        onLogin('')
         setInvalid(true)
         return
       }

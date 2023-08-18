@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useContext, useRef, useReducer } from 'react'
 import './App.css'
 import {
   useQuery,
@@ -14,7 +14,11 @@ import TopBar from './TopBar'
 import auroraMesh from './assets/aurora-gradient-2.png'
 import LoginForm from './LoginForm'
 import Notes from './Notes'
-import { fetchTimeout } from './fetchTimeout.mjs'
+import {
+  FetchDisplay,
+  FetchStatusProvider,
+  useLoggedFetch
+} from './fetchTimeout.jsx'
 
 const log = console.log.bind(console)
 const queryClient = new QueryClient()
@@ -23,18 +27,21 @@ function fetchLogout({ signal }) {
   return fetchTimeout(import.meta.env.VITE_BACKEND + 'login', {
     method: 'DELETE',
     credentials: 'include',
-    signal
+    signal,
   }).then(response => {
     log('delete resolved. returning.')
     return response.json()
   })
 }
 
-function fetchCurrentUser({ signal }) {
-  return fetchTimeout(import.meta.env.VITE_BACKEND + 'me', {
-    credentials: 'include',
-    signal,
-  }).then(response => response.json())
+function getMe(fetcher, signal) {
+  return fetcher(
+    import.meta.env.VITE_BACKEND + 'me',
+    {
+      credentials: 'include',
+      signal
+    }
+  ).then(response => response.json())
 }
 
 function Wrapp() {
@@ -42,7 +49,10 @@ function Wrapp() {
     <ThemeProvider theme={digitalTheme}>
       <CssBaseline>
         <QueryClientProvider client={queryClient}>
-          <App />
+          <FetchStatusProvider>
+            <FetchDisplay />
+            <App />
+          </FetchStatusProvider>
         </QueryClientProvider>
       </CssBaseline>
     </ThemeProvider>
@@ -69,6 +79,8 @@ function Hero() {
 }
 
 function App() {
+  const loggedFetch = useLoggedFetch()
+
   const rememberLoginTime = 1000 * 60 * 2
   const queryClient = useQueryClient()
 
@@ -76,7 +88,8 @@ function App() {
 
   const heartbeatQuery = useQuery({
     queryKey: ['heartbeat'],
-    queryFn: fetchCurrentUser,
+    queryFn: async ({ signal }) =>
+      getMe(loggedFetch, signal),
     initialData: () => {
       const lastLogin = JSON.parse(
         localStorage.lastLogin || '{ "error": "No stored login."}'
@@ -100,6 +113,7 @@ function App() {
     onSuccess: async () => {
       log('>> logout success...')
       await queryClient.cancelQueries()
+      queryClient.invalidateQueries()
       queryClient.setQueryData(['heartbeat'], '')
       localStorage.lastLogin = ''
     },
@@ -131,6 +145,7 @@ function App() {
           signInRef={signInRef}
           onLogin={async newUser => {
             await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
+            queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
             queryClient.setQueryData(['heartbeat'], newUser)
             localStorage.lastLogin = JSON.stringify({
               ...newUser,
@@ -141,6 +156,7 @@ function App() {
           }}
           onRegistered={async registrant => {
             await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
+            queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
             queryClient.setQueryData(['heartbeat'], registrant)
             localStorage.lastLogin = JSON.stringify({
               ...registrant,

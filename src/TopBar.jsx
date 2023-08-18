@@ -4,18 +4,14 @@ import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
-import {
-  Avatar,
-  Container,
-  useTheme,
-} from '@mui/material'
+import { Avatar, Container, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import DrawIcon from '@mui/icons-material/Draw'
 
 import { ThemeProvider } from '@mui/material'
 import { barTheme } from './blueDigitalTheme'
 import SpinOrText from './SpinOrText'
-import { fetchTimeout } from './fetchTimeout.mjs'
+import { fetchTimeout } from './fetchTimeout.jsx'
 
 export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
   const theme = useTheme()
@@ -41,7 +37,7 @@ export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
         </Avatar>
         Welcome, {user.name || user.email}
         <Button onClick={onLogout} color="secondary" sx={{ ml: 4 }}>
-          <SpinOrText spin={isLoggingOut} text='Logout' />
+          <SpinOrText spin={isLoggingOut} text="Logout" />
         </Button>
       </>
     )
