@@ -18,7 +18,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete'
 import CircularProgress from '@mui/material/CircularProgress'
 
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import calendarPhoto from './assets/notebook-unsplash.jpg'
 import { useWrapFetch } from './fetchTimeout.jsx'
@@ -37,6 +37,18 @@ function noteListRequest(uid) {
 function noteRequest(nid) {
   return {
     resource: import.meta.env.VITE_BACKEND + `notes/${nid}`,
+    credentials: 'include'
+  }
+}
+
+function updateRequest(replacement) {
+  return {
+    resource: import.meta.env.VITE_BACKEND + `notes/${replacement.note_id}`,
+    method: 'PUT',
+    body: JSON.stringify(replacement),
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
     credentials: 'include'
   }
 }
@@ -193,6 +205,7 @@ function ExpandedNote({ id, onReturn }) {
   if (noteData) {
     body = (
       <EditableContents
+        id={id}
         initialTitle={noteData.title}
         initialContent={noteData.content}
       />
@@ -232,17 +245,39 @@ function ExpandedNote({ id, onReturn }) {
   )
 }
 
-function EditableContents({ initialTitle, initialContent }) {
+function EditableContents({ id, initialTitle, initialContent }) {
+  const queryClient = useQueryClient()
+  const wrapFetch = useWrapFetch()
   const [title, setTitle] = useState(initialTitle || '')
   const [content, setContent] = useState(initialContent || '')
   const [lastSaved, setLastSaved] = useState('')
   const [unsaved, setUnsaved] = useState(false)
+  const [failure, setFailure] = useState(false)
 
-  const debounced = debounce('put', (...stuff) => {
-    console.log('Mock PUT: ', ...stuff)
-    // ...await verified mutation, then:
-    setLastSaved('Mock: ' + new Date().toLocaleTimeString())
-    setUnsaved(false)
+  const updateMutation = useMutation({
+    mutationFn: wrapFetch(updateRequest),
+    onMutate: () => setFailure(false),
+    onSuccess: result => {
+      if (result.error) {
+        log('🤒 Failed to save:', result.error)
+        setFailure(true)
+        return
+      }
+
+      log('😊 Mutation succeeded: ', result)
+
+      queryClient.setQueryData(['note', id], result)
+      queryClient.invalidateQueries(['note list'])
+      setLastSaved(new Date().toLocaleTimeString())
+      setUnsaved(false)
+    },
+    onError: result => {
+      log('😢 Mutation failed: ', result)
+    }
+  })
+
+  const debounced = debounce('put', changes => {
+    updateMutation.mutate({note_id: id, ...changes})
   })
 
   return (
@@ -268,16 +303,13 @@ function EditableContents({ initialTitle, initialContent }) {
         sx={{ width: '100%' }}
         minRows={5}
         maxRows={15}
-        // onChange={e =>
-        //   mutation.mutate({ ...noteData, content: e.target.value })
-        // }
         id="outlined-textarea"
         multiline
       />
       <Box sx={{ display: 'flex', justifyContent: 'end' }}>
         <Typography
           variant="caption"
-          color={unsaved ? 'warning.main' : 'success.main'}
+          color={failure ? 'error.main' : (unsaved ? 'warning.main' : 'success.main')}
         >
           {unsaved ? 'Unsaved' : 'Saved'}&nbsp;
         </Typography>

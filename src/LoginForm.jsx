@@ -60,7 +60,7 @@ function FocusingName({ name, setName, sending, invalid }) {
   )
 }
 
-const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
+const LoginForm = function ({ onIdentify, signInRef }) {
   const wrapFetch = useWrapFetch()
   const [email, setEmail] = useState('shredman1212@slice.dice')
   const [password, setPassword] = useState('oozy123')
@@ -79,7 +79,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
       }
 
       log('☢️🙂 Mutation succeeded with data: ', data)
-      onLogin({ uid: data.uid, name: data.name, email: data.email })
+      onIdentify(data)
     },
     onError: (error, variables, context) => {
       log('☢️😡 Mutation failed with error: ', error)
@@ -101,7 +101,7 @@ const LoginForm = function ({ onLogin, onRegistered, signInRef }) {
       }
 
       console.log('registration mutation succeeded, data=', data)
-      onRegistered({ uid: data.uid, name: data.name, email: data.email })
+      onIdentify(data)
     },
     onError: error => {
       console.log('registration mutation failed, error', error)

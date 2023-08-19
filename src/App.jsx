@@ -25,8 +25,8 @@ const queryClient = new QueryClient()
 
 const logoutRequest = {
   resource: import.meta.env.VITE_BACKEND + 'login',
-    method: 'DELETE',
-    credentials: 'include',
+  method: 'DELETE',
+  credentials: 'include',
 }
 
 const identityRequest = {
@@ -110,6 +110,19 @@ function App() {
     retry: 3,
   })
 
+  async function applyIdentity(identity) {
+    await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
+
+    queryClient.setQueryData(['heartbeat'], identity)
+    localStorage.lastLogin = JSON.stringify({
+      ...identity,
+      epoch: Date.now(),
+    })
+    setTimeout(() => heartbeatQuery.refetch(), identity.expiry + 500)
+    log('setting lastlogin=', localStorage.lastLogin)
+    log(JSON.parse(localStorage.lastLogin))
+  }
+
   let mainContent = <></>
 
   if (user) {
@@ -129,29 +142,7 @@ function App() {
           <br />
           Test this placeholder app.
         </h1>
-        <LoginForm
-          signInRef={signInRef}
-          onLogin={async newUser => {
-            await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
-            // queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
-            queryClient.setQueryData(['heartbeat'], newUser)
-            localStorage.lastLogin = JSON.stringify({
-              ...newUser,
-              epoch: Date.now(),
-            })
-            log('setting lastlogin=', localStorage.lastLogin)
-            log(JSON.parse(localStorage.lastLogin))
-          }}
-          onRegistered={async registrant => {
-            await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
-            // queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
-            queryClient.setQueryData(['heartbeat'], registrant)
-            localStorage.lastLogin = JSON.stringify({
-              ...registrant,
-              epoch: Date.now(),
-            })
-          }}
-        />
+        <LoginForm signInRef={signInRef} onIdentify={applyIdentity} />
       </Stack>
     )
   }
