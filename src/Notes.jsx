@@ -58,12 +58,25 @@ export default function NotebookRoot({ uid, name, email }) {
   const wrapFetch = useWrapFetch()
   const [mode, setMode] = useState('note list')
   const [activeNote, setActiveNote] = useState('')
+  const [loadingTitle, setLoadingTitle] = useState('')
 
   const listQuery = useQuery({
     queryKey: ['note list', uid],
     queryFn: wrapFetch(noteListRequest(uid)),
     staleTime: 30 * 1000,
+    placeholderData: () => {
+      if (sessionStorage['noteList-' + uid]) {
+        return JSON.parse(sessionStorage['noteList-' + uid])
+      }
+    },
   })
+
+  useEffect(() => {
+    log('🌻 ', (Math.random() * 100).toFixed(0) + ' listQuery.data updated')
+    if (listQuery.data) {
+      sessionStorage['noteList-' + uid] = JSON.stringify(listQuery.data)
+    }
+  }, [uid, listQuery.data])
 
   const noteList = listQuery.data || []
   let content = <></>
@@ -71,7 +84,11 @@ export default function NotebookRoot({ uid, name, email }) {
   switch (mode) {
     case 'edit note':
       content = (
-        <ExpandedNote id={activeNote} onReturn={() => setMode('note list')} />
+        <ExpandedNote
+          id={activeNote}
+          title={loadingTitle}
+          onReturn={() => setMode('note list')}
+        />
       )
       break
     default:
@@ -85,6 +102,7 @@ export default function NotebookRoot({ uid, name, email }) {
               onExpand={id => {
                 setMode('edit note')
                 setActiveNote(id)
+                setLoadingTitle(noteList.find(n => n.note_id === id).title)
               }}
             />
           )}
@@ -110,13 +128,15 @@ export default function NotebookRoot({ uid, name, email }) {
 function Notebook({ notes, onExpand }) {
   let list = notes.map(item => {
     const stored = JSON.parse(sessionStorage['note-' + item.note_id] || '{}')
-    return <NoteSummary
-      title={stored.title || item.title}
-      summary={stored.content ? <em>Unsaved draft</em> : item.summary}
-      key={item.note_id}
-      onExpand={() => onExpand(item.note_id)}
-      draft={!!sessionStorage['note-' + item.note_id]}
-    />
+    return (
+      <NoteSummary
+        title={stored.title || item.title}
+        summary={stored.content ? <em>Unsaved draft</em> : item.summary}
+        key={item.note_id}
+        onExpand={() => onExpand(item.note_id)}
+        draft={!!sessionStorage['note-' + item.note_id]}
+      />
+    )
   })
 
   if (list.length === 0) {
@@ -154,15 +174,15 @@ function NoteSummary({ title, summary, onExpand, draft }) {
         </CardContent>
       </CardActionArea>
       <CardActions>
-        <Button size="small" onClick={onExpand} sx={{color:accent}}>
-          {draft? 'Unsaved' : 'Expand'}
+        <Button size="small" onClick={onExpand} sx={{ color: accent }}>
+          {draft ? 'Unsaved' : 'Expand'}
         </Button>
         <Box ml="auto">
           <IconButton
             aria-label="Delete"
             onClick={() => console.log('Delete placeholder')}
           >
-            <DeleteIcon sx={{color:accent}} />
+            <DeleteIcon sx={{ color: accent }} />
           </IconButton>
         </Box>
       </CardActions>
@@ -170,15 +190,14 @@ function NoteSummary({ title, summary, onExpand, draft }) {
   )
 }
 
-function ExpandedNote({ id, onReturn }) {
-  const wrapFetch = useWrapFetch()
-
+function ExpandedNote({ id, title, onReturn }) {
   // If session data was stored, give it priority over data from the server--
   // it represents unsaved work, and still needs to be submitted.
   const unsavedWork = sessionStorage['note-' + id]
-  ? JSON.parse(sessionStorage['note-' + id])
-  : undefined
+    ? JSON.parse(sessionStorage['note-' + id])
+    : undefined
 
+  const wrapFetch = useWrapFetch()
   const noteQuery = useQuery({
     queryKey: ['note', id],
     queryFn: wrapFetch(noteRequest(id)),
@@ -193,11 +212,19 @@ function ExpandedNote({ id, onReturn }) {
 
   if (noteQuery.status === 'loading') {
     body = (
-      <>
-        <Skeleton variant="text" width="50%" />
-        <Skeleton variant="text" width="50%" />
-        <Skeleton variant="text" width="40%" />
-      </>
+      <Stack spacing={4}>
+        <TextField
+          disabled
+          label="Title"
+          value={title}
+          sx={{ width: '100%' }}
+        />
+        <div>
+          <Skeleton variant="text" width="70%" />
+          <Skeleton variant="text" width="80%" />
+          <Skeleton variant="text" width="60%" />
+        </div>
+      </Stack>
     )
   }
 
@@ -224,9 +251,9 @@ function ExpandedNote({ id, onReturn }) {
         py: 2,
       }}
     >
-      <Paper elevation={1} sx={{ p: 2 }}>
+      <Paper elevation={1} sx={{ py: 2, px: 2 }}>
         <Typography variant="h4" mb={4}>
-          Note #{id} -- {noteQuery.status}
+          Edit Note
         </Typography>
 
         <Box minHeight={100} width="min(90%,80ch)">
@@ -261,13 +288,13 @@ function EditableContents({ id, initialTitle, initialContent }) {
       if (result.error) {
         log('🤒 Failed to save:', result.error)
         setFailure(true)
-        queryClient.refetchQueries({ queryKey: ['heartbeat']})
+        queryClient.refetchQueries({ queryKey: ['heartbeat'] })
         return
       }
 
       log('😊 Mutation succeeded: ', result)
 
-      sessionStorage.removeItem('note-'+id)
+      sessionStorage.removeItem('note-' + id)
       queryClient.setQueryData(['note', id], result)
       queryClient.invalidateQueries(['note list'])
       setLastSaved(new Date().toLocaleTimeString())
@@ -276,12 +303,13 @@ function EditableContents({ id, initialTitle, initialContent }) {
     onError: result => {
       log('😢 Mutation failed: ', result)
     },
+    retry: 2,
   })
 
   useEffect(() => {
-    if (sessionStorage['note-'+id]) {
+    if (sessionStorage['note-' + id]) {
       log('Sending stored draft...')
-      mutate({note_id: id, title: initialTitle, content: initialContent})
+      mutate({ note_id: id, title: initialTitle, content: initialContent })
     }
   }, [mutate, id, initialTitle, initialContent])
 
@@ -289,9 +317,8 @@ function EditableContents({ id, initialTitle, initialContent }) {
     mutate({ note_id: id, ...changes })
   })
 
-  function storeEdits ({title, content}) {
-    // queryClient.removeQueries({ queryKey: ['note', id]})
-    sessionStorage['note-'+id] = JSON.stringify({title, content})
+  function storeEdits({ title, content }) {
+    sessionStorage['note-' + id] = JSON.stringify({ title, content })
   }
 
   return (
@@ -302,8 +329,8 @@ function EditableContents({ id, initialTitle, initialContent }) {
         onChange={e => {
           setUnsaved(true)
           setTitle(e.target.value)
-          storeEdits({ title: e.target.value,content })
-          debounceUpdate({ title: e.target.value, content  })
+          storeEdits({ title: e.target.value, content })
+          debounceUpdate({ title: e.target.value, content })
         }}
         sx={{ width: '100%' }}
         inputRef={titleRef}
@@ -314,8 +341,8 @@ function EditableContents({ id, initialTitle, initialContent }) {
         onChange={e => {
           setUnsaved(true)
           setContent(e.target.value)
-          storeEdits({title, content: e.target.value})
-          debounceUpdate({ title, content: e.target.value})
+          storeEdits({ title, content: e.target.value })
+          debounceUpdate({ title, content: e.target.value })
         }}
         sx={{ width: '100%' }}
         minRows={5}

@@ -143,9 +143,9 @@ export function useWrapFetch() {
 
   // wrapFetch(request)...
   return request => {
-    // ... yields a function of (argument):
+    // ... yields a fetcher function...
     return argument => {
-      // If the request was dynamic, invoke it:
+      // ... the fetcher will resolve dynamic requests:
       if (typeof request === 'function') {
         return fetchLogged(
           request(argument),
@@ -154,7 +154,7 @@ export function useWrapFetch() {
         ).then(result => result.json())
       }
 
-      // If the request was a static object, use it directly:
+      // ... or use static request objects as provided:
       return fetchLogged(
         { ...request, signal: argument.signal },
         fetchStatus,

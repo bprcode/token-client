@@ -34,13 +34,27 @@ const log = console.log.bind(console)
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onSuccess: result => {
-      if (result.error && result.error === 'No identification provided.') {
+      if (
+        result.error &&
+        (result.error === 'No identification provided.' ||
+          result.error === 'Token expired.')
+      ) {
         log('🦆 Cookie expired')
         queryClient.setQueryData(['heartbeat'], '')
       }
-      if (result.error && result.error === 'Token expired.') {
-        log('🦫 Token expired')
-        queryClient.setQueryData(['heartbeat'], '')
+      if (!result.error && result.exp && localStorage.lastLogin) {
+        const parsed = JSON.parse(localStorage.lastLogin)
+        log(
+          '🪦 Got new expiry. Updating ',
+          parsed.expires,
+          ' to ',
+          result.exp * 1000,
+          ` (${(result.exp * 1000 - parsed.expires) / 1000}s later)`
+        )
+        localStorage.lastLogin = JSON.stringify({
+          ...parsed,
+          expires: result.exp * 1000,
+        })
       }
     },
   }),
@@ -92,12 +106,14 @@ function Hero() {
 }
 
 function App() {
-  const rememberLoginTime = 1000 * 60 * 3 // debug, intentionally set long
+  const rememberLoginTime = 1000 * 60 * 1 // debug, recheck
   const [storedLogin, setStoredLogin] = useState(() => {
     const parsed = JSON.parse(localStorage.lastLogin || '{}')
-    if (parsed.epoch && Date.now() - parsed.epoch < rememberLoginTime) {
+    if (Date.now() < parsed.expires) {
+      log('Using stored login: ', parsed)
       return parsed
     }
+    log('stored login missing or expired: ', parsed)
     return null
   })
   const theme = useTheme()
@@ -121,9 +137,12 @@ function App() {
     mutationFn: wrapFetch(logoutRequest),
     onSuccess: async () => {
       log('>> logout success...')
+      // Clean up queries
       await queryClient.cancelQueries()
       queryClient.invalidateQueries()
       queryClient.setQueryData(['heartbeat'], '')
+      // Clean up local cache
+      sessionStorage.clear()
       localStorage.removeItem('lastLogin')
       setStoredLogin(null)
     },
@@ -136,12 +155,13 @@ function App() {
     queryClient.removeQueries({ queryKey: ['note'] })
 
     queryClient.setQueryData(['heartbeat'], identity)
+    const now = Date.now()
     localStorage.lastLogin = JSON.stringify({
       ...identity,
-      epoch: Date.now(),
+      expires: now + identity.ttl,
     })
     setStoredLogin(JSON.parse(localStorage.lastLogin))
-    log('setting lastlogin=', localStorage.lastLogin)
+    log('setting lastlogin=', JSON.parse(localStorage.lastLogin))
   }
 
   let mainContent = <></>
