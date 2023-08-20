@@ -92,7 +92,7 @@ function Hero() {
 }
 
 function App() {
-  const rememberLoginTime = 1000 * 60 * 5 // debug, intentionally set long
+  const rememberLoginTime = 1000 * 60 * 3 // debug, intentionally set long
   const [storedLogin, setStoredLogin] = useState(() => {
     const parsed = JSON.parse(localStorage.lastLogin || '{}')
     if (parsed.epoch && Date.now() - parsed.epoch < rememberLoginTime) {
@@ -190,8 +190,10 @@ function App() {
             <div>You have been logged out due to inactivity.</div>
             <Button
               variant="outlined"
+              tabIndex={1}
               sx={{ mx: 'auto', mt: '10px', width: '150px' }}
-              onClick={() => {
+              onClick={e => {
+                e.preventDefault()
                 log('user=', user)
                 localStorage.removeItem('lastLogin')
                 setStoredLogin(null)

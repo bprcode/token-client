@@ -143,7 +143,7 @@ function Notebook({ notes, onExpand }) {
 
 function NoteSummary({ title, summary, onExpand, draft }) {
   const theme = useTheme()
-  const accent = draft ? theme.palette.warning.main : theme.palette.primary.dark
+  const accent = draft ? theme.palette.warning.main : theme.palette.primary.main
   return (
     <Card sx={{ width: 250, borderLeft: `4px solid ${accent}` }} elevation={4}>
       <CardActionArea onClick={onExpand}>
