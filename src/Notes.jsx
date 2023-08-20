@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   Box,
   Backdrop,
@@ -239,6 +239,7 @@ function ExpandedNote({ id, onReturn }) {
 }
 
 function EditableContents({ id, initialTitle, initialContent }) {
+  const titleRef = useRef(null)
   const queryClient = useQueryClient()
   const wrapFetch = useWrapFetch()
   const [title, setTitle] = useState(initialTitle || '')
@@ -247,7 +248,7 @@ function EditableContents({ id, initialTitle, initialContent }) {
   const [unsaved, setUnsaved] = useState(!!sessionStorage['note-' + id])
   const [failure, setFailure] = useState(false)
 
-  const updateMutation = useMutation({
+  const { mutate } = useMutation({
     mutationFn: wrapFetch(updateRequest),
     onMutate: () => setFailure(false),
     onSuccess: result => {
@@ -270,8 +271,16 @@ function EditableContents({ id, initialTitle, initialContent }) {
     },
   })
 
+  useEffect(() => {
+    log('Am I spamming you?')
+    if (sessionStorage['note-'+id]) {
+      log('Sending stored draft...')
+      mutate({note_id: id, title: initialTitle, content: initialContent})
+    }
+  }, [mutate, id, initialTitle, initialContent])
+
   const debounceUpdate = debounce('put', changes => {
-    updateMutation.mutate({ note_id: id, ...changes })
+    mutate({ note_id: id, ...changes })
   })
 
   function storeEdits ({title, content}) {
@@ -291,6 +300,7 @@ function EditableContents({ id, initialTitle, initialContent }) {
           debounceUpdate({ title: e.target.value, content  })
         }}
         sx={{ width: '100%' }}
+        inputRef={titleRef}
       />
       <TextField
         label="Content"

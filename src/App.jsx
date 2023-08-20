@@ -35,7 +35,11 @@ const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onSuccess: result => {
       if (result.error && result.error === 'No identification provided.') {
-        console.log('🦆 Cookie expired')
+        log('🦆 Cookie expired')
+        queryClient.resetQueries({ queryKey: 'heartbeat' })
+      }
+      if (result.error && result.error === 'Token expired.') {
+        log('🦫 Token expired')
         queryClient.resetQueries({ queryKey: 'heartbeat' })
       }
     },
