@@ -9,7 +9,16 @@ import {
   QueryCache,
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { CssBaseline, Container, Stack, ThemeProvider } from '@mui/material'
+import {
+  CssBaseline,
+  Container,
+  Stack,
+  ThemeProvider,
+  Backdrop,
+  Button,
+  Paper,
+  useTheme,
+} from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import TopBar from './TopBar'
 import auroraMesh from './assets/aurora-gradient-2.png'
@@ -79,9 +88,17 @@ function Hero() {
 }
 
 function App() {
+  const rememberLoginTime = 1000 * 60 * 0.5
+  const [storedLogin, setStoredLogin] = useState(() => {
+    const parsed = JSON.parse(localStorage.lastLogin || '{}')
+    if (parsed.epoch && Date.now() - parsed.epoch < rememberLoginTime) {
+      return parsed
+    }
+    return null
+  })
+  const theme = useTheme()
   const wrapFetch = useWrapFetch()
 
-  const rememberLoginTime = 1000 * 60 * 0.5
   const queryClient = useQueryClient()
 
   const signInRef = useRef(null)
@@ -89,13 +106,7 @@ function App() {
   const heartbeatQuery = useQuery({
     queryKey: ['heartbeat'],
     queryFn: wrapFetch(identityRequest),
-    placeholderData: () => {
-      const lastLogin = JSON.parse(localStorage.lastLogin || '{}')
-      if (lastLogin.epoch && Date.now() - lastLogin.epoch < rememberLoginTime) {
-        return lastLogin
-      }
-      return { notice: 'Awaiting login.' }
-    },
+    placeholderData: storedLogin || { notice: 'Awaiting login.' },
     staleTime: 30 * 1000,
   })
 
@@ -109,7 +120,8 @@ function App() {
       await queryClient.cancelQueries()
       queryClient.invalidateQueries()
       queryClient.setQueryData(['heartbeat'], '')
-      localStorage.lastLogin = ''
+      localStorage.removeItem('lastLogin')
+      setStoredLogin(null)
     },
     retry: 3,
   })
@@ -124,8 +136,8 @@ function App() {
       ...identity,
       epoch: Date.now(),
     })
+    setStoredLogin(JSON.parse(localStorage.lastLogin))
     log('setting lastlogin=', localStorage.lastLogin)
-    log(JSON.parse(localStorage.lastLogin))
   }
 
   let mainContent = <></>
@@ -154,20 +166,39 @@ function App() {
 
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <TopBar
-          user={user}
-          onLogout={logoutMutation.mutate}
-          onGetStarted={() => {
-            signInRef.current.scrollIntoView()
-            signInRef.current.focus()
-          }}
-          isLoggingOut={logoutMutation.status === 'loading'}
-        />
-        <Hero />
-        <Container maxWidth="lg">{mainContent}</Container>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
+      <TopBar
+        user={user}
+        onLogout={logoutMutation.mutate}
+        onGetStarted={() => {
+          signInRef.current.scrollIntoView()
+          signInRef.current.focus()
+        }}
+        isLoggingOut={logoutMutation.status === 'loading'}
+      />
+      <Hero />
+      <Container maxWidth="lg">{mainContent}</Container>
+      <Backdrop open={!!storedLogin && !user}>
+        <Paper
+          elevation={5}
+          sx={{ p: 3, borderLeft: `4px solid ${theme.palette.primary.main}` }}
+        >
+          <Stack>
+            <div>You have been logged out due to inactivity.</div>
+            <Button
+              variant="outlined"
+              sx={{ mx: 'auto', mt: '10px', width: '150px' }}
+              onClick={() => {
+                log('user=', user)
+                localStorage.removeItem('lastLogin')
+                setStoredLogin(null)
+              }}
+            >
+              OK
+            </Button>
+          </Stack>
+        </Paper>
+      </Backdrop>
+      <ReactQueryDevtools initialIsOpen={false} />
     </>
   )
 }
