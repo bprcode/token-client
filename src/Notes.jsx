@@ -14,6 +14,7 @@ import {
   IconButton,
   CardActionArea,
   Skeleton,
+  useTheme,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CircularProgress from '@mui/material/CircularProgress'
@@ -107,13 +108,16 @@ export default function NotebookRoot({ uid, name, email }) {
 }
 
 function Notebook({ notes, onExpand }) {
-  let list = notes.map(item => (
-    <NoteSummary
-      {...item}
+  let list = notes.map(item => {
+    const stored = JSON.parse(sessionStorage['note-' + item.note_id] || '{}')
+    return <NoteSummary
+      title={stored.title || item.title}
+      summary={stored.content ? <em>Unsaved draft</em> : item.summary}
       key={item.note_id}
       onExpand={() => onExpand(item.note_id)}
+      draft={!!sessionStorage['note-' + item.note_id]}
     />
-  ))
+  })
 
   if (list.length === 0) {
     list = <>No notes yet.</>
@@ -137,26 +141,28 @@ function Notebook({ notes, onExpand }) {
   )
 }
 
-function NoteSummary({ title, summary, onExpand }) {
+function NoteSummary({ title, summary, onExpand, draft }) {
+  const theme = useTheme()
+  const accent = draft ? theme.palette.warning.main : theme.palette.primary.dark
   return (
-    <Card sx={{ width: 250 }} elevation={4}>
+    <Card sx={{ width: 250, borderLeft: `4px solid ${accent}` }} elevation={4}>
       <CardActionArea onClick={onExpand}>
         <CardMedia component="img" height="100" image={calendarPhoto} alt="" />
         <CardContent>
           <Typography variant="h6">{title}</Typography>
-          summary: {summary}
+          {summary}
         </CardContent>
       </CardActionArea>
       <CardActions>
-        <Button size="small" onClick={onExpand}>
-          Expand
+        <Button size="small" onClick={onExpand} sx={{color:accent}}>
+          {draft? 'Unsaved' : 'Expand'}
         </Button>
         <Box ml="auto">
           <IconButton
             aria-label="Delete"
             onClick={() => console.log('Delete placeholder')}
           >
-            <DeleteIcon color="primary" />
+            <DeleteIcon sx={{color:accent}} />
           </IconButton>
         </Box>
       </CardActions>
@@ -273,7 +279,6 @@ function EditableContents({ id, initialTitle, initialContent }) {
   })
 
   useEffect(() => {
-    log('Am I spamming you?')
     if (sessionStorage['note-'+id]) {
       log('Sending stored draft...')
       mutate({note_id: id, title: initialTitle, content: initialContent})

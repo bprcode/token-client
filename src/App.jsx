@@ -92,7 +92,7 @@ function Hero() {
 }
 
 function App() {
-  const rememberLoginTime = 1000 * 60 * 0.5
+  const rememberLoginTime = 1000 * 60 * 5 // debug, intentionally set long
   const [storedLogin, setStoredLogin] = useState(() => {
     const parsed = JSON.parse(localStorage.lastLogin || '{}')
     if (parsed.epoch && Date.now() - parsed.epoch < rememberLoginTime) {
@@ -111,7 +111,7 @@ function App() {
     queryKey: ['heartbeat'],
     queryFn: wrapFetch(identityRequest),
     placeholderData: storedLogin || { notice: 'Awaiting login.' },
-    staleTime: 30 * 1000 * 5,
+    staleTime: rememberLoginTime,
   })
 
   const user =
