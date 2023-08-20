@@ -6,6 +6,7 @@ import {
   QueryClientProvider,
   useMutation,
   useQueryClient,
+  QueryCache,
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { CssBaseline, Container, Stack, ThemeProvider } from '@mui/material'
@@ -21,7 +22,16 @@ import {
 } from './fetchTimeout.jsx'
 
 const log = console.log.bind(console)
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onSuccess: result => {
+      if (result.error && result.error === 'No identification provided.') {
+        console.log('🦆 Cookie expired')
+        queryClient.resetQueries({ queryKey: 'heartbeat' })
+      }
+    },
+  }),
+})
 
 const logoutRequest = {
   resource: import.meta.env.VITE_BACKEND + 'login',
@@ -71,7 +81,7 @@ function Hero() {
 function App() {
   const wrapFetch = useWrapFetch()
 
-  const rememberLoginTime = 1000 * 60 * 2
+  const rememberLoginTime = 1000 * 60 * 0.5
   const queryClient = useQueryClient()
 
   const signInRef = useRef(null)
@@ -79,24 +89,18 @@ function App() {
   const heartbeatQuery = useQuery({
     queryKey: ['heartbeat'],
     queryFn: wrapFetch(identityRequest),
-    initialData: () => {
-      const lastLogin = JSON.parse(
-        localStorage.lastLogin || '{ "error": "No stored login."}'
-      )
-      if (lastLogin.epoch) {
-        log('login age: ', (Date.now() - lastLogin.epoch) / 1000)
-      }
+    placeholderData: () => {
+      const lastLogin = JSON.parse(localStorage.lastLogin || '{}')
       if (lastLogin.epoch && Date.now() - lastLogin.epoch < rememberLoginTime) {
-        log('using last login=', lastLogin)
-
         return lastLogin
       }
-      return ''
+      return { notice: 'Awaiting login.' }
     },
     staleTime: 30 * 1000,
   })
 
-  const user = heartbeatQuery.data.error ? '' : heartbeatQuery.data
+  const user =
+    heartbeatQuery.data.notice === 'Awaiting login.' ? '' : heartbeatQuery.data
 
   const logoutMutation = useMutation({
     mutationFn: wrapFetch(logoutRequest),
@@ -112,13 +116,14 @@ function App() {
 
   async function applyIdentity(identity) {
     await queryClient.cancelQueries({ queryKey: ['heartbeat'] })
+    queryClient.removeQueries({ queryKey: ['note list'] })
+    queryClient.removeQueries({ queryKey: ['note'] })
 
     queryClient.setQueryData(['heartbeat'], identity)
     localStorage.lastLogin = JSON.stringify({
       ...identity,
       epoch: Date.now(),
     })
-    setTimeout(() => heartbeatQuery.refetch(), identity.expiry + 500)
     log('setting lastlogin=', localStorage.lastLogin)
     log(JSON.parse(localStorage.lastLogin))
   }

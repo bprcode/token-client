@@ -37,7 +37,7 @@ function noteListRequest(uid) {
 function noteRequest(nid) {
   return {
     resource: import.meta.env.VITE_BACKEND + `notes/${nid}`,
-    credentials: 'include'
+    credentials: 'include',
   }
 }
 
@@ -49,24 +49,9 @@ function updateRequest(replacement) {
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
-    credentials: 'include'
+    credentials: 'include',
   }
 }
-
-/*
-function updateNote(data) {
-  log('updating with data: ', JSON.stringify(data))
-
-  return fetchTimeout(import.meta.env.VITE_BACKEND + `notes/${data.note_id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    credentials: 'include',
-  }).then(result => result.json())
-}
-*/
 
 export default function NotebookRoot({ uid, name, email }) {
   const wrapFetch = useWrapFetch()
@@ -182,10 +167,18 @@ function NoteSummary({ title, summary, onExpand }) {
 function ExpandedNote({ id, onReturn }) {
   const wrapFetch = useWrapFetch()
 
+  // If session data was stored, give it priority over data from the server--
+  // it represents unsaved work, and still needs to be submitted.
+  const unsavedWork = sessionStorage['note-' + id]
+  ? JSON.parse(sessionStorage['note-' + id])
+  : undefined
+
   const noteQuery = useQuery({
     queryKey: ['note', id],
     queryFn: wrapFetch(noteRequest(id)),
     staleTime: 30 * 1000,
+    initialData: unsavedWork,
+    enabled: !unsavedWork,
   })
 
   const noteData = noteQuery.data
@@ -251,7 +244,7 @@ function EditableContents({ id, initialTitle, initialContent }) {
   const [title, setTitle] = useState(initialTitle || '')
   const [content, setContent] = useState(initialContent || '')
   const [lastSaved, setLastSaved] = useState('')
-  const [unsaved, setUnsaved] = useState(false)
+  const [unsaved, setUnsaved] = useState(!!sessionStorage['note-' + id])
   const [failure, setFailure] = useState(false)
 
   const updateMutation = useMutation({
@@ -266,6 +259,7 @@ function EditableContents({ id, initialTitle, initialContent }) {
 
       log('😊 Mutation succeeded: ', result)
 
+      sessionStorage.removeItem('note-'+id)
       queryClient.setQueryData(['note', id], result)
       queryClient.invalidateQueries(['note list'])
       setLastSaved(new Date().toLocaleTimeString())
@@ -273,12 +267,17 @@ function EditableContents({ id, initialTitle, initialContent }) {
     },
     onError: result => {
       log('😢 Mutation failed: ', result)
-    }
+    },
   })
 
-  const debounced = debounce('put', changes => {
-    updateMutation.mutate({note_id: id, ...changes})
+  const debounceUpdate = debounce('put', changes => {
+    updateMutation.mutate({ note_id: id, ...changes })
   })
+
+  function storeEdits ({title, content}) {
+    // queryClient.removeQueries({ queryKey: ['note', id]})
+    sessionStorage['note-'+id] = JSON.stringify({title, content})
+  }
 
   return (
     <Stack spacing={4}>
@@ -286,9 +285,10 @@ function EditableContents({ id, initialTitle, initialContent }) {
         label="Title"
         value={title}
         onChange={e => {
-          setTitle(e.target.value)
           setUnsaved(true)
-          debounced({ content, title: e.target.value })
+          setTitle(e.target.value)
+          storeEdits({ title: e.target.value,content })
+          debounceUpdate({ title: e.target.value, content  })
         }}
         sx={{ width: '100%' }}
       />
@@ -296,9 +296,10 @@ function EditableContents({ id, initialTitle, initialContent }) {
         label="Content"
         value={content}
         onChange={e => {
-          setContent(e.target.value)
           setUnsaved(true)
-          debounced({ content: e.target.value, title })
+          setContent(e.target.value)
+          storeEdits({title, content: e.target.value})
+          debounceUpdate({ title, content: e.target.value})
         }}
         sx={{ width: '100%' }}
         minRows={5}
@@ -309,7 +310,9 @@ function EditableContents({ id, initialTitle, initialContent }) {
       <Box sx={{ display: 'flex', justifyContent: 'end' }}>
         <Typography
           variant="caption"
-          color={failure ? 'error.main' : (unsaved ? 'warning.main' : 'success.main')}
+          color={
+            failure ? 'error.main' : unsaved ? 'warning.main' : 'success.main'
+          }
         >
           {unsaved ? 'Unsaved' : 'Saved'}&nbsp;
         </Typography>
