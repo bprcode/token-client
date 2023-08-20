@@ -17,6 +17,7 @@ import {
   useTheme,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import CircularProgress from '@mui/material/CircularProgress'
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -73,7 +74,7 @@ export default function NotebookRoot({ uid, name, email }) {
 
   useEffect(() => {
     log('🌻 ', (Math.random() * 100).toFixed(0) + ' listQuery.data updated')
-    if (listQuery.data) {
+    if (listQuery.data && !listQuery.data.error) {
       sessionStorage['noteList-' + uid] = JSON.stringify(listQuery.data)
     }
   }, [uid, listQuery.data])
@@ -139,6 +140,8 @@ function Notebook({ notes, onExpand }) {
     )
   })
 
+  list.push(<NoteCreationCard onCreate={() => {}} />)
+
   if (list.length === 0) {
     list = <>No notes yet.</>
   }
@@ -161,11 +164,27 @@ function Notebook({ notes, onExpand }) {
   )
 }
 
+function NoteCreationCard({ onCreate }) {
+  const theme = useTheme()
+  const accent = theme.palette.primary.main
+
+  return (
+    <Card sx={{ width: 250, borderLeft: `4px solid ${accent}`}} elevation={4}>
+      <CardActionArea onClick={onCreate} sx={{height: '100%', display: 'flex', flexDirection: 'column'}}>
+        <AddCircleOutlineIcon sx={{width: '100px', height: '100px'}} />
+        <CardContent>
+          <Typography variant="h6">New note</Typography>
+        </CardContent>
+      </CardActionArea>
+    </Card>
+  )
+}
+
 function NoteSummary({ title, summary, onExpand, draft }) {
   const theme = useTheme()
   const accent = draft ? theme.palette.warning.main : theme.palette.primary.main
   return (
-    <Card sx={{ width: 250, borderLeft: `4px solid ${accent}` }} elevation={4}>
+    <Card sx={{ width: 250, borderLeft: `4px solid ${accent}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }} elevation={4}>
       <CardActionArea onClick={onExpand}>
         <CardMedia component="img" height="100" image={calendarPhoto} alt="" />
         <CardContent>
