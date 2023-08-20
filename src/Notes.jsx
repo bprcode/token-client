@@ -255,6 +255,7 @@ function EditableContents({ id, initialTitle, initialContent }) {
       if (result.error) {
         log('🤒 Failed to save:', result.error)
         setFailure(true)
+        queryClient.refetchQueries({ queryKey: ['heartbeat']})
         return
       }
 

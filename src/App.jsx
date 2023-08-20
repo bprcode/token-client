@@ -36,11 +36,11 @@ const queryClient = new QueryClient({
     onSuccess: result => {
       if (result.error && result.error === 'No identification provided.') {
         log('🦆 Cookie expired')
-        queryClient.resetQueries({ queryKey: 'heartbeat' })
+        queryClient.setQueryData(['heartbeat'], '')
       }
       if (result.error && result.error === 'Token expired.') {
         log('🦫 Token expired')
-        queryClient.resetQueries({ queryKey: 'heartbeat' })
+        queryClient.setQueryData(['heartbeat'], '')
       }
     },
   }),
@@ -111,7 +111,7 @@ function App() {
     queryKey: ['heartbeat'],
     queryFn: wrapFetch(identityRequest),
     placeholderData: storedLogin || { notice: 'Awaiting login.' },
-    staleTime: 30 * 1000,
+    staleTime: 30 * 1000 * 5,
   })
 
   const user =
