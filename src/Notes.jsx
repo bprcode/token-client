@@ -69,6 +69,7 @@ function createRequest({ key, title, content, uid }) {
 }
 
 export default function NotebookRoot({ uid, name, email }) {
+  const queryClient = useQueryClient()
   const wrapFetch = useWrapFetch()
   const [mode, setMode] = useState('note list')
   const [activeNote, setActiveNote] = useState('')
@@ -119,6 +120,15 @@ export default function NotebookRoot({ uid, name, email }) {
                 setActiveNote(id)
                 setLoadingTitle(noteList.find(n => n.note_id === id).title)
               }}
+              onNew={async data => {
+                await queryClient.cancelQueries({
+                  queryKey: ['note list', uid],
+                })
+                queryClient.setQueryData(['note list', uid], list => [
+                  ...list,
+                  data,
+                ])
+              }}
             />
           )}
         </>
@@ -140,8 +150,7 @@ export default function NotebookRoot({ uid, name, email }) {
   )
 }
 
-function Notebook({ uid, notes, onExpand }) {
-  const queryClient = useQueryClient()
+function Notebook({ uid, notes, onExpand, onNew }) {
   const wrapFetch = useWrapFetch()
   const createMutation = useMutation({
     mutationFn: wrapFetch(data => {
@@ -156,7 +165,7 @@ function Notebook({ uid, notes, onExpand }) {
     onSuccess: data => {
       log('Mutation outcome: ', data)
       sessionStorage.idempotentKey = crypto.randomUUID()
-      queryClient.refetchQueries(['note list'], uid)
+      onNew(data)
     },
     retry: 2,
   })
@@ -164,15 +173,7 @@ function Notebook({ uid, notes, onExpand }) {
   let list = notes.map(item => {
     const stored = JSON.parse(sessionStorage['note-' + item.note_id] || '{}')
     return (
-      <Grid
-        item
-        xs={12}
-        sm={6}
-        md={4}
-        lg={3}
-        key={item.note_id}
-        sx={{ display: 'flex', justifyContent: 'center' }}
-      >
+      <Grid item xs={12} sm={6} md={4} lg={3} key={item.note_id}>
         <NoteSummary
           title={stored.title || item.title}
           summary={stored.content ? <em>Unsaved draft</em> : item.summary}
@@ -184,18 +185,12 @@ function Notebook({ uid, notes, onExpand }) {
   })
 
   list.push(
-    <Grid
-      item
-      xs={12}
-      sm={6}
-      md={4}
-      lg={3}
-      key={'create'}
-      sx={{ display: 'flex', justifyContent: 'center' }}
-    >
+    <Grid item xs={12} sm={6} md={4} lg={3} key={'create'}>
       <NoteCreationCard
         disabled={createMutation.isLoading}
-        onCreate={() => createMutation.mutate(sessionStorage.idempotentKey)}
+        onCreate={() => {
+          createMutation.mutate(sessionStorage.idempotentKey)
+        }}
       />
     </Grid>
   )
@@ -215,15 +210,7 @@ function Notebook({ uid, notes, onExpand }) {
       <Typography variant="h4" mb={4}>
         My Notebook
       </Typography>
-      <Grid
-        container
-        spacing={4}
-        sx={{
-          alignContent: 'center',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
+      <Grid container spacing={4}>
         {list}
       </Grid>
     </Card>
@@ -232,11 +219,22 @@ function Notebook({ uid, notes, onExpand }) {
 
 function NoteCreationCard({ onCreate, disabled }) {
   const theme = useTheme()
-  const accent = theme.palette.primary.main
+  const accent = disabled
+    ? theme.palette.primary.dark
+    : theme.palette.primary.main
   const opacity = disabled ? 0.2 : 1.0
-  const styles = { width: '100px', height: '100px', mt: '1rem', opacity }
+  const styles = { width: '100px', height: '100px', opacity }
   const icon = disabled ? (
-    <CircularProgress sx={styles} />
+    <div
+      style={{
+        width: '100px',
+        height: '100px',
+        display: 'grid',
+        placeItems: 'center',
+      }}
+    >
+      <CircularProgress />
+    </div>
   ) : (
     <AddCircleOutlineIcon sx={styles} />
   )
@@ -254,7 +252,7 @@ function NoteCreationCard({ onCreate, disabled }) {
         {icon}
         <CardContent>
           <Typography variant="h6" sx={{ mb: '1rem', opacity }}>
-            New note
+            {disabled ? 'Creating...' : 'New note'}
           </Typography>
         </CardContent>
       </CardActionArea>
@@ -280,7 +278,16 @@ function NoteSummary({ title, summary, onExpand, draft }) {
       <CardActionArea onClick={onExpand}>
         <CardMedia component="img" height="100" image={calendarPhoto} alt="" />
         <CardContent>
-          <Typography variant="h6">{title}</Typography>
+          <Typography
+            variant="h6"
+            sx={{
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {title}
+          </Typography>
           {summary}
         </CardContent>
       </CardActionArea>
