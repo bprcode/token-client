@@ -68,9 +68,14 @@ export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
               >
                 <DrawIcon />
               </IconButton>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Note Scribbler
+              <Box sx={{flexGrow: 1}}>
+              <Typography variant="h6" component="span" fontWeight='bold'>
+                Note
               </Typography>
+              <Typography variant="h6" component="span" fontWeight='light'>
+                Scribbler
+              </Typography>
+              </Box>
 
               {interactivity}
             </Toolbar>

@@ -399,7 +399,7 @@ function EditableContents({ id, initialTitle, initialContent }) {
   const [unsaved, setUnsaved] = useState(!!sessionStorage['note-' + id])
   const [failure, setFailure] = useState(false)
 
-  const { mutate } = useMutation({
+  const saveMutation = useMutation({
     mutationFn: wrapFetch(updateRequest),
     onMutate: () => setFailure(false),
     onSuccess: result => {
@@ -412,11 +412,17 @@ function EditableContents({ id, initialTitle, initialContent }) {
 
       log('😊 Mutation succeeded: ', result)
 
-      sessionStorage.removeItem('note-' + id)
+      if (result.title === title && result.content === content) {
+        log('✅ saved record matches current state')
+        sessionStorage.removeItem('note-' + id)
+        setUnsaved(false)
+      } else {
+        log('⚠️ but saved record is behind current version')
+      }
+
       queryClient.setQueryData(['note', id], result)
-      queryClient.invalidateQueries(['note list'])
       setLastSaved(new Date().toLocaleTimeString())
-      setUnsaved(false)
+      queryClient.invalidateQueries(['note list'])
     },
     onError: result => {
       log('😢 Mutation failed: ', result)
@@ -424,7 +430,10 @@ function EditableContents({ id, initialTitle, initialContent }) {
     retry: 2,
   })
 
+  const mutate = saveMutation.mutate
+
   useEffect(() => {
+    log('draft-check mutation triggered')
     if (sessionStorage['note-' + id]) {
       log('Sending stored draft...')
       mutate({ note_id: id, title: initialTitle, content: initialContent })
@@ -442,6 +451,14 @@ function EditableContents({ id, initialTitle, initialContent }) {
   function storeEdits({ title, content }) {
     sessionStorage['note-' + id] = JSON.stringify({ title, content })
   }
+
+  let statusColor = 'success.main'
+  if (unsaved) statusColor = 'warning.main'
+  if (failure) statusColor = 'error.main'
+
+  let statusText = 'Saved'
+  if (unsaved) statusText = 'Unsaved'
+  if (saveMutation.isLoading) statusText = 'Autosaving...'
 
   return (
     <Stack spacing={4}>
@@ -473,16 +490,12 @@ function EditableContents({ id, initialTitle, initialContent }) {
         multiline
       />
       <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-        <Typography
-          variant="caption"
-          color={
-            failure ? 'error.main' : unsaved ? 'warning.main' : 'success.main'
-          }
-        >
-          {unsaved ? 'Unsaved' : 'Saved'}&nbsp;
+        <Typography variant="caption" color={statusColor}>
+          {statusText}
         </Typography>
         <Typography variant="caption">
-          {lastSaved && (unsaved ? 'since ' + lastSaved : 'at: ' + lastSaved)}
+          {lastSaved && !saveMutation.isLoading &&
+            (unsaved ? <>&nbsp;since {lastSaved}</> : <>&nbsp;at: {lastSaved}</>)}
         </Typography>
       </Box>
     </Stack>
