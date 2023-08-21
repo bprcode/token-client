@@ -128,6 +128,7 @@ function App() {
     queryFn: wrapFetch(identityRequest),
     placeholderData: storedLogin || { notice: 'Awaiting login.' },
     staleTime: rememberLoginTime,
+    enabled: !!storedLogin,
   })
 
   const user =
@@ -162,6 +163,8 @@ function App() {
     })
     setStoredLogin(JSON.parse(localStorage.lastLogin))
     log('setting lastlogin=', JSON.parse(localStorage.lastLogin))
+    sessionStorage.idempotentKey = crypto.randomUUID()
+    log('🔑 set idempotent key = ', sessionStorage.idempotentKey)
   }
 
   let mainContent = <></>

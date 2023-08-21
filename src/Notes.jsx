@@ -15,6 +15,7 @@ import {
   CardActionArea,
   Skeleton,
   useTheme,
+  Grid,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
@@ -48,6 +49,18 @@ function updateRequest(replacement) {
     resource: import.meta.env.VITE_BACKEND + `notes/${replacement.note_id}`,
     method: 'PUT',
     body: JSON.stringify(replacement),
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    credentials: 'include',
+  }
+}
+
+function createRequest({ key, title, content, uid }) {
+  return {
+    resource: import.meta.env.VITE_BACKEND + `users/${uid}/notebook`,
+    method: 'POST',
+    body: JSON.stringify({ key, title, content }),
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
     },
@@ -99,6 +112,7 @@ export default function NotebookRoot({ uid, name, email }) {
             noteList.error
           ) : (
             <Notebook
+              uid={uid}
               notes={noteList}
               onExpand={id => {
                 setMode('edit note')
@@ -126,21 +140,65 @@ export default function NotebookRoot({ uid, name, email }) {
   )
 }
 
-function Notebook({ notes, onExpand }) {
+function Notebook({ uid, notes, onExpand }) {
+  const queryClient = useQueryClient()
+  const wrapFetch = useWrapFetch()
+  const createMutation = useMutation({
+    mutationFn: wrapFetch(data => {
+      log('check: using idem key: ', data)
+      return createRequest({
+        uid,
+        key: data,
+        title: 'New note',
+        content: '',
+      })
+    }),
+    onSuccess: data => {
+      log('Mutation outcome: ', data)
+      sessionStorage.idempotentKey = crypto.randomUUID()
+      queryClient.refetchQueries(['note list'], uid)
+    },
+    retry: 2,
+  })
+
   let list = notes.map(item => {
     const stored = JSON.parse(sessionStorage['note-' + item.note_id] || '{}')
     return (
-      <NoteSummary
-        title={stored.title || item.title}
-        summary={stored.content ? <em>Unsaved draft</em> : item.summary}
+      <Grid
+        item
+        xs={12}
+        sm={6}
+        md={4}
+        lg={3}
         key={item.note_id}
-        onExpand={() => onExpand(item.note_id)}
-        draft={!!sessionStorage['note-' + item.note_id]}
-      />
+        sx={{ display: 'flex', justifyContent: 'center' }}
+      >
+        <NoteSummary
+          title={stored.title || item.title}
+          summary={stored.content ? <em>Unsaved draft</em> : item.summary}
+          onExpand={() => onExpand(item.note_id)}
+          draft={!!sessionStorage['note-' + item.note_id]}
+        />
+      </Grid>
     )
   })
 
-  list.push(<NoteCreationCard onCreate={() => {}} />)
+  list.push(
+    <Grid
+      item
+      xs={12}
+      sm={6}
+      md={4}
+      lg={3}
+      key={'create'}
+      sx={{ display: 'flex', justifyContent: 'center' }}
+    >
+      <NoteCreationCard
+        disabled={createMutation.isLoading}
+        onCreate={() => createMutation.mutate(sessionStorage.idempotentKey)}
+      />
+    </Grid>
+  )
 
   if (list.length === 0) {
     list = <>No notes yet.</>
@@ -157,23 +215,47 @@ function Notebook({ notes, onExpand }) {
       <Typography variant="h4" mb={4}>
         My Notebook
       </Typography>
-      <Stack direction="row" spacing={4}>
+      <Grid
+        container
+        spacing={4}
+        sx={{
+          alignContent: 'center',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
         {list}
-      </Stack>
+      </Grid>
     </Card>
   )
 }
 
-function NoteCreationCard({ onCreate }) {
+function NoteCreationCard({ onCreate, disabled }) {
   const theme = useTheme()
   const accent = theme.palette.primary.main
+  const opacity = disabled ? 0.2 : 1.0
+  const styles = { width: '100px', height: '100px', mt: '1rem', opacity }
+  const icon = disabled ? (
+    <CircularProgress sx={styles} />
+  ) : (
+    <AddCircleOutlineIcon sx={styles} />
+  )
 
   return (
-    <Card sx={{ width: 250, borderLeft: `4px solid ${accent}`}} elevation={4}>
-      <CardActionArea onClick={onCreate} sx={{height: '100%', display: 'flex', flexDirection: 'column'}}>
-        <AddCircleOutlineIcon sx={{width: '100px', height: '100px'}} />
+    <Card
+      sx={{ width: 250, height: 300, borderLeft: `4px solid ${accent}` }}
+      elevation={4}
+    >
+      <CardActionArea
+        disabled={disabled}
+        onClick={onCreate}
+        sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+      >
+        {icon}
         <CardContent>
-          <Typography variant="h6">New note</Typography>
+          <Typography variant="h6" sx={{ mb: '1rem', opacity }}>
+            New note
+          </Typography>
         </CardContent>
       </CardActionArea>
     </Card>
@@ -184,7 +266,17 @@ function NoteSummary({ title, summary, onExpand, draft }) {
   const theme = useTheme()
   const accent = draft ? theme.palette.warning.main : theme.palette.primary.main
   return (
-    <Card sx={{ width: 250, borderLeft: `4px solid ${accent}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }} elevation={4}>
+    <Card
+      sx={{
+        width: 250,
+        height: 300,
+        borderLeft: `4px solid ${accent}`,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+      }}
+      elevation={4}
+    >
       <CardActionArea onClick={onExpand}>
         <CardMedia component="img" height="100" image={calendarPhoto} alt="" />
         <CardContent>
@@ -332,9 +424,13 @@ function EditableContents({ id, initialTitle, initialContent }) {
     }
   }, [mutate, id, initialTitle, initialContent])
 
-  const debounceUpdate = debounce('put', changes => {
-    mutate({ note_id: id, ...changes })
-  })
+  const debounceUpdate = debounce(
+    'put',
+    changes => {
+      mutate({ note_id: id, ...changes })
+    },
+    3000
+  )
 
   function storeEdits({ title, content }) {
     sessionStorage['note-' + id] = JSON.stringify({ title, content })
