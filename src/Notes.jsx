@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Box,
   Backdrop,
@@ -68,6 +68,14 @@ function createRequest({ key, title, content, uid }) {
   }
 }
 
+function deleteRequest(nid) {
+  return {
+    resource: import.meta.env.VITE_BACKEND + `notes/${nid}`,
+    method: 'DELETE',
+    credentials: 'include',
+  }
+}
+
 export default function NotebookRoot({ uid, name, email }) {
   const queryClient = useQueryClient()
   const wrapFetch = useWrapFetch()
@@ -86,6 +94,21 @@ export default function NotebookRoot({ uid, name, email }) {
     },
   })
 
+  const { mutate: deleteNote } = useMutation({
+    mutationFn: wrapFetch(deleteRequest),
+    onSuccess: (data, variables) => {
+      queryClient.setQueryData(['note list', uid], list =>
+        list.filter(entry => entry.note_id !== variables)
+      )
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['note list', uid] })
+    },
+    retry: 2,
+  })
+
+  const noteList = listQuery.data || []
+
   useEffect(() => {
     log('🌻 ', (Math.random() * 100).toFixed(0) + ' listQuery.data updated')
     if (listQuery.data && !listQuery.data.error) {
@@ -93,7 +116,6 @@ export default function NotebookRoot({ uid, name, email }) {
     }
   }, [uid, listQuery.data])
 
-  const noteList = listQuery.data || []
   let content = <></>
 
   switch (mode) {
@@ -120,6 +142,7 @@ export default function NotebookRoot({ uid, name, email }) {
                 setActiveNote(id)
                 setLoadingTitle(noteList.find(n => n.note_id === id).title)
               }}
+              onDelete={deleteNote}
               onNew={async data => {
                 await queryClient.cancelQueries({
                   queryKey: ['note list', uid],
@@ -150,7 +173,8 @@ export default function NotebookRoot({ uid, name, email }) {
   )
 }
 
-function Notebook({ uid, notes, onExpand, onNew }) {
+function Notebook({ uid, notes, onExpand, onNew, onDelete }) {
+  const queryClient = useQueryClient()
   const wrapFetch = useWrapFetch()
   const createMutation = useMutation({
     mutationFn: wrapFetch(data => {
@@ -177,7 +201,19 @@ function Notebook({ uid, notes, onExpand, onNew }) {
         <NoteSummary
           title={stored.title || item.title}
           summary={stored.content ? <em>Unsaved draft</em> : item.summary}
+          deleting={item.deleting}
           onExpand={() => onExpand(item.note_id)}
+          onDelete={() => {
+            log('deleting ', item.note_id)
+            onDelete(item.note_id)
+            queryClient.setQueryData(['note list', uid], data =>
+              data.map(n =>
+                n.note_id !== item.note_id
+                  ? n
+                  : { ...n, title: 'Deleting...', deleting: true }
+              )
+            )
+          }}
           draft={!!sessionStorage['note-' + item.note_id]}
         />
       </Grid>
@@ -260,9 +296,10 @@ function NoteCreationCard({ onCreate, disabled }) {
   )
 }
 
-function NoteSummary({ title, summary, onExpand, draft }) {
+function NoteSummary({ title, summary, deleting, draft, onExpand, onDelete }) {
   const theme = useTheme()
-  const accent = draft ? theme.palette.warning.main : theme.palette.primary.main
+  let accent = draft ? theme.palette.warning.main : theme.palette.primary.main
+  if (deleting) accent = theme.palette.primary.dark
   return (
     <Card
       sx={{
@@ -275,7 +312,7 @@ function NoteSummary({ title, summary, onExpand, draft }) {
       }}
       elevation={4}
     >
-      <CardActionArea onClick={onExpand}>
+      <CardActionArea onClick={onExpand} disabled={deleting}>
         <CardMedia component="img" height="100" image={calendarPhoto} alt="" />
         <CardContent>
           <Typography
@@ -291,19 +328,18 @@ function NoteSummary({ title, summary, onExpand, draft }) {
           {summary}
         </CardContent>
       </CardActionArea>
-      <CardActions>
-        <Button size="small" onClick={onExpand} sx={{ color: accent }}>
-          {draft ? 'Unsaved' : 'Expand'}
-        </Button>
-        <Box ml="auto">
-          <IconButton
-            aria-label="Delete"
-            onClick={() => console.log('Delete placeholder')}
-          >
-            <DeleteIcon sx={{ color: accent }} />
-          </IconButton>
-        </Box>
-      </CardActions>
+      {!deleting && (
+        <CardActions>
+          <Button size="small" onClick={onExpand} sx={{ color: accent }}>
+            {draft ? 'Unsaved' : 'Expand'}
+          </Button>
+          <Box ml="auto">
+            <IconButton aria-label="Delete" onClick={onDelete}>
+              <DeleteIcon sx={{ color: accent }} />
+            </IconButton>
+          </Box>
+        </CardActions>
+      )}
     </Card>
   )
 }
@@ -494,8 +530,13 @@ function EditableContents({ id, initialTitle, initialContent }) {
           {statusText}
         </Typography>
         <Typography variant="caption">
-          {lastSaved && !saveMutation.isLoading &&
-            (unsaved ? <>&nbsp;since {lastSaved}</> : <>&nbsp;at: {lastSaved}</>)}
+          {lastSaved &&
+            !saveMutation.isLoading &&
+            (unsaved ? (
+              <>&nbsp;since {lastSaved}</>
+            ) : (
+              <>&nbsp;at: {lastSaved}</>
+            ))}
         </Typography>
       </Box>
     </Stack>
