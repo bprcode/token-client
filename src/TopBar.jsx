@@ -30,11 +30,15 @@ export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
       <>
         <Avatar
           alt={user.name}
-          sx={{ mr: 2, backgroundColor: theme.palette.secondary.main }}
+          sx={{ mr: 2,
+            backgroundColor: theme.palette.secondary.main,
+            display: ['none', 'inherit'] }}
         >
           {[...user.name][0]}
         </Avatar>
+        <Typography sx={{ display: ['none', 'inherit']}}>
         Welcome, {user.name || user.email}
+        </Typography>
         <Button onClick={onLogout} color="secondary" sx={{ ml: 4 }}>
           <SpinOrText spin={isLoggingOut} text="Logout" />
         </Button>
@@ -65,6 +69,7 @@ export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
                 color="inherit"
                 aria-label="menu"
                 alt="writing pencil"
+                sx={{ display: ['none', 'block']}}
               >
                 <DrawIcon />
               </IconButton>

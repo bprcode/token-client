@@ -62,8 +62,8 @@ function FocusingName({ name, setName, sending, invalid }) {
 
 const LoginForm = function ({ onIdentify, signInRef }) {
   const wrapFetch = useWrapFetch()
-  const [email, setEmail] = useState('shredman1212@slice.dice')
-  const [password, setPassword] = useState('oozy123')
+  const [email, setEmail] = useState('Demo Account')
+  const [password, setPassword] = useState('123')
   const [name, setName] = useState('')
   const [newUser, setNewUser] = useState(false)
   const [invalid, setInvalid] = useState(false)

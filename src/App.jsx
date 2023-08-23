@@ -1,4 +1,4 @@
-import { useState, useContext, useRef } from 'react'
+import { useState, useRef } from 'react'
 import './App.css'
 import {
   useQuery,
@@ -18,6 +18,7 @@ import {
   Button,
   Paper,
   useTheme,
+  Box,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import TopBar from './TopBar'
@@ -89,14 +90,14 @@ function Wrapp() {
 function Hero() {
   return (
     <>
-      <div
-        style={{
+      <Box
+        sx={{
           position: 'absolute',
           top: '0px',
           backgroundImage: `url(${auroraMesh})`,
-          backgroundSize: 'cover',
+          backgroundSize: ['135vh', 'cover'],
           backgroundPosition: 'center',
-          height: 'max(20rem, 55vh)',
+          height: ['90vh', 'max(20rem, 55vh)'],
           width: '100%',
           zIndex: -1,
         }}
@@ -203,7 +204,7 @@ function App() {
         isLoggingOut={logoutMutation.status === 'loading'}
       />
       <Hero />
-      <Container maxWidth="lg">{mainContent}</Container>
+      
       <Backdrop open={!!storedLogin && !user}>
         <Paper
           elevation={5}
@@ -227,6 +228,7 @@ function App() {
           </Stack>
         </Paper>
       </Backdrop>
+      <Container maxWidth="lg">{mainContent}</Container>
       <ReactQueryDevtools initialIsOpen={false} />
     </>
   )

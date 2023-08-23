@@ -147,6 +147,9 @@ export default function NotebookRoot({ uid, name, email }) {
                 await queryClient.cancelQueries({
                   queryKey: ['note list', uid],
                 })
+                if (noteList.some(n => n.note_id === data.note_id)) {
+                  return log('🌸 Already had note in list.')
+                }
                 queryClient.setQueryData(['note list', uid], list => [
                   ...list,
                   data,
@@ -194,10 +197,10 @@ function Notebook({ uid, notes, onExpand, onNew, onDelete }) {
     retry: 2,
   })
 
-  let list = notes.map(item => {
+  const list = notes.map(item => {
     const stored = JSON.parse(sessionStorage['note-' + item.note_id] || '{}')
     return (
-      <Grid item xs={12} sm={6} md={4} lg={3} key={item.note_id}>
+      <Grid item key={item.note_id}>
         <NoteSummary
           title={stored.title || item.title}
           summary={stored.content ? <em>Unsaved draft</em> : item.summary}
@@ -220,20 +223,16 @@ function Notebook({ uid, notes, onExpand, onNew, onDelete }) {
     )
   })
 
-  list.push(
-    <Grid item xs={12} sm={6} md={4} lg={3} key={'create'}>
-      <NoteCreationCard
-        disabled={createMutation.isLoading}
-        onCreate={() => {
-          createMutation.mutate(sessionStorage.idempotentKey)
-        }}
-      />
-    </Grid>
-  )
-
-  if (list.length === 0) {
-    list = <>No notes yet.</>
-  }
+    list.push(
+      <Grid item key={'create'}>
+        <NoteCreationCard
+          disabled={createMutation.isLoading}
+          onCreate={() => {
+            createMutation.mutate(sessionStorage.idempotentKey)
+          }}
+        />
+      </Grid>
+    )
 
   return (
     <Card
@@ -246,9 +245,13 @@ function Notebook({ uid, notes, onExpand, onNew, onDelete }) {
       <Typography variant="h4" mb={4}>
         My Notebook
       </Typography>
-      <Grid container spacing={4}>
-        {list}
-      </Grid>
+      {list.length ? (
+        <Grid container spacing={4}>
+          {list}
+        </Grid>
+      ) : (
+        <>No notes yet.</>
+      )}
     </Card>
   )
 }
@@ -277,7 +280,7 @@ function NoteCreationCard({ onCreate, disabled }) {
 
   return (
     <Card
-      sx={{ width: 250, height: 300, borderLeft: `4px solid ${accent}` }}
+      sx={{ width: 240, height: 300, borderLeft: `4px solid ${accent}` }}
       elevation={4}
     >
       <CardActionArea
@@ -303,12 +306,14 @@ function NoteSummary({ title, summary, deleting, draft, onExpand, onDelete }) {
   return (
     <Card
       sx={{
-        width: 250,
+        width: 240,
         height: 300,
         borderLeft: `4px solid ${accent}`,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
+        opacity: deleting ? 0.2 : 1.0,
+        transition: 'opacity 0.5s ease-out',
       }}
       elevation={4}
     >
