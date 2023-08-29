@@ -7,6 +7,7 @@ import {
   useMutation,
   useQueryClient,
   QueryCache,
+  MutationCache,
 } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import {
@@ -43,7 +44,7 @@ const queryClient = new QueryClient({
         log('🦆 Cookie expired')
         queryClient.setQueryData(['heartbeat'], '')
       }
-      if (!result.error && result.exp && localStorage.lastLogin) {
+      if (result.exp && localStorage.lastLogin) {
         const parsed = JSON.parse(localStorage.lastLogin)
         log(
           '🪦 Got new expiry. Updating ',
@@ -59,6 +60,17 @@ const queryClient = new QueryClient({
       }
     },
   }),
+  mutationCache: new MutationCache({
+    onSettled: result => {
+      // Check for outdated credentials:
+      if (result.error &&
+        (result.error === 'No identification provided.' ||
+          result.error === 'Token expired.')) {
+        log('Looks like we\'ve logged out.')
+        queryClient.setQueryData(['heartbeat'], '')
+      }
+    }
+  })
 })
 
 const logoutRequest = {

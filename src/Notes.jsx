@@ -163,7 +163,10 @@ export default function NotebookRoot({ uid, name, email }) {
 
   return (
     <>
-      <Backdrop open={listQuery.status === 'loading'} sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
+      <Backdrop
+        open={listQuery.status === 'loading'}
+        sx={{ zIndex: theme => theme.zIndex.drawer + 1 }}
+      >
         <CircularProgress />
       </Backdrop>
       <LoadingError
@@ -191,8 +194,10 @@ function Notebook({ uid, notes, onExpand, onNew, onDelete }) {
     }),
     onSuccess: data => {
       log('Mutation outcome: ', data)
-      sessionStorage.idempotentKey = crypto.randomUUID()
-      onNew(data)
+      if (!data.error) {
+        sessionStorage.idempotentKey = crypto.randomUUID()
+        onNew(data)
+      }
     },
     retry: 2,
   })
@@ -223,16 +228,16 @@ function Notebook({ uid, notes, onExpand, onNew, onDelete }) {
     )
   })
 
-    list.push(
-      <Grid item key={'create'}>
-        <NoteCreationCard
-          disabled={createMutation.isLoading}
-          onCreate={() => {
-            createMutation.mutate(sessionStorage.idempotentKey)
-          }}
-        />
-      </Grid>
-    )
+  list.push(
+    <Grid item key={'create'}>
+      <NoteCreationCard
+        disabled={createMutation.isLoading}
+        onCreate={() => {
+          createMutation.mutate(sessionStorage.idempotentKey)
+        }}
+      />
+    </Grid>
+  )
 
   return (
     <Card
