@@ -24,6 +24,7 @@ import {
 import digitalTheme from './blueDigitalTheme'
 import TopBar from './TopBar'
 import auroraMesh from './assets/aurora-gradient-2.png'
+import auroraMeshSmall from './assets/aurora-gradient-small.png'
 import LoginForm from './LoginForm'
 import Notes from './Notes'
 import {
@@ -106,7 +107,7 @@ function Hero() {
         sx={{
           position: 'absolute',
           top: '0px',
-          backgroundImage: `url(${auroraMesh})`,
+          backgroundImage: [`url(${auroraMeshSmall})`, `url(${auroraMesh})`],
           backgroundSize: ['135vh', 'cover'],
           backgroundPosition: 'center',
           height: ['90vh', 'max(20rem, 55vh)'],

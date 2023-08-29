@@ -179,9 +179,10 @@ const LoginForm = function ({ onIdentify, signInRef }) {
         px: 2,
         mb: 8,
         flexGrow: 1,
-        minWidth: 300,
+        minWidth: [240, 300],
         maxWidth: 450,
         ml: 'auto',
+        mr: ['auto', 0],
       }}
     >
       <form onSubmit={e => e.preventDefault()}>
