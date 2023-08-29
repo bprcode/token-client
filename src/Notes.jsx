@@ -163,7 +163,7 @@ export default function NotebookRoot({ uid, name, email }) {
 
   return (
     <>
-      <Backdrop open={listQuery.status === 'loading'}>
+      <Backdrop open={listQuery.status === 'loading'} sx={{zIndex: (theme) => theme.zIndex.drawer + 1}}>
         <CircularProgress />
       </Backdrop>
       <LoadingError

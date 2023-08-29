@@ -204,6 +204,7 @@ function App() {
         isLoggingOut={logoutMutation.status === 'loading'}
       />
       <Hero />
+      <Container maxWidth="lg">{mainContent}</Container>
       
       <Backdrop open={!!storedLogin && !user}>
         <Paper
@@ -228,7 +229,7 @@ function App() {
           </Stack>
         </Paper>
       </Backdrop>
-      <Container maxWidth="lg">{mainContent}</Container>
+
       <ReactQueryDevtools initialIsOpen={false} />
     </>
   )
