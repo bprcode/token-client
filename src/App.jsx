@@ -23,7 +23,7 @@ import {
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import TopBar from './TopBar'
-import auroraMesh from './assets/aurora-gradient-2.png'
+import auroraMesh from './assets/aurora-gradient-2x.png'
 import auroraMeshSmall from './assets/aurora-gradient-small.png'
 import LoginForm from './LoginForm'
 import Notes from './Notes'

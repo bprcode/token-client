@@ -16,6 +16,7 @@ import {
   Skeleton,
   useTheme,
   Grid,
+  useMediaQuery,
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
@@ -263,6 +264,7 @@ function Notebook({ uid, notes, onExpand, onNew, onDelete }) {
 
 function NoteCreationCard({ onCreate, disabled }) {
   const theme = useTheme()
+  const cardWidth = useCardWidth()
   const accent = disabled
     ? theme.palette.primary.dark
     : theme.palette.primary.main
@@ -285,7 +287,7 @@ function NoteCreationCard({ onCreate, disabled }) {
 
   return (
     <Card
-      sx={{ width: 240, height: 300, borderLeft: `4px solid ${accent}` }}
+      sx={{ width: cardWidth, height: 300, borderLeft: `4px solid ${accent}` }}
       elevation={4}
     >
       <CardActionArea
@@ -304,14 +306,20 @@ function NoteCreationCard({ onCreate, disabled }) {
   )
 }
 
+function useCardWidth() {
+  const narrow = useMediaQuery('(max-width: 320px)')
+  return narrow ? 176 : 240
+}
+
 function NoteSummary({ title, summary, deleting, draft, onExpand, onDelete }) {
   const theme = useTheme()
+  const cardWidth = useCardWidth()
   let accent = draft ? theme.palette.warning.main : theme.palette.primary.main
   if (deleting) accent = theme.palette.primary.dark
   return (
     <Card
       sx={{
-        width: 240,
+        width: cardWidth,
         height: 300,
         borderLeft: `4px solid ${accent}`,
         display: 'flex',

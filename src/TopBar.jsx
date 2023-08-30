@@ -4,7 +4,7 @@ import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
-import { Avatar, Container, useTheme } from '@mui/material'
+import { Avatar, Container, useMediaQuery, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import DrawIcon from '@mui/icons-material/Draw'
 
@@ -14,13 +14,17 @@ import SpinOrText from './SpinOrText'
 
 export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
   const theme = useTheme()
-
+  const extraNarrow = useMediaQuery('(max-width: 320px)')
   let interactivity = <></>
 
   if (!user) {
     interactivity = (
       <>
-        <Button variant="contained" onClick={onGetStarted}>
+        <Button
+          variant="contained"
+          onClick={onGetStarted}
+          sx={{ display: extraNarrow ? 'none' : undefined }}
+        >
           Get Started
         </Button>
       </>
@@ -30,14 +34,16 @@ export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
       <>
         <Avatar
           alt={user.name}
-          sx={{ mr: 2,
+          sx={{
+            mr: 2,
             backgroundColor: theme.palette.secondary.main,
-            display: ['none', 'inherit'] }}
+            display: ['none', 'inherit'],
+          }}
         >
           {[...user.name][0]}
         </Avatar>
-        <Typography sx={{ display: ['none', 'inherit']}}>
-        Welcome, {user.name || user.email}
+        <Typography sx={{ display: ['none', 'inherit'] }}>
+          Welcome, {user.name || user.email}
         </Typography>
         <Button onClick={onLogout} color="secondary" sx={{ ml: 4 }}>
           <SpinOrText spin={isLoggingOut} text="Logout" />
@@ -69,17 +75,17 @@ export default function TopBar({ onLogout, onGetStarted, isLoggingOut, user }) {
                 color="inherit"
                 aria-label="menu"
                 alt="writing pencil"
-                sx={{ display: ['none', 'block']}}
+                sx={{ display: ['none', 'block'] }}
               >
                 <DrawIcon />
               </IconButton>
-              <Box sx={{flexGrow: 1}}>
-              <Typography variant="h6" component="span" fontWeight='bold'>
-                Note
-              </Typography>
-              <Typography variant="h6" component="span" fontWeight='light'>
-                Scribbler
-              </Typography>
+              <Box sx={{ flexGrow: 1 }}>
+                <Typography variant="h6" component="span" fontWeight="bold">
+                  Note
+                </Typography>
+                <Typography variant="h6" component="span" fontWeight="light">
+                  Scribbler
+                </Typography>
               </Box>
 
               {interactivity}
