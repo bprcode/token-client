@@ -177,7 +177,11 @@ function App() {
     })
     setStoredLogin(JSON.parse(localStorage.lastLogin))
     log('setting lastlogin=', JSON.parse(localStorage.lastLogin))
+    try {
     sessionStorage.idempotentKey = crypto.randomUUID()
+    } catch(e) {
+      sessionStorage.idempotentKey = (Math.random()*1e12).toFixed()
+    }
     log('🔑 set idempotent key = ', sessionStorage.idempotentKey)
   }
 

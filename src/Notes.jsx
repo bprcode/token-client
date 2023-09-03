@@ -111,7 +111,6 @@ export default function NotebookRoot({ uid, name, email }) {
   const noteList = listQuery.data || []
 
   useEffect(() => {
-    log('🌻 ', (Math.random() * 100).toFixed(0) + ' listQuery.data updated')
     if (listQuery.data && !listQuery.data.error) {
       sessionStorage['noteList-' + uid] = JSON.stringify(listQuery.data)
     }
@@ -196,7 +195,11 @@ function Notebook({ uid, notes, onExpand, onNew, onDelete }) {
     onSuccess: data => {
       log('Mutation outcome: ', data)
       if (!data.error) {
+        try {
         sessionStorage.idempotentKey = crypto.randomUUID()
+        } catch(e) {
+          sessionStorage.idempotentKey = (Math.random()*1e12).toFixed()
+        }
         onNew(data)
       }
     },
