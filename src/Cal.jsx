@@ -13,35 +13,53 @@ import {
   ThemeProvider,
   Typography,
   styled,
+  CssBaseline,
+  Slide,
+  Collapse,
+  Button,
 } from '@mui/material'
-import { CssBaseline } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import * as dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
+import { TransitionGroup } from 'react-transition-group'
 
 const log = console.log.bind(console)
 const currentDate = dayjs()
 
+function createSampleEvent() {}
+
 function Demo() {
+  const containerRef = useRef(null)
   const [expandedDate, setExpandedDate] = useState(null)
-
   return (
-    <Container maxWidth="sm">
-      <p>Demo entry point</p>
+    <Container maxWidth="sm" ref={containerRef}>
+      <Typography variant="h6" my={4}>Component testing</Typography>
 
-      <MonthlyCalendar
-        initialDate={currentDate}
-        onExpand={date => setExpandedDate(date)}
-      />
-
-      {expandedDate && (
-        <WeeklyCalendar
-          key={expandedDate.format('MM D')}
-          initialDate={expandedDate}
-        />
-      )}
+      <TransitionGroup>
+        {!expandedDate && (
+          <Collapse timeout={350}>
+            <div>
+              <MonthlyCalendar
+                initialDate={currentDate}
+                onExpand={date => setExpandedDate(date)}
+              />
+            </div>
+          </Collapse>
+        )}
+        {expandedDate && (
+          <Collapse timeout={350}>
+            <div>
+              <WeeklyCalendar
+                key={(expandedDate || currentDate).format('MM D')}
+                initialDate={expandedDate || currentDate}
+              />
+              <Button onClick={() => setExpandedDate(null)}>Back</Button>
+            </div>
+          </Collapse>
+        )}
+      </TransitionGroup>
     </Container>
   )
 }
@@ -200,7 +218,7 @@ function MonthlyCalendar({ initialDate, onExpand }) {
 
   log(`(${(Math.random() * 1000).toFixed()}) Rendering monthly calendar`)
   return (
-    <Box sx={{ border: '1px dashed #0af' }}>
+    <Box>
       <Paper elevation={1} sx={{ px: 2, py: 2 }}>
         <Stack direction="row">
           <IconButton
