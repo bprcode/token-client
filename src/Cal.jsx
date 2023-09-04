@@ -14,9 +14,9 @@ import {
   Typography,
   styled,
   CssBaseline,
-  Slide,
   Collapse,
   Button,
+  Divider,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import { useMemo, useRef, useState } from 'react'
@@ -27,16 +27,173 @@ import { TransitionGroup } from 'react-transition-group'
 
 const log = console.log.bind(console)
 const currentDate = dayjs()
+const weekdayAbbreviations = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-function createSampleEvent() {}
+function createSampleEvent({ startTime, endTime, summary }) {
+  return {
+    // text
+    id: String((Math.random() * 1e6).toFixed()),
+    // RFC3339-compatible datetime
+    created: dayjs(),
+    // RFC3339-compatible datetime
+    updated: dayjs(),
+    // text
+    summary: summary || 'Default Title',
+    // text
+    description: 'Detailed description',
+    // object: creator: id <string> -- not yet exposed
+    // object
+    start: {
+      // RFC3339-compatible datetime
+      dateTime: startTime,
+    },
+    // object
+    end: {
+      // RFC3339-compatible datetime
+      dateTime: endTime || startTime.add(1, 'hour'),
+    },
+    // array
+    //recurrence: ['string'], c.f. RFC 5545 -- not yet implemented
+  }
+}
+
+function createSampleWeek(aroundDate) {
+  const labels = ['Work', 'Study', 'Exercise']
+  const startOfPriorWeek = aroundDate.subtract(1, 'week').startOf('week')
+  const sampleEvents = []
+
+  log('check: ', startOfPriorWeek.add(23, 'hours').format('MMM DD HH:mm:ss'))
+  for (let i = 0; i < 60; i++) {
+    // Split a three-week interval into random 15-minute chunks:
+    const offsetMinutes = Math.trunc(Math.random() * 2016) * 15
+    const startTime = startOfPriorWeek.add(offsetMinutes, 'minutes')
+    const eventDuration = Math.trunc(Math.random() * 16 + 1) * 15
+    const endTime = startTime.add(eventDuration, 'minutes')
+    const summary = labels[Math.trunc(Math.random() * labels.length)]
+
+    sampleEvents.push(createSampleEvent({ startTime, endTime, summary }))
+  }
+
+  log(
+    sampleEvents.map(
+      e =>
+        `${e.summary}: ${e.start.dateTime.format(
+          'MMM DD HH:mm:ss'
+        )} - ${e.end.dateTime.format('MMM DD HH:mm:ss')}`
+    )
+  )
+
+  return sampleEvents
+}
+
+const sampleEvents = createSampleWeek(dayjs())
+log('Of those, the overlaps with today are:')
+log(
+  sampleEvents
+    .filter(e =>
+      isOverlap(
+        dayjs().startOf('day'),
+        dayjs().endOf('day'),
+        e.start.dateTime,
+        e.end.dateTime
+      )
+    )
+    .map(
+      o =>
+        `${o.summary} ${o.start.dateTime.format(
+          'MMM DD HH:mm:ss'
+        )} -- ${o.end.dateTime.format('MMM DD HH:mm:ss')}`
+    )
+)
+
+/**
+ * Determine if two time intervals overlap.
+ * Edge-only intersections are not counted as overlapping.
+ */
+function isOverlap(firstStart, firstEnd, secondStart, secondEnd) {
+  if (!firstStart.isBefore(secondEnd)) return false
+  if (!firstEnd.isAfter(secondStart)) return false
+  return true
+}
+
+const mockStyles = new Map([
+  ['Work', { backgroundColor: 'green', fontSize: '0.75em' }],
+  ['Study', { backgroundColor: 'blue', fontSize: '0.75em'  }],
+  ['Exercise', { backgroundColor: 'red', fontSize: '0.75em'  }],
+  ['Default', { backgroundColor: 'midnightblue', fontSize: '0.75em'  }],
+])
+
+function EventWindow({ initial, final, event }) {
+  if (!event) return null
+
+  // Crop the event duration to fit the window
+  const fragmentStart = initial.isBefore(event.start.dateTime) ? event.start.dateTime : initial
+  const fragmentEnd = final.isAfter(event.end.dateTime) ? event.end.dateTime : final
+
+  const topOffset = fragmentStart.diff(initial)
+  const windowLength = fragmentEnd.diff(fragmentStart)
+  const intervalSize = final.diff(initial)
+
+  return <div style={{
+    position: 'absolute',
+    top: (topOffset / intervalSize) * 100 + '%',
+    backgroundColor: '#f0f8',
+    height: (windowLength / intervalSize) * 100 + '%',
+    width: '50%',
+  }}>
+    {event.start.dateTime.format('MMM DD HH:mm:ss')} -- {event.end.dateTime.format('MMM DD HH:mm:ss')}
+  </div>
+}
+
+function DayBreakdown({ day, unfilteredEvents }) {
+  console.time('DayBreakdown rendering')
+  const startOfDay = day.startOf('day')
+  const endOfDay = day.endOf('day')
+
+  const relevantEvents = unfilteredEvents.filter(e =>
+    isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
+  )
+
+  // debug -- temporary
+  // later add support for double-booking, more efficient structure
+  const blocks = Array(24 * 4)
+    .fill(null)
+
+  //log('Working with this list of relevant events:', relevantEvents)
+
+  let t = startOfDay
+  for(let i = 0; i < blocks.length; i++) {
+    blocks[i] = <div key={i} style={mockStyles.get('Default')}>
+    {t.format('HH:mm')}
+  </div>
+
+    for(const e of relevantEvents) {
+      if(isOverlap(e.start.dateTime, e.end.dateTime, t, t.add(15, 'minutes'))) {
+        blocks[i] = (<div key={i} style={mockStyles.get(e.summary)}>
+        {t.format('HH:mm')} {e.summary}
+      </div>)
+      }
+    }
+    t = t.add(15, 'minutes')
+  }
+
+  console.timeEnd('DayBreakdown rendering')
+  return <div style={{position: 'relative'}}>{blocks}
+  {relevantEvents.map((r,i) => <EventWindow key={i} initial={startOfDay} final={endOfDay} event={r} />)}
+  </div>
+}
 
 function Demo() {
   const containerRef = useRef(null)
   const [expandedDate, setExpandedDate] = useState(null)
   return (
     <Container maxWidth="sm" ref={containerRef}>
-      <Typography variant="h6" my={4}>Component testing</Typography>
+      <Typography variant="h6" color="primary.dark" mt={4}>
+        Component testing
+      </Typography>
+      <Divider sx={{ mb: 6 }} />
 
+      <DayBreakdown day={dayjs()} unfilteredEvents={sampleEvents} />
       <TransitionGroup>
         {!expandedDate && (
           <Collapse timeout={350}>
@@ -84,7 +241,9 @@ function WeeklyCalendar({ initialDate }) {
         <TableRow>
           {days.map(d => (
             <TableCell key={d.format('MM D')}>
-              <Typography>{d.format('D')}</Typography>
+              <Typography sx={{ wordBreak: 'break-all' }}>
+                {d.format('D')} ...
+              </Typography>
             </TableCell>
           ))}
         </TableRow>
@@ -115,7 +274,7 @@ function WeeklyCalendar({ initialDate }) {
 
             <TableContainer component={Paper}>
               <Table>
-                <WeekdayHeader />
+                <ExpandedWeekHeader sunday={active.startOf('week')} />
                 {calendarBody}
               </Table>
             </TableContainer>
@@ -143,10 +302,32 @@ function WeekdayHeader() {
   return (
     <TableHead>
       <TableRow>
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+        {weekdayAbbreviations.map(d => (
           <TableCell key={d}>{d}</TableCell>
         ))}
       </TableRow>
+    </TableHead>
+  )
+}
+
+function ExpandedWeekHeader({ sunday }) {
+  const headingCells = []
+  const endOfWeek = sunday.endOf('week')
+  let d = sunday
+
+  while (d.isBefore(endOfWeek)) {
+    headingCells.push(
+      <TableCell align="center" key={d.format('D')}>
+        <Typography variant="caption">{d.format('ddd')}</Typography>
+        <Typography variant="h5">{d.format('D')}</Typography>
+      </TableCell>
+    )
+    d = d.add(1, 'day')
+  }
+
+  return (
+    <TableHead>
+      <TableRow>{headingCells}</TableRow>
     </TableHead>
   )
 }
