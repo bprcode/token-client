@@ -63,7 +63,7 @@ function createSampleWeek(aroundDate) {
   const sampleEvents = []
 
   log('check: ', startOfPriorWeek.add(23, 'hours').format('MMM DD HH:mm:ss'))
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 180; i++) {
     // Split a three-week interval into random 15-minute chunks:
     const offsetMinutes = Math.trunc(Math.random() * 2016) * 15
     const startTime = startOfPriorWeek.add(offsetMinutes, 'minutes')
@@ -117,32 +117,49 @@ function isOverlap(firstStart, firstEnd, secondStart, secondEnd) {
 }
 
 const mockStyles = new Map([
-  ['Work', { backgroundColor: 'green', fontSize: '0.75em' }],
-  ['Study', { backgroundColor: 'blue', fontSize: '0.75em'  }],
-  ['Exercise', { backgroundColor: 'red', fontSize: '0.75em'  }],
-  ['Default', { backgroundColor: 'midnightblue', fontSize: '0.75em'  }],
+  ['Work', { backgroundColor: '#5283a8', fontSize: '0.75em' }],
+  ['Study', { backgroundColor: '#e9a47d', fontSize: '0.75em' }],
+  ['Exercise', { backgroundColor: '#d0518e', fontSize: '0.75em' }],
+  ['Default', { backgroundColor: 'midnightblue', fontSize: '0.75em' }],
 ])
 
-function EventWindow({ initial, final, event }) {
+function EventWindow({ initial, final, event, indent = 0, columns = 1 }) {
   if (!event) return null
 
   // Crop the event duration to fit the window
-  const fragmentStart = initial.isBefore(event.start.dateTime) ? event.start.dateTime : initial
-  const fragmentEnd = final.isAfter(event.end.dateTime) ? event.end.dateTime : final
+  const fragmentStart = initial.isBefore(event.start.dateTime)
+    ? event.start.dateTime
+    : initial
+  const fragmentEnd = final.isAfter(event.end.dateTime)
+    ? event.end.dateTime
+    : final
 
   const topOffset = fragmentStart.diff(initial)
   const windowLength = fragmentEnd.diff(fragmentStart)
   const intervalSize = final.diff(initial)
 
-  return <div style={{
-    position: 'absolute',
-    top: (topOffset / intervalSize) * 100 + '%',
-    backgroundColor: '#f0f8',
-    height: (windowLength / intervalSize) * 100 + '%',
-    width: '50%',
-  }}>
-    {event.start.dateTime.format('MMM DD HH:mm:ss')} -- {event.end.dateTime.format('MMM DD HH:mm:ss')}
-  </div>
+  return (
+    <div
+      style={{
+        ...mockStyles.get(event.summary),
+        position: 'absolute',
+        top: (topOffset / intervalSize) * 100 + '%',
+        left: indent * (100 / columns) + '%',
+        boxShadow: '0px 0px 16px inset #008',
+        borderRadius: '8px',
+        height: (windowLength / intervalSize) * 100 + '%',
+        width: 100 / columns + '%',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+        padding: '0.5rem',
+      }}
+    >
+      {event.summary}<br />
+      {event.start.dateTime.format('MMM DD HH:mm:ss')}
+      -- {event.end.dateTime.format('MMM DD HH:mm:ss')}
+      <br /> indent: {indent}
+    </div>
+  )
 }
 
 function DayBreakdown({ day, unfilteredEvents }) {
@@ -154,33 +171,103 @@ function DayBreakdown({ day, unfilteredEvents }) {
     isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
   )
 
+  relevantEvents.forEach(e => {
+    e.indent = 0
+    e.overlaps = 0
+  })
+
+  // Calculate indentation in case of overlapping events
+  const columns = []
+  // Place each event in a position which does not overlap any other event
+  for (const e of relevantEvents) {
+    // Find the first unoccupied column for this event
+
+    let placed = false
+
+    for (const column of columns) {
+      let available = true
+
+      // If any prior element of this column overlaps, the column is unavailable
+      for (const entry of column) {
+        if (
+          isOverlap(
+            entry.start.dateTime,
+            entry.end.dateTime,
+            e.start.dateTime,
+            e.end.dateTime
+          )
+        ) {
+          available = false
+          break
+        } 
+      }
+
+      if (available) {
+        column.push(e)
+        placed = true
+        break
+      }
+    }
+
+    if (!placed) {
+      log('creating new column for ', e)
+      columns.push([e])
+    }
+  }
+
+  // Record the calculated indentation values
+  for (const [indent, column] of columns.entries()) {
+    for (const event of column) {
+      event.indent = indent
+    }
+  }
+
+  log('relevantEvents: ', relevantEvents)
+
   // debug -- temporary
   // later add support for double-booking, more efficient structure
-  const blocks = Array(24 * 4)
-    .fill(null)
+  const blocks = Array(24 * 4).fill(null)
 
   //log('Working with this list of relevant events:', relevantEvents)
 
   let t = startOfDay
-  for(let i = 0; i < blocks.length; i++) {
-    blocks[i] = <div key={i} style={mockStyles.get('Default')}>
-    {t.format('HH:mm')}
-  </div>
+  for (let i = 0; i < blocks.length; i++) {
+    blocks[i] = (
+      <div key={i} style={{...mockStyles.get('Default'), opacity: 0.5}}>
+        {t.format('HH:mm')}
+      </div>
+    )
 
-    for(const e of relevantEvents) {
-      if(isOverlap(e.start.dateTime, e.end.dateTime, t, t.add(15, 'minutes'))) {
-        blocks[i] = (<div key={i} style={mockStyles.get(e.summary)}>
-        {t.format('HH:mm')} {e.summary}
-      </div>)
+    for (const e of relevantEvents) {
+      if (
+        isOverlap(e.start.dateTime, e.end.dateTime, t, t.add(15, 'minutes'))
+      ) {
+        blocks[i] = (
+          <div key={i} style={{...mockStyles.get(e.summary), opacity: 0.5}}>
+            {t.format('HH:mm')} {e.summary}
+          </div>
+        )
       }
     }
     t = t.add(15, 'minutes')
   }
 
   console.timeEnd('DayBreakdown rendering')
-  return <div style={{position: 'relative'}}>{blocks}
-  {relevantEvents.map((r,i) => <EventWindow key={i} initial={startOfDay} final={endOfDay} event={r} />)}
-  </div>
+  return (
+    <div style={{ position: 'relative' }}>
+      {blocks}
+      {relevantEvents.map((r, i) => (
+        <EventWindow
+          key={i}
+          initial={startOfDay}
+          final={endOfDay}
+          event={r}
+          columns={columns.length}
+          indent={r.indent}
+        />
+      ))}
+    </div>
+  )
 }
 
 function Demo() {
