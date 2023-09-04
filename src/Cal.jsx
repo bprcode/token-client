@@ -123,7 +123,7 @@ const mockStyles = new Map([
   ['Default', { backgroundColor: 'midnightblue', fontSize: '0.75em' }],
 ])
 
-function EventWindow({ initial, final, event, indent = 0, columns = 1 }) {
+function EventPane({ initial, final, event, indent = 0, columns = 1, label="detailed" }) {
   if (!event) return null
 
   // Crop the event duration to fit the window
@@ -138,6 +138,19 @@ function EventWindow({ initial, final, event, indent = 0, columns = 1 }) {
   const windowLength = fragmentEnd.diff(fragmentStart)
   const intervalSize = final.diff(initial)
 
+  let text = ''
+
+  if (label === 'detailed') {
+    
+    text = <>
+    {event.summary} <br /> {event.start.dateTime.format('MMM DD HH:mm:ss')} &ndash; {event.end.dateTime.format('MMM DD HH:mm:ss')}
+    </>
+  }
+
+  if (label === 'brief') {
+    text = event.summary
+  }
+
   return (
     <div
       style={{
@@ -146,23 +159,99 @@ function EventWindow({ initial, final, event, indent = 0, columns = 1 }) {
         top: (topOffset / intervalSize) * 100 + '%',
         left: indent * (100 / columns) + '%',
         boxShadow: '0px 0px 16px inset #008',
-        borderRadius: '8px',
         height: (windowLength / intervalSize) * 100 + '%',
         width: 100 / columns + '%',
         textOverflow: 'ellipsis',
         overflow: 'hidden',
-        padding: '0.5rem',
       }}
     >
-      {event.summary}<br />
-      {event.start.dateTime.format('MMM DD HH:mm:ss')}
-      -- {event.end.dateTime.format('MMM DD HH:mm:ss')}
-      <br /> indent: {indent}
+      {text}
     </div>
   )
 }
 
-function DayBreakdown({ day, unfilteredEvents }) {
+function DailyBreakdown({ day, unfilteredEvents, style, labels="detailed" }) {
+  console.time('DailyBreakdown rendering')
+
+  const startOfDay = day.startOf('day')
+  const endOfDay = day.endOf('day')
+
+  const relevantEvents = unfilteredEvents.filter(e =>
+    isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
+  )
+
+  const blocking = new WeakMap()
+  for (const r of relevantEvents) blocking.set(r, 0)
+
+  // Calculate indentation in case of overlapping events
+  const columns = []
+  // Place each event in a position which does not overlap any other event
+  for (const e of relevantEvents) {
+    // Find the first unoccupied column for this event
+
+    let placed = false
+
+    for (const column of columns) {
+      let available = true
+
+      // If any prior element of this column overlaps, the column is unavailable
+      for (const entry of column) {
+        if (
+          isOverlap(
+            entry.start.dateTime,
+            entry.end.dateTime,
+            e.start.dateTime,
+            e.end.dateTime
+          )
+        ) {
+          available = false
+          break
+        }
+      }
+
+      if (available) {
+        column.push(e)
+        placed = true
+        break
+      }
+    }
+
+    if (!placed) {
+      columns.push([e])
+    }
+  }
+
+  // Record the calculated indentation values
+  for (const [indent, column] of columns.entries()) {
+    for (const event of column) {
+      blocking.set(event, indent)
+      event.indent = indent
+    }
+  }
+
+  // Render the event cards
+  const rendered = (
+    <div style={{ height: '100%', ...style, position: 'relative' }}>
+      {relevantEvents.map((r, i) => (
+        <EventPane
+          key={i}
+          initial={startOfDay}
+          final={endOfDay}
+          event={r}
+          columns={columns.length}
+          indent={blocking.get(r)}
+          label={labels}
+        />
+      ))}
+    </div>
+  )
+
+  console.timeEnd('DailyBreakdown rendering')
+
+  return rendered
+}
+
+function DemoBreakdown({ day, unfilteredEvents }) {
   console.time('DayBreakdown rendering')
   const startOfDay = day.startOf('day')
   const endOfDay = day.endOf('day')
@@ -199,7 +288,7 @@ function DayBreakdown({ day, unfilteredEvents }) {
         ) {
           available = false
           break
-        } 
+        }
       }
 
       if (available) {
@@ -233,7 +322,7 @@ function DayBreakdown({ day, unfilteredEvents }) {
   let t = startOfDay
   for (let i = 0; i < blocks.length; i++) {
     blocks[i] = (
-      <div key={i} style={{...mockStyles.get('Default'), opacity: 0.5}}>
+      <div key={i} style={{ ...mockStyles.get('Default'), opacity: 0.5 }}>
         {t.format('HH:mm')}
       </div>
     )
@@ -243,7 +332,7 @@ function DayBreakdown({ day, unfilteredEvents }) {
         isOverlap(e.start.dateTime, e.end.dateTime, t, t.add(15, 'minutes'))
       ) {
         blocks[i] = (
-          <div key={i} style={{...mockStyles.get(e.summary), opacity: 0.5}}>
+          <div key={i} style={{ ...mockStyles.get(e.summary), opacity: 0.5 }}>
             {t.format('HH:mm')} {e.summary}
           </div>
         )
@@ -257,7 +346,7 @@ function DayBreakdown({ day, unfilteredEvents }) {
     <div style={{ position: 'relative' }}>
       {blocks}
       {relevantEvents.map((r, i) => (
-        <EventWindow
+        <EventPane
           key={i}
           initial={startOfDay}
           final={endOfDay}
@@ -280,7 +369,12 @@ function Demo() {
       </Typography>
       <Divider sx={{ mb: 6 }} />
 
-      <DayBreakdown day={dayjs()} unfilteredEvents={sampleEvents} />
+      <DemoBreakdown day={currentDate} unfilteredEvents={sampleEvents} />
+      <DailyBreakdown
+        day={currentDate}
+        unfilteredEvents={sampleEvents}
+        style={{ border: '3px dashed white', height: '500px' }}
+      />
       <TransitionGroup>
         {!expandedDate && (
           <Collapse timeout={350}>
@@ -298,6 +392,7 @@ function Demo() {
               <WeeklyCalendar
                 key={(expandedDate || currentDate).format('MM D')}
                 initialDate={expandedDate || currentDate}
+                eventList={sampleEvents}
               />
               <Button onClick={() => setExpandedDate(null)}>Back</Button>
             </div>
@@ -308,7 +403,7 @@ function Demo() {
   )
 }
 
-function WeeklyCalendar({ initialDate }) {
+function WeeklyCalendar({ initialDate, eventList = [] }) {
   const [active, setActive] = useState(initialDate)
 
   const calendarBody = useMemo(() => {
@@ -327,10 +422,13 @@ function WeeklyCalendar({ initialDate }) {
       <TableBody>
         <TableRow>
           {days.map(d => (
-            <TableCell key={d.format('MM D')}>
-              <Typography sx={{ wordBreak: 'break-all' }}>
-                {d.format('D')} ...
-              </Typography>
+            <TableCell key={d.format('MM D')} sx={{p: 0, boxShadow: '0px 0px 0.75rem inset #0008'}}>
+              <DailyBreakdown
+                day={d}
+                unfilteredEvents={eventList}
+                style={{ height: '500px' }}
+                labels="none"
+              />
             </TableCell>
           ))}
         </TableRow>
