@@ -23,6 +23,9 @@ import { useMemo, useRef, useState } from 'react'
 import * as dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
+import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import { TransitionGroup } from 'react-transition-group'
 
 const log = console.log.bind(console)
@@ -40,7 +43,7 @@ function createSampleEvent({ startTime, endTime, summary }) {
     // text
     summary: summary || 'Default Title',
     // text
-    description: 'Detailed description',
+    description: summary !== 'Exercise' && 'Detailed description',
     // object: creator: id <string> -- not yet exposed
     // object
     start: {
@@ -117,60 +120,177 @@ function isOverlap(firstStart, firstEnd, secondStart, secondEnd) {
 }
 
 const mockStyles = new Map([
-  ['Work', { backgroundColor: '#5283a8', fontSize: '0.75em' }],
-  ['Study', { backgroundColor: '#e9a47d', fontSize: '0.75em' }],
-  ['Exercise', { backgroundColor: '#d0518e', fontSize: '0.75em' }],
-  ['Default', { backgroundColor: 'midnightblue', fontSize: '0.75em' }],
+  ['Work', { accentColor: '#5283a8', fontSize: '0.75em' }],
+  ['Study', { accentColor: '#e9a47d', fontSize: '0.75em' }],
+  ['Exercise', { accentColor: '#d0518e', fontSize: '0.75em' }],
+  ['Default', { accentColor: 'midnightblue', fontSize: '0.75em' }],
 ])
 
-function EventPane({ initial, final, event, indent = 0, columns = 1, label="detailed" }) {
+function EventPane({
+  initial,
+  final,
+  event,
+  indent = 0,
+  columns = 1,
+  label = 'detailed',
+}) {
   if (!event) return null
 
+  const overflowBefore = event.start.dateTime.isBefore(initial)
+  const overflowAfter = event.end.dateTime.isAfter(final)
   // Crop the event duration to fit the window
-  const fragmentStart = initial.isBefore(event.start.dateTime)
-    ? event.start.dateTime
-    : initial
-  const fragmentEnd = final.isAfter(event.end.dateTime)
-    ? event.end.dateTime
-    : final
+  const fragmentStart = overflowBefore ? initial : event.start.dateTime
+  const fragmentEnd = overflowAfter ? final : event.end.dateTime
 
   const topOffset = fragmentStart.diff(initial)
   const windowLength = fragmentEnd.diff(fragmentStart)
   const intervalSize = final.diff(initial)
 
-  let text = ''
+  const referenceStyle = mockStyles.get(event.summary) || {}
+  const accentColor = referenceStyle.accentColor || 'gray'
 
-  if (label === 'detailed') {
-    
-    text = <>
-    {event.summary} <br /> {event.start.dateTime.format('MMM DD HH:mm:ss')} &ndash; {event.end.dateTime.format('MMM DD HH:mm:ss')}
-    </>
-  }
+  let header = null
+  let details = null
 
   if (label === 'brief') {
-    text = event.summary
+    header = event.summary
   }
 
+  if (label === 'detailed') {
+    header = event.summary
+    details = (
+      <div
+        style={{
+          paddingLeft: '0.25rem',
+          paddingRight: '0.25rem',
+        }}
+      >
+        {event.start.dateTime.format('MMM DD HH:mm:ss')} &ndash;{' '}
+        {event.end.dateTime.format('MMM DD HH:mm:ss')}
+        {event.description && (
+          <>
+            <br />
+            {event.description}
+            &mdash;Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolor, qui
+            illum dolorum, quaerat corporis dolores optio exercitationem totam
+            perspiciatis libero aliquid provident ullam similique aut in
+            temporibus autem eligendi obcaecati vel facere at! Temporibus eius,
+            iure voluptatibus est dolorem porro. Adipisci blanditiis tempora ad
+            architecto reprehenderit deleniti dolor sunt officia?
+            <br />
+          </>
+        )}
+      </div>
+    )
+  }
+
+  const overflowArrows = (
+    <>
+      {overflowBefore && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 'calc(50% - 8px)',
+            top: -24,
+          }}
+        >
+          <KeyboardDoubleArrowUpIcon
+            sx={{ fontSize: 16, mb: -0.5, color: accentColor }}
+          />
+        </div>
+      )}
+      {overflowAfter && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 'calc(50% - 8px)',
+            top: '100%',
+          }}
+        >
+          <KeyboardDoubleArrowDownIcon
+            sx={{ fontSize: 16, mb: -0.5, color: accentColor }}
+          />
+        </div>
+      )}
+    </>
+  )
+
   return (
+    // Outer container -- overflow allowed for arrow indicators
     <div
       style={{
-        ...mockStyles.get(event.summary),
         position: 'absolute',
         top: (topOffset / intervalSize) * 100 + '%',
         left: indent * (100 / columns) + '%',
-        boxShadow: '0px 0px 16px inset #008',
         height: (windowLength / intervalSize) * 100 + '%',
         width: 100 / columns + '%',
-        textOverflow: 'ellipsis',
-        overflow: 'hidden',
       }}
     >
-      {text}
+      {overflowArrows}
+
+      {/* Inner container -- overflow hidden */}
+      <div
+        style={{
+          ...referenceStyle,
+          backgroundColor: '#223',
+
+          overflow: 'hidden',
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+
+          borderLeft: `0.125rem ${accentColor} solid`,
+          borderRight: `0.125rem ${accentColor} solid`,
+          borderTop:
+            `0.125rem ${accentColor} ` + (overflowBefore ? 'dashed' : 'solid'),
+          borderBottom:
+            `0.125rem ${accentColor} ` + (overflowAfter ? 'dashed' : 'solid'),
+        }}
+      >
+        {/* pane header */}
+        <div
+          style={{
+            backgroundColor: accentColor,
+            display: 'flex',
+            paddingLeft: '0.25rem',
+            paddingRight: '0.25rem',
+          }}
+        >
+          {header}
+        </div>
+        {/* pane body */}
+        {details && (
+          <div
+            style={{
+              display: 'flex',
+              flexGrow: 1,
+              overflow: 'hidden',
+              position: 'relative',
+            }}
+          >
+            {details}
+
+            {event.description && (
+              // fade-out overlay to indicate possible overflowing text:
+              <div
+                style={{
+                  height: '2em',
+                  width: '100%',
+                  position: 'absolute',
+                  bottom: 0,
+                  background: 'linear-gradient(to top, #223, transparent)',
+                }}
+              />
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
-function DailyBreakdown({ day, unfilteredEvents, style, labels="detailed" }) {
+function DailyBreakdown({ day, unfilteredEvents, style, labels = 'detailed' }) {
   console.time('DailyBreakdown rendering')
 
   const startOfDay = day.startOf('day')
@@ -370,11 +490,6 @@ function Demo() {
       <Divider sx={{ mb: 6 }} />
 
       <DemoBreakdown day={currentDate} unfilteredEvents={sampleEvents} />
-      <DailyBreakdown
-        day={currentDate}
-        unfilteredEvents={sampleEvents}
-        style={{ border: '3px dashed white', height: '500px' }}
-      />
       <TransitionGroup>
         {!expandedDate && (
           <Collapse timeout={350}>
@@ -390,11 +505,11 @@ function Demo() {
           <Collapse timeout={350}>
             <div>
               <WeeklyCalendar
+                onBack={() => setExpandedDate(null)}
                 key={(expandedDate || currentDate).format('MM D')}
                 initialDate={expandedDate || currentDate}
                 eventList={sampleEvents}
               />
-              <Button onClick={() => setExpandedDate(null)}>Back</Button>
             </div>
           </Collapse>
         )}
@@ -403,7 +518,7 @@ function Demo() {
   )
 }
 
-function WeeklyCalendar({ initialDate, eventList = [] }) {
+function WeeklyCalendar({ initialDate, onBack, eventList = [] }) {
   const [active, setActive] = useState(initialDate)
 
   const calendarBody = useMemo(() => {
@@ -422,7 +537,10 @@ function WeeklyCalendar({ initialDate, eventList = [] }) {
       <TableBody>
         <TableRow>
           {days.map(d => (
-            <TableCell key={d.format('MM D')} sx={{p: 0, boxShadow: '0px 0px 0.75rem inset #0008'}}>
+            <TableCell
+              key={d.format('MM D')}
+              sx={{ p: 0, boxShadow: '0px 0px 0.75rem inset #0008' }}
+            >
               <DailyBreakdown
                 day={d}
                 unfilteredEvents={eventList}
@@ -441,19 +559,26 @@ function WeeklyCalendar({ initialDate, eventList = [] }) {
     <Box>
       <Paper elevation={1} sx={{ px: 2, py: 2 }}>
         <Stack direction="row">
-          <IconButton
-            aria-label="previous week"
-            onClick={() => setActive(active.subtract(1, 'week'))}
-          >
-            <NavigateBeforeIcon />
-          </IconButton>
+          <Stack>
+            <IconButton
+              sx={{ mt: 1 }}
+              aria-label="back to monthly view"
+              onClick={onBack}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+
+            <IconButton
+              sx={{ flexGrow: 1 }}
+              aria-label="previous week"
+              onClick={() => setActive(active.subtract(1, 'week'))}
+            >
+              <NavigateBeforeIcon />
+            </IconButton>
+          </Stack>
 
           <Stack direction="row" flexWrap="wrap" sx={{ mt: 1, mb: 4 }}>
-            <Typography
-              variant="h5"
-              component="div"
-              sx={{ width: '100%', mb: 3 }}
-            >
+            <Typography variant="h5" component="div" sx={{ width: '100%' }}>
               Week of {active.startOf('week').format('MMMM D, YYYY')}
             </Typography>
 
