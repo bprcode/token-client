@@ -121,7 +121,7 @@ function isOverlap(firstStart, firstEnd, secondStart, secondEnd) {
 
 // Using MUI utility method augmentColor to generate palette entries
 const defaultTheme = createTheme({
-  palette: { tonalOffset: 0.25 }
+  palette: { tonalOffset: 0.25 },
 })
 const mockStyles = new Map([
   [
@@ -190,15 +190,18 @@ function EventPane({
   const accentColor = referenceStyle.augmentedColors.main || 'gray'
   const shadeColor = referenceStyle.augmentedColors.dark || '#111'
 
-  const borderStyles = label !== 'none' ?
-  {borderLeft: `0.125rem ${accentColor} solid`,
-  borderRight: `0.125rem ${accentColor} solid`,
-  borderTop:
-    `0.125rem ${accentColor} ` + (overflowBefore ? 'dashed' : 'solid'),
-  borderBottom:
-    `0.125rem ${accentColor} ` + (overflowAfter ? 'dashed' : 'solid'),}
-    : {}
-    
+  const borderStyles =
+    label !== 'none'
+      ? {
+          borderLeft: `0.125rem ${accentColor} solid`,
+          borderRight: `0.125rem ${accentColor} solid`,
+          borderTop:
+            `0.125rem ${accentColor} ` + (overflowBefore ? 'dashed' : 'solid'),
+          borderBottom:
+            `0.125rem ${accentColor} ` + (overflowAfter ? 'dashed' : 'solid'),
+        }
+      : {}
+
   let header = null
   let details = null
 
@@ -266,86 +269,89 @@ function EventPane({
     </>
   )
 
-  return (<>
-    <div
-      style={{
-        position: 'absolute',
-        top: (topOffset / intervalSize) * 100 + '%',
-        left: indent * (100 / columns) + '%',
-        height: (windowLength / intervalSize) * 100 + '%',
-        width: 100 / columns + '%',
-        zIndex: 1,
-      }}
-    >
-
-      {overflowArrows}
-
-      {/* Inner container -- overflow hidden */}
+  return (
+    <>
       <div
         style={{
-          boxShadow: (label === 'none' && `0px 0px 1rem ${shadeColor} inset`),
-          ...borderStyles,
-          ...referenceStyle,
-          backgroundColor: label === 'detailed' ? '#223' : accentColor,
-
-          overflow: 'hidden',
-          height: '100%',
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
+          position: 'absolute',
+          top: (topOffset / intervalSize) * 100 + '%',
+          left: indent * (100 / columns) + '%',
+          height: (windowLength / intervalSize) * 100 + '%',
+          width: 100 / columns + '%',
+          zIndex: 1,
         }}
       >
-        {/* pane header */}
+        {overflowArrows}
+
+        {/* Inner container -- overflow hidden */}
         <div
           style={{
-            backgroundColor: accentColor,
-            color: referenceStyle.augmentedColors.contrastText,
-            paddingLeft: '0.25rem',
-            paddingRight: '0.25rem',
-            whiteSpace: 'nowrap',
+            boxShadow: label === 'none' && `0px 0px 1rem ${shadeColor} inset`,
+            ...borderStyles,
+            ...referenceStyle,
+            backgroundColor: label === 'detailed' ? '#223' : accentColor,
+
+            overflow: 'hidden',
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
-          {header}
-        </div>
-        {/* pane body */}
-        {details && (
+          {/* pane header */}
           <div
             style={{
-              display: 'flex',
-              flexGrow: 1,
-              overflow: 'hidden',
-              position: 'relative',
+              backgroundColor: accentColor,
+              color: referenceStyle.augmentedColors.contrastText,
+              paddingLeft: '0.25rem',
+              paddingRight: '0.25rem',
+              whiteSpace: 'nowrap',
             }}
           >
-            {details}
-
-            {event.description && (
-              // fade-out overlay to indicate possible overflowing text:
-              <div
-                style={{
-                  height: '2em',
-                  width: '100%',
-                  position: 'absolute',
-                  bottom: 0,
-                  background: 'linear-gradient(to top, #223, transparent)',
-                }}
-              />
-            )}
+            {header}
           </div>
-        )}
-      </div>
-    </div>
+          {/* pane body */}
+          {details && (
+            <div
+              style={{
+                display: 'flex',
+                flexGrow: 1,
+                overflow: 'hidden',
+                position: 'relative',
+              }}
+            >
+              {details}
 
-{/* drop shadow mock pseudo-element for correct z-indexing: */}
-<div style={{
-        position: 'absolute',
-        top: (topOffset / intervalSize) * 100 + '%',
-        left: indent * (100 / columns) + '%',
-        height: (windowLength / intervalSize) * 100 + '%',
-        width: 100 / columns + '%',
-        boxShadow: '0.25rem 0.25rem 0.5rem #000',
-      }} />
-  </>)
+              {event.description && (
+                // fade-out overlay to indicate possible overflowing text:
+                <div
+                  style={{
+                    height: '2em',
+                    width: '100%',
+                    position: 'absolute',
+                    bottom: 0,
+                    background: 'linear-gradient(to top, #223, transparent)',
+                  }}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* drop shadow mock pseudo-element for correct z-indexing: */}
+      <div
+        style={{
+          position: 'absolute',
+          top: (topOffset / intervalSize) * 100 + '%',
+          left: indent * (100 / columns) + '%',
+          height: (windowLength / intervalSize) * 100 + '%',
+          width: 100 / columns + '%',
+          boxShadow: '0.25rem 0.25rem 0.5rem #000',
+        }}
+      />
+    </>
+  )
 }
 
 function DailyBreakdown({ day, unfilteredEvents, style, labels = 'detailed' }) {
@@ -600,7 +606,8 @@ function WeeklyCalendar({ initialDate, onBack, eventList = [] }) {
       <TableBody>
         <TableRow>
           {days.map(d => (
-            <StyledAlternateCell key={d.format('MM D')} sx={{ p: 0 }}>
+            // additional y-padding to fit overflow indicator arrows:
+            <StyledAlternateCell key={d.format('MM D')} sx={{ px: 0, py: 3 }}>
               <DailyBreakdown
                 day={d}
                 unfilteredEvents={eventList}
