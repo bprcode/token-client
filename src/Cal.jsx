@@ -201,8 +201,8 @@ function EventPane({
 
   const referenceStyle =
     mockStyles.get(event.summary) || mockStyles.get('Default')
-  const accentColor = referenceStyle.augmentedColors.main || 'gray'
-  const shadeColor = referenceStyle.augmentedColors.dark || '#111'
+  const accentColor = referenceStyle.augmentedColors.main
+  const shadeColor = referenceStyle.augmentedColors.dark
 
   const borderStyles =
     label !== 'none'
@@ -300,10 +300,10 @@ function EventPane({
         {/* Inner container -- overflow hidden */}
         <div
           style={{
-            boxShadow: label === 'none' && `0px 0px 1rem ${shadeColor} inset`,
+            boxShadow: label === 'none' && `0px 0px 2rem ${accentColor} inset`,
             ...borderStyles,
             ...referenceStyle,
-            backgroundColor: label === 'detailed' ? '#223' : accentColor,
+            backgroundColor: label === 'detailed' ? '#223' : shadeColor,
 
             overflow: 'hidden',
             height: '100%',
@@ -361,7 +361,7 @@ function EventPane({
           left: indent * (100 / columns) + '%',
           height: (windowLength / intervalSize) * 100 + '%',
           width: 100 / columns + '%',
-          boxShadow: '0.25rem 0.25rem 0.5rem #000',
+          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
         }}
       />
     </>
@@ -767,7 +767,7 @@ function AbbreviatedBreakdown({ day, unfilteredEvents }) {
     )
   }
 
-  return list
+  return <div style={{boxShadow: '0rem 0.25rem 0.5rem #0004'}}>{list}</div>
 }
 
 function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
