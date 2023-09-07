@@ -16,7 +16,6 @@ import {
   CssBaseline,
   Collapse,
   Divider,
-  Button,
   createTheme,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
@@ -71,7 +70,11 @@ function createSampleEvent({ startTime, endTime, summary }) {
 }
 
 function createSampleWeek(aroundDate) {
-  const labels = ['Work', 'Study', 'Exercise']
+  const labels = [
+    'Work',
+    'Study',
+    'Exercise',
+  ]
   const startOfPriorWeek = aroundDate.subtract(1, 'week').startOf('week')
   const sampleEvents = []
 
@@ -167,10 +170,10 @@ const mockStyles = new Map([
   [
     'Default',
     {
-      accentColor: '#00004C',
+      accentColor: '#6000ac',
       fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#00004C' },
+        color: { main: '#6000ac' },
       }),
     },
   ],
@@ -196,7 +199,8 @@ function EventPane({
   const windowLength = fragmentEnd.diff(fragmentStart)
   const intervalSize = final.diff(initial)
 
-  const referenceStyle = mockStyles.get(event.summary) || {}
+  const referenceStyle =
+    mockStyles.get(event.summary) || mockStyles.get('Default')
   const accentColor = referenceStyle.augmentedColors.main || 'gray'
   const shadeColor = referenceStyle.augmentedColors.dark || '#111'
 
@@ -500,114 +504,6 @@ function DailyBreakdown({ day, unfilteredEvents, style, labels = 'detailed' }) {
   return rendered
 }
 
-function DemoBreakdown({ day, unfilteredEvents }) {
-  console.time('DayBreakdown rendering')
-  const startOfDay = day.startOf('day')
-  const endOfDay = day.endOf('day')
-
-  const relevantEvents = unfilteredEvents.filter(e =>
-    isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
-  )
-
-  relevantEvents.forEach(e => {
-    e.indent = 0
-    e.overlaps = 0
-  })
-
-  // Calculate indentation in case of overlapping events
-  const columns = []
-  // Place each event in a position which does not overlap any other event
-  for (const e of relevantEvents) {
-    // Find the first unoccupied column for this event
-
-    let placed = false
-
-    for (const column of columns) {
-      let available = true
-
-      // If any prior element of this column overlaps, the column is unavailable
-      for (const entry of column) {
-        if (
-          isOverlap(
-            entry.start.dateTime,
-            entry.end.dateTime,
-            e.start.dateTime,
-            e.end.dateTime
-          )
-        ) {
-          available = false
-          break
-        }
-      }
-
-      if (available) {
-        column.push(e)
-        placed = true
-        break
-      }
-    }
-
-    if (!placed) {
-      columns.push([e])
-    }
-  }
-
-  // Record the calculated indentation values
-  for (const [indent, column] of columns.entries()) {
-    for (const event of column) {
-      event.indent = indent
-    }
-  }
-
-  log('relevantEvents: ', relevantEvents)
-
-  // debug -- temporary
-  // later add support for double-booking, more efficient structure
-  const blocks = Array(24 * 4).fill(null)
-
-  //log('Working with this list of relevant events:', relevantEvents)
-
-  let t = startOfDay
-  for (let i = 0; i < blocks.length; i++) {
-    blocks[i] = (
-      <div key={i} style={{ ...mockStyles.get('Default'), opacity: 0.5 }}>
-        {t.format('HH:mm')}
-      </div>
-    )
-
-    for (const e of relevantEvents) {
-      if (
-        isOverlap(e.start.dateTime, e.end.dateTime, t, t.add(15, 'minutes'))
-      ) {
-        blocks[i] = (
-          <div key={i} style={{ ...mockStyles.get(e.summary), opacity: 0.5 }}>
-            {t.format('HH:mm')} {e.summary}
-          </div>
-        )
-      }
-    }
-    t = t.add(15, 'minutes')
-  }
-
-  console.timeEnd('DayBreakdown rendering')
-  return (
-    <div style={{ position: 'relative' }}>
-      {blocks}
-      {relevantEvents.map((r, i) => (
-        <EventPane
-          key={i}
-          initial={startOfDay}
-          final={endOfDay}
-          event={r}
-          columns={columns.length}
-          indent={r.indent}
-          label="detailed"
-        />
-      ))}
-    </div>
-  )
-}
-
 function Demo() {
   const [mode, setMode] = useState('month')
   const containerRef = useRef(null)
@@ -619,13 +515,13 @@ function Demo() {
       </Typography>
       <Divider sx={{ mb: 6 }} />
 
-      {/* <DemoBreakdown day={currentDate} unfilteredEvents={sampleEvents} /> */}
       <TransitionGroup>
         {mode === 'month' && (
           <Collapse timeout={350}>
             <div>
               <MonthlyCalendar
                 initialDate={currentDate}
+                unfilteredEvents={sampleEvents}
                 onExpand={date => {
                   setExpandedDate(date)
                   setMode('week')
@@ -662,7 +558,7 @@ function Demo() {
                 >
                   <ArrowBackIcon />
                 </IconButton>
-                <Typography variant="h5" component="div">
+                <Typography variant="h5" component="div" mb={2}>
                   {expandedDate.format('dddd, MMMM D')}
                 </Typography>
               </Stack>
@@ -815,7 +711,66 @@ function ExpandedWeekHeader({ sunday }) {
   )
 }
 
-function MonthlyCalendar({ initialDate, onExpand }) {
+function AbbreviatedBreakdown({ day, unfilteredEvents }) {
+  const startOfDay = day.startOf('day')
+  const endOfDay = day.endOf('day')
+
+  const relevantEvents = unfilteredEvents.filter(e =>
+    isOverlap(e.start.dateTime, e.end.dateTime, startOfDay, endOfDay)
+  )
+
+  if (relevantEvents.length === 0) return
+
+  const lastMatch = relevantEvents[relevantEvents.length - 1]
+  const list = []
+
+  for (const r of relevantEvents) {
+    if (list.length === 3) {
+      list.push(
+        <div
+          style={{
+            backgroundColor: '#8884',
+            fontSize: '0.75em',
+            width: '100%',
+            paddingLeft: '0.25rem',
+            paddingRight: '0.25rem',
+            borderBottomLeftRadius: 4,
+            borderBottomRightRadius: 4,
+          }}
+        >
+          +{relevantEvents.length - 3}
+        </div>
+      )
+      break
+    }
+
+    const style = mockStyles.get(r.summary) || mockStyles.get('Default')
+
+    list.push(
+      <div
+        key={list.length}
+        style={{
+          backgroundColor: style.augmentedColors.main,
+          color: style.augmentedColors.contrastText,
+          fontSize: '0.75em',
+          width: '100%',
+          paddingLeft: '0.25rem',
+          paddingRight: '0.25rem',
+          borderTopLeftRadius: list.length === 0 && 4,
+          borderTopRightRadius: list.length === 0 && 4,
+          borderBottomLeftRadius: r === lastMatch && 4,
+          borderBottomRightRadius: r === lastMatch && 4,
+        }}
+      >
+        {r.summary}
+      </div>
+    )
+  }
+
+  return list
+}
+
+function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   const [active, setActive] = useState(initialDate)
   const month = active.format('MMMM')
   const year = active.year()
@@ -823,6 +778,7 @@ function MonthlyCalendar({ initialDate, onExpand }) {
   const calendarBody = useMemo(() => {
     log(`📆 (${(Math.random() * 1000).toFixed()}) memoizing month display`)
     const days = []
+    const today = dayjs()
     const startOfMonth = active.startOf('month')
     const endOfMonth = active.endOf('month')
 
@@ -852,17 +808,49 @@ function MonthlyCalendar({ initialDate, onExpand }) {
       for (let j = i; j < i + 7; j++) {
         const day = days[j]
         week.push(
-          <TableCell key={day.format('MM D')}>
-            <Typography
-              sx={{
-                opacity:
-                  day.isBefore(startOfMonth) || day.isAfter(endOfMonth)
-                    ? 0.2
-                    : undefined,
-              }}
-            >
-              {day.format('D')}
-            </Typography>
+          <TableCell
+            key={day.format('MM D')}
+            sx={{
+              paddingLeft: 0.25,
+              paddingRight: 0.25,
+              paddingTop: 0.25,
+              paddingBottom: 1.25,
+              height: '5rem',
+              verticalAlign: 'top',
+              maxWidth: '1px', // Not actually 1px; fits flex container
+              overflow: 'hidden',
+            }}
+          >
+            {day.isSame(today, 'day') ? (
+              <Typography
+                component="span"
+                sx={{
+                  backgroundColor: 'secondary.main',
+                  color: 'secondary.contrastText',
+                  paddingLeft: 0.5,
+                  paddingRight: 0.5,
+                  borderRadius: 2,
+                }}
+              >
+                {day.format('D')}
+              </Typography>
+            ) : (
+              <Typography
+                sx={{
+                  opacity:
+                    day.isBefore(startOfMonth) || day.isAfter(endOfMonth)
+                      ? 0.2
+                      : undefined,
+                }}
+              >
+                {day.format('D')}
+              </Typography>
+            )}
+
+            <AbbreviatedBreakdown
+              day={day}
+              unfilteredEvents={unfilteredEvents}
+            />
           </TableCell>
         )
       }
@@ -878,7 +866,7 @@ function MonthlyCalendar({ initialDate, onExpand }) {
     }
 
     return <TableBody>{body}</TableBody>
-  }, [active, onExpand])
+  }, [active, onExpand, unfilteredEvents])
 
   log(`(${(Math.random() * 1000).toFixed()}) Rendering monthly calendar`)
   return (
@@ -892,7 +880,11 @@ function MonthlyCalendar({ initialDate, onExpand }) {
             <NavigateBeforeIcon />
           </IconButton>
 
-          <Stack direction="row" flexWrap="wrap" sx={{ mt: 1, mb: 4 }}>
+          <Stack
+            direction="row"
+            flexWrap="wrap"
+            sx={{ mt: 1, mb: 4, flexGrow: 1 }}
+          >
             <Typography
               variant="h4"
               component="div"
