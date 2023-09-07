@@ -300,9 +300,9 @@ function EventPane({
           style={{
             backgroundColor: accentColor,
             color: referenceStyle.augmentedColors.contrastText,
-            display: 'flex',
             paddingLeft: '0.25rem',
             paddingRight: '0.25rem',
+            whiteSpace: 'nowrap',
           }}
         >
           {header}
