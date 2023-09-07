@@ -16,6 +16,7 @@ import {
   CssBaseline,
   Collapse,
   Divider,
+  Button,
   createTheme,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
@@ -31,6 +32,15 @@ import { TransitionGroup } from 'react-transition-group'
 const log = console.log.bind(console)
 const currentDate = dayjs()
 const weekdayAbbreviations = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+const StyledAlternateCell = styled(TableCell)(({ theme }) => ({
+  '&:nth-of-type(odd)': { backgroundColor: '#0004' },
+  '&:hover': { backgroundColor: theme.palette.action.hover },
+}))
+
+const StyledAlternateBox = styled(Box)(() => ({
+  '&:nth-of-type(odd)': { backgroundColor: '#0004' },
+}))
 
 function createSampleEvent({ startTime, endTime, summary }) {
   return {
@@ -354,6 +364,61 @@ function EventPane({
   )
 }
 
+function SectionedInterval({
+  initial,
+  final,
+  step,
+  children,
+  outsideHeight,
+  insideHeight,
+}) {
+  const sections = []
+  let t = initial
+  const t1 = initial.add(...step)
+  const stepPercentage = (100 * t1.diff(initial)) / final.diff(initial)
+  let n = 0
+  while (t.isBefore(final)) {
+    sections.push(
+      <StyledAlternateBox
+        key={sections.length}
+        style={{
+          position: 'absolute',
+          top: `${n * stepPercentage}%`,
+          left: 0,
+          height: stepPercentage + '%',
+          width: '100%',
+          color: '#fff4',
+        }}
+      >
+        {t.format('HH:mm')}
+      </StyledAlternateBox>
+    )
+    t = t.add(...step)
+    n++
+  }
+
+  return (
+    <div
+      style={{
+        paddingTop: '1.5rem',
+        paddingBottom: '1.5rem',
+        overflowY: 'auto',
+        height: outsideHeight,
+      }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          height: insideHeight,
+        }}
+      >
+        {children}
+        {sections}
+      </div>
+    </div>
+  )
+}
+
 function DailyBreakdown({ day, unfilteredEvents, style, labels = 'detailed' }) {
   console.time('DailyBreakdown rendering')
 
@@ -544,6 +609,7 @@ function DemoBreakdown({ day, unfilteredEvents }) {
 }
 
 function Demo() {
+  const [mode, setMode] = useState('month')
   const containerRef = useRef(null)
   const [expandedDate, setExpandedDate] = useState(null)
   return (
@@ -553,28 +619,67 @@ function Demo() {
       </Typography>
       <Divider sx={{ mb: 6 }} />
 
-      <DemoBreakdown day={currentDate} unfilteredEvents={sampleEvents} />
+      {/* <DemoBreakdown day={currentDate} unfilteredEvents={sampleEvents} /> */}
       <TransitionGroup>
-        {!expandedDate && (
+        {mode === 'month' && (
           <Collapse timeout={350}>
             <div>
               <MonthlyCalendar
                 initialDate={currentDate}
-                onExpand={date => setExpandedDate(date)}
+                onExpand={date => {
+                  setExpandedDate(date)
+                  setMode('week')
+                }}
               />
             </div>
           </Collapse>
         )}
-        {expandedDate && (
+        {mode === 'week' && (
           <Collapse timeout={350}>
-            <div>
-              <WeeklyCalendar
-                onBack={() => setExpandedDate(null)}
-                key={(expandedDate || currentDate).format('MM D')}
-                initialDate={expandedDate || currentDate}
-                eventList={sampleEvents}
-              />
-            </div>
+            <WeeklyCalendar
+              onBack={() => {
+                setExpandedDate(null)
+                setMode('month')
+              }}
+              key={(expandedDate || currentDate).format('MM D')}
+              initialDate={expandedDate || currentDate}
+              eventList={sampleEvents}
+              onExpand={date => {
+                setExpandedDate(date)
+                setMode('day')
+              }}
+            />
+          </Collapse>
+        )}
+        {mode === 'day' && (
+          <Collapse timeout={350}>
+            <Paper elevation={1} sx={{ px: 2, py: 2 }}>
+              <Stack direction="row">
+                <IconButton
+                  sx={{ mt: 0 }}
+                  aria-label="back to weekly view"
+                  onClick={() => setMode('week')}
+                >
+                  <ArrowBackIcon />
+                </IconButton>
+                <Typography variant="h5" component="div">
+                  {expandedDate.format('dddd, MMMM D')}
+                </Typography>
+              </Stack>
+
+              <SectionedInterval
+                initial={expandedDate.startOf('day')}
+                final={expandedDate.endOf('day')}
+                step={[1, 'hour']}
+                outsideHeight="500px"
+                insideHeight="1800px"
+              >
+                <DailyBreakdown
+                  day={expandedDate}
+                  unfilteredEvents={sampleEvents}
+                />
+              </SectionedInterval>
+            </Paper>
           </Collapse>
         )}
       </TransitionGroup>
@@ -582,12 +687,7 @@ function Demo() {
   )
 }
 
-const StyledAlternateCell = styled(TableCell)(_ => ({
-  // backgroundColor: 'green',
-  '&:nth-of-type:(odd)': { backgroundColor: 'blue' },
-}))
-
-function WeeklyCalendar({ initialDate, onBack, eventList = [] }) {
+function WeeklyCalendar({ initialDate, onBack, onExpand, eventList = [] }) {
   const [active, setActive] = useState(initialDate)
 
   const calendarBody = useMemo(() => {
@@ -607,11 +707,15 @@ function WeeklyCalendar({ initialDate, onBack, eventList = [] }) {
         <TableRow>
           {days.map(d => (
             // additional y-padding to fit overflow indicator arrows:
-            <StyledAlternateCell key={d.format('MM D')} sx={{ px: 0, py: 3 }}>
+            <StyledAlternateCell
+              key={d.format('MM D')}
+              sx={{ px: 1, py: 3 }}
+              onClick={() => onExpand(d)}
+            >
               <DailyBreakdown
                 day={d}
                 unfilteredEvents={eventList}
-                style={{ height: '500px' }}
+                style={{ height: '350px' }}
                 labels="none"
               />
             </StyledAlternateCell>
@@ -619,53 +723,55 @@ function WeeklyCalendar({ initialDate, onBack, eventList = [] }) {
         </TableRow>
       </TableBody>
     )
-  }, [active, eventList])
+  }, [active, eventList, onExpand])
 
   log(`(${(Math.random() * 1000).toFixed()}) Rendering weekly calendar`)
   return (
-    <Box>
-      <Paper elevation={1} sx={{ px: 2, py: 2 }}>
-        <Stack direction="row">
-          <Stack>
-            <IconButton
-              sx={{ mt: 1 }}
-              aria-label="back to monthly view"
-              onClick={onBack}
-            >
-              <ArrowBackIcon />
-            </IconButton>
-
-            <IconButton
-              sx={{ flexGrow: 1 }}
-              aria-label="previous week"
-              onClick={() => setActive(active.subtract(1, 'week'))}
-            >
-              <NavigateBeforeIcon />
-            </IconButton>
-          </Stack>
-
-          <Stack direction="row" flexWrap="wrap" sx={{ mt: 1, mb: 4 }}>
-            <Typography variant="h5" component="div" sx={{ width: '100%' }}>
-              Week of {active.startOf('week').format('MMMM D, YYYY')}
-            </Typography>
-
-            <TableContainer component={Paper}>
-              <Table>
-                <ExpandedWeekHeader sunday={active.startOf('week')} />
-                {calendarBody}
-              </Table>
-            </TableContainer>
-          </Stack>
+    <Paper elevation={1} sx={{ px: 2, py: 2 }}>
+      <Stack direction="row">
+        <Stack>
+          <IconButton
+            sx={{ mt: 1 }}
+            aria-label="back to monthly view"
+            onClick={onBack}
+          >
+            <ArrowBackIcon />
+          </IconButton>
 
           <IconButton
-            aria-label="next week"
-            onClick={() => setActive(active.add(1, 'week'))}
+            sx={{ flexGrow: 1 }}
+            aria-label="previous week"
+            onClick={() => setActive(active.subtract(1, 'week'))}
           >
-            <NavigateNextIcon />
+            <NavigateBeforeIcon />
           </IconButton>
         </Stack>
-      </Paper>
-    </Box>
+
+        <Stack direction="row" flexWrap="wrap" sx={{ mt: 1, mb: 4 }}>
+          <Typography
+            variant="h5"
+            component="div"
+            sx={{ width: '100%', mb: 3 }}
+          >
+            Week of {active.startOf('week').format('MMMM D, YYYY')}
+          </Typography>
+
+          <TableContainer component={Paper}>
+            <Table>
+              <ExpandedWeekHeader sunday={active.startOf('week')} />
+              {calendarBody}
+            </Table>
+          </TableContainer>
+        </Stack>
+
+        <IconButton
+          aria-label="next week"
+          onClick={() => setActive(active.add(1, 'week'))}
+        >
+          <NavigateNextIcon />
+        </IconButton>
+      </Stack>
+    </Paper>
   )
 }
 
@@ -694,10 +800,10 @@ function ExpandedWeekHeader({ sunday }) {
 
   while (d.isBefore(endOfWeek)) {
     headingCells.push(
-      <TableCell align="center" key={d.format('D')}>
+      <StyledAlternateCell align="center" key={d.format('D')}>
         <Typography variant="caption">{d.format('ddd')}</Typography>
         <Typography variant="h5">{d.format('D')}</Typography>
-      </TableCell>
+      </StyledAlternateCell>
     )
     d = d.add(1, 'day')
   }
