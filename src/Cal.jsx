@@ -15,8 +15,8 @@ import {
   styled,
   CssBaseline,
   Collapse,
-  Button,
   Divider,
+  createTheme,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import { useMemo, useRef, useState } from 'react'
@@ -119,11 +119,51 @@ function isOverlap(firstStart, firstEnd, secondStart, secondEnd) {
   return true
 }
 
+// Using MUI utility method augmentColor to generate palette entries
+const defaultTheme = createTheme({
+  palette: { tonalOffset: 0.25 }
+})
 const mockStyles = new Map([
-  ['Work', { accentColor: '#5283a8', fontSize: '0.75em' }],
-  ['Study', { accentColor: '#e9a47d', fontSize: '0.75em' }],
-  ['Exercise', { accentColor: '#d0518e', fontSize: '0.75em' }],
-  ['Default', { accentColor: 'midnightblue', fontSize: '0.75em' }],
+  [
+    'Work',
+    {
+      accentColor: '#5283a8',
+      fontSize: '0.75em',
+      augmentedColors: defaultTheme.palette.augmentColor({
+        color: { main: '#5283a8' },
+      }),
+    },
+  ],
+  [
+    'Study',
+    {
+      accentColor: '#e9a47d',
+      fontSize: '0.75em',
+      augmentedColors: defaultTheme.palette.augmentColor({
+        color: { main: '#e9a47d' },
+      }),
+    },
+  ],
+  [
+    'Exercise',
+    {
+      accentColor: '#d0518e',
+      fontSize: '0.75em',
+      augmentedColors: defaultTheme.palette.augmentColor({
+        color: { main: '#d0518e' },
+      }),
+    },
+  ],
+  [
+    'Default',
+    {
+      accentColor: '#00004C',
+      fontSize: '0.75em',
+      augmentedColors: defaultTheme.palette.augmentColor({
+        color: { main: '#00004C' },
+      }),
+    },
+  ],
 ])
 
 function EventPane({
@@ -147,8 +187,18 @@ function EventPane({
   const intervalSize = final.diff(initial)
 
   const referenceStyle = mockStyles.get(event.summary) || {}
-  const accentColor = referenceStyle.accentColor || 'gray'
+  const accentColor = referenceStyle.augmentedColors.main || 'gray'
+  const shadeColor = referenceStyle.augmentedColors.dark || '#111'
 
+  const borderStyles = label !== 'none' ?
+  {borderLeft: `0.125rem ${accentColor} solid`,
+  borderRight: `0.125rem ${accentColor} solid`,
+  borderTop:
+    `0.125rem ${accentColor} ` + (overflowBefore ? 'dashed' : 'solid'),
+  borderBottom:
+    `0.125rem ${accentColor} ` + (overflowAfter ? 'dashed' : 'solid'),}
+    : {}
+    
   let header = null
   let details = null
 
@@ -171,12 +221,13 @@ function EventPane({
           <>
             <br />
             {event.description}
-            &mdash;Lorem ipsum dolor sit, amet consectetur adipisicing elit. Dolor, qui
-            illum dolorum, quaerat corporis dolores optio exercitationem totam
-            perspiciatis libero aliquid provident ullam similique aut in
-            temporibus autem eligendi obcaecati vel facere at! Temporibus eius,
-            iure voluptatibus est dolorem porro. Adipisci blanditiis tempora ad
-            architecto reprehenderit deleniti dolor sunt officia?
+            &mdash;Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+            Dolor, qui illum dolorum, quaerat corporis dolores optio
+            exercitationem totam perspiciatis libero aliquid provident ullam
+            similique aut in temporibus autem eligendi obcaecati vel facere at!
+            Temporibus eius, iure voluptatibus est dolorem porro. Adipisci
+            blanditiis tempora ad architecto reprehenderit deleniti dolor sunt
+            officia?
             <br />
           </>
         )}
@@ -215,8 +266,7 @@ function EventPane({
     </>
   )
 
-  return (
-    // Outer container -- overflow allowed for arrow indicators
+  return (<>
     <div
       style={{
         position: 'absolute',
@@ -224,34 +274,32 @@ function EventPane({
         left: indent * (100 / columns) + '%',
         height: (windowLength / intervalSize) * 100 + '%',
         width: 100 / columns + '%',
+        zIndex: 1,
       }}
     >
+
       {overflowArrows}
 
       {/* Inner container -- overflow hidden */}
       <div
         style={{
+          boxShadow: (label === 'none' && `0px 0px 1rem ${shadeColor} inset`),
+          ...borderStyles,
           ...referenceStyle,
-          backgroundColor: '#223',
+          backgroundColor: label === 'detailed' ? '#223' : accentColor,
 
           overflow: 'hidden',
           height: '100%',
           width: '100%',
           display: 'flex',
           flexDirection: 'column',
-
-          borderLeft: `0.125rem ${accentColor} solid`,
-          borderRight: `0.125rem ${accentColor} solid`,
-          borderTop:
-            `0.125rem ${accentColor} ` + (overflowBefore ? 'dashed' : 'solid'),
-          borderBottom:
-            `0.125rem ${accentColor} ` + (overflowAfter ? 'dashed' : 'solid'),
         }}
       >
         {/* pane header */}
         <div
           style={{
             backgroundColor: accentColor,
+            color: referenceStyle.augmentedColors.contrastText,
             display: 'flex',
             paddingLeft: '0.25rem',
             paddingRight: '0.25rem',
@@ -287,7 +335,17 @@ function EventPane({
         )}
       </div>
     </div>
-  )
+
+{/* drop shadow mock pseudo-element for correct z-indexing: */}
+<div style={{
+        position: 'absolute',
+        top: (topOffset / intervalSize) * 100 + '%',
+        left: indent * (100 / columns) + '%',
+        height: (windowLength / intervalSize) * 100 + '%',
+        width: 100 / columns + '%',
+        boxShadow: '0.25rem 0.25rem 0.5rem #000',
+      }} />
+  </>)
 }
 
 function DailyBreakdown({ day, unfilteredEvents, style, labels = 'detailed' }) {
@@ -419,7 +477,6 @@ function DemoBreakdown({ day, unfilteredEvents }) {
     }
 
     if (!placed) {
-      log('creating new column for ', e)
       columns.push([e])
     }
   }
@@ -473,6 +530,7 @@ function DemoBreakdown({ day, unfilteredEvents }) {
           event={r}
           columns={columns.length}
           indent={r.indent}
+          label="detailed"
         />
       ))}
     </div>
@@ -518,6 +576,11 @@ function Demo() {
   )
 }
 
+const StyledAlternateCell = styled(TableCell)(_ => ({
+  // backgroundColor: 'green',
+  '&:nth-of-type:(odd)': { backgroundColor: 'blue' },
+}))
+
 function WeeklyCalendar({ initialDate, onBack, eventList = [] }) {
   const [active, setActive] = useState(initialDate)
 
@@ -537,22 +600,19 @@ function WeeklyCalendar({ initialDate, onBack, eventList = [] }) {
       <TableBody>
         <TableRow>
           {days.map(d => (
-            <TableCell
-              key={d.format('MM D')}
-              sx={{ p: 0, boxShadow: '0px 0px 0.75rem inset #0008' }}
-            >
+            <StyledAlternateCell key={d.format('MM D')} sx={{ p: 0 }}>
               <DailyBreakdown
                 day={d}
                 unfilteredEvents={eventList}
                 style={{ height: '500px' }}
                 labels="none"
               />
-            </TableCell>
+            </StyledAlternateCell>
           ))}
         </TableRow>
       </TableBody>
     )
-  }, [active])
+  }, [active, eventList])
 
   log(`(${(Math.random() * 1000).toFixed()}) Rendering weekly calendar`)
   return (
