@@ -1,6 +1,7 @@
 import {
   Box,
   IconButton,
+  InputBase,
   Paper,
   Stack,
   Table,
@@ -9,7 +10,10 @@ import {
   TableCell,
   TableContainer,
   Typography,
+  Select,
   styled,
+  FormControl,
+  MenuItem,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import * as dayjs from 'dayjs'
@@ -25,9 +29,24 @@ const HoverableRow = styled(TableRow)(({ theme }) => ({
   },
 }))
 
+const LeanSelector = styled(InputBase)(({ theme }) => ({
+  '& .MuiInputBase-input': {
+    borderRadius: 4,
+    position: 'relative',
+    ...theme.typography.h4,
+    marginRight: '-1rem',
+  },
+  '& .MuiSvgIcon-root': {
+    display: 'none', // hide dropdown triangle
+  },
+  '& .MuiInputBase-input:focus': {
+    backgroundColor: 'unset',
+  },
+}))
+
 export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   const [active, setActive] = useState(initialDate)
-  const month = active.format('MMMM')
+  const month = active.format('M')
   const year = active.year()
 
   const calendarBody = useMemo(() => {
@@ -123,7 +142,6 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
     return <TableBody>{body}</TableBody>
   }, [active, onExpand, unfilteredEvents])
 
-  log(`(${(Math.random() * 1000).toFixed()}) Rendering monthly calendar`)
   return (
     <Box>
       <Paper elevation={1} sx={{ px: 2, py: 2 }}>
@@ -140,13 +158,36 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
             flexWrap="wrap"
             sx={{ mt: 1, mb: 4, flexGrow: 1 }}
           >
-            <Typography
-              variant="h4"
-              component="div"
-              sx={{ width: '100%', mb: 3 }}
-            >
-              {month} {year}
-            </Typography>
+            <div>
+              <FormControl sx={{ m: 1 }} variant="standard">
+                <Select
+                  value={month}
+                  onChange={e => setActive(active.month(e.target.value - 1))}
+                  input={<LeanSelector />}
+                >
+                  <MenuItem value={1}>January</MenuItem>
+                  <MenuItem value={2}>February</MenuItem>
+                  <MenuItem value={3}>March</MenuItem>
+                  <MenuItem value={4}>April</MenuItem>
+                  <MenuItem value={5}>May</MenuItem>
+                  <MenuItem value={6}>June</MenuItem>
+                  <MenuItem value={7}>July</MenuItem>
+                  <MenuItem value={8}>August</MenuItem>
+                  <MenuItem value={9}>September</MenuItem>
+                  <MenuItem value={10}>October</MenuItem>
+                  <MenuItem value={11}>November</MenuItem>
+                  <MenuItem value={12}>December</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Typography variant="h4" component="span"
+              sx={{
+                transform: 'translateY(0.75rem)',
+                display: 'inline-block',
+              }}>
+                {year}
+              </Typography>
+            </div>
 
             <TableContainer component={Paper}>
               <Table>
