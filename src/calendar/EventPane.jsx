@@ -83,6 +83,7 @@ export function EventPane({
   const verboseBackground = selected && selectable ? '#ddf' : '#223'
 
   const borderColor = selected ? augmentedColors.light : accentColor
+  const roomForIcon = fragmentEnd.diff(fragmentStart) / (60 * 1000) > 45
 
   const borderStyles =
     label !== 'none'
@@ -225,7 +226,7 @@ export function EventPane({
               {details}
 
               {/* pencil icon */}
-              {selected && <EditIcon
+              {selected && roomForIcon && <EditIcon
         fontSize="large"
         sx={{
           zIndex: 1,
