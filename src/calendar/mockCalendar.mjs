@@ -50,7 +50,7 @@ export function createSampleWeek(aroundDate) {
 
 // Using MUI utility method augmentColor to generate palette entries
 const defaultTheme = createTheme({
-  palette: { tonalOffset: 0.25 },
+  palette: { tonalOffset: 0.3 },
 })
 
 export const mockStyles = new Map([

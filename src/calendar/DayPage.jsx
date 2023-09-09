@@ -1,6 +1,6 @@
 import { IconButton, Paper, Stack, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import { SectionedInterval } from './SectionedInterval'
+import { SectionedInterval, RuledInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
 import { useState } from 'react'
 

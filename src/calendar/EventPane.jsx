@@ -229,7 +229,7 @@ export function EventPane({
         fontSize="large"
         sx={{
           zIndex: 1,
-          color: augmentedColors.dark,
+          color: '#222',
           position: 'absolute',
           top: '50%',
           left: '50%',
@@ -267,7 +267,7 @@ export function EventPane({
           left: indent * (100 / columns) + '%',
           height: (windowLength / intervalSize) * 100 + '%',
           width: 100 / columns + '%',
-          boxShadow: selected && '0.25rem 0.25rem 0.5rem #0008',
+          boxShadow: !selected && '0.25rem 0.25rem 0.5rem #0008',
         }}
       />
     </>
