@@ -2,8 +2,11 @@ import { IconButton, Paper, Stack, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
+import { useState } from 'react'
 
 export function DayPage({ onBack, day, unfilteredEvents }) {
+  const [selection, setSelection] = useState(null)
+
   return (
     <Paper elevation={1} sx={{ px: 2, py: 2 }}>
       <Stack direction="row">
@@ -25,8 +28,9 @@ export function DayPage({ onBack, day, unfilteredEvents }) {
         step={[1, 'hour']}
         outsideHeight="500px"
         insideHeight="1800px"
+        onClick={() => setSelection(null)}
       >
-        <DailyBreakdown day={day} unfilteredEvents={unfilteredEvents} />
+        <DailyBreakdown day={day} unfilteredEvents={unfilteredEvents} selection={selection} onSelect={(s => setSelection(s))}/>
       </SectionedInterval>
     </Paper>
   )

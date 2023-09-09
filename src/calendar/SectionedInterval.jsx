@@ -11,6 +11,7 @@ export function SectionedInterval({
   children,
   outsideHeight,
   insideHeight,
+  onClick
 }) {
   const sections = []
   let t = initial
@@ -39,6 +40,7 @@ export function SectionedInterval({
 
   return (
     <div
+      onClick={onClick}
       style={{
         paddingTop: '1.5rem',
         paddingBottom: '1.5rem',

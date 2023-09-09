@@ -5,9 +5,10 @@ export function DailyBreakdown({
   day,
   unfilteredEvents,
   style,
+  selection,
+  onSelect,
   labels = 'detailed',
 }) {
-  console.time('DailyBreakdown rendering')
 
   const startOfDay = day.startOf('day')
   const endOfDay = day.endOf('day')
@@ -64,9 +65,20 @@ export function DailyBreakdown({
     }
   }
 
+  const margin =
+    columns.length === 1 && labels === 'detailed' ? '4.5rem' : undefined
+
   // Render the event cards
   const rendered = (
-    <div style={{ height: '100%', ...style, position: 'relative' }}>
+    <div
+      style={{
+        height: '100%',
+        ...style,
+        position: 'relative',
+        marginLeft: margin,
+        marginRight: margin,
+      }}
+    >
       {relevantEvents.map((r, i) => (
         <EventPane
           key={i}
@@ -76,12 +88,12 @@ export function DailyBreakdown({
           columns={columns.length}
           indent={blocking.get(r)}
           label={labels}
+          selected={selection === r.id}
+          onSelect={onSelect}
         />
       ))}
     </div>
   )
-
-  console.timeEnd('DailyBreakdown rendering')
 
   return rendered
 }

@@ -1,6 +1,57 @@
 import DoubleUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp'
 import DoubleDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
+import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
+import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
+import EditIcon from '@mui/icons-material/Edit'
 import { mockStyles } from './mockCalendar.mjs'
+import { IconButton } from '@mui/material'
+
+const noop = () => {}
+
+function PaneControls({ augmentedColors }) {
+  return (
+    <>
+      <IconButton
+        sx={{
+          zIndex: -1,
+          color: augmentedColors.contrastText,
+          backgroundColor: augmentedColors.main,
+          position: 'absolute',
+          top: '0%',
+          left: '50%',
+          borderRadius: 0,
+          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+          transform: 'translate(-50%, -100%) scale(2)',
+          padding: '0 0 0.125rem 0',
+          '&:hover': {
+            backgroundColor: augmentedColors.light
+          }
+        }}
+      >
+        <AlignTopIcon />
+      </IconButton>
+      <IconButton
+        sx={{
+          zIndex: -1,
+          color: augmentedColors.contrastText,
+          backgroundColor: augmentedColors.main,
+          position: 'absolute',
+          top: '100%',
+          left: '50%',
+          borderRadius: 0,
+          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+          transform: 'translate(-50%, 0%) scale(2)',
+          padding: '0 0 0.125rem 0',
+          '&:hover': {
+            backgroundColor: augmentedColors.light
+          }
+        }}
+      >
+        <AlignBottomIcon />
+      </IconButton>
+    </>
+  )
+}
 
 export function EventPane({
   initial,
@@ -9,8 +60,10 @@ export function EventPane({
   indent = 0,
   columns = 1,
   label = 'detailed',
+  selected,
+  onSelect = noop,
 }) {
-  if (!event) return null
+  const selectable = label === 'detailed'
 
   const overflowBefore = event.start.dateTime.isBefore(initial)
   const overflowAfter = event.end.dateTime.isAfter(final)
@@ -26,16 +79,20 @@ export function EventPane({
     mockStyles.get(event.summary) || mockStyles.get('Default')
   const accentColor = referenceStyle.augmentedColors.main
   const shadeColor = referenceStyle.augmentedColors.dark
+  const augmentedColors = referenceStyle.augmentedColors
+  const verboseBackground = selected && selectable ? '#ddf' : '#223'
+
+  const borderColor = selected ? augmentedColors.light : accentColor
 
   const borderStyles =
     label !== 'none'
       ? {
-          borderLeft: `0.125rem ${accentColor} solid`,
-          borderRight: `0.125rem ${accentColor} solid`,
+          borderLeft: `0.125rem ${borderColor} solid`,
+          borderRight: `0.125rem ${borderColor} solid`,
           borderTop:
-            `0.125rem ${accentColor} ` + (overflowBefore ? 'dashed' : 'solid'),
+            `0.125rem ${borderColor} ` + (overflowBefore ? 'dashed' : 'solid'),
           borderBottom:
-            `0.125rem ${accentColor} ` + (overflowAfter ? 'dashed' : 'solid'),
+            `0.125rem ${borderColor} ` + (overflowAfter ? 'dashed' : 'solid'),
         }
       : {}
 
@@ -105,13 +162,20 @@ export function EventPane({
   return (
     <>
       <div
+        onClick={e => {
+          if (label !== 'detailed') return
+          e.stopPropagation()
+          onSelect(event.id)
+          console.log('selecting ', event.id)
+        }}
         style={{
           position: 'absolute',
           top: (topOffset / intervalSize) * 100 + '%',
           left: indent * (100 / columns) + '%',
           height: (windowLength / intervalSize) * 100 + '%',
           width: 100 / columns + '%',
-          zIndex: 1,
+          zIndex: selected ? 2 : 1,
+          
         }}
       >
         {overflowArrows}
@@ -122,28 +186,33 @@ export function EventPane({
             boxShadow: label === 'none' && `0px 0px 2rem ${accentColor} inset`,
             ...borderStyles,
             ...referenceStyle,
-            backgroundColor: label === 'detailed' ? '#223' : shadeColor,
+            backgroundColor:
+              label === 'detailed' ? verboseBackground : shadeColor,
 
             overflow: 'hidden',
             height: '100%',
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
+
+
           }}
         >
           {/* pane header */}
           <div
             style={{
-              backgroundColor: accentColor,
-              color: referenceStyle.augmentedColors.contrastText,
+              backgroundColor: selected ? augmentedColors.light : accentColor,
+              color: augmentedColors.contrastText,
               paddingLeft: '0.25rem',
               paddingRight: '0.25rem',
               whiteSpace: 'nowrap',
+              position: 'relative',
             }}
           >
             {header}
           </div>
           {/* pane body */}
+          {selected && <PaneControls augmentedColors={augmentedColors} />}
           {details && (
             <div
               style={{
@@ -155,6 +224,22 @@ export function EventPane({
             >
               {details}
 
+              {/* pencil icon */}
+              {selected && <EditIcon
+        fontSize="large"
+        sx={{
+          zIndex: 1,
+          color: augmentedColors.dark,
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          borderRadius: '25%',
+          scale: '1.25',
+          filter: `drop-shadow(0px 0px 8px #fff)`
+        }}
+      />}
+
               {event.description && (
                 // fade-out overlay to indicate possible overflowing text:
                 <div
@@ -163,7 +248,9 @@ export function EventPane({
                     width: '100%',
                     position: 'absolute',
                     bottom: 0,
-                    background: 'linear-gradient(to top, #223, transparent)',
+                    background:
+                      `linear-gradient(to top, ` +
+                      `${verboseBackground}, transparent)`,
                   }}
                 />
               )}
@@ -180,7 +267,7 @@ export function EventPane({
           left: indent * (100 / columns) + '%',
           height: (windowLength / intervalSize) * 100 + '%',
           width: 100 / columns + '%',
-          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+          boxShadow: selected && '0.25rem 0.25rem 0.5rem #0008',
         }}
       />
     </>

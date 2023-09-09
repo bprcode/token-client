@@ -1,11 +1,10 @@
 import { createTheme } from '@mui/material'
 import * as dayjs from 'dayjs'
-import { log } from './log.mjs'
 
 function createSampleEvent({ startTime, endTime, summary }) {
   return {
     // text
-    id: String((Math.random() * 1000000).toFixed()),
+    id: String(btoa((Math.random() * 1e6).toFixed())),
     // RFC3339-compatible datetime
     created: dayjs(),
     // RFC3339-compatible datetime
@@ -35,7 +34,6 @@ export function createSampleWeek(aroundDate) {
   const startOfPriorWeek = aroundDate.subtract(1, 'week').startOf('week')
   const sampleEvents = []
 
-  log('check: ', startOfPriorWeek.add(23, 'hours').format('MMM DD HH:mm:ss'))
   for (let i = 0; i < 180; i++) {
     // Split a three-week interval into random 15-minute chunks:
     const offsetMinutes = Math.trunc(Math.random() * 2016) * 15

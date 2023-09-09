@@ -34,7 +34,7 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
     borderRadius: 4,
     position: 'relative',
     ...theme.typography.h4,
-    marginRight: '-1rem',
+    marginRight: '-1.25rem',
   },
   '& .MuiSvgIcon-root': {
     display: 'none', // hide dropdown triangle
