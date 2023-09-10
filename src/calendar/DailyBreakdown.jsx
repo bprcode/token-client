@@ -7,6 +7,7 @@ export function DailyBreakdown({
   style,
   selection,
   onSelect,
+  onEdit,
   labels = 'detailed',
 }) {
 
@@ -90,6 +91,7 @@ export function DailyBreakdown({
           label={labels}
           selected={selection === r.id}
           onSelect={onSelect}
+          onEdit={onEdit}
         />
       ))}
     </div>

@@ -53,6 +53,19 @@ const defaultTheme = createTheme({
   palette: { tonalOffset: 0.3 },
 })
 
+export const mockPalette = [
+  '#2e0014',
+  '#942911',
+  '#45aeb0',
+  '#518ed0',
+  '#5351d0',
+  '#d46239',
+  '#d99830',
+  '#94b9af',
+  '#228223',
+  '#b5dead',
+]
+
 export const mockStyles = new Map([
   [
     'Work',
@@ -87,10 +100,10 @@ export const mockStyles = new Map([
   [
     'Default',
     {
-      accentColor: '#6000ac',
+      accentColor: '#aac',
       fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#6000ac' },
+        color: { main: '#aac' },
       }),
     },
   ],

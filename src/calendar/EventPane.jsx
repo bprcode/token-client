@@ -62,6 +62,7 @@ export function EventPane({
   label = 'detailed',
   selected,
   onSelect = noop,
+  onEdit = noop,
 }) {
   const selectable = label === 'detailed'
 
@@ -166,8 +167,11 @@ export function EventPane({
         onClick={e => {
           if (label !== 'detailed') return
           e.stopPropagation()
+          if (selected) {
+            return onEdit()
+          }
+
           onSelect(event.id)
-          console.log('selecting ', event.id)
         }}
         style={{
           position: 'absolute',

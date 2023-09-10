@@ -3,9 +3,11 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval, RuledInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
 import { useState } from 'react'
+import { EventEditor } from './EventEditor'
 
 export function DayPage({ onBack, day, unfilteredEvents }) {
   const [selection, setSelection] = useState(null)
+  const [editing, setEditing] = useState(false)
 
   return (
     <Paper elevation={1} sx={{ px: 2, py: 2 }}>
@@ -30,8 +32,16 @@ export function DayPage({ onBack, day, unfilteredEvents }) {
         insideHeight="1800px"
         onClick={() => setSelection(null)}
       >
-        <DailyBreakdown day={day} unfilteredEvents={unfilteredEvents} selection={selection} onSelect={(s => setSelection(s))}/>
+        <DailyBreakdown
+          day={day}
+          unfilteredEvents={unfilteredEvents}
+          selection={selection}
+          onSelect={s => setSelection(s)}
+          onEdit={() => setEditing(true)}
+        />
       </SectionedInterval>
+
+      {editing && <EventEditor onClose={() => setEditing(false)} />}
     </Paper>
   )
 }
