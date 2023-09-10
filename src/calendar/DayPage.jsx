@@ -41,7 +41,12 @@ export function DayPage({ onBack, day, unfilteredEvents }) {
         />
       </SectionedInterval>
 
-      {editing && <EventEditor onClose={() => setEditing(false)} />}
+      {editing && (
+        <EventEditor
+          onClose={() => setEditing(false)}
+          event={unfilteredEvents.find(e => e.id === selection)}
+        />
+      )}
     </Paper>
   )
 }
