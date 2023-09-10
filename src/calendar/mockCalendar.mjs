@@ -56,14 +56,13 @@ const defaultTheme = createTheme({
 export const mockPalette = [
   '#2e0014',
   '#942911',
+  '#d46239',
+  '#d99830',
+  '#228223',
+  '#b5dead',
   '#45aeb0',
   '#518ed0',
   '#5351d0',
-  '#d46239',
-  '#d99830',
-  '#94b9af',
-  '#228223',
-  '#b5dead',
 ]
 
 export const mockStyles = new Map([

@@ -15,7 +15,7 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { mockStyles, mockPalette } from './mockCalendar.mjs'
-// import CircleIcon from '@mui/icons-material/Circle';
+
 
 export function EventEditor({ onClose, event }) {
   const [summary, setSummary] = useState(event && event.summary)
@@ -94,11 +94,11 @@ export function EventEditor({ onClose, event }) {
                   label="Color"
                   variant="standard"
                   autoWidth
+                  sx={{pl: '0.25rem'}}
                 >
                   {mockPalette.map(c => (
                     <MenuItem key={c} value={c}>
-                      {c}
-                      {/* <CircleIcon sx={{color: c}} /> */}
+                      <div style={{backgroundColor: c, height: '1rem', width: '2rem'}} />
                     </MenuItem>
                   ))}
                 </Select>
@@ -113,6 +113,8 @@ export function EventEditor({ onClose, event }) {
           minRows={2}
           sx={{ width: '100%' }}
           variant="filled"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
