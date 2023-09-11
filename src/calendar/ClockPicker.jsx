@@ -1,86 +1,155 @@
-import { Typography, useTheme } from "@mui/material"
-import { useState } from "react"
+import { Typography, useTheme } from '@mui/material'
+import { useState } from 'react'
 
 export function ClockPicker({ size = 240, time }) {
   const theme = useTheme()
   const [current, setCurrent] = useState(time)
-  const [mode, setMode] = useState('hours')
+  const [mode, setMode] = useState('minutes')
   const pi = Math.PI
-  const rotation = 5 * pi / 6 + (mode === 'minutes' ? pi / 6 : 0)
+  const rotation = (5 * pi) / 6 + (mode === 'minutes' ? pi / 6 : 0)
   const twelveHour = current.format('h')
+  const currentMinute = String(current.minute() + (current.minute() === 0 && '0'))
   const hourDegrees = 180 + (twelveHour % 12) * 30
+  const minuteDegrees = 180 + 6 * current.minute() //+ (twelveHour % 12) * 30
+
   const numbering = Array(12)
     .fill(0)
     .map((_, i) => {
-      const highlight = String(i+1) === twelveHour
-      return <div
-        key={i}
-        style={{
-          position: 'absolute',
-          top: 50 + 40 * Math.cos((-2 * pi * i) / 12 + rotation) + '%',
-          left: 50 + 40 * Math.sin((-2 * pi * i) / 12 + rotation) + '%',
-          transform: 'translate(-50%,-50%)',
-          backgroundColor: highlight && theme.palette.secondary.main,
-          padding: '4px',
-          width: '2rem',
-          height: '2rem',
-          borderRadius: '50%',
-          textAlign: 'center',
-          color: highlight && theme.palette.secondary.contrastText
-        }}
-      >
-        {mode === 'hours' ? i + 1 : i * 5}
-      </div>
-})
+      const hourString = String(i + 1)
+      const minuteString = String(i * 5 + (i === 0 && '0'))
+      const highlight = mode === 'hours' ?
+        hourString === twelveHour
+        : minuteString === currentMinute
+
+      return (
+        <div
+          key={i}
+          style={{
+            position: 'absolute',
+            top: 50 + 40 * Math.cos((-2 * pi * i) / 12 + rotation) + '%',
+            left: 50 + 40 * Math.sin((-2 * pi * i) / 12 + rotation) + '%',
+            transform: 'translate(-50%,-50%)',
+            backgroundColor: highlight && theme.palette.secondary.main,
+            padding: '4px',
+            width: '2rem',
+            height: '2rem',
+            borderRadius: '50%',
+            textAlign: 'center',
+            color: highlight && theme.palette.secondary.contrastText,
+          }}
+        >
+          {mode === 'hours' ? i + 1 : i * 5 + (i === 0 && '0')}
+        </div>
+      )
+    })
 
   return (
-    <div style={{border: '1px solid gray', width: size + 'px', paddingBottom: '1rem'}}>
-      <Typography variant="h3" py={1} sx={{textAlign: 'center'}}>
-        {current.format('h:mm A')}
-      </Typography>
     <div
       style={{
-        backgroundColor: '#00f4',
+        border: '1px solid gray',
         width: size + 'px',
-        height: size + 'px',
-        position: 'relative',
-        borderRadius: '50%',
-      }}
-      onClick={e => {
-        const bounds = e.currentTarget.getBoundingClientRect()
-        const x = (e.clientX - bounds.left) / size - .5
-        const y = -(e.clientY - bounds.top) / size + .5
-        const angle = Math.atan2(y,x)
-        // for 12-hour:
-        const section = 1 + (11 + Math.round(3 - angle / (pi/6))) % 12
-        console.log(section)
-        setCurrent(current.hour(section))
+        paddingBottom: '1rem',
       }}
     >
-      {numbering}
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        height: size * 0.25 + 'px',
-        width: '5px',
-        backgroundColor: '#fffa',
-        transformOrigin: 'top',
-        transform: `rotate(${hourDegrees}deg)`,
-        transition: 'transform 0.3s ease-out',
-      }} />
-      <div style={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        height: size * 0.3 + 'px',
-        width: '2px',
-        backgroundColor: '#fffa',
-        transformOrigin: 'top',
-        transform: `rotate(${0}deg)`,
-      }} />
-      
-    </div>
+      <Typography
+        variant="h3"
+        py={1}
+        sx={{ textAlign: 'center' }}
+        component="div"
+      >
+        <span
+          style={{
+            backgroundColor: mode === 'hours' && theme.palette.secondary.dark,
+            borderRadius: '8px',
+          }}
+          onClick={() => setMode('hours')}
+        >
+          {current.format('h')}
+        </span>
+        :
+        <span
+          style={{
+            backgroundColor: mode === 'minutes' && theme.palette.secondary.dark,
+            borderRadius: '8px',
+          }}
+          onClick={() => setMode('minutes')}
+        >
+          {current.format('mm')}
+        </span>
+        &nbsp;
+        <span>{current.format('A')}</span>
+      </Typography>
+      <div
+        style={{
+          backgroundColor: '#00f4',
+          width: size + 'px',
+          height: size + 'px',
+          position: 'relative',
+          borderRadius: '50%',
+        }}
+        onClick={e => {
+          const bounds = e.currentTarget.getBoundingClientRect()
+          const x = (e.clientX - bounds.left) / size - 0.5
+          const y = -(e.clientY - bounds.top) / size + 0.5
+          const angle = Math.atan2(y, x)
+          // for 12-hour:
+          const section = 1 + ((11 + Math.round(3 - angle / (pi / 6))) % 12)
+
+          if (mode === 'hours') {
+            setCurrent(current.hour(section))
+          }
+          if (mode === 'minutes') {
+            setCurrent(current.minute((section % 12) * 5))
+          }
+        }}
+      >
+        {numbering}
+
+        {/* hour hand */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            height: size * 0.25 + 'px',
+            width: '5px',
+            backgroundColor: '#fffa',
+            transformOrigin: 'top',
+            transform: `translateX(-50%) rotate(${hourDegrees}deg)`,
+            transition: 'transform 0.3s ease-out',
+            borderRadius: '4px',
+          }}
+        />
+
+        {/* minute hand */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            height: size * 0.3 + 'px',
+            width: '2px',
+            backgroundColor: '#fffa',
+            transformOrigin: 'top',
+            transform: `translateX(-50%) rotate(${minuteDegrees}deg)`,
+            transition: 'transform 0.3s ease-out',
+          }}
+        />
+
+        {/* pivot */}
+        <div
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            width: '0.5rem',
+            height: '0.5rem',
+            backgroundColor: '#ccc',
+            borderRadius: '50%',
+            transform: 'translate(-50%,-50%)',
+          }}
+        />
+      </div>
     </div>
   )
 }
