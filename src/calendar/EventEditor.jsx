@@ -19,9 +19,12 @@ import { mockStyles, mockPalette } from './mockCalendar.mjs'
 
 export function EventEditor({ onClose, event }) {
   const [summary, setSummary] = useState(event && event.summary)
-  const [description, setDescription] = useState(event && event.description)
+  const [description, setDescription] = useState(event && (event.description || ''))
   const [color, setColor] = useState(mockPalette[0])
   const [type, setType] = useState((event && event.summary) || 'Default')
+
+  const [startTime, setStartTime] = useState(event.start.dateTime)
+  const [endTime, setEndTime] = useState(event.end.dateTime)
 
   const typeStyles = []
   for (const [key, value] of mockStyles) {
@@ -72,7 +75,6 @@ export function EventEditor({ onClose, event }) {
             <>
               <FormControl sx={{ mr: 2, mb: 2 }}>
                 <TextField
-                  autoFocus
                   label="Title"
                   variant="standard"
                   value={summary}
@@ -80,7 +82,7 @@ export function EventEditor({ onClose, event }) {
                 />
               </FormControl>
 
-              <FormControl sx={{}}>
+              <FormControl sx={{ mr: 2, mb: 2 }}>
                 <InputLabel
                   id="color-select-label"
                   sx={{ paddingTop: 1, ml: -1.5 }}
@@ -106,6 +108,13 @@ export function EventEditor({ onClose, event }) {
             </>
           )}
         </div>
+
+        <FormControl sx={{ mr: 2, mb: 2 }}>
+          <TextField label="Start Time" value={startTime.format('H:mm A')} />
+        </FormControl>
+        <FormControl sx={{ mr: 2, mb: 2 }}>
+          <TextField label="End Time" value={endTime.format('H:mm A')} />
+        </FormControl>
 
         <TextField
           label="Description"

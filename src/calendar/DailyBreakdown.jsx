@@ -1,3 +1,4 @@
+import { Box} from '@mui/material'
 import { EventPane } from './EventPane'
 import { isOverlap } from './dateLogic.mjs'
 
@@ -71,13 +72,13 @@ export function DailyBreakdown({
 
   // Render the event cards
   const rendered = (
-    <div
-      style={{
+    <Box
+      sx={{
         height: '100%',
         ...style,
         position: 'relative',
-        marginLeft: margin,
-        marginRight: margin,
+        marginLeft: ['0rem', margin],
+        marginRight: ['0rem', margin],
       }}
     >
       {relevantEvents.map((r, i) => (
@@ -94,7 +95,7 @@ export function DailyBreakdown({
           onEdit={onEdit}
         />
       ))}
-    </div>
+    </Box>
   )
 
   return rendered

@@ -58,17 +58,17 @@ export function SectionedInterval({
         height: outsideHeight,
       }}
     >
-      <div
-        style={{
+      <Box
+        sx={{
           position: 'relative',
           height: insideHeight,
-          paddingLeft: '5rem',
+          paddingLeft: ['0.5rem', '5rem'],
           paddingRight: '0.5rem',
         }}
       >
         {children}
         {sections}
-      </div>
+      </Box>
     </div>
   )
 }

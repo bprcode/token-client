@@ -1,6 +1,6 @@
+import { ThemeProvider } from '@mui/material/styles'
 import {
   Container,
-  ThemeProvider,
   Typography,
   CssBaseline,
   Collapse,
@@ -75,7 +75,7 @@ function Demo() {
 function Wrap() {
   return (
     <ThemeProvider theme={digitalTheme}>
-      <CssBaseline>
+      <CssBaseline enableColorScheme>
         <Demo />
       </CssBaseline>
     </ThemeProvider>
