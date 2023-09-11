@@ -1,21 +1,21 @@
-import { Typography, useTheme } from '@mui/material'
+import { Button, Typography, useTheme } from '@mui/material'
 import { useState } from 'react'
 
 export function ClockPicker({ size = 240, time }) {
   const theme = useTheme()
   const [current, setCurrent] = useState(time)
-  const [mode, setMode] = useState('minutes')
+  const [mode, setMode] = useState('hours')
   const pi = Math.PI
   const rotation = (5 * pi) / 6 + (mode === 'minutes' ? pi / 6 : 0)
   const twelveHour = current.format('h')
   const isPM = current.format('A') === 'PM'
-  console.log('is PM?', isPM)
   const currentMinute = String(
     (current.minute() < 10 && '0') + current.minute()
   )
   const hourDegrees = 180 + (twelveHour % 12) * 30
   const minuteDegrees = 180 + 6 * current.minute() //+ (twelveHour % 12) * 30
 
+  console.log(theme.palette)
   const numbering = Array(12)
     .fill(0)
     .map((_, i) => {
@@ -57,7 +57,7 @@ export function ClockPicker({ size = 240, time }) {
       }}
     >
       <Typography
-        variant="h3"
+        variant="h4"
         py={1}
         mb={2}
         sx={{ textAlign: 'center' }}
@@ -68,9 +68,8 @@ export function ClockPicker({ size = 240, time }) {
             backgroundColor: mode === 'hours' && theme.palette.secondary.dark,
             borderRadius: '8px',
             display: 'inline-block',
-            minWidth: '1em',
-            paddingLeft: '0.25rem',
-            paddingRight: '0.25rem',
+            minWidth: '1.5em',
+            marginRight: '0.25rem',
             border: '1px solid #fff4',
           }}
           onClick={() => setMode('hours')}
@@ -82,21 +81,34 @@ export function ClockPicker({ size = 240, time }) {
           style={{
             backgroundColor: mode === 'minutes' && theme.palette.secondary.dark,
             borderRadius: '8px',
-            paddingLeft: '0.25rem',
-            paddingRight: '0.25rem',
+            display: 'inline-block',
+            minWidth: '1.5em',
+            marginLeft: '0.25rem',
+            marginRight: '0.5rem',
             border: '1px solid #fff4',
           }}
           onClick={() => setMode('minutes')}
         >
           {current.format('mm')}
         </span>
-        &nbsp;
-        <span
-          style={{
+        <Button
+          variant="outlined"
+          sx={{
+            fontSize: theme.typography.h4.fontSize,
+            fontWeight: theme.typography.h4.fontWeight,
             borderRadius: '8px',
-            border: '1px solid #fff4',
-            paddingLeft: '0.25rem',
-            paddingRight: '0.25rem',
+            color: theme.palette.text.primary,
+            borderColor: '#fff4',
+            minWidth: '2.25em',
+            lineHeight: 'unset',
+            paddingTop: 'unset',
+            paddingBottom: 'unset',
+            paddingLeft: '0.5rem',
+            paddingRight: '0.5rem',
+            '&:hover': { borderColor: theme.palette.secondary.light },
+            '&:active': { borderColor: theme.palette.secondary.light },
+            // Align with the clickable spans:
+            transform: 'translateY(-3px)',
           }}
           onClick={() => {
             if (isPM) {
@@ -107,7 +119,7 @@ export function ClockPicker({ size = 240, time }) {
           }}
         >
           {current.format('A')}
-        </span>
+        </Button>
       </Typography>
       <div
         style={{
@@ -128,6 +140,7 @@ export function ClockPicker({ size = 240, time }) {
 
           if (mode === 'hours') {
             setCurrent(current.hour((section % 12) + (isPM ? 12 : 0)))
+            setMode('minutes')
           }
           if (mode === 'minutes') {
             setCurrent(current.minute((section % 12) * 5))
@@ -144,7 +157,8 @@ export function ClockPicker({ size = 240, time }) {
             left: '50%',
             height: size * 0.25 + 'px',
             width: '5px',
-            backgroundColor: '#fffa',
+            backgroundColor:
+              mode === 'hours' ? theme.palette.secondary.main : '#fffa',
             transformOrigin: 'top',
             transform: `translateX(-50%) rotate(${hourDegrees}deg)`,
             transition: 'transform 0.25s ease-out',
@@ -160,7 +174,8 @@ export function ClockPicker({ size = 240, time }) {
             left: '50%',
             height: size * 0.3 + 'px',
             width: '2px',
-            backgroundColor: '#fffa',
+            backgroundColor:
+              mode === 'minutes' ? theme.palette.secondary.main : '#fffa',
             transformOrigin: 'top',
             transform: `translateX(-50%) rotate(${minuteDegrees}deg)`,
             transition: 'transform 0.25s ease-out',
