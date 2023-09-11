@@ -15,11 +15,13 @@ import {
 } from '@mui/material'
 import { useState } from 'react'
 import { mockStyles, mockPalette } from './mockCalendar.mjs'
-
+import { ClockPicker } from './ClockPicker'
 
 export function EventEditor({ onClose, event }) {
   const [summary, setSummary] = useState(event && event.summary)
-  const [description, setDescription] = useState(event && (event.description || ''))
+  const [description, setDescription] = useState(
+    event && (event.description || '')
+  )
   const [color, setColor] = useState(mockPalette[0])
   const [type, setType] = useState((event && event.summary) || 'Default')
 
@@ -96,11 +98,17 @@ export function EventEditor({ onClose, event }) {
                   label="Color"
                   variant="standard"
                   autoWidth
-                  sx={{pl: '0.25rem'}}
+                  sx={{ pl: '0.25rem' }}
                 >
                   {mockPalette.map(c => (
                     <MenuItem key={c} value={c}>
-                      <div style={{backgroundColor: c, height: '1rem', width: '2rem'}} />
+                      <div
+                        style={{
+                          backgroundColor: c,
+                          height: '1rem',
+                          width: '2rem',
+                        }}
+                      />
                     </MenuItem>
                   ))}
                 </Select>
@@ -110,11 +118,13 @@ export function EventEditor({ onClose, event }) {
         </div>
 
         <FormControl sx={{ mr: 2, mb: 2 }}>
-          <TextField label="Start Time" value={startTime.format('H:mm A')} />
+          <TextField label="Start Time" value={startTime.format('h:mm A')} />
         </FormControl>
         <FormControl sx={{ mr: 2, mb: 2 }}>
-          <TextField label="End Time" value={endTime.format('H:mm A')} />
+          <TextField label="End Time" value={endTime.format('h:mm A')} />
         </FormControl>
+
+        <ClockPicker time={startTime} />
 
         <TextField
           label="Description"

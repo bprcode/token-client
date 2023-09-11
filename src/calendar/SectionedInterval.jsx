@@ -4,7 +4,7 @@ const StyledAlternateBox = styled(Box)(() => ({
   '&:nth-of-type(odd)': { backgroundColor: '#0004' },
 }))
 
-const RuledBox = styled(Box)(({ theme }) => ({
+const RuledBox = styled(Box)(() => ({
   borderTop: `1px solid #fff2`,
   backgroundColor: '#0002',
 }))
