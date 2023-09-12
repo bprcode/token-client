@@ -1,23 +1,31 @@
 import CloseIcon from '@mui/icons-material/Close'
 import EventIcon from '@mui/icons-material/Event'
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
+import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp'
 import {
   Button,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
   IconButton,
+  InputAdornment,
   InputLabel,
   MenuItem,
   Select,
   TextField,
+  useMediaQuery,
 } from '@mui/material'
 import { useState } from 'react'
 import { mockStyles, mockPalette } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
 
 export function EventEditor({ onClose, event }) {
+  const sideBySide = useMediaQuery('(min-width: 660px)')
+  const [expandStart, setExpandStart] = useState(false)
+  const [expandEnd, setExpandEnd] = useState(false)
   const [summary, setSummary] = useState(event && event.summary)
   const [description, setDescription] = useState(
     event && (event.description || '')
@@ -31,6 +39,24 @@ export function EventEditor({ onClose, event }) {
   const typeStyles = []
   for (const [key, value] of mockStyles) {
     typeStyles.push({ key: key === 'Default' ? 'New...' : key, value })
+  }
+
+  function handleToggle(open, expander) {
+    if (sideBySide) {
+      setExpandStart(!open)
+      setExpandEnd(!open)
+      return
+    }
+
+    if (open) {
+      return expander(false)
+    }
+    if (!expandStart && !expandEnd) {
+      return expander(true)
+    }
+
+    setExpandStart(x => !x)
+    setExpandEnd(x => !x)
   }
 
   return (
@@ -116,15 +142,52 @@ export function EventEditor({ onClose, event }) {
             </>
           )}
         </div>
+        <FormControl sx={{ mr: 2, mb: 2 }}>
+          <TextField
+            onClick={() => handleToggle(expandStart, setExpandStart)}
+            label="Start Time"
+            value={startTime.format('dddd, MMM D, h:mm A')}
+            InputProps={{
+              readOnly: true,
+              endAdornment: (
+                <InputAdornment position="end">
+                  {expandStart ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Collapse in={expandStart}>
+            <ClockPicker
+              size="100%"
+              time={startTime}
+              onPick={t => setStartTime(t)}
+            />
+          </Collapse>
+        </FormControl>
 
         <FormControl sx={{ mr: 2, mb: 2 }}>
-          <TextField label="Start Time" value={startTime.format('h:mm A')} />
+          <TextField
+            onClick={() => handleToggle(expandEnd, setExpandEnd)}
+            readOnly
+            label="End Time"
+            value={endTime.format('dddd, MMM D, h:mm A')}
+            InputProps={{
+              readOnly: true,
+              endAdornment: (
+                <InputAdornment position="end">
+                  {expandEnd ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Collapse in={expandEnd}>
+            <ClockPicker
+              size="100%"
+              time={endTime}
+              onPick={t => setEndTime(t)}
+            />
+          </Collapse>
         </FormControl>
-        <FormControl sx={{ mr: 2, mb: 2 }}>
-          <TextField label="End Time" value={endTime.format('h:mm A')} />
-        </FormControl>
-
-        <ClockPicker time={startTime} />
 
         <TextField
           label="Description"

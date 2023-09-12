@@ -1,21 +1,17 @@
 import { Button, Typography, useTheme } from '@mui/material'
 import { useState } from 'react'
 
-export function ClockPicker({ size = 240, time }) {
+export function ClockPicker({ size = '240px', time, onPick }) {
   const theme = useTheme()
-  const [current, setCurrent] = useState(time)
   const [mode, setMode] = useState('hours')
   const pi = Math.PI
   const rotation = (5 * pi) / 6 + (mode === 'minutes' ? pi / 6 : 0)
-  const twelveHour = current.format('h')
-  const isPM = current.format('A') === 'PM'
-  const currentMinute = String(
-    (current.minute() < 10 && '0') + current.minute()
-  )
-  const hourDegrees = 180 + (twelveHour % 12) * 30
-  const minuteDegrees = 180 + 6 * current.minute() //+ (twelveHour % 12) * 30
+  const twelveHour = time.format('h')
+  const isPM = time.format('A') === 'PM'
+  const currentMinute = String((time.minute() < 10 && '0') + time.minute())
+  const hourDegrees = 270 + (twelveHour % 12) * 30
+  const minuteDegrees = 270 + 6 * time.minute() //+ (twelveHour % 12) * 30
 
-  console.log(theme.palette)
   const numbering = Array(12)
     .fill(0)
     .map((_, i) => {
@@ -51,8 +47,10 @@ export function ClockPicker({ size = 240, time }) {
   return (
     <div
       style={{
+        borderBottomLeftRadius: '4px',
+        borderBottomRightRadius: '4px',
         border: '1px solid gray',
-        width: size + 'px',
+        width: size,
         paddingBottom: '1rem',
       }}
     >
@@ -74,7 +72,7 @@ export function ClockPicker({ size = 240, time }) {
           }}
           onClick={() => setMode('hours')}
         >
-          {current.format('h')}
+          {time.format('h')}
         </span>
         :
         <span
@@ -89,7 +87,7 @@ export function ClockPicker({ size = 240, time }) {
           }}
           onClick={() => setMode('minutes')}
         >
-          {current.format('mm')}
+          {time.format('mm')}
         </span>
         <Button
           variant="outlined"
@@ -112,38 +110,40 @@ export function ClockPicker({ size = 240, time }) {
           }}
           onClick={() => {
             if (isPM) {
-              setCurrent(current.subtract(12, 'hours'))
+              onPick(time.subtract(12, 'hours'))
             } else {
-              setCurrent(current.add(12, 'hours'))
+              onPick(time.add(12, 'hours'))
             }
           }}
         >
-          {current.format('A')}
+          {time.format('A')}
         </Button>
       </Typography>
+
+      {/* clock face */}
       <div
         style={{
           backgroundColor: '#00f4',
-          width: size + 'px',
-          height: size + 'px',
+          width: '100%',
+          paddingBottom: '100%', // alternative to aspect-ratio
           position: 'relative',
           borderRadius: '50%',
           userSelect: 'none',
         }}
         onClick={e => {
           const bounds = e.currentTarget.getBoundingClientRect()
-          const x = (e.clientX - bounds.left) / size - 0.5
-          const y = -(e.clientY - bounds.top) / size + 0.5
+          const x = (e.clientX - bounds.left) / bounds.width - 0.5
+          const y = -(e.clientY - bounds.top) / bounds.height + 0.5
           const angle = Math.atan2(y, x)
           // for 12-hour:
           const section = 1 + ((11 + Math.round(3 - angle / (pi / 6))) % 12)
 
           if (mode === 'hours') {
-            setCurrent(current.hour((section % 12) + (isPM ? 12 : 0)))
+            onPick(time.hour((section % 12) + (isPM ? 12 : 0)))
             setMode('minutes')
           }
           if (mode === 'minutes') {
-            setCurrent(current.minute((section % 12) * 5))
+            onPick(time.minute((section % 12) * 5))
           }
         }}
       >
@@ -155,12 +155,12 @@ export function ClockPicker({ size = 240, time }) {
             position: 'absolute',
             top: '50%',
             left: '50%',
-            height: size * 0.25 + 'px',
-            width: '5px',
+            width: '25%',
+            height: '5px',
             backgroundColor:
               mode === 'hours' ? theme.palette.secondary.main : '#fffa',
-            transformOrigin: 'top',
-            transform: `translateX(-50%) rotate(${hourDegrees}deg)`,
+            transformOrigin: 'left',
+            transform: `translateY(-50%) rotate(${hourDegrees}deg)`,
             transition: 'transform 0.25s ease-out',
             borderRadius: '4px',
           }}
@@ -172,12 +172,12 @@ export function ClockPicker({ size = 240, time }) {
             position: 'absolute',
             top: '50%',
             left: '50%',
-            height: size * 0.3 + 'px',
-            width: '2px',
+            width: '30%',
+            height: '2px',
             backgroundColor:
               mode === 'minutes' ? theme.palette.secondary.main : '#fffa',
-            transformOrigin: 'top',
-            transform: `translateX(-50%) rotate(${minuteDegrees}deg)`,
+            transformOrigin: 'left',
+            transform: `translateY(-50%) rotate(${minuteDegrees}deg)`,
             transition: 'transform 0.25s ease-out',
           }}
         />
