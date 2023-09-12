@@ -49,9 +49,13 @@ export function ClockPicker({ size = '240px', time, onPick }) {
       style={{
         borderBottomLeftRadius: '4px',
         borderBottomRightRadius: '4px',
-        border: '1px solid gray',
+        borderLeft: '1px solid gray',
+        borderRight: '1px solid gray',
+        borderBottom: '1px solid gray',
         width: size,
         paddingBottom: '1rem',
+        paddingLeft: '0.5rem',
+        paddingRight: '0.5rem',
       }}
     >
       <Typography

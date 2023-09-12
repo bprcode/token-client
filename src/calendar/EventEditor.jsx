@@ -2,6 +2,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import EventIcon from '@mui/icons-material/Event'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp'
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
+import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import {
   Button,
   Collapse,
@@ -24,8 +26,6 @@ import { ClockPicker } from './ClockPicker'
 
 export function EventEditor({ onClose, event }) {
   const sideBySide = useMediaQuery('(min-width: 660px)')
-  const [expandStart, setExpandStart] = useState(false)
-  const [expandEnd, setExpandEnd] = useState(false)
   const [summary, setSummary] = useState(event && event.summary)
   const [description, setDescription] = useState(
     event && (event.description || '')
@@ -39,24 +39,6 @@ export function EventEditor({ onClose, event }) {
   const typeStyles = []
   for (const [key, value] of mockStyles) {
     typeStyles.push({ key: key === 'Default' ? 'New...' : key, value })
-  }
-
-  function handleToggle(open, expander) {
-    if (sideBySide) {
-      setExpandStart(!open)
-      setExpandEnd(!open)
-      return
-    }
-
-    if (open) {
-      return expander(false)
-    }
-    if (!expandStart && !expandEnd) {
-      return expander(true)
-    }
-
-    setExpandStart(x => !x)
-    setExpandEnd(x => !x)
   }
 
   return (
@@ -142,51 +124,86 @@ export function EventEditor({ onClose, event }) {
             </>
           )}
         </div>
-        <FormControl sx={{ mr: 2, mb: 2 }}>
+        <FormControl
+          sx={{
+            mr: 2,
+            mb: 2,
+            width: sideBySide ? '45%' : '100%',
+            maxWidth: '300px',
+          }}
+        >
           <TextField
-            onClick={() => handleToggle(expandStart, setExpandStart)}
-            label="Start Time"
-            value={startTime.format('dddd, MMM D, h:mm A')}
+            label="Start"
+            value={startTime.format('dddd, MMM D')}
+            sx={{'& .MuiInputBase-root': { p: 0}}}
             InputProps={{
+              inputProps: {
+                style: { textAlign: 'center' },
+              },
               readOnly: true,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <IconButton
+                    onClick={() => setStartTime(startTime.subtract(1, 'day'))}
+                  >
+                    <NavigateBeforeIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
               endAdornment: (
                 <InputAdornment position="end">
-                  {expandStart ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+                  <IconButton
+                    onClick={() => setStartTime(startTime.add(1, 'day'))}
+                  >
+                    <NavigateNextIcon />
+                  </IconButton>
                 </InputAdornment>
               ),
             }}
           />
-          <Collapse in={expandStart}>
-            <ClockPicker
-              size="100%"
-              time={startTime}
-              onPick={t => setStartTime(t)}
-            />
-          </Collapse>
+          <ClockPicker
+            size="100%"
+            time={startTime}
+            onPick={t => setStartTime(t)}
+          />
         </FormControl>
 
-        <FormControl sx={{ mr: 2, mb: 2 }}>
+        <FormControl
+          sx={{
+            mr: 2,
+            mb: 2,
+            width: sideBySide ? '45%' : '100%',
+            maxWidth: '300px',
+          }}
+        >
           <TextField
-            onClick={() => handleToggle(expandEnd, setExpandEnd)}
-            readOnly
-            label="End Time"
-            value={endTime.format('dddd, MMM D, h:mm A')}
+            label="End"
+            value={endTime.format('dddd, MMM D')}
+            sx={{'& .MuiInputBase-root': { p: 0}}}
             InputProps={{
+              inputProps: {
+                style: { textAlign: 'center' },
+              },
               readOnly: true,
+              startAdornment: (
+                <InputAdornment position="start">
+                  <IconButton
+                    onClick={() => setEndTime(endTime.subtract(1, 'day'))}
+                  >
+                    <NavigateBeforeIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
               endAdornment: (
                 <InputAdornment position="end">
-                  {expandEnd ? <ArrowDropUpIcon /> : <ArrowDropDownIcon />}
+                  <IconButton onClick={() => setEndTime(endTime.add(1, 'day'))}>
+                    <NavigateNextIcon />
+                  </IconButton>
                 </InputAdornment>
               ),
             }}
           />
-          <Collapse in={expandEnd}>
-            <ClockPicker
-              size="100%"
-              time={endTime}
-              onPick={t => setEndTime(t)}
-            />
-          </Collapse>
+          <ClockPicker size="100%" time={endTime} onPick={t => setEndTime(t)} />
         </FormControl>
 
         <TextField
