@@ -50,6 +50,7 @@ export function ClockPicker({ size = '240px', time, onPick }) {
         borderBottomLeftRadius: '4px',
         borderBottomRightRadius: '4px',
         width: size,
+        paddingTop: '0.25rem',
         paddingBottom: '1rem',
         paddingLeft: '1rem',
         paddingRight: '1rem',

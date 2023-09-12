@@ -16,6 +16,7 @@ import {
   Select,
   TextField,
   useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import { useState } from 'react'
 import { mockStyles, mockPalette } from './mockCalendar.mjs'
@@ -23,11 +24,13 @@ import { ClockPicker } from './ClockPicker'
 
 export function EventEditor({ onClose, event }) {
   const sideBySide = useMediaQuery('(min-width: 660px)')
+  const theme = useTheme()
   const [summary, setSummary] = useState(event && event.summary)
   const [description, setDescription] = useState(
     event && (event.description || '')
   )
   const [color, setColor] = useState(mockPalette[0])
+  const augmentedColor = theme.palette.augmentColor({color: {main: color}})
   const [type, setType] = useState((event && event.summary) || 'Default')
 
   const [startTime, setStartTime] = useState(event.start.dateTime)
@@ -38,15 +41,17 @@ export function EventEditor({ onClose, event }) {
     typeStyles.push({ key: key === 'Default' ? 'New...' : key, value })
   }
 
+  console.log(theme.palette)
   return (
     <Dialog onClose={onClose} open={true}>
+      <DialogTitle sx={{ pt: 1, pb: 1, pr: 8, backgroundColor: color, color: augmentedColor.contrastText }}>{summary}</DialogTitle>
+
       <IconButton
         onClick={onClose}
-        sx={{ position: 'absolute', top: 0, right: 0 }}
+        sx={{ position: 'absolute', top: 4, right: 8, color: augmentedColor.contrastText }}
       >
         <CloseIcon />
       </IconButton>
-      <DialogTitle sx={{ pr: 8 }}>Edit Event</DialogTitle>
       <DialogContent sx={{ minWidth: ['70vw', '416px'] }}>
         <div
           style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap' }}
