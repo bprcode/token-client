@@ -1,12 +1,9 @@
 import CloseIcon from '@mui/icons-material/Close'
 import EventIcon from '@mui/icons-material/Event'
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
-import ArrowDropUpIcon from '@mui/icons-material/ArrowDropUp'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import {
   Button,
-  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -124,87 +121,28 @@ export function EventEditor({ onClose, event }) {
             </>
           )}
         </div>
-        <FormControl
-          sx={{
-            mr: 2,
-            mb: 2,
-            width: sideBySide ? '45%' : '100%',
-            maxWidth: '300px',
-          }}
-        >
-          <TextField
-            label="Start"
-            value={startTime.format('dddd, MMM D')}
-            sx={{'& .MuiInputBase-root': { p: 0}}}
-            InputProps={{
-              inputProps: {
-                style: { textAlign: 'center' },
-              },
-              readOnly: true,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconButton
-                    onClick={() => setStartTime(startTime.subtract(1, 'day'))}
-                  >
-                    <NavigateBeforeIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setStartTime(startTime.add(1, 'day'))}
-                  >
-                    <NavigateNextIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <ClockPicker
-            size="100%"
-            time={startTime}
-            onPick={t => setStartTime(t)}
-          />
-        </FormControl>
 
-        <FormControl
-          sx={{
-            mr: 2,
-            mb: 2,
-            width: sideBySide ? '45%' : '100%',
-            maxWidth: '300px',
+        <div
+          style={{
+            columnGap: '1.25rem',
+            display: 'flex',
+            justifyContent: sideBySide ? 'space-between' : 'center',
+            flexWrap: sideBySide ? 'nowrap' : 'wrap',
           }}
         >
-          <TextField
-            label="End"
-            value={endTime.format('dddd, MMM D')}
-            sx={{'& .MuiInputBase-root': { p: 0}}}
-            InputProps={{
-              inputProps: {
-                style: { textAlign: 'center' },
-              },
-              readOnly: true,
-              startAdornment: (
-                <InputAdornment position="start">
-                  <IconButton
-                    onClick={() => setEndTime(endTime.subtract(1, 'day'))}
-                  >
-                    <NavigateBeforeIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setEndTime(endTime.add(1, 'day'))}>
-                    <NavigateNextIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
+          <ClockControl
+            label="Start"
+            width={'100%'}
+            time={startTime}
+            onSet={setStartTime}
           />
-          <ClockPicker size="100%" time={endTime} onPick={t => setEndTime(t)} />
-        </FormControl>
+          <ClockControl
+            label="End"
+            width={'100%'}
+            time={endTime}
+            onSet={setEndTime}
+          />
+        </div>
 
         <TextField
           label="Description"
@@ -220,5 +158,44 @@ export function EventEditor({ onClose, event }) {
         <Button>Save</Button>
       </DialogActions>
     </Dialog>
+  )
+}
+
+function ClockControl({ width, label, time, onSet }) {
+  return (
+    <FormControl
+      sx={{
+        mb: 2,
+        width: width,
+        maxWidth: '300px',
+      }}
+    >
+      <TextField
+        label={label}
+        value={time.format('dddd, MMM D')}
+        sx={{ '& .MuiInputBase-root': { p: 0 } }}
+        InputProps={{
+          inputProps: {
+            style: { textAlign: 'center' },
+          },
+          readOnly: true,
+          startAdornment: (
+            <InputAdornment position="start">
+              <IconButton onClick={() => onSet(time.subtract(1, 'day'))}>
+                <NavigateBeforeIcon />
+              </IconButton>
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={() => onSet(time.add(1, 'day'))}>
+                <NavigateNextIcon />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+      <ClockPicker size="100%" time={time} onPick={t => onSet(t)} />
+    </FormControl>
   )
 }

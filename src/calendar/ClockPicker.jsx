@@ -49,13 +49,10 @@ export function ClockPicker({ size = '240px', time, onPick }) {
       style={{
         borderBottomLeftRadius: '4px',
         borderBottomRightRadius: '4px',
-        borderLeft: '1px solid gray',
-        borderRight: '1px solid gray',
-        borderBottom: '1px solid gray',
         width: size,
         paddingBottom: '1rem',
-        paddingLeft: '0.5rem',
-        paddingRight: '0.5rem',
+        paddingLeft: '1rem',
+        paddingRight: '1rem',
       }}
     >
       <Typography
@@ -127,12 +124,13 @@ export function ClockPicker({ size = '240px', time, onPick }) {
       {/* clock face */}
       <div
         style={{
-          backgroundColor: '#00f4',
+          backgroundColor: '#363c87',
           width: '100%',
           paddingBottom: '100%', // alternative to aspect-ratio
           position: 'relative',
           borderRadius: '50%',
           userSelect: 'none',
+          filter: 'drop-shadow(8px 5px 4px #28100070)',
         }}
         onClick={e => {
           const bounds = e.currentTarget.getBoundingClientRect()
