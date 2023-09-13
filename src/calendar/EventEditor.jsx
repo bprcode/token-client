@@ -84,7 +84,9 @@ export function EventEditor({ onClose, event }) {
               value={type}
               onChange={e => {
                 setType(e.target.value)
-                if (e.target.value !== 'Other...') { setSummary(e.target.value)}
+                if (e.target.value !== 'Other...') {
+                  setSummary(e.target.value)
+                }
               }}
               label="Type"
               variant="standard"
@@ -205,7 +207,11 @@ function ClockControl({ width, label, time, onSet }) {
           inputProps: {
             // Beware that setting the padding symmetrically may cause a
             // "jumping" bug in the select item alignment
-           style: { textAlign: 'center', paddingTop: '8px', paddingBottom: '12px' },
+            style: {
+              textAlign: 'center',
+              paddingTop: '8px',
+              paddingBottom: '12px',
+            },
           },
           readOnly: true,
           startAdornment: (

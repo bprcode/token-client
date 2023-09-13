@@ -4,7 +4,7 @@ import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
 import { mockStyles } from './mockCalendar.mjs'
-import { IconButton } from '@mui/material'
+import { Box, IconButton, useTheme } from '@mui/material'
 
 const noop = () => {}
 
@@ -24,8 +24,8 @@ function PaneControls({ augmentedColors }) {
           transform: 'translate(-50%, -100%) scale(2)',
           padding: '0 0 0.125rem 0',
           '&:hover': {
-            backgroundColor: augmentedColors.light
-          }
+            backgroundColor: augmentedColors.light,
+          },
         }}
       >
         <AlignTopIcon />
@@ -43,8 +43,8 @@ function PaneControls({ augmentedColors }) {
           transform: 'translate(-50%, 0%) scale(2)',
           padding: '0 0 0.125rem 0',
           '&:hover': {
-            backgroundColor: augmentedColors.light
-          }
+            backgroundColor: augmentedColors.light,
+          },
         }}
       >
         <AlignBottomIcon />
@@ -64,6 +64,7 @@ export function EventPane({
   onSelect = noop,
   onEdit = noop,
 }) {
+  const theme = useTheme()
   const selectable = label === 'detailed'
 
   const overflowBefore = event.start.dateTime.isBefore(initial)
@@ -81,9 +82,9 @@ export function EventPane({
   const accentColor = referenceStyle.augmentedColors.main
   const shadeColor = referenceStyle.augmentedColors.dark
   const augmentedColors = referenceStyle.augmentedColors
-  const verboseBackground = selected && selectable ? '#ddf' : '#223'
+  const verboseBackground = selected && selectable ? '#6e2a08' : '#223'
 
-  const borderColor = selected ? augmentedColors.light : accentColor
+  const borderColor = selected ? theme.palette.secondary.main : accentColor
   const roomForIcon = fragmentEnd.diff(fragmentStart) / (60 * 1000) > 45
 
   const borderStyles =
@@ -163,7 +164,7 @@ export function EventPane({
 
   return (
     <>
-      <div
+      <Box
         onClick={e => {
           if (label !== 'detailed') return
           e.stopPropagation()
@@ -173,14 +174,22 @@ export function EventPane({
 
           onSelect(event.id)
         }}
-        style={{
+        sx={{
           position: 'absolute',
           top: (topOffset / intervalSize) * 100 + '%',
           left: indent * (100 / columns) + '%',
           height: (windowLength / intervalSize) * 100 + '%',
           width: 100 / columns + '%',
           zIndex: selected ? 2 : 1,
-          
+          '&:after': selected && {
+            content: "''",
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            top: 0,
+
+            boxShadow: `0px 0px 0.75rem inset ${theme.palette.secondary.main}`,
+          },
         }}
       >
         {overflowArrows}
@@ -199,8 +208,6 @@ export function EventPane({
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-
-
           }}
         >
           {/* pane header */}
@@ -225,25 +232,38 @@ export function EventPane({
                 flexGrow: 1,
                 overflow: 'hidden',
                 position: 'relative',
+                color: selected && '#aaa',
               }}
             >
               {details}
 
               {/* pencil icon */}
-              {selected && roomForIcon && <EditIcon
-        fontSize="large"
-        sx={{
-          zIndex: 1,
-          color: '#222',
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          borderRadius: '25%',
-          scale: '1.25',
-          filter: `drop-shadow(0px 0px 8px #fff)`
-        }}
-      />}
+              {selected && roomForIcon && (
+                <IconButton
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    zIndex: 1,
+                    padding: 0,
+                    margin: 0,
+                  }}
+                >
+                  <EditIcon
+                    fontSize="large"
+                    sx={{
+                      color: referenceStyle.augmentedColors.contrastText,
+
+                      borderRadius: '25%',
+                      padding: '0.25rem',
+                      scale: '1.25',
+                      backgroundColor: accentColor,
+                      boxShadow: '0.125rem 0.25rem 0.5rem #331',
+                    }}
+                  />
+                </IconButton>
+              )}
 
               {event.description && (
                 // fade-out overlay to indicate possible overflowing text:
@@ -254,15 +274,16 @@ export function EventPane({
                     position: 'absolute',
                     bottom: 0,
                     background:
+                      !selected &&
                       `linear-gradient(to top, ` +
-                      `${verboseBackground}, transparent)`,
+                        `${verboseBackground}, transparent)`,
                   }}
                 />
               )}
             </div>
           )}
         </div>
-      </div>
+      </Box>
 
       {/* drop shadow mock pseudo-element for correct z-indexing: */}
       <div

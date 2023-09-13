@@ -131,7 +131,7 @@ export function ClockPicker({ size = '240px', time, onPick }) {
           position: 'relative',
           borderRadius: '50%',
           userSelect: 'none',
-          filter: 'drop-shadow(8px 5px 4px #28100070)',
+          filter: 'drop-shadow(8px 5px 4px #281000c0)',
         }}
         onClick={e => {
           const bounds = e.currentTarget.getBoundingClientRect()
