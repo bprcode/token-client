@@ -190,6 +190,7 @@ export function EventPane({
 
             boxShadow: `0px 0px 0.75rem inset ${theme.palette.secondary.main}`,
           },
+          transition: 'top 0.35s ease-out, height 0.35s ease-out',
         }}
       >
         {overflowArrows}
