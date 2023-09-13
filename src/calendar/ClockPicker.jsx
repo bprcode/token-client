@@ -58,7 +58,7 @@ export function ClockPicker({ size = '240px', time, onPick }) {
     >
       <Typography
         variant="h4"
-        py={1}
+        py={0.5}
         mb={2}
         sx={{ textAlign: 'center' }}
         component="div"

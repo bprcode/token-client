@@ -30,7 +30,7 @@ export function EventEditor({ onClose, event }) {
     event && (event.description || '')
   )
   const [color, setColor] = useState(mockPalette[0])
-  const augmentedColor = theme.palette.augmentColor({color: {main: color}})
+  const augmentedColor = theme.palette.augmentColor({ color: { main: color } })
   const [type, setType] = useState((event && event.summary) || 'Default')
 
   const [startTime, setStartTime] = useState(event.start.dateTime)
@@ -38,17 +38,36 @@ export function EventEditor({ onClose, event }) {
 
   const typeStyles = []
   for (const [key, value] of mockStyles) {
-    typeStyles.push({ key: key === 'Default' ? 'New...' : key, value })
+    typeStyles.push({ key: key === 'Default' ? 'Other...' : key, value })
   }
 
-  console.log(theme.palette)
+  const titleColor =
+    type === 'Other...'
+      ? augmentedColor
+      : typeStyles.find(s => s.key === type).value.augmentedColors
+
   return (
     <Dialog onClose={onClose} open={true}>
-      <DialogTitle sx={{ pt: 1, pb: 1, pr: 8, backgroundColor: color, color: augmentedColor.contrastText }}>{summary}</DialogTitle>
+      <DialogTitle
+        sx={{
+          pt: 1,
+          pb: 1,
+          pr: 8,
+          backgroundColor: titleColor.main,
+          color: titleColor.contrastText,
+        }}
+      >
+        {summary}
+      </DialogTitle>
 
       <IconButton
         onClick={onClose}
-        sx={{ position: 'absolute', top: 4, right: 8, color: augmentedColor.contrastText }}
+        sx={{
+          position: 'absolute',
+          top: 4,
+          right: 8,
+          color: titleColor.contrastText,
+        }}
       >
         <CloseIcon />
       </IconButton>
@@ -63,7 +82,10 @@ export function EventEditor({ onClose, event }) {
             <Select
               labelId="type-select-label"
               value={type}
-              onChange={e => setType(e.target.value)}
+              onChange={e => {
+                setType(e.target.value)
+                if (e.target.value !== 'Other...') { setSummary(e.target.value)}
+              }}
               label="Type"
               variant="standard"
               autoWidth
@@ -83,11 +105,11 @@ export function EventEditor({ onClose, event }) {
             </Select>
           </FormControl>
 
-          {type === 'New...' && (
+          {type === 'Other...' && (
             <>
               <FormControl sx={{ mr: 2, mb: 2 }}>
                 <TextField
-                  label="Title"
+                  label="Event"
                   variant="standard"
                   value={summary}
                   onChange={e => setSummary(e.target.value)}
@@ -152,7 +174,7 @@ export function EventEditor({ onClose, event }) {
         <TextField
           label="Description"
           multiline
-          minRows={2}
+          minRows={1}
           sx={{ width: '100%' }}
           variant="filled"
           value={description}
@@ -181,7 +203,9 @@ function ClockControl({ width, label, time, onSet }) {
         sx={{ '& .MuiInputBase-root': { p: 0 } }}
         InputProps={{
           inputProps: {
-            style: { textAlign: 'center' },
+            // Beware that setting the padding symmetrically may cause a
+            // "jumping" bug in the select item alignment
+           style: { textAlign: 'center', paddingTop: '8px', paddingBottom: '12px' },
           },
           readOnly: true,
           startAdornment: (
