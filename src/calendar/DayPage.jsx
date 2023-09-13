@@ -1,11 +1,11 @@
 import { IconButton, Paper, Stack, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
-import { SectionedInterval, RuledInterval } from './SectionedInterval'
+import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
 import { useState } from 'react'
 import { EventEditor } from './EventEditor'
 
-export function DayPage({ onBack, day, unfilteredEvents }) {
+export function DayPage({ onBack, onUpdate, day, unfilteredEvents }) {
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
 
@@ -43,6 +43,13 @@ export function DayPage({ onBack, day, unfilteredEvents }) {
 
       {editing && (
         <EventEditor
+          onSave={updates => {
+            onUpdate({
+              ...updates,
+              id: selection,
+            })
+            setSelection(null)
+          }}
           onClose={() => setEditing(false)}
           event={unfilteredEvents.find(e => e.id === selection)}
         />

@@ -208,6 +208,7 @@ export function EventPane({
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
+            transition: 'background-color 0.2s ease-out',
           }}
         >
           {/* pane header */}

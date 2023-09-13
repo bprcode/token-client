@@ -22,7 +22,7 @@ import { useState } from 'react'
 import { mockStyles, mockPalette } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
 
-export function EventEditor({ onClose, event }) {
+export function EventEditor({ onClose, onSave, event }) {
   const sideBySide = useMediaQuery('(min-width: 660px)')
   const theme = useTheme()
   const [summary, setSummary] = useState(event && event.summary)
@@ -108,7 +108,7 @@ export function EventEditor({ onClose, event }) {
           </FormControl>
 
           {type === 'Other...' && (
-            <>
+            <span>
               <FormControl sx={{ mr: 2, mb: 2 }}>
                 <TextField
                   label="Event"
@@ -147,7 +147,7 @@ export function EventEditor({ onClose, event }) {
                   ))}
                 </Select>
               </FormControl>
-            </>
+            </span>
           )}
         </div>
 
@@ -184,7 +184,19 @@ export function EventEditor({ onClose, event }) {
         />
       </DialogContent>
       <DialogActions>
-        <Button>Save</Button>
+        <Button
+          onClick={() => {
+            onSave({
+              summary,
+              description,
+              start: { dateTime: startTime },
+              end: { dateTime: endTime },
+            })
+            onClose()
+          }}
+        >
+          Save
+        </Button>
       </DialogActions>
     </Dialog>
   )

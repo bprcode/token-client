@@ -10,7 +10,7 @@ import digitalTheme from './blueDigitalTheme'
 import { useRef, useState } from 'react'
 import * as dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
-import { sampleEvents } from './calendar/mockCalendar.mjs'
+import { useEventList } from './calendar/mockCalendar.mjs'
 import { WeeklyCalendar } from './calendar/WeeklyCalendar'
 import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
@@ -18,6 +18,7 @@ import { DayPage } from './calendar/DayPage'
 const currentDate = dayjs()
 
 function Demo() {
+  const [eventList, dispatchEventList] = useEventList()
   const [mode, setMode] = useState('month')
   const containerRef = useRef(null)
   const [expandedDate, setExpandedDate] = useState(null)
@@ -33,7 +34,7 @@ function Demo() {
           <Collapse timeout={350}>
             <MonthlyCalendar
               initialDate={currentDate}
-              unfilteredEvents={sampleEvents}
+              unfilteredEvents={eventList}
               onExpand={date => {
                 setExpandedDate(date)
                 setMode('week')
@@ -50,7 +51,7 @@ function Demo() {
               }}
               key={(expandedDate || currentDate).format('MM D')}
               initialDate={expandedDate || currentDate}
-              eventList={sampleEvents}
+              eventList={eventList}
               onExpand={date => {
                 setExpandedDate(date)
                 setMode('day')
@@ -63,7 +64,14 @@ function Demo() {
             <DayPage
               onBack={() => setMode('week')}
               day={expandedDate}
-              unfilteredEvents={sampleEvents}
+              unfilteredEvents={eventList}
+              onUpdate={updates =>
+                dispatchEventList({
+                  type: 'update',
+                  id: updates.id,
+                  updates,
+                })
+              }
             />
           </Collapse>
         )}

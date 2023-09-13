@@ -1,5 +1,6 @@
 import { createTheme } from '@mui/material'
 import * as dayjs from 'dayjs'
+import { useReducer } from 'react'
 
 function createSampleEvent({ startTime, endTime, summary }) {
   return {
@@ -18,11 +19,13 @@ function createSampleEvent({ startTime, endTime, summary }) {
     start: {
       // RFC3339-compatible datetime
       dateTime: startTime,
+      mock: 'start test data',
     },
     // object
     end: {
       // RFC3339-compatible datetime
       dateTime: endTime || startTime.add(1, 'hour'),
+      mock: 'end test data',
     },
     // array
     //recurrence: ['string'], c.f. RFC 5545 -- not yet implemented
@@ -108,4 +111,26 @@ export const mockStyles = new Map([
   ],
 ])
 
-export const sampleEvents = createSampleWeek(dayjs())
+function reduceEventList(eventList, action) {
+  switch (action.type) {
+    case 'update':
+      return eventList.map(e => {
+        if (e.id !== action.id) return e
+
+        return {
+          ...e,
+          ...action.updates,
+          start: { ...e.start, ...action.updates.start },
+          end: { ...e.end, ...action.updates.end },
+        }
+      })
+    case 'foo':
+      return { foo: 'bar' }
+    default:
+      throw Error('Unhandled dispatch: ', action.type)
+  }
+}
+
+export function useEventList() {
+  return useReducer(reduceEventList, createSampleWeek(dayjs()))
+}
