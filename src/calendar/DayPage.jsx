@@ -38,6 +38,10 @@ export function DayPage({ onBack, onUpdate, day, unfilteredEvents }) {
           selection={selection}
           onSelect={s => setSelection(s)}
           onEdit={() => setEditing(true)}
+          onUpdate={updates => {
+            onUpdate(updates)
+            setSelection(null)
+          }}
         />
       </SectionedInterval>
 

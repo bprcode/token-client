@@ -9,6 +9,7 @@ export function DailyBreakdown({
   selection,
   onSelect,
   onEdit,
+  onUpdate,
   labels = 'detailed',
 }) {
 
@@ -93,6 +94,7 @@ export function DailyBreakdown({
           selected={selection === r.id}
           onSelect={onSelect}
           onEdit={onEdit}
+          onUpdate={onUpdate}
         />
       ))}
     </Box>
