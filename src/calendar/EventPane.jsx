@@ -13,9 +13,9 @@ function snap15Minute(time, steps) {
   if (steps === 0) return time
 
   const m = time.minute()
-  const floor = time.minute(m - m % 15)
+  const floor = time.minute(m - (m % 15))
 
-  const offset = steps < 0 && (m % 15) !== 0 ? steps + 1 : steps 
+  const offset = steps < 0 && m % 15 !== 0 ? steps + 1 : steps
   return time.minute(floor.minute() + offset * 15)
 }
 
@@ -48,11 +48,27 @@ export function EventPane({
   const windowLength = fragmentEnd.diff(fragmentStart)
   const intervalSize = final.diff(initial)
 
-  const ghostSnapStart = snap15Minute(fragmentStart, ghostTop)
-  const ghostSnapEnd = snap15Minute(fragmentEnd, ghostBottom)
+  // Perform bounds checking on drag actions:
+  const earliestStart = initial
+  const latestStart = fragmentEnd.subtract(15, 'minutes')
+
+  const earliestEnd = fragmentStart.add(15, 'minutes')
+  const latestEnd = final
+
+  let boundedStart = snap15Minute(fragmentStart, ghostTop)
+  let boundedEnd = snap15Minute(fragmentEnd, ghostBottom)
+
+  if (boundedStart.isBefore(earliestStart)) boundedStart = earliestStart
+  if (boundedStart.isAfter(latestStart)) boundedStart = latestStart
+  if (boundedEnd.isBefore(earliestEnd)) boundedEnd = earliestEnd
+  if (boundedEnd.isAfter(latestEnd)) boundedEnd = latestEnd
+
+  const ghostSnapStart = boundedStart
+  const ghostSnapEnd = boundedEnd
+
   const ghostTopOffset = ghostSnapStart.diff(initial)
   const ghostWindowLength = ghostSnapEnd.diff(ghostSnapStart)
-  
+
   // Build shorthand time string:
   const crossesMeridian =
     event.start.dateTime.format('A') !== event.end.dateTime.format('A')
@@ -243,11 +259,15 @@ export function EventPane({
               showBottom={!overflowAfter}
               onGhostStart={() => setGhost(true)}
               onGhostEnd={() => {
-                console.log('applying ghost start, end: ', ghostSnapStart.format('H:mm'), ghostSnapEnd.format('H:mm'))
+                console.log(
+                  'applying ghost start, end: ',
+                  ghostSnapStart.format('H:mm'),
+                  ghostSnapEnd.format('H:mm')
+                )
                 const updates = {
                   id: event.id,
                   start: ghostTop !== 0 && {
-                    dateTime: ghostSnapStart
+                    dateTime: ghostSnapStart,
                   },
                   end: ghostBottom !== 0 && {
                     dateTime: ghostSnapEnd,
@@ -335,8 +355,6 @@ export function EventPane({
             height: (ghostWindowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
 
-            
-            
             border: `3px dashed ${augmentedColors.light}`,
             backgroundColor: '#fff2',
             boxShadow: `0 0 3rem inset ${accentColor}`,
@@ -384,67 +402,71 @@ function PaneControls({
 
   return (
     <>
-      {showTop && <IconButton
-        sx={{
-          zIndex: -1,
-          color: augmentedColors.contrastText,
-          backgroundColor: augmentedColors.main,
-          position: 'absolute',
-          top: '0%',
-          left: '50%',
-          borderRadius: 0,
-          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
-          transform: 'translate(-50%, -100%) scale(2)',
-          padding: '0 0 0.125rem 0',
-          '&:hover': {
-            backgroundColor: augmentedColors.light,
-          },
-        }}
-        onClick={e => {
-          // Prevent propagation to the parent pane:
-          e.stopPropagation()
-        }}
-        onPointerDown={e => {
-          handleDrag(e, onAdjustTop)
-        }}
-        onPointerUp={e => {
-          onGhostEnd()
-          e.currentTarget.onpointermove = null
-        }}
-      >
-        <AlignTopIcon />
-      </IconButton>}
-      {showBottom && <IconButton
-        className="drag-handle"
-        sx={{
-          zIndex: -1,
-          color: augmentedColors.contrastText,
-          backgroundColor: augmentedColors.main,
-          position: 'absolute',
-          top: '100%',
-          left: '50%',
-          borderRadius: 0,
-          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
-          transform: 'translate(-50%, 0%) scale(2)',
-          padding: '0 0 0.125rem 0',
-          '&:hover': {
-            backgroundColor: augmentedColors.light,
-          },
-        }}
-        onClick={e => {
-          // Prevent propagation to the parent pane:
-          e.stopPropagation()
-        }}
-        onPointerDown={e => {
-          handleDrag(e, onAdjustBottom)
-        }}
-        onPointerUp={e => {
-          onGhostEnd()
-          e.currentTarget.onpointermove = null
-        }}
-      >
-        <AlignBottomIcon />
-      </IconButton>}
+      {showTop && (
+        <IconButton
+          sx={{
+            zIndex: -1,
+            color: augmentedColors.contrastText,
+            backgroundColor: augmentedColors.main,
+            position: 'absolute',
+            top: '0%',
+            left: '50%',
+            borderRadius: 0,
+            boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+            transform: 'translate(-50%, -100%) scale(2)',
+            padding: '0 0 0.125rem 0',
+            '&:hover': {
+              backgroundColor: augmentedColors.light,
+            },
+          }}
+          onClick={e => {
+            // Prevent propagation to the parent pane:
+            e.stopPropagation()
+          }}
+          onPointerDown={e => {
+            handleDrag(e, onAdjustTop)
+          }}
+          onPointerUp={e => {
+            onGhostEnd()
+            e.currentTarget.onpointermove = null
+          }}
+        >
+          <AlignTopIcon />
+        </IconButton>
+      )}
+      {showBottom && (
+        <IconButton
+          className="drag-handle"
+          sx={{
+            zIndex: -1,
+            color: augmentedColors.contrastText,
+            backgroundColor: augmentedColors.main,
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            borderRadius: 0,
+            boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+            transform: 'translate(-50%, 0%) scale(2)',
+            padding: '0 0 0.125rem 0',
+            '&:hover': {
+              backgroundColor: augmentedColors.light,
+            },
+          }}
+          onClick={e => {
+            // Prevent propagation to the parent pane:
+            e.stopPropagation()
+          }}
+          onPointerDown={e => {
+            handleDrag(e, onAdjustBottom)
+          }}
+          onPointerUp={e => {
+            onGhostEnd()
+            e.currentTarget.onpointermove = null
+          }}
+        >
+          <AlignBottomIcon />
+        </IconButton>
+      )}
     </>
   )
 }
