@@ -12,7 +12,6 @@ export function DailyBreakdown({
   onUpdate,
   labels = 'detailed',
 }) {
-
   const startOfDay = day.startOf('day')
   const endOfDay = day.endOf('day')
 

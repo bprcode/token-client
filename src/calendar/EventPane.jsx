@@ -9,6 +9,16 @@ import { useState } from 'react'
 
 const noop = () => {}
 
+function snap15Minute(time, steps) {
+  if (steps === 0) return time
+
+  const m = time.minute()
+  const floor = time.minute(m - m % 15)
+
+  const offset = steps < 0 && (m % 15) !== 0 ? steps + 1 : steps 
+  return time.minute(floor.minute() + offset * 15)
+}
+
 export function EventPane({
   initial,
   final,
@@ -38,15 +48,11 @@ export function EventPane({
   const windowLength = fragmentEnd.diff(fragmentStart)
   const intervalSize = final.diff(initial)
 
-  const fifteenMinuteInterval = (15 * 60 * 1000) / intervalSize
-
-  const referenceStyle =
-    mockStyles.get(event.summary) || mockStyles.get('Default')
-  const accentColor = referenceStyle.augmentedColors.main
-  const shadeColor = referenceStyle.augmentedColors.dark
-  const augmentedColors = referenceStyle.augmentedColors
-  const verboseBackground = selected && selectable ? '#6e2a08' : '#223'
-
+  const ghostSnapStart = snap15Minute(fragmentStart, ghostTop)
+  const ghostSnapEnd = snap15Minute(fragmentEnd, ghostBottom)
+  const ghostTopOffset = ghostSnapStart.diff(initial)
+  const ghostWindowLength = ghostSnapEnd.diff(ghostSnapStart)
+  
   // Build shorthand time string:
   const crossesMeridian =
     event.start.dateTime.format('A') !== event.end.dateTime.format('A')
@@ -60,6 +66,14 @@ export function EventPane({
     '–' +
     event.end.dateTime.format(endShorthand) +
     endAP
+
+  // Styling constants
+  const referenceStyle =
+    mockStyles.get(event.summary) || mockStyles.get('Default')
+  const accentColor = referenceStyle.augmentedColors.main
+  const shadeColor = referenceStyle.augmentedColors.dark
+  const augmentedColors = referenceStyle.augmentedColors
+  const verboseBackground = selected && selectable ? '#6e2a08' : '#223'
 
   let borderColor = accentColor
   if (selected) borderColor = theme.palette.secondary.main
@@ -79,6 +93,7 @@ export function EventPane({
         }
       : {}
 
+  // Build content elements:
   let header = null
   let details = null
 
@@ -224,21 +239,18 @@ export function EventPane({
           {selected && (
             <PaneControls
               augmentedColors={augmentedColors}
+              showTop={!overflowBefore}
+              showBottom={!overflowAfter}
               onGhostStart={() => setGhost(true)}
               onGhostEnd={() => {
+                console.log('applying ghost start, end: ', ghostSnapStart.format('H:mm'), ghostSnapEnd.format('H:mm'))
                 const updates = {
                   id: event.id,
-                  start: {
-                    dateTime: event.start.dateTime.add(
-                      ghostTop * 15,
-                      'minutes'
-                    ),
+                  start: ghostTop !== 0 && {
+                    dateTime: ghostSnapStart
                   },
-                  end: {
-                    dateTime: event.end.dateTime.add(
-                      ghostBottom * 15,
-                      'minutes'
-                    ),
+                  end: ghostBottom !== 0 && {
+                    dateTime: ghostSnapEnd,
                   },
                 }
                 setGhost(false)
@@ -318,17 +330,13 @@ export function EventPane({
         <div
           style={{
             position: 'absolute',
-            top:
-              (topOffset / intervalSize + fifteenMinuteInterval * ghostTop) *
-                100 +
-              '%',
+            top: (ghostTopOffset / intervalSize) * 100 + '%',
             left: indent * (100 / columns) + '%',
-            height:
-              (windowLength / intervalSize +
-                fifteenMinuteInterval * (ghostBottom - ghostTop)) *
-                100 +
-              '%',
+            height: (ghostWindowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
+
+            
+            
             border: `3px dashed ${augmentedColors.light}`,
             backgroundColor: '#fff2',
             boxShadow: `0 0 3rem inset ${accentColor}`,
@@ -358,6 +366,8 @@ function PaneControls({
   onGhostEnd,
   onAdjustTop,
   onAdjustBottom,
+  showTop,
+  showBottom,
 }) {
   function handleDrag(event, onAdjust) {
     onGhostStart()
@@ -374,7 +384,7 @@ function PaneControls({
 
   return (
     <>
-      <IconButton
+      {showTop && <IconButton
         sx={{
           zIndex: -1,
           color: augmentedColors.contrastText,
@@ -403,8 +413,8 @@ function PaneControls({
         }}
       >
         <AlignTopIcon />
-      </IconButton>
-      <IconButton
+      </IconButton>}
+      {showBottom && <IconButton
         className="drag-handle"
         sx={{
           zIndex: -1,
@@ -434,7 +444,7 @@ function PaneControls({
         }}
       >
         <AlignBottomIcon />
-      </IconButton>
+      </IconButton>}
     </>
   )
 }
