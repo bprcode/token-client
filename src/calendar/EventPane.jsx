@@ -9,93 +9,6 @@ import { useState } from 'react'
 
 const noop = () => {}
 
-function PaneControls({
-  augmentedColors,
-  onGhostStart,
-  onGhostEnd,
-  onAdjustTop,
-  onAdjustBottom,
-}) {
-  function handleDrag(event, onAdjust) {
-    onGhostStart()
-    onAdjustTop(0)
-    onAdjustBottom(0)
-    event.currentTarget.setPointerCapture(event.pointerId)
-
-    const moveStart = event.clientY
-    const bounds = event.currentTarget.getBoundingClientRect()
-    event.currentTarget.onpointermove = move => {
-      onAdjust(Math.round((move.clientY - moveStart) / bounds.height / 0.5))
-    }
-  }
-
-  return (
-    <>
-      <IconButton
-        sx={{
-          zIndex: -1,
-          color: augmentedColors.contrastText,
-          backgroundColor: augmentedColors.main,
-          position: 'absolute',
-          top: '0%',
-          left: '50%',
-          borderRadius: 0,
-          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
-          transform: 'translate(-50%, -100%) scale(2)',
-          padding: '0 0 0.125rem 0',
-          '&:hover': {
-            backgroundColor: augmentedColors.light,
-          },
-        }}
-        onClick={e => {
-          // Prevent propagation to the parent pane:
-          e.stopPropagation()
-        }}
-        onPointerDown={e => {
-          handleDrag(e, onAdjustTop)
-        }}
-        onPointerUp={e => {
-          onGhostEnd()
-          e.currentTarget.onpointermove = null
-        }}
-      >
-        <AlignTopIcon />
-      </IconButton>
-      <IconButton
-        className="drag-handle"
-        sx={{
-          zIndex: -1,
-          color: augmentedColors.contrastText,
-          backgroundColor: augmentedColors.main,
-          position: 'absolute',
-          top: '100%',
-          left: '50%',
-          borderRadius: 0,
-          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
-          transform: 'translate(-50%, 0%) scale(2)',
-          padding: '0 0 0.125rem 0',
-          '&:hover': {
-            backgroundColor: augmentedColors.light,
-          },
-        }}
-        onClick={e => {
-          // Prevent propagation to the parent pane:
-          e.stopPropagation()
-        }}
-        onPointerDown={e => {
-          handleDrag(e, onAdjustBottom)
-        }}
-        onPointerUp={e => {
-          onGhostEnd()
-          e.currentTarget.onpointermove = null
-        }}
-      >
-        <AlignBottomIcon />
-      </IconButton>
-    </>
-  )
-}
-
 export function EventPane({
   initial,
   final,
@@ -134,6 +47,20 @@ export function EventPane({
   const augmentedColors = referenceStyle.augmentedColors
   const verboseBackground = selected && selectable ? '#6e2a08' : '#223'
 
+  // Build shorthand time string:
+  const crossesMeridian =
+    event.start.dateTime.format('A') !== event.end.dateTime.format('A')
+  const startShorthand = event.start.dateTime.minute() === 0 ? 'h' : 'h:mm'
+  const endShorthand = event.end.dateTime.minute() === 0 ? 'h' : 'h:mm'
+  const startAP = crossesMeridian ? event.start.dateTime.format('a')[0] : ''
+  const endAP = crossesMeridian ? event.end.dateTime.format('a')[0] : ''
+  const shorthandInterval =
+    event.start.dateTime.format(startShorthand) +
+    startAP +
+    '–' +
+    event.end.dateTime.format(endShorthand) +
+    endAP
+
   let borderColor = accentColor
   if (selected) borderColor = theme.palette.secondary.main
   if (ghost) borderColor = augmentedColors.main
@@ -160,7 +87,30 @@ export function EventPane({
   }
 
   if (label === 'detailed') {
-    header = event.summary
+    header = (
+      <div
+        style={{
+          display: 'flex',
+          // Hide wrapped child if it causes the header to overflow:
+          flexWrap: 'wrap',
+          overflow: 'hidden',
+          maxHeight: '1.25rem',
+          justifyContent: 'space-between',
+        }}
+      >
+        <span>{event.summary}</span>
+        <span
+          style={{
+            paddingLeft: '1rem',
+            flexGrow: 1,
+            flexShrink: 1,
+            textAlign: 'right',
+          }}
+        >
+          {shorthandInterval}
+        </span>
+      </div>
+    )
     details = (
       <div
         style={{
@@ -233,10 +183,9 @@ export function EventPane({
           left: indent * (100 / columns) + '%',
           height: (windowLength / intervalSize) * 100 + '%',
           width: 100 / columns + '%',
-          zIndex: selected ? 2 : 1,          
+          zIndex: selected ? 2 : 1,
           transition: 'top 0.35s ease-out, height 0.35s ease-out',
           opacity: ghost && 0.5,
-
         }}
       >
         {overflowArrows}
@@ -256,7 +205,6 @@ export function EventPane({
             display: 'flex',
             flexDirection: 'column',
             transition: 'background-color 0.2s ease-out',
-            
           }}
         >
           {/* pane header */}
@@ -280,8 +228,18 @@ export function EventPane({
               onGhostEnd={() => {
                 const updates = {
                   id: event.id,
-                  start: { dateTime: event.start.dateTime.add(ghostTop * 15, 'minutes') },
-                  end: { dateTime: event.end.dateTime.add(ghostBottom * 15, 'minutes') },
+                  start: {
+                    dateTime: event.start.dateTime.add(
+                      ghostTop * 15,
+                      'minutes'
+                    ),
+                  },
+                  end: {
+                    dateTime: event.end.dateTime.add(
+                      ghostBottom * 15,
+                      'minutes'
+                    ),
+                  },
                 }
                 setGhost(false)
                 onUpdate(updates)
@@ -390,6 +348,93 @@ export function EventPane({
           boxShadow: !selected && '0.25rem 0.25rem 0.5rem #0008',
         }}
       />
+    </>
+  )
+}
+
+function PaneControls({
+  augmentedColors,
+  onGhostStart,
+  onGhostEnd,
+  onAdjustTop,
+  onAdjustBottom,
+}) {
+  function handleDrag(event, onAdjust) {
+    onGhostStart()
+    onAdjustTop(0)
+    onAdjustBottom(0)
+    event.currentTarget.setPointerCapture(event.pointerId)
+
+    const moveStart = event.clientY
+    const bounds = event.currentTarget.getBoundingClientRect()
+    event.currentTarget.onpointermove = move => {
+      onAdjust(Math.round((move.clientY - moveStart) / bounds.height / 0.5))
+    }
+  }
+
+  return (
+    <>
+      <IconButton
+        sx={{
+          zIndex: -1,
+          color: augmentedColors.contrastText,
+          backgroundColor: augmentedColors.main,
+          position: 'absolute',
+          top: '0%',
+          left: '50%',
+          borderRadius: 0,
+          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+          transform: 'translate(-50%, -100%) scale(2)',
+          padding: '0 0 0.125rem 0',
+          '&:hover': {
+            backgroundColor: augmentedColors.light,
+          },
+        }}
+        onClick={e => {
+          // Prevent propagation to the parent pane:
+          e.stopPropagation()
+        }}
+        onPointerDown={e => {
+          handleDrag(e, onAdjustTop)
+        }}
+        onPointerUp={e => {
+          onGhostEnd()
+          e.currentTarget.onpointermove = null
+        }}
+      >
+        <AlignTopIcon />
+      </IconButton>
+      <IconButton
+        className="drag-handle"
+        sx={{
+          zIndex: -1,
+          color: augmentedColors.contrastText,
+          backgroundColor: augmentedColors.main,
+          position: 'absolute',
+          top: '100%',
+          left: '50%',
+          borderRadius: 0,
+          boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+          transform: 'translate(-50%, 0%) scale(2)',
+          padding: '0 0 0.125rem 0',
+          '&:hover': {
+            backgroundColor: augmentedColors.light,
+          },
+        }}
+        onClick={e => {
+          // Prevent propagation to the parent pane:
+          e.stopPropagation()
+        }}
+        onPointerDown={e => {
+          handleDrag(e, onAdjustBottom)
+        }}
+        onPointerUp={e => {
+          onGhostEnd()
+          e.currentTarget.onpointermove = null
+        }}
+      >
+        <AlignBottomIcon />
+      </IconButton>
     </>
   )
 }
