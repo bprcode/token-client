@@ -9,7 +9,6 @@ export function DayPage({ onBack, onUpdate, day, unfilteredEvents }) {
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
 
-  console.log('selection=',selection)
   return (
     <Paper elevation={1} sx={{ px: 2, py: 2 }}>
       <Stack direction="row">
@@ -31,17 +30,13 @@ export function DayPage({ onBack, onUpdate, day, unfilteredEvents }) {
         step={[1, 'hour']}
         outsideHeight="500px"
         insideHeight="1800px"
-        onClick={() => {
-          console.log('sectioned interval clearing selection...')
-          setSelection(null)}}
+        onClick={() => setSelection(null)}
       >
         <DailyBreakdown
           day={day}
           unfilteredEvents={unfilteredEvents}
           selection={selection}
-          onSelect={s => {
-            console.log('onselect called: ', s)
-            setSelection(s)}}
+          onSelect={s => setSelection(s)}
           onEdit={() => setEditing(true)}
           onUpdate={updates => {
             onUpdate(updates)

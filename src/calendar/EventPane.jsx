@@ -218,7 +218,6 @@ export function EventPane({
             )
 
             if (distance / tickSize > 1) {
-              console.log('Initiating slide...')
               setSliding(true)
               setGhost(true)
               setGhostTop(0)
@@ -228,7 +227,6 @@ export function EventPane({
                 const dy = Math.round((move.clientY - touchStart.y) / tickSize)
                 setGhostTop(dy)
                 setGhostBottom(dy)
-                console.log('dragging: ', dy)
               }
             }
           }
@@ -242,21 +240,22 @@ export function EventPane({
             onSelect(null)
             e.currentTarget.onpointermove = null
 
-            const duration = event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
+            const duration =
+              event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
 
-            const newStart = overflowBefore ?
-            ghostSnapEnd.subtract(duration, 'minutes')
-            : ghostSnapStart
-            const newEnd = overflowAfter ?
-            ghostSnapStart.add(duration, 'minutes')
-            : ghostSnapEnd
+            const newStart = overflowBefore
+              ? ghostSnapEnd.subtract(duration, 'minutes')
+              : ghostSnapStart
+            const newEnd = overflowAfter
+              ? ghostSnapStart.add(duration, 'minutes')
+              : ghostSnapEnd
 
             const updates = {
               id: event.id,
-              start: (overflowBefore || (ghostTop !== 0)) && {
+              start: (overflowBefore || ghostTop !== 0) && {
                 dateTime: newStart,
               },
-              end: (overflowAfter || (ghostBottom !== 0)) && {
+              end: (overflowAfter || ghostBottom !== 0) && {
                 dateTime: newEnd,
               },
             }
@@ -272,7 +271,9 @@ export function EventPane({
           console.log('selecting ', event.id)
           onSelect(event.id)
         }}
-        onClick={e => e.stopPropagation()}
+        onClick={e => {
+          if (label === 'detailed') e.stopPropagation()
+        }}
         sx={{
           position: 'absolute',
           top: (topOffset / intervalSize) * 100 + '%',
@@ -416,9 +417,14 @@ export function EventPane({
             height: (ghostWindowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
 
-            border: `3px dashed ${augmentedColors.light}`,
-            backgroundColor: '#fff2',
-            boxShadow: `0 0 3rem inset ${accentColor}`,
+            borderLeft: `3px dashed ${augmentedColors.light}`,
+            borderRight: `3px dashed ${augmentedColors.light}`,
+            borderTop: !overflowBefore && `3px dashed ${augmentedColors.light}`,
+            borderBottom:
+              !overflowAfter && `3px dashed ${augmentedColors.light}`,
+            backgroundImage: (overflowBefore || overflowAfter) && `linear-gradient(to ${(overflowBefore && 'top') ||  (overflowAfter && 'bottom') }, ${accentColor}, transparent)`,
+            backgroundColor: (!overflowBefore && !overflowAfter) && '#fff2',
+            boxShadow: (!overflowBefore && !overflowAfter) && `0 0 3rem inset ${accentColor}`,
             zIndex: 2,
           }}
         ></div>
