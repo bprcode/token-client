@@ -51,9 +51,13 @@ export function EventPane({
 
   // Perform bounds checking on drag actions:
   const earliestStart = initial
-  const latestStart = sliding ? final.subtract(windowLength / 1000 / 60, 'minutes') : fragmentEnd.subtract(15, 'minutes')
+  const latestStart = sliding
+    ? final.subtract(windowLength / 1000 / 60, 'minutes')
+    : fragmentEnd.subtract(15, 'minutes')
 
-  const earliestEnd = sliding ? initial.add(windowLength / 1000 / 60, 'minutes') : fragmentStart.add(15, 'minutes')
+  const earliestEnd = sliding
+    ? initial.add(windowLength / 1000 / 60, 'minutes')
+    : fragmentStart.add(15, 'minutes')
   const latestEnd = final
 
   let boundedStart = snap15Minute(fragmentStart, ghostTop)
@@ -231,7 +235,6 @@ export function EventPane({
         }}
         onPointerUp={e => {
           e.currentTarget.onpointermove = null
-          console.log('Released!')
 
           if (sliding) {
             setGhost(false)
@@ -239,13 +242,22 @@ export function EventPane({
             onSelect(null)
             e.currentTarget.onpointermove = null
 
+            const duration = event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
+
+            const newStart = overflowBefore ?
+            ghostSnapEnd.subtract(duration, 'minutes')
+            : ghostSnapStart
+            const newEnd = overflowAfter ?
+            ghostSnapStart.add(duration, 'minutes')
+            : ghostSnapEnd
+
             const updates = {
               id: event.id,
-              start: ghostTop !== 0 && {
-                dateTime: ghostSnapStart,
+              start: (overflowBefore || (ghostTop !== 0)) && {
+                dateTime: newStart,
               },
-              end: ghostBottom !== 0 && {
-                dateTime: ghostSnapEnd,
+              end: (overflowAfter || (ghostBottom !== 0)) && {
+                dateTime: newEnd,
               },
             }
             onUpdate(updates)
