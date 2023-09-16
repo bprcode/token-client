@@ -31,6 +31,7 @@ export function EventPane({
   onEdit = noop,
   onUpdate = noop,
 }) {
+  const [sliding, setSliding] = useState(false)
   const [ghost, setGhost] = useState(false)
   const [ghostTop, setGhostTop] = useState(0)
   const [ghostBottom, setGhostBottom] = useState(0)
@@ -50,9 +51,9 @@ export function EventPane({
 
   // Perform bounds checking on drag actions:
   const earliestStart = initial
-  const latestStart = fragmentEnd.subtract(15, 'minutes')
+  const latestStart = sliding ? final.subtract(windowLength / 1000 / 60, 'minutes') : fragmentEnd.subtract(15, 'minutes')
 
-  const earliestEnd = fragmentStart.add(15, 'minutes')
+  const earliestEnd = sliding ? initial.add(windowLength / 1000 / 60, 'minutes') : fragmentStart.add(15, 'minutes')
   const latestEnd = final
 
   let boundedStart = snap15Minute(fragmentStart, ghostTop)
@@ -196,18 +197,70 @@ export function EventPane({
     </>
   )
 
+  // Assembled component:
   return (
     <>
       <Box
-        onClick={e => {
+        onPointerDown={e => {
+          const tickSize = 24
+
+          const touchStart = { x: e.clientX, y: e.clientY }
+          const touchTarget = e.currentTarget
+          touchTarget.setPointerCapture(e.pointerId)
+          touchTarget.onpointermove = move => {
+            const distance = Math.sqrt(
+              (move.clientX - touchStart.x) ** 2 +
+                (move.clientY - touchStart.y) ** 2
+            )
+
+            if (distance / tickSize > 1) {
+              console.log('Initiating slide...')
+              setSliding(true)
+              setGhost(true)
+              setGhostTop(0)
+              setGhostBottom(0)
+
+              touchTarget.onpointermove = move => {
+                const dy = Math.round((move.clientY - touchStart.y) / tickSize)
+                setGhostTop(dy)
+                setGhostBottom(dy)
+                console.log('dragging: ', dy)
+              }
+            }
+          }
+        }}
+        onPointerUp={e => {
+          e.currentTarget.onpointermove = null
+          console.log('Released!')
+
+          if (sliding) {
+            setGhost(false)
+            setSliding(false)
+            onSelect(null)
+            e.currentTarget.onpointermove = null
+
+            const updates = {
+              id: event.id,
+              start: ghostTop !== 0 && {
+                dateTime: ghostSnapStart,
+              },
+              end: ghostBottom !== 0 && {
+                dateTime: ghostSnapEnd,
+              },
+            }
+            onUpdate(updates)
+            return
+          }
+
           if (label !== 'detailed') return
-          e.stopPropagation()
-          if (selected) {
+          if (selected && !ghost) {
             return onEdit()
           }
 
+          console.log('selecting ', event.id)
           onSelect(event.id)
         }}
+        onClick={e => e.stopPropagation()}
         sx={{
           position: 'absolute',
           top: (topOffset / intervalSize) * 100 + '%',
@@ -217,6 +270,7 @@ export function EventPane({
           zIndex: selected ? 2 : 1,
           transition: 'top 0.35s ease-out, height 0.35s ease-out',
           opacity: ghost && 0.5,
+          userSelect: 'none',
         }}
       >
         {overflowArrows}
@@ -259,11 +313,6 @@ export function EventPane({
               showBottom={!overflowAfter}
               onGhostStart={() => setGhost(true)}
               onGhostEnd={() => {
-                console.log(
-                  'applying ghost start, end: ',
-                  ghostSnapStart.format('H:mm'),
-                  ghostSnapEnd.format('H:mm')
-                )
                 const updates = {
                   id: event.id,
                   start: ghostTop !== 0 && {
@@ -378,6 +427,16 @@ export function EventPane({
   )
 }
 
+function handleDrag(event, onAdjust) {
+  event.currentTarget.setPointerCapture(event.pointerId)
+
+  const tickSize = 24
+  const moveStart = event.clientY
+  event.currentTarget.onpointermove = move => {
+    onAdjust(Math.round((move.clientY - moveStart) / tickSize))
+  }
+}
+
 function PaneControls({
   augmentedColors,
   onGhostStart,
@@ -387,17 +446,10 @@ function PaneControls({
   showTop,
   showBottom,
 }) {
-  function handleDrag(event, onAdjust) {
+  function beginDrag() {
     onGhostStart()
     onAdjustTop(0)
     onAdjustBottom(0)
-    event.currentTarget.setPointerCapture(event.pointerId)
-
-    const moveStart = event.clientY
-    const bounds = event.currentTarget.getBoundingClientRect()
-    event.currentTarget.onpointermove = move => {
-      onAdjust(Math.round((move.clientY - moveStart) / bounds.height / 0.5))
-    }
   }
 
   return (
@@ -424,7 +476,9 @@ function PaneControls({
             e.stopPropagation()
           }}
           onPointerDown={e => {
+            beginDrag()
             handleDrag(e, onAdjustTop)
+            e.stopPropagation()
           }}
           onPointerUp={e => {
             onGhostEnd()
@@ -457,7 +511,9 @@ function PaneControls({
             e.stopPropagation()
           }}
           onPointerDown={e => {
+            beginDrag()
             handleDrag(e, onAdjustBottom)
+            e.stopPropagation()
           }}
           onPointerUp={e => {
             onGhostEnd()
