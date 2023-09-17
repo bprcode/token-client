@@ -7,6 +7,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogContentText,
   DialogTitle,
   FormControl,
   IconButton,
@@ -23,7 +24,14 @@ import { mockStyles, mockPalette } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
 
 export function EventEditor({ onClose, onSave, event }) {
-  console.log(`Event ${event.id} spanning ${event.start.dateTime.format('H:mm:ss')} - ${event.end.dateTime.format('H:mm:ss')}`)
+  console.log(
+    `Event ${event.id} spanning ${event.start.dateTime.format(
+      'H:mm:ss'
+    )} - ${event.end.dateTime.format('H:mm:ss')}`
+  )
+
+  const [showConfirm, setShowConfirm] = useState(false)
+
   const sideBySide = useMediaQuery('(min-width: 660px)')
   const theme = useTheme()
   const [summary, setSummary] = useState(event && event.summary)
@@ -47,8 +55,37 @@ export function EventEditor({ onClose, onSave, event }) {
       ? augmentedColor
       : typeStyles.find(s => s.key === type).value.augmentedColors
 
+  function isChanged() {
+    return (
+      summary !== event.summary ||
+      type !== event.summary ||
+      description !== event.description ||
+      !startTime.isSame(event.start.dateTime) ||
+      !endTime.isSame(event.end.dateTime)
+    )
+  }
+
+  function save() {
+    const firstTime = startTime.isBefore(endTime) ? startTime : endTime
+    const secondTime = endTime.isAfter(firstTime) ? endTime : startTime
+
+    onSave({
+      summary,
+      description,
+      start: { dateTime: firstTime },
+      end: { dateTime: secondTime },
+    })
+    onClose()
+  }
+
   return (
-    <Dialog onClose={onClose} open={true}>
+    <Dialog
+      onClose={() => {
+        if (isChanged()) return setShowConfirm(true)
+        onClose()
+      }}
+      open={true}
+    >
       <DialogTitle
         sx={{
           pt: 1,
@@ -185,20 +222,18 @@ export function EventEditor({ onClose, onSave, event }) {
         />
       </DialogContent>
       <DialogActions>
-        <Button
-          onClick={() => {
-            onSave({
-              summary,
-              description,
-              start: { dateTime: startTime },
-              end: { dateTime: endTime },
-            })
-            onClose()
-          }}
-        >
-          Save
-        </Button>
+        <Button onClick={save}>Save</Button>
       </DialogActions>
+
+      <Dialog open={showConfirm}>
+        <DialogContent>
+          <DialogContentText>Save changes?</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={save}>Save</Button>
+          <Button onClick={onClose}>Discard</Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   )
 }
