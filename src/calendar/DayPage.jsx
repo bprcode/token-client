@@ -5,7 +5,7 @@ import { DailyBreakdown } from './DailyBreakdown'
 import { useState } from 'react'
 import { EventEditor } from './EventEditor'
 
-export function DayPage({ onBack, onUpdate, day, unfilteredEvents }) {
+export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
 
@@ -55,6 +55,7 @@ export function DayPage({ onBack, onUpdate, day, unfilteredEvents }) {
             setSelection(null)
           }}
           onClose={() => setEditing(false)}
+          onDelete={onDelete}
           event={unfilteredEvents.find(e => e.id === selection)}
         />
       )}

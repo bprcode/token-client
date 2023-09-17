@@ -82,9 +82,9 @@ export function DailyBreakdown({
         marginRight: ['0rem', margin],
       }}
     >
-      {relevantEvents.map((r, i) => (
+      {relevantEvents.map((r) => (
         <EventPane
-          key={i}
+          key={r.id}
           initial={startOfDay}
           final={startOfNextDay}
           event={r}

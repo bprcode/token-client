@@ -124,8 +124,8 @@ function reduceEventList(eventList, action) {
           end: { ...e.end, ...action.updates.end },
         }
       })
-    case 'foo':
-      return { foo: 'bar' }
+    case 'delete':
+        return eventList.filter(e => e.id !== action.id)
     default:
       throw Error('Unhandled dispatch: ', action.type)
   }

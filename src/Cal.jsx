@@ -72,6 +72,11 @@ function Demo() {
                   updates,
                 })
               }
+              onDelete={id =>
+              dispatchEventList({
+                type: 'delete',
+                id: id
+              })}
             />
           </Collapse>
         )}

@@ -23,7 +23,7 @@ import { useState } from 'react'
 import { mockStyles, mockPalette } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
 
-export function EventEditor({ onClose, onSave, event }) {
+export function EventEditor({ onClose, onSave, onDelete, event }) {
   console.log(
     `Event ${event.id} spanning ${event.start.dateTime.format(
       'H:mm:ss'
@@ -219,22 +219,40 @@ export function EventEditor({ onClose, onSave, event }) {
           onChange={e => setDescription(e.target.value)}
         />
       </DialogContent>
-      <DialogActions>
-        <Button onClick={save}>Save</Button>
+      <DialogActions sx={{ px: 3, pt: 0, pb: 2 }}>
+        <Button
+          variant="outlined"
+          sx={{ mr: 2 }}
+          onClick={() => {
+            onDelete(event.id)
+            onClose()
+          }}
+        >
+          Delete
+        </Button>
+        <Button variant="contained" onClick={save}>
+          Save
+        </Button>
       </DialogActions>
 
-      <Dialog open={showConfirm} maxWidth="xs" fullWidth>
-        <DialogTitle sx={{ pb: 0.5 }}>Save changes?</DialogTitle>
-        <Divider />
-        <DialogActions sx={{ px: 2, pt: 3, pb: 3, justifyContent: 'center' }}>
-          <Button variant="outlined" onClick={onClose} sx={{ mr: 2 }}>
-            Discard
-          </Button>
-          <Button variant="contained" onClick={save}>
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog open={showConfirm} onDiscard={onClose} onSave={save} />
+    </Dialog>
+  )
+}
+
+function ConfirmDialog({ open, onDiscard, onSave }) {
+  return (
+    <Dialog open={open} maxWidth="xs" fullWidth>
+      <DialogTitle sx={{ pb: 0.5 }}>Save changes?</DialogTitle>
+      <Divider />
+      <DialogActions sx={{ px: 2, pt: 3, pb: 3, justifyContent: 'center' }}>
+        <Button variant="outlined" onClick={onDiscard} sx={{ mr: 2 }}>
+          Discard
+        </Button>
+        <Button variant="contained" onClick={onSave}>
+          Save
+        </Button>
+      </DialogActions>
     </Dialog>
   )
 }
