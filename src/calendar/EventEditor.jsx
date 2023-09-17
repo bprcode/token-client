@@ -23,6 +23,7 @@ import { mockStyles, mockPalette } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
 
 export function EventEditor({ onClose, onSave, event }) {
+  console.log(`Event ${event.id} spanning ${event.start.dateTime.format('H:mm:ss')} - ${event.end.dateTime.format('H:mm:ss')}`)
   const sideBySide = useMediaQuery('(min-width: 660px)')
   const theme = useTheme()
   const [summary, setSummary] = useState(event && event.summary)

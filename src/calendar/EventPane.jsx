@@ -268,7 +268,6 @@ export function EventPane({
             return onEdit()
           }
 
-          console.log('selecting ', event.id)
           onSelect(event.id)
         }}
         onClick={e => {
@@ -422,9 +421,16 @@ export function EventPane({
             borderTop: !overflowBefore && `3px dashed ${augmentedColors.light}`,
             borderBottom:
               !overflowAfter && `3px dashed ${augmentedColors.light}`,
-            backgroundImage: (overflowBefore || overflowAfter) && `linear-gradient(to ${(overflowBefore && 'top') ||  (overflowAfter && 'bottom') }, ${accentColor}, transparent)`,
-            backgroundColor: (!overflowBefore && !overflowAfter) && '#fff2',
-            boxShadow: (!overflowBefore && !overflowAfter) && `0 0 3rem inset ${accentColor}`,
+            backgroundImage:
+              (overflowBefore || overflowAfter) &&
+              `linear-gradient(to ${
+                (overflowBefore && 'top') || (overflowAfter && 'bottom')
+              }, ${accentColor}, transparent)`,
+            backgroundColor: !overflowBefore && !overflowAfter && '#fff2',
+            boxShadow:
+              !overflowBefore &&
+              !overflowAfter &&
+              `0 0 3rem inset ${accentColor}`,
             zIndex: 2,
           }}
         ></div>

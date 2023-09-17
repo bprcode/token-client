@@ -14,7 +14,8 @@ export function DailyBreakdown({
 }) {
   const startOfDay = day.startOf('day')
   const endOfDay = day.endOf('day')
-
+  const startOfNextDay = day.add(1, 'day').startOf('day')
+  
   const relevantEvents = unfilteredEvents.filter(e =>
     isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
   )
@@ -85,7 +86,7 @@ export function DailyBreakdown({
         <EventPane
           key={i}
           initial={startOfDay}
-          final={endOfDay}
+          final={startOfNextDay}
           event={r}
           columns={columns.length}
           indent={blocking.get(r)}
