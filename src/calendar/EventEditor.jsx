@@ -225,13 +225,11 @@ export function EventEditor({ onClose, onSave, event }) {
         <Button onClick={save}>Save</Button>
       </DialogActions>
 
-      <Dialog open={showConfirm}>
-        <DialogContent>
-          <DialogContentText>Save changes?</DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={save}>Save</Button>
-          <Button onClick={onClose}>Discard</Button>
+      <Dialog open={showConfirm} maxWidth='xs' fullWidth>
+          <DialogTitle>Save changes?</DialogTitle>
+        <DialogActions sx={{px: 2, pt: 2, pb:3, justifyContent: 'center'}}>
+          <Button variant="outlined" onClick={onClose} sx={{mr: 2}}>Discard</Button>
+          <Button variant="contained" onClick={save}>Save</Button>
         </DialogActions>
       </Dialog>
     </Dialog>
