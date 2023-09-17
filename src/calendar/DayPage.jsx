@@ -45,7 +45,7 @@ export function DayPage({ onBack, onUpdate, day, unfilteredEvents }) {
         />
       </SectionedInterval>
 
-      {editing && (
+      {editing && selection && (
         <EventEditor
           onSave={updates => {
             onUpdate({

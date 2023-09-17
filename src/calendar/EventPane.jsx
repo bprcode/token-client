@@ -325,8 +325,7 @@ export function EventPane({
               augmentedColors={augmentedColors}
               showTop={!overflowBefore}
               showBottom={!overflowAfter}
-              pullTop={ghostTop}
-              pullBottom={ghostBottom}
+              showTabs={!ghost}
               onGhostStart={() => setGhost(true)}
               onGhostEnd={() => {
                 const updates = {
@@ -471,15 +470,12 @@ function PaneControls({
   augmentedColors,
   onGhostStart,
   onGhostEnd,
-  pullTop = 0,
-  pullBottom = 0,
+  showTabs,
   onAdjustTop,
   onAdjustBottom,
   showTop,
   showBottom,
 }) {
-  const pulling = (pullTop !== 0) || (pullBottom !== 0)
-
   function beginDrag() {
     onGhostStart()
     onAdjustTop(0)
@@ -500,7 +496,7 @@ function PaneControls({
             borderRadius: 0,
             boxShadow: '0.25rem 0.25rem 0.5rem #0008',
             transform: `translate(-50%, -100%) scale(2)`,
-            opacity: pulling ? 0.25 : 1,
+            opacity: Number(showTabs),
             padding: '0 0 0.125rem 0',
             '&:hover': {
               backgroundColor: augmentedColors.light,
@@ -536,7 +532,7 @@ function PaneControls({
             borderRadius: 0,
             boxShadow: '0.25rem 0.25rem 0.5rem #0008',
             transform: `translate(-50%, 0%) scale(2)`,
-            opacity: pulling ? 0.25 : 1,
+            opacity: Number(showTabs),
             padding: '0 0 0.125rem 0',
             '&:hover': {
               backgroundColor: augmentedColors.light,

@@ -7,8 +7,8 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
+  Divider,
   FormControl,
   IconButton,
   InputAdornment,
@@ -34,13 +34,11 @@ export function EventEditor({ onClose, onSave, event }) {
 
   const sideBySide = useMediaQuery('(min-width: 660px)')
   const theme = useTheme()
-  const [summary, setSummary] = useState(event && event.summary)
-  const [description, setDescription] = useState(
-    event && (event.description || '')
-  )
+  const [summary, setSummary] = useState(event.summary)
+  const [description, setDescription] = useState(event.description || '')
   const [color, setColor] = useState(mockPalette[0])
   const augmentedColor = theme.palette.augmentColor({ color: { main: color } })
-  const [type, setType] = useState((event && event.summary) || 'Default')
+  const [type, setType] = useState(event.summary || 'Default')
 
   const [startTime, setStartTime] = useState(event.start.dateTime)
   const [endTime, setEndTime] = useState(event.end.dateTime)
@@ -57,9 +55,9 @@ export function EventEditor({ onClose, onSave, event }) {
 
   function isChanged() {
     return (
-      summary !== event.summary ||
+      summary != event.summary ||
       type !== event.summary ||
-      description !== event.description ||
+      description != event.description ||
       !startTime.isSame(event.start.dateTime) ||
       !endTime.isSame(event.end.dateTime)
     )
@@ -226,8 +224,9 @@ export function EventEditor({ onClose, onSave, event }) {
       </DialogActions>
 
       <Dialog open={showConfirm} maxWidth="xs" fullWidth>
-        <DialogTitle>Save changes?</DialogTitle>
-        <DialogActions sx={{ px: 2, pt: 2, pb: 3, justifyContent: 'center' }}>
+        <DialogTitle sx={{ pb: 0.5 }}>Save changes?</DialogTitle>
+        <Divider />
+        <DialogActions sx={{ px: 2, pt: 3, pb: 3, justifyContent: 'center' }}>
           <Button variant="outlined" onClick={onClose} sx={{ mr: 2 }}>
             Discard
           </Button>
