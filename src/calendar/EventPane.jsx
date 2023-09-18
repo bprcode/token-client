@@ -214,6 +214,7 @@ export function EventPane({
 
     switch (action) {
       case 'delete':
+        if(deleting) return
         console.log('handling deletion')
         setDeleting(true)
         setTimeout(() => onDelete(event.id), 350)
@@ -480,6 +481,7 @@ export function EventPane({
             height: (windowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
             boxShadow: !selected && '0.25rem 0.25rem 0.5rem #0008',
+            transition: 'top 0.35s ease-out, height 0.35s ease-out',
           }}
         />
       )}
