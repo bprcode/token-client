@@ -17,6 +17,16 @@ const theme = createTheme({
       primary: '#f0feff',
     },
   },
+
+  // components: {
+  //   MuiButtonBase: {
+  //     styleOverrides: {
+  //       root: {
+  //         '&.MuiButton-root': { textTransform: 'none' },
+  //       },
+  //     },
+  //   },
+  // },
 })
 
 const barTheme = createTheme({
@@ -31,7 +41,7 @@ const barTheme = createTheme({
     divider: 'rgba(62,190,255,0.32)',
     text: {
       primary: '#f0feff',
-    }
+    },
   },
 })
 

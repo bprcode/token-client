@@ -4,8 +4,9 @@ import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
 import { mockStyles } from './mockCalendar.mjs'
-import { Box, IconButton, useTheme } from '@mui/material'
-import { useState } from 'react'
+import { Box, IconButton, Zoom, useTheme } from '@mui/material'
+import { useContext, useState } from 'react'
+import { ActionContext } from './ActionContext.mjs'
 
 const noop = () => {}
 
@@ -30,14 +31,17 @@ export function EventPane({
   onSelect = noop,
   onEdit = noop,
   onUpdate = noop,
+  onDelete = noop,
 }) {
+  const action = useContext(ActionContext)
+  const theme = useTheme()
+  const selectable = label === 'detailed'
+
   const [sliding, setSliding] = useState(false)
   const [ghost, setGhost] = useState(false)
   const [ghostTop, setGhostTop] = useState(0)
   const [ghostBottom, setGhostBottom] = useState(0)
-
-  const theme = useTheme()
-  const selectable = label === 'detailed'
+  const [deleting, setDeleting] = useState(false)
 
   const overflowBefore = event.start.dateTime.isBefore(initial)
   const overflowAfter = event.end.dateTime.isAfter(final)
@@ -201,215 +205,240 @@ export function EventPane({
     </>
   )
 
+  // Interaction handlers:
+  function handlePointerDown(e) {
+    const tickSize = 24
+
+    const touchStart = { x: e.clientX, y: e.clientY }
+    const touchTarget = e.currentTarget
+
+    switch (action) {
+      case 'delete':
+        console.log('handling deletion')
+        setDeleting(true)
+        setTimeout(() => onDelete(event.id), 350)
+        return
+      case 'edit':
+        touchTarget.setPointerCapture(e.pointerId)
+        touchTarget.onpointermove = move => {
+          const distance = Math.sqrt(
+            (move.clientX - touchStart.x) ** 2 +
+              (move.clientY - touchStart.y) ** 2
+          )
+
+          if (distance / tickSize > 1) {
+            setSliding(true)
+            setGhost(true)
+            setGhostTop(0)
+            setGhostBottom(0)
+
+            touchTarget.onpointermove = move => {
+              const dy = Math.round((move.clientY - touchStart.y) / tickSize)
+              setGhostTop(dy)
+              setGhostBottom(dy)
+            }
+          }
+        }
+        return
+    }
+  }
+
+  function handlePointerUp(e) {
+    switch (action) {
+      case 'delete':
+        return
+      case 'edit':
+        e.currentTarget.onpointermove = null
+
+        if (sliding) {
+          setGhost(false)
+          setGhostTop(0)
+          setGhostBottom(0)
+          setSliding(false)
+          onSelect(null)
+          e.currentTarget.onpointermove = null
+
+          const duration =
+            event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
+
+          const newStart = overflowBefore
+            ? ghostSnapEnd.subtract(duration, 'minutes')
+            : ghostSnapStart
+          const newEnd = overflowAfter
+            ? ghostSnapStart.add(duration, 'minutes')
+            : ghostSnapEnd
+
+          const updates = {
+            id: event.id,
+            start: (overflowBefore || ghostTop !== 0) && {
+              dateTime: newStart,
+            },
+            end: (overflowAfter || ghostBottom !== 0) && {
+              dateTime: newEnd,
+            },
+          }
+          onUpdate(updates)
+          return
+        }
+
+        if (label !== 'detailed') return
+        if (selected && !ghost) {
+          return onEdit()
+        }
+
+        onSelect(event.id)
+        return
+    }
+  }
+
   // Assembled component:
   return (
     <>
-      <Box
-        onPointerDown={e => {
-          const tickSize = 24
-
-          const touchStart = { x: e.clientX, y: e.clientY }
-          const touchTarget = e.currentTarget
-          touchTarget.setPointerCapture(e.pointerId)
-          touchTarget.onpointermove = move => {
-            const distance = Math.sqrt(
-              (move.clientX - touchStart.x) ** 2 +
-                (move.clientY - touchStart.y) ** 2
-            )
-
-            if (distance / tickSize > 1) {
-              setSliding(true)
-              setGhost(true)
-              setGhostTop(0)
-              setGhostBottom(0)
-
-              touchTarget.onpointermove = move => {
-                const dy = Math.round((move.clientY - touchStart.y) / tickSize)
-                setGhostTop(dy)
-                setGhostBottom(dy)
-              }
-            }
-          }
-        }}
-        onPointerUp={e => {
-          e.currentTarget.onpointermove = null
-
-          if (sliding) {
-            setGhost(false)
-            setGhostTop(0)
-                setGhostBottom(0)
-            setSliding(false)
-            onSelect(null)
-            e.currentTarget.onpointermove = null
-
-            const duration =
-              event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
-
-            const newStart = overflowBefore
-              ? ghostSnapEnd.subtract(duration, 'minutes')
-              : ghostSnapStart
-            const newEnd = overflowAfter
-              ? ghostSnapStart.add(duration, 'minutes')
-              : ghostSnapEnd
-
-            const updates = {
-              id: event.id,
-              start: (overflowBefore || ghostTop !== 0) && {
-                dateTime: newStart,
-              },
-              end: (overflowAfter || ghostBottom !== 0) && {
-                dateTime: newEnd,
-              },
-            }
-            onUpdate(updates)
-            return
-          }
-
-          if (label !== 'detailed') return
-          if (selected && !ghost) {
-            return onEdit()
-          }
-
-          onSelect(event.id)
-        }}
-        onClick={e => {
-          if (label === 'detailed') e.stopPropagation()
-        }}
-        sx={{
-          position: 'absolute',
-          top: (topOffset / intervalSize) * 100 + '%',
-          left: indent * (100 / columns) + '%',
-          height: (windowLength / intervalSize) * 100 + '%',
-          width: 100 / columns + '%',
-          zIndex: selected ? 2 : 1,
-          transition: 'top 0.35s ease-out, height 0.35s ease-out',
-          opacity: ghost && 0.5,
-          userSelect: 'none',
-        }}
-      >
-        {overflowArrows}
-
-        {/* Inner container -- overflow hidden */}
-        <div
-          style={{
-            boxShadow: label === 'none' && `0px 0px 2rem ${accentColor} inset`,
-            ...borderStyles,
-            ...referenceStyle,
-            backgroundColor:
-              label === 'detailed' ? verboseBackground : shadeColor,
-
-            overflow: 'hidden',
-            height: '100%',
-            width: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            transition: 'background-color 0.2s ease-out',
+      <Zoom in={!deleting} appear={false} timeout={250}>
+        <Box
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onClick={e => {
+            if (label === 'detailed') e.stopPropagation()
+          }}
+          sx={{
+            position: 'absolute',
+            top: (topOffset / intervalSize) * 100 + '%',
+            left: indent * (100 / columns) + '%',
+            height: (windowLength / intervalSize) * 100 + '%',
+            width: 100 / columns + '%',
+            zIndex: selected ? 2 : 1,
+            transition: 'top 0.35s ease-out, height 0.35s ease-out',
+            opacity: ghost && 0.5,
+            userSelect: 'none',
           }}
         >
-          {/* pane header */}
+          {overflowArrows}
+
+          {/* Inner container -- overflow hidden */}
           <div
             style={{
-              backgroundColor: selected ? augmentedColors.light : accentColor,
-              color: augmentedColors.contrastText,
-              paddingLeft: '0.25rem',
-              paddingRight: '0.25rem',
-              whiteSpace: 'nowrap',
-              position: 'relative',
+              boxShadow:
+                label === 'none' && `0px 0px 2rem ${accentColor} inset`,
+              ...borderStyles,
+              ...referenceStyle,
+              backgroundColor:
+                label === 'detailed' ? verboseBackground : shadeColor,
+
+              overflow: 'hidden',
+              height: '100%',
+              width: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              transition: 'background-color 0.2s ease-out',
             }}
           >
-            {header}
-          </div>
-          {/* pane body */}
-          {selected && (
-            <PaneControls
-              augmentedColors={augmentedColors}
-              showTop={!overflowBefore}
-              showBottom={!overflowAfter}
-              showTabs={!ghost}
-              onGhostStart={() => setGhost(true)}
-              onGhostEnd={() => {
-                const updates = {
-                  id: event.id,
-                  start: ghostTop !== 0 && {
-                    dateTime: ghostSnapStart,
-                  },
-                  end: ghostBottom !== 0 && {
-                    dateTime: ghostSnapEnd,
-                  },
-                }
-                setGhost(false)
-                setGhostTop(0)
-                setGhostBottom(0)
-                onUpdate(updates)
-              }}
-              onAdjustBottom={offset => {
-                setGhostBottom(offset)
-              }}
-              onAdjustTop={offset => {
-                setGhostTop(offset)
-              }}
-            />
-          )}
-          {details && (
+            {/* pane header */}
             <div
               style={{
-                display: 'flex',
-                flexGrow: 1,
-                overflow: 'hidden',
+                backgroundColor: selected ? augmentedColors.light : accentColor,
+                color: augmentedColors.contrastText,
+                paddingLeft: '0.25rem',
+                paddingRight: '0.25rem',
+                whiteSpace: 'nowrap',
                 position: 'relative',
-                color: selected && '#aaa',
               }}
             >
-              {details}
+              {header}
+            </div>
+            {/* pane body */}
+            {selected && (
+              <PaneControls
+                augmentedColors={augmentedColors}
+                showTop={!overflowBefore}
+                showBottom={!overflowAfter}
+                showTabs={!ghost}
+                onGhostStart={() => setGhost(true)}
+                onGhostEnd={() => {
+                  const updates = {
+                    id: event.id,
+                    start: ghostTop !== 0 && {
+                      dateTime: ghostSnapStart,
+                    },
+                    end: ghostBottom !== 0 && {
+                      dateTime: ghostSnapEnd,
+                    },
+                  }
+                  setGhost(false)
+                  setGhostTop(0)
+                  setGhostBottom(0)
+                  onUpdate(updates)
+                }}
+                onAdjustBottom={offset => {
+                  setGhostBottom(offset)
+                }}
+                onAdjustTop={offset => {
+                  setGhostTop(offset)
+                }}
+              />
+            )}
 
-              {/* pencil icon */}
-              {selected && roomForIcon && !ghost && (
-                <IconButton
-                  sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    zIndex: 1,
-                    padding: 0,
-                    margin: 0,
-                  }}
-                >
-                  <EditIcon
-                    fontSize="large"
+            {details && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexGrow: 1,
+                  overflow: 'hidden',
+                  position: 'relative',
+                  color: selected && '#aaa',
+                }}
+              >
+                {details}
+
+                {/* pencil icon */}
+                {selected && roomForIcon && !ghost && (
+                  <IconButton
                     sx={{
-                      color: augmentedColors.light,
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 1,
+                      padding: 0,
+                      margin: 0,
+                    }}
+                  >
+                    <EditIcon
+                      fontSize="large"
+                      sx={{
+                        color: augmentedColors.light,
 
-                      borderRadius: '50%',
-                      padding: '0.625rem',
-                      scale: '2.5',
-                      backgroundImage:
-                        'radial-gradient' +
-                        '(closest-side, #7e2f08 5%, transparent)',
+                        borderRadius: '50%',
+                        padding: '0.625rem',
+                        scale: '2.5',
+                        backgroundImage:
+                          'radial-gradient' +
+                          '(closest-side, #7e2f08 5%, transparent)',
+                      }}
+                    />
+                  </IconButton>
+                )}
+
+                {event.description && (
+                  // fade-out overlay to indicate possible overflowing text:
+                  <div
+                    style={{
+                      height: '2em',
+                      width: '100%',
+                      position: 'absolute',
+                      bottom: 0,
+                      background:
+                        !selected &&
+                        `linear-gradient(to top, ` +
+                          `${verboseBackground}, transparent)`,
                     }}
                   />
-                </IconButton>
-              )}
-
-              {event.description && (
-                // fade-out overlay to indicate possible overflowing text:
-                <div
-                  style={{
-                    height: '2em',
-                    width: '100%',
-                    position: 'absolute',
-                    bottom: 0,
-                    background:
-                      !selected &&
-                      `linear-gradient(to top, ` +
-                        `${verboseBackground}, transparent)`,
-                  }}
-                />
-              )}
-            </div>
-          )}
-        </div>
-      </Box>
+                )}
+              </div>
+            )}
+          </div>
+        </Box>
+      </Zoom>
 
       {/* event outline ghost, displayed during drag-resizing: */}
       {ghost && (
@@ -442,16 +471,18 @@ export function EventPane({
       )}
 
       {/* drop shadow mock pseudo-element for correct z-indexing: */}
-      <div
-        style={{
-          position: 'absolute',
-          top: (topOffset / intervalSize) * 100 + '%',
-          left: indent * (100 / columns) + '%',
-          height: (windowLength / intervalSize) * 100 + '%',
-          width: 100 / columns + '%',
-          boxShadow: !selected && '0.25rem 0.25rem 0.5rem #0008',
-        }}
-      />
+      {!deleting && (
+        <div
+          style={{
+            position: 'absolute',
+            top: (topOffset / intervalSize) * 100 + '%',
+            left: indent * (100 / columns) + '%',
+            height: (windowLength / intervalSize) * 100 + '%',
+            width: 100 / columns + '%',
+            boxShadow: !selected && '0.25rem 0.25rem 0.5rem #0008',
+          }}
+        />
+      )}
     </>
   )
 }

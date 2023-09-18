@@ -1,4 +1,4 @@
-import { Box} from '@mui/material'
+import { Box } from '@mui/material'
 import { EventPane } from './EventPane'
 import { isOverlap } from './dateLogic.mjs'
 
@@ -10,12 +10,13 @@ export function DailyBreakdown({
   onSelect,
   onEdit,
   onUpdate,
+  onDelete,
   labels = 'detailed',
 }) {
   const startOfDay = day.startOf('day')
   const endOfDay = day.endOf('day')
   const startOfNextDay = day.add(1, 'day').startOf('day')
-  
+
   const relevantEvents = unfilteredEvents.filter(e =>
     isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
   )
@@ -82,7 +83,7 @@ export function DailyBreakdown({
         marginRight: ['0rem', margin],
       }}
     >
-      {relevantEvents.map((r) => (
+      {relevantEvents.map(r => (
         <EventPane
           key={r.id}
           initial={startOfDay}
@@ -95,6 +96,7 @@ export function DailyBreakdown({
           onSelect={onSelect}
           onEdit={onEdit}
           onUpdate={onUpdate}
+          onDelete={onDelete}
         />
       ))}
     </Box>
