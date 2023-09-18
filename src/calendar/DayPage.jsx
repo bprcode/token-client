@@ -15,7 +15,7 @@ export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
 
   return (
     <ActionContext.Provider value={action}>
-      <Paper elevation={1} sx={{ px: 2, py: 2 }}>
+      <Paper elevation={1} sx={{ px: 2, py: 2, position: 'relative' }}>
         <Stack direction="row">
           <IconButton
             sx={{ mt: 0 }}
