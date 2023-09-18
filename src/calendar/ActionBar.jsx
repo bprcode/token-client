@@ -12,65 +12,56 @@ export function ActionBar({ onBehavior }) {
   const theme = useTheme()
   const faintPrimary = alpha(theme.palette.primary.main, 0.2)
 
+  const interactions = [
+    { label: 'edit', icon: <EditIcon fontSize="large" /> },
+    { label: 'delete', icon: <DeleteIcon fontSize="large" /> },
+    { label: 'create', icon: <AddCircleOutlinedIcon fontSize="large" /> },
+  ]
+
+  const alignment = { p: 0.5, ml: 1 }
+  const buttons = interactions.map(i => (
+    <IconButton
+      key={i.label}
+      aria-label={i.label}
+      sx={
+        action === i.label
+          ? {
+              borderRadius: '20%',
+              backgroundColor: faintPrimary,
+              border: `1px solid ${theme.palette.primary.main}`,
+              color: theme.palette.primary.main,
+              ...alignment,
+            }
+          : { border: '1px solid transparent', ...alignment }
+      }
+      onClick={() => onBehavior(i.label)}
+    >
+      {i.icon}
+    </IconButton>
+  ))
+
   return (
     <>
-      <AppBar position="fixed" color="primary" sx={{ top: 'auto', bottom: 0 }}>
+      <AppBar
+        position="fixed"
+        sx={{
+          top: 'auto',
+          bottom: 0,
+          borderTop: '1px solid #fff2',
+          backgroundColor: '#0008',
+          backdropFilter: 'blur(3px)',
+        }}
+      >
         <Toolbar>
           <IconButton aria-label="menu">
-            <MenuIcon />
+            <MenuIcon fontSize="large" />
           </IconButton>
+
           <Box sx={{ flexGrow: 1 }} />
-          <IconButton
-            aria-label="rearrange events"
-            sx={
-              action === 'edit'
-                ? {
-                    borderRadius: '20%',
-                    backgroundColor: faintPrimary,
-                    border: `1px solid ${theme.palette.primary.main}`,
-                    color: theme.palette.primary.main,
-                  }
-                : { border: '1px solid transparent' }
-            }
-            onClick={() => onBehavior('edit')}
-          >
-            <EditIcon />
-          </IconButton>
-          <IconButton
-            aria-label="delete event"
-            sx={
-              action === 'delete'
-                ? {
-                    borderRadius: '20%',
-                    backgroundColor: faintPrimary,
-                    border: `1px solid ${theme.palette.primary.main}`,
-                    color: theme.palette.primary.main,
-                  }
-                : { border: '1px solid transparent' }
-            }
-            onClick={() => onBehavior('delete')}
-          >
-            <DeleteIcon />
-          </IconButton>
-          <IconButton
-            aria-label="create event"
-            sx={
-              action === 'create'
-                ? {
-                    borderRadius: '20%',
-                    backgroundColor: faintPrimary,
-                    border: `1px solid ${theme.palette.primary.main}`,
-                    color: theme.palette.primary.main,
-                  }
-                : { border: '1px solid transparent' }
-            }
-            onClick={() => onBehavior('create')}
-          >
-            <AddCircleOutlinedIcon />
-          </IconButton>
+
+          {buttons}
         </Toolbar>
       </AppBar>
-      <Toolbar /> {/* for page bottom padding */}
     </>
   )
 }
