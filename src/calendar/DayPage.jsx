@@ -1,4 +1,11 @@
-import { IconButton, Box, Paper, Stack, Typography } from '@mui/material'
+import {
+  IconButton,
+  Box,
+  Paper,
+  Stack,
+  Typography,
+  Collapse,
+} from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
@@ -7,6 +14,7 @@ import { EventEditor } from './EventEditor'
 import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { LayoutContext } from './LayoutContext.mjs'
+import { EventPicker } from './EventPicker'
 
 export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
   const [selection, setSelection] = useState(null)
@@ -71,6 +79,12 @@ export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
           />
         )}
 
+        <div style={{ zIndex: 1, position: 'fixed', bottom: 0, width: '100%' }}>
+          <Collapse in={action === 'create'}>
+            <EventPicker />
+          </Collapse>
+        </div>
+
         <ActionBar
           onBehavior={b => {
             setSelection(null)
@@ -84,7 +98,7 @@ export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
 
 function DayHeader({ onBack, day }) {
   return (
-    <Stack direction="row" sx={{borderBottom: '1px solid #0006'}}>
+    <Stack direction="row" sx={{ borderBottom: '1px solid #0006' }}>
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"
