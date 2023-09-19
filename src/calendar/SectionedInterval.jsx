@@ -56,6 +56,8 @@ export function SectionedInterval({
         paddingBottom: '1.5rem',
         overflowY: 'auto',
         height: outsideHeight,
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
     >
       <Box
@@ -64,7 +66,7 @@ export function SectionedInterval({
           height: insideHeight,
           paddingLeft: ['0.5rem', '5rem'],
           paddingRight: '0.5rem',
-          marginBottom: '3rem',
+          marginBottom: '8rem',
         }}
       >
         {children}

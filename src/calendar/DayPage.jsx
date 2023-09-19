@@ -1,4 +1,4 @@
-import { IconButton, Paper, Stack, Typography } from '@mui/material'
+import { IconButton, Box, Paper, Stack, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
@@ -20,42 +20,41 @@ export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
     <ActionContext.Provider value={action}>
       <Paper
         elevation={1}
-        sx={{ px: padding, py: padding, position: 'relative' }}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100vh',
+          overflow: 'hidden',
+          px: padding,
+          py: padding,
+          position: 'relative',
+        }}
       >
-        <Stack direction="row">
-          <IconButton
-            sx={{ mt: 0 }}
-            aria-label="back to weekly view"
-            onClick={onBack}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h5" component="div" mb={2}>
-            {day.format('dddd, MMMM D')}
-          </Typography>
-        </Stack>
+        <DayHeader onBack={onBack} day={day} />
 
-        <SectionedInterval
-          initial={day.startOf('day')}
-          final={day.endOf('day')}
-          step={[1, 'hour']}
-          outsideHeight="500px"
-          insideHeight="1800px"
-          onClick={() => setSelection(null)}
-        >
-          <DailyBreakdown
-            day={day}
-            unfilteredEvents={unfilteredEvents}
-            selection={selection}
-            onSelect={s => setSelection(s)}
-            onEdit={() => setEditing(true)}
-            onUpdate={updates => {
-              onUpdate(updates)
-              setSelection(null)
-            }}
-            onDelete={onDelete}
-          />
-        </SectionedInterval>
+        <Box sx={{ height: '100%' }}>
+          <SectionedInterval
+            initial={day.startOf('day')}
+            final={day.endOf('day')}
+            step={[1, 'hour']}
+            outsideHeight="100%"
+            insideHeight="1800px"
+            onClick={() => setSelection(null)}
+          >
+            <DailyBreakdown
+              day={day}
+              unfilteredEvents={unfilteredEvents}
+              selection={selection}
+              onSelect={s => setSelection(s)}
+              onEdit={() => setEditing(true)}
+              onUpdate={updates => {
+                onUpdate(updates)
+                setSelection(null)
+              }}
+              onDelete={onDelete}
+            />
+          </SectionedInterval>
+        </Box>
 
         {editing && selection && (
           <EventEditor
@@ -80,5 +79,22 @@ export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
         />
       </Paper>
     </ActionContext.Provider>
+  )
+}
+
+function DayHeader({ onBack, day }) {
+  return (
+    <Stack direction="row" sx={{borderBottom: '1px solid #0006'}}>
+      <IconButton
+        sx={{ mt: 0 }}
+        aria-label="back to weekly view"
+        onClick={onBack}
+      >
+        <ArrowBackIcon />
+      </IconButton>
+      <Typography variant="h5" component="div" mb={2} mt={2}>
+        {day.format('dddd, MMMM D')}
+      </Typography>
+    </Stack>
   )
 }

@@ -70,7 +70,7 @@ export function DailyBreakdown({
   }
 
   const margin =
-    columns.length === 1 && labels === 'detailed' ? '4.5rem' : undefined
+    columns.length <= 2 && labels === 'detailed' ? '4.5rem' : undefined
 
   // Render the event cards
   const rendered = (
@@ -79,8 +79,8 @@ export function DailyBreakdown({
         height: '100%',
         ...style,
         position: 'relative',
-        marginLeft: ['0rem', margin],
-        marginRight: ['0rem', margin],
+        marginLeft: margin,
+        marginRight: '0.5rem',
       }}
     >
       {relevantEvents.map(r => (
