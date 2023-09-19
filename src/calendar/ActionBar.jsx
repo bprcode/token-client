@@ -61,7 +61,7 @@ function SideBar({ children }) {
         position: 'absolute',
         right: 0,
         top: 0,
-        transform: 'translateX(100%)',
+        zIndex: 3,
       }}
     >
       {children}

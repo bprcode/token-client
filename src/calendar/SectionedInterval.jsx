@@ -64,6 +64,7 @@ export function SectionedInterval({
           height: insideHeight,
           paddingLeft: ['0.5rem', '5rem'],
           paddingRight: '0.5rem',
+          marginBottom: '3rem',
         }}
       >
         {children}

@@ -2,20 +2,26 @@ import { IconButton, Paper, Stack, Typography } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
+import { LayoutContext } from './LayoutContext.mjs'
 
 export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
 
   const [action, setAction] = useState(actionList[0])
+  const layout = useContext(LayoutContext)
+  const padding = layout === 'mobile' ? 0 : 0
 
   return (
     <ActionContext.Provider value={action}>
-      <Paper elevation={1} sx={{ px: 2, py: 2, position: 'relative' }}>
+      <Paper
+        elevation={1}
+        sx={{ px: padding, py: padding, position: 'relative' }}
+      >
         <Stack direction="row">
           <IconButton
             sx={{ mt: 0 }}

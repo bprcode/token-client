@@ -8,7 +8,7 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import * as dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
 import { useEventList } from './calendar/mockCalendar.mjs'
@@ -22,19 +22,21 @@ const currentDate = dayjs()
 function Demo() {
   const [eventList, dispatchEventList] = useEventList()
   const [mode, setMode] = useState('month')
-  const containerRef = useRef(null)
   const [expandedDate, setExpandedDate] = useState(null)
-  const layoutQuery = useMediaQuery('(max-width: 700px)')
+  const layoutQuery = useMediaQuery('(max-width: 600px)')
     ? 'mobile'
     : 'wide'
+  const isMobile = layoutQuery === 'mobile'
 
   return (
     <LayoutContext.Provider value={layoutQuery}>
-      <Container maxWidth="sm" ref={containerRef}>
+      <Container maxWidth="lg" disableGutters={isMobile}>
+        {!isMobile &&
+        <>
         <Typography variant="h6" color="primary.dark" mt={4}>
           Component testing
         </Typography>
-        <Divider sx={{ mb: 6 }} />
+        <Divider sx={{ mb: 6 }} /></>}
 
         <TransitionGroup>
           {mode === 'month' && (
