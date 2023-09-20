@@ -20,8 +20,9 @@ import {
   useTheme,
 } from '@mui/material'
 import { useState } from 'react'
-import { mockStyles, mockPalette } from './mockCalendar.mjs'
+import { mockPalette, useEventStyles } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
+import { PaletteSelect } from './ColorSelect'
 
 export function EventEditor({ onClose, onSave, onDelete, event }) {
   console.log(
@@ -44,7 +45,9 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
   const [endTime, setEndTime] = useState(event.end.dateTime)
 
   const typeStyles = []
-  for (const [key, value] of mockStyles) {
+  const eventStyles = useEventStyles()
+
+  for (const [key, value] of eventStyles) {
     typeStyles.push({ key: key === 'Default' ? 'Other...' : key, value })
   }
 
@@ -154,35 +157,11 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
                 />
               </FormControl>
 
-              <FormControl sx={{ mr: 2, mb: 2 }}>
-                <InputLabel
-                  id="color-select-label"
-                  sx={{ paddingTop: 1, ml: -1.5 }}
-                >
-                  Color
-                </InputLabel>
-                <Select
-                  labelId="color-select-label"
-                  value={color}
-                  onChange={e => setColor(e.target.value)}
-                  label="Color"
-                  variant="standard"
-                  autoWidth
-                  sx={{ pl: '0.25rem' }}
-                >
-                  {mockPalette.map(c => (
-                    <MenuItem key={c} value={c}>
-                      <div
-                        style={{
-                          backgroundColor: c,
-                          height: '1rem',
-                          width: '2rem',
-                        }}
-                      />
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <PaletteSelect
+                color={color}
+                onSelect={setColor}
+                palette={mockPalette}
+              />
             </span>
           )}
         </div>

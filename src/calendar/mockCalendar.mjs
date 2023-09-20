@@ -27,6 +27,8 @@ function createSampleEvent({ startTime, endTime, summary }) {
       dateTime: endTime || startTime.add(1, 'hour'),
       mock: 'end test data',
     },
+    // string
+    colorId: retrieveColor(summary),
     // array
     //recurrence: ['string'], c.f. RFC 5545 -- not yet implemented
   }
@@ -55,6 +57,28 @@ export function createSampleWeek(aroundDate) {
 const defaultTheme = createTheme({
   palette: { tonalOffset: 0.3 },
 })
+
+/**
+ * Check whether the requested colorId is defined in:
+ * 1. custom colors,
+ * 2. default event styles, or
+ * 3. the default color palette,
+ * otherwise return a default color.
+ */
+export function retrieveColor(colorId) {
+  if (mockCustomPalette.has(colorId)) return mockCustomPalette.get(colorId)
+
+  if (mockStyles.has(colorId)) return mockStyles.get(colorId).accentColor
+
+  if (mockPalette[colorId]) return mockPalette[colorId]
+
+  return mockStyles.get('Default').accentColor
+}
+
+const mockCustomPalette = new Map([
+  ['Brunch', '#2e0014'],
+  ['Dressage', '#228223'],
+])
 
 export const mockPalette = [
   '#2e0014',
@@ -125,7 +149,7 @@ function reduceEventList(eventList, action) {
         }
       })
     case 'delete':
-        return eventList.filter(e => e.id !== action.id)
+      return eventList.filter(e => e.id !== action.id)
     default:
       throw Error('Unhandled dispatch: ', action.type)
   }
@@ -133,4 +157,8 @@ function reduceEventList(eventList, action) {
 
 export function useEventList() {
   return useReducer(reduceEventList, createSampleWeek(dayjs()))
+}
+
+export function useEventStyles() {
+  return mockStyles
 }
