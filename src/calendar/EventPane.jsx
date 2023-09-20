@@ -320,11 +320,11 @@ export function EventPane({
           <div
             style={{
               boxShadow:
-                label === 'none' && `0px 0px 2rem ${accentColor} inset`,
+                label === 'none' && `0px 0px 0.75rem ${shadeColor} inset`,
               ...borderStyles,
               ...referenceStyle,
               backgroundColor:
-                label === 'detailed' ? verboseBackground : shadeColor,
+                label === 'detailed' ? verboseBackground : accentColor,
 
               overflow: 'hidden',
               height: '100%',

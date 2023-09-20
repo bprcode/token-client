@@ -18,7 +18,7 @@ export function ExpandedWeekHeader({ sunday }) {
 
   while (d.isBefore(endOfWeek)) {
     headingCells.push(
-      <StyledAlternateCell align="center" key={d.format('D')}>
+      <StyledAlternateCell align="center" key={d.format('D')} sx={{p: [0, 1]}}>
         <Typography variant="caption">{d.format('ddd')}</Typography>
         <Typography variant="h5">{d.format('D')}</Typography>
       </StyledAlternateCell>

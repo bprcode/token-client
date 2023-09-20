@@ -81,7 +81,6 @@ const mockCustomPalette = new Map([
 ])
 
 export const mockPalette = [
-  '#2e0014',
   '#942911',
   '#d46239',
   '#d99830',

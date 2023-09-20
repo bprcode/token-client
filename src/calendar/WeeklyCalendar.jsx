@@ -23,19 +23,12 @@ const StyledAlternateCell = styled(TableCell)(({ theme }) => ({
   '&:hover': { backgroundColor: theme.palette.action.hover },
 }))
 
-export function WeeklyCalendar({
-  initialDate,
-  onBack,
-  onExpand,
-  eventList = [],
-}) {
-  const [active, setActive] = useState(initialDate)
-
-  const calendarBody = useMemo(() => {
+function useCalendarBody({ date, eventList, onExpand }) {
+  return useMemo(() => {
     log(`📆 (${(Math.random() * 1000).toFixed()}) memoizing week display`)
     const days = []
-    const startOfWeek = active.startOf('week')
-    const endOfWeek = active.endOf('week')
+    const startOfWeek = date.startOf('week')
+    const endOfWeek = date.endOf('week')
 
     let d = startOfWeek
     while (d.isBefore(endOfWeek)) {
@@ -50,7 +43,7 @@ export function WeeklyCalendar({
             // additional y-padding to fit overflow indicator arrows:
             <StyledAlternateCell
               key={d.format('MM D')}
-              sx={{ px: 1, py: 3 }}
+              sx={{ px: [0.5,1], py: 3 }}
               onClick={() => onExpand(d)}
             >
               <DailyBreakdown
@@ -64,54 +57,55 @@ export function WeeklyCalendar({
         </TableRow>
       </TableBody>
     )
-  }, [active, eventList, onExpand])
+  }, [date, eventList, onExpand])
+}
+
+export function WeeklyCalendar({
+  initialDate,
+  onBack,
+  onExpand,
+  eventList = [],
+}) {
+  const [date, setDate] = useState(initialDate)
+  const calendarBody = useCalendarBody({ date, eventList, onExpand })
 
   log(`(${(Math.random() * 1000).toFixed()}) Rendering weekly calendar`)
   return (
-    <Paper elevation={1} sx={{ px: 2, py: 2 }}>
-      <Stack direction="row">
-        <Stack>
-          <IconButton
-            sx={{ mt: 1 }}
-            aria-label="back to monthly view"
-            onClick={onBack}
-          >
-            <ArrowBackIcon />
-          </IconButton>
+    <Paper elevation={1} sx={{ px: [1,2], py: 2}}>
+      <Typography variant="h5" component="div" sx={{ width: '100%', mb: 2 }}>
+        <IconButton aria-label="back to monthly view" onClick={onBack}>
+          <ArrowBackIcon />
+        </IconButton>
+        Week of {date.startOf('week').format('MMMM D, YYYY')}
+      </Typography>
 
-          <IconButton
-            sx={{ flexGrow: 1 }}
-            aria-label="previous week"
-            onClick={() => setActive(active.subtract(1, 'week'))}
-          >
-            <NavigateBeforeIcon />
-          </IconButton>
-        </Stack>
-
-        <Stack direction="row" flexWrap="wrap" sx={{ mt: 1, mb: 4 }}>
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{ width: '100%', mb: 3 }}
-          >
-            Week of {active.startOf('week').format('MMMM D, YYYY')}
-          </Typography>
-
-          <TableContainer component={Paper}>
-            <Table>
-              <ExpandedWeekHeader sunday={active.startOf('week')} />
-              {calendarBody}
-            </Table>
-          </TableContainer>
-        </Stack>
-
+      <div
+        style={{
+          display: 'flex',
+          position: 'relative',
+        }}
+      >
+        <IconButton
+          aria-label="previous week"
+          onClick={() => setDate(date.subtract(1, 'week'))}
+          sx={{display: ['none', 'block'] }}
+        >
+          <NavigateBeforeIcon />
+        </IconButton>
+        <TableContainer component={Paper}>
+          <Table>
+            <ExpandedWeekHeader sunday={date.startOf('week')} />
+            {calendarBody}
+          </Table>
+        </TableContainer>
         <IconButton
           aria-label="next week"
-          onClick={() => setActive(active.add(1, 'week'))}
+          onClick={() => setDate(date.add(1, 'week'))}
+          sx={{display: ['none', 'block'] }}
         >
           <NavigateNextIcon />
         </IconButton>
-      </Stack>
+      </div>
     </Paper>
   )
 }
