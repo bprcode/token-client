@@ -23,23 +23,24 @@ function Demo() {
   const [eventListHistory, dispatchEventListHistory] = useEventListHistory()
   const eventList = eventListHistory[eventListHistory.length - 1]
   const dispatchEventList = dispatchEventListHistory
+  const canUndo = eventListHistory.length > 1
 
   const [mode, setMode] = useState('month')
   const [expandedDate, setExpandedDate] = useState(null)
-  const layoutQuery = useMediaQuery('(max-width: 600px)')
-    ? 'mobile'
-    : 'wide'
+  const layoutQuery = useMediaQuery('(max-width: 600px)') ? 'mobile' : 'wide'
   const isMobile = layoutQuery === 'mobile'
 
   return (
     <LayoutContext.Provider value={layoutQuery}>
       <Container maxWidth="lg" disableGutters={isMobile}>
-        {!isMobile &&
-        <>
-        <Typography variant="h6" color="primary.dark" mt={4}>
-          Component testing
-        </Typography>
-        <Divider sx={{ mb: 6 }} /></>}
+        {!isMobile && (
+          <>
+            <Typography variant="h6" color="primary.dark" mt={4}>
+              Component testing
+            </Typography>
+            <Divider sx={{ mb: 6 }} />
+          </>
+        )}
 
         <TransitionGroup>
           {mode === 'month' && (
@@ -90,7 +91,8 @@ function Demo() {
                     id: id,
                   })
                 }
-                onUndo={() => dispatchEventList({type: 'undo'})}
+                onUndo={() => dispatchEventList({ type: 'undo' })}
+                canUndo={canUndo}
               />
             </Collapse>
           )}

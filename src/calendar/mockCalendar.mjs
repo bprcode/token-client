@@ -169,7 +169,7 @@ function reduceEventList(eventList, action) {
  * Wraps the Event List to provide history/undo functionality
  */
 function reduceEventListHistory(history, action) {
-  const maxHistory = 5
+  const maxHistory = 40
 
   function copySnapshot(original) {
     return original.map(event => ({

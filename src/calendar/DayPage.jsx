@@ -21,6 +21,7 @@ export function DayPage({
   onUpdate,
   onDelete,
   onUndo,
+  canUndo,
   day,
   unfilteredEvents,
 }) {
@@ -98,6 +99,7 @@ export function DayPage({
             if (b === 'undo') return onUndo()
             setAction(b)
           }}
+          canUndo={canUndo}
         />
       </Paper>
     </ActionContext.Provider>

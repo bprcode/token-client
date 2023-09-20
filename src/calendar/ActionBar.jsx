@@ -9,7 +9,7 @@ import { useContext } from 'react'
 import { ActionContext } from './ActionContext.mjs'
 import { LayoutContext } from './LayoutContext.mjs'
 
-export function ActionBar({ onBehavior }) {
+export function ActionBar({ onBehavior, canUndo }) {
   const layout = useContext(LayoutContext)
   const action = useContext(ActionContext)
   const theme = useTheme()
@@ -25,6 +25,7 @@ export function ActionBar({ onBehavior }) {
 
   const alignment = { p: 0.5, ml: 1 }
   const undo = <IconButton
+  disabled={!canUndo}
     onClick={() => onBehavior('undo')}
   >
     <UndoIcon fontSize="large" />
