@@ -11,7 +11,7 @@ import digitalTheme from './blueDigitalTheme'
 import { useState } from 'react'
 import * as dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
-import { useEventList } from './calendar/mockCalendar.mjs'
+import { useEventListHistory } from './calendar/mockCalendar.mjs'
 import { WeeklyCalendar } from './calendar/WeeklyCalendar'
 import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
@@ -20,7 +20,10 @@ import { LayoutContext } from './calendar/LayoutContext.mjs'
 const currentDate = dayjs()
 
 function Demo() {
-  const [eventList, dispatchEventList] = useEventList()
+  const [eventListHistory, dispatchEventListHistory] = useEventListHistory()
+  const eventList = eventListHistory[eventListHistory.length - 1]
+  const dispatchEventList = dispatchEventListHistory
+
   const [mode, setMode] = useState('month')
   const [expandedDate, setExpandedDate] = useState(null)
   const layoutQuery = useMediaQuery('(max-width: 600px)')
@@ -87,6 +90,7 @@ function Demo() {
                     id: id,
                   })
                 }
+                onUndo={() => dispatchEventList({type: 'undo'})}
               />
             </Collapse>
           )}

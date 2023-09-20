@@ -1,3 +1,4 @@
+import UndoIcon from '@mui/icons-material/Undo';
 import MenuIcon from '@mui/icons-material/Menu'
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -23,6 +24,12 @@ export function ActionBar({ onBehavior }) {
   ]
 
   const alignment = { p: 0.5, ml: 1 }
+  const undo = <IconButton
+    onClick={() => onBehavior('undo')}
+  >
+    <UndoIcon fontSize="large" />
+  </IconButton>
+
   const buttons = interactions.map(i => (
     <IconButton
       key={i.label}
@@ -45,9 +52,9 @@ export function ActionBar({ onBehavior }) {
   ))
 
   return layout === 'mobile' ? (
-    <MobileBar>{buttons}</MobileBar>
+    <MobileBar>{undo}{buttons}</MobileBar>
   ) : (
-    <SideBar>{buttons}</SideBar>
+    <SideBar>{undo}{buttons}</SideBar>
   )
 }
 
@@ -56,11 +63,11 @@ function SideBar({ children }) {
     <Box
       sx={{
         display: 'flex',
-        flexDirection: 'column',
-        rowGap: '1.5rem',
+        flexDirection: 'row',
+        rowGap: '1rem',
         position: 'absolute',
-        right: 0,
-        top: 0,
+        right: '8px',
+        top: '8px',
         zIndex: 3,
       }}
     >

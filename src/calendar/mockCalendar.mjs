@@ -140,22 +140,60 @@ function reduceEventList(eventList, action) {
       return eventList.map(e => {
         if (e.id !== action.id) return e
 
+        const startTime = (
+          (action.updates.start && action.updates.start.dateTime) ||
+          e.start.dateTime
+        ).clone()
+        const endTime = (
+          (action.updates.end && action.updates.end.dateTime) ||
+          e.end.dateTime
+        ).clone()
+
         return {
           ...e,
           ...action.updates,
-          start: { ...e.start, ...action.updates.start },
-          end: { ...e.end, ...action.updates.end },
+          start: { ...e.start, ...action.updates.start, dateTime: startTime },
+          end: { ...e.end, ...action.updates.end, dateTime: endTime },
         }
       })
+
     case 'delete':
       return eventList.filter(e => e.id !== action.id)
+
     default:
-      throw Error('Unhandled dispatch: ', action.type)
+      throw Error('Unhandled dispatch: ' + action.type)
   }
 }
 
-export function useEventList() {
-  return useReducer(reduceEventList, createSampleWeek(dayjs()))
+/**
+ * Wraps the Event List to provide history/undo functionality
+ */
+function reduceEventListHistory(history, action) {
+  const maxHistory = 5
+
+  function copySnapshot(original) {
+    return original.map(event => ({
+      ...event,
+      start: { ...event.start, dateTime: event.start.dateTime.clone() },
+      end: { ...event.end, dateTime: event.end.dateTime.clone() },
+    }))
+  }
+
+  const clone = history.map(snap => copySnapshot(snap))
+
+  switch (action.type) {
+    case 'undo':
+      if (clone.length === 1) return clone
+      return clone.slice(0, -1)
+    default:
+      if (history.length > maxHistory) clone.shift()
+
+      return [...clone, reduceEventList(history[history.length - 1], action)]
+  }
+}
+
+export function useEventListHistory() {
+  return useReducer(reduceEventListHistory, [createSampleWeek(dayjs())])
 }
 
 export function useEventStyles() {

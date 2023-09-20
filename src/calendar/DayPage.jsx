@@ -16,7 +16,14 @@ import { ActionContext, actionList } from './ActionContext.mjs'
 import { LayoutContext } from './LayoutContext.mjs'
 import { EventPicker } from './EventPicker'
 
-export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
+export function DayPage({
+  onBack,
+  onUpdate,
+  onDelete,
+  onUndo,
+  day,
+  unfilteredEvents,
+}) {
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
 
@@ -88,6 +95,7 @@ export function DayPage({ onBack, onUpdate, onDelete, day, unfilteredEvents }) {
         <ActionBar
           onBehavior={b => {
             setSelection(null)
+            if (b === 'undo') return onUndo()
             setAction(b)
           }}
         />
