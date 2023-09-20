@@ -1,5 +1,4 @@
 import CloseIcon from '@mui/icons-material/Close'
-import EventIcon from '@mui/icons-material/Event'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import {
@@ -12,9 +11,6 @@ import {
   FormControl,
   IconButton,
   InputAdornment,
-  InputLabel,
-  MenuItem,
-  Select,
   TextField,
   useMediaQuery,
   useTheme,
@@ -23,6 +19,7 @@ import { useState } from 'react'
 import { mockPalette, useEventStyles } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
 import { PaletteSelect } from './ColorSelect'
+import { EventTypeSelect } from './EventTypeSelect'
 
 export function EventEditor({ onClose, onSave, onDelete, event }) {
   console.log(
@@ -46,6 +43,9 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
 
   const typeStyles = []
   const eventStyles = useEventStyles()
+
+  const typeList = [...eventStyles.keys()].filter(k => k !== 'Default')
+  typeList.push('Other...')
 
   for (const [key, value] of eventStyles) {
     typeStyles.push({ key: key === 'Default' ? 'Other...' : key, value })
@@ -114,37 +114,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
         <div
           style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap' }}
         >
-          <FormControl sx={{ mr: 2, mb: 2 }}>
-            <InputLabel id="type-select-label" sx={{ paddingTop: 1, ml: -1.5 }}>
-              Type
-            </InputLabel>
-            <Select
-              labelId="type-select-label"
-              value={type}
-              onChange={e => {
-                setType(e.target.value)
-                if (e.target.value !== 'Other...') {
-                  setSummary(e.target.value)
-                }
-              }}
-              label="Type"
-              variant="standard"
-              autoWidth
-            >
-              {typeStyles.map(t => (
-                <MenuItem key={t.key} value={t.key}>
-                  <EventIcon
-                    sx={{
-                      position: 'absolute',
-                      mr: 1,
-                      color: t.value.augmentedColors.main,
-                    }}
-                  />
-                  <span style={{ paddingLeft: '2rem' }}>{t.key}</span>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <EventTypeSelect type={type} typeList={typeList} onSelect={setType} />
 
           {type === 'Other...' && (
             <span>
