@@ -91,7 +91,6 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
               paddingBottom: 1.25,
               height: '5rem',
               verticalAlign: 'top',
-              maxWidth: '1px',
               overflow: 'hidden',
             }}
           >
