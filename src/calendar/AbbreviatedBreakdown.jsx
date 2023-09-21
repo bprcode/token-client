@@ -56,5 +56,5 @@ export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
     )
   }
 
-  return <div style={{ boxShadow: '0rem 0.25rem 0.5rem #0004' }}>{list}</div>
+  return <div style={{ boxShadow: '0rem 0.25rem 0.25rem #0004' }}>{list}</div>
 }
