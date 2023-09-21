@@ -90,8 +90,9 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
               paddingTop: 0.25,
               paddingBottom: 1.25,
               height: '5rem',
-              verticalAlign: 'top',
               overflow: 'hidden',
+              maxWidth: 0, // Does the opposite of what you'd think
+              verticalAlign: 'top',
             }}
           >
             {day.isSame(today, 'day') ? (
@@ -109,6 +110,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
               </Typography>
             ) : (
               <Typography
+              component="span"
                 sx={{
                   opacity:
                     day.isBefore(startOfMonth) || day.isAfter(endOfMonth)
@@ -124,6 +126,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
               day={day}
               unfilteredEvents={unfilteredEvents}
             />
+
           </TableCell>
         )
       }
@@ -141,9 +144,34 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
     return <TableBody>{body}</TableBody>
   }, [active, onExpand, unfilteredEvents])
 
+const  testContent = []
+let tday = active.startOf('month')
+while(tday.isBefore(active.endOf('month'))) {
+  testContent.push(<div style={{overflow: 'hidden'}}>
+    {tday.format('D')}
+    <AbbreviatedBreakdown day={tday} unfilteredEvents={unfilteredEvents} />
+    </div>)
+  tday = tday.add(1, 'day')
+}
+
   return (
     <Box>
       <Paper elevation={1} sx={{ px: [2,2], py: [0,2] }}>
+
+<h3>incomplete test grid</h3>
+<div style={{
+  display: 'grid',
+  gridTemplateColumns: 'repeat(7, 1fr)',
+  gridAutoRows: '6rem',
+  columnGap: '0.25rem',
+  rowGap: '1rem',
+  border: '5px dashed purple',
+}}>
+  {testContent}
+</div>
+
+
+
         <Stack direction="row">
           <IconButton
             aria-label="previous month"
@@ -193,8 +221,8 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
               </Typography>
             </div>
 
-            <TableContainer component={Paper}>
-              <Table>
+            <TableContainer sx={{minWidth: '0px', width: '100%', border: '1px dashed #0af'}}>
+              <Table sx={{minWidth: '0px', width: '100%', border: '1px dashed #fa0'}}>
                 <WeekdayHeader />
                 {calendarBody}
               </Table>

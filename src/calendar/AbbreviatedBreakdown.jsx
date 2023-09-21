@@ -22,7 +22,6 @@ export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
           style={{
             backgroundColor: '#8884',
             fontSize: '0.75em',
-            width: '100%',
             paddingLeft: '0.25rem',
             paddingRight: '0.25rem',
             borderBottomLeftRadius: 4,
@@ -44,7 +43,6 @@ export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
           backgroundColor: style.augmentedColors.main,
           color: style.augmentedColors.contrastText,
           fontSize: '0.75em',
-          width: '100%',
           paddingLeft: '0.25rem',
           paddingRight: '0.25rem',
           borderTopLeftRadius: list.length === 0 && 4,
