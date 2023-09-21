@@ -49,6 +49,7 @@ export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
           borderTopRightRadius: list.length === 0 && 4,
           borderBottomLeftRadius: r === lastMatch && 4,
           borderBottomRightRadius: r === lastMatch && 4,
+          overflow: 'hidden',
         }}
       >
         {r.summary}

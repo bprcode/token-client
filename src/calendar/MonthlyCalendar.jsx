@@ -4,11 +4,6 @@ import {
   InputBase,
   Paper,
   Stack,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContainer,
   Typography,
   Select,
   styled,
@@ -20,10 +15,10 @@ import * as dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { AbbreviatedBreakdown } from './AbbreviatedBreakdown'
-import { WeekdayHeader } from './WeekdayHeader'
 import { log } from './log.mjs'
+import { weekdayAbbreviations } from './dateLogic.mjs'
 
-const HoverableRow = styled(TableRow)(({ theme }) => ({
+const HoverableBox = styled(Box)(({ theme }) => ({
   '&:hover': {
     backgroundColor: theme.palette.action.hover,
   },
@@ -44,8 +39,25 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
   },
 }))
 
-function MonthGrid({ date, onExpand, unfilteredEvents }) {
+function GridHeader() {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(7, 1fr)',
+        textAlign: 'left',
+        paddingTop: '1.5rem',
+        paddingBottom: '1rem',
+      }}
+    >
+      {weekdayAbbreviations.map(a => (
+        <div key={a}>{a}</div>
+      ))}
+    </div>
+  )
+}
 
+function MonthGrid({ date, onExpand, unfilteredEvents }) {
   return useMemo(() => {
     log(`🧮 (${(Math.random() * 1000).toFixed()}) memoizing grid calendar`)
 
@@ -81,7 +93,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
       for (let j = i; j < i + 7; j++) {
         const day = days[j]
 
-        const numbering = day.isSame(today, 'day') ?
+        const numbering = day.isSame(today, 'day') ? (
           <Typography
             component="span"
             sx={{
@@ -93,7 +105,8 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
             }}
           >
             {day.format('D')}
-          </Typography>: 
+          </Typography>
+        ) : (
           <Typography
             component="span"
             sx={{
@@ -105,9 +118,18 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
           >
             {day.format('D')}
           </Typography>
+        )
 
         week.push(
-          <div key={day.format('MM D')} style={{ overflow: 'hidden', paddingRight: '0.25rem', paddingBottom: '0.25rem' }}>
+          <div
+            key={day.format('MM D')}
+            style={{
+              overflow: 'hidden',
+              paddingRight: '0.25rem',
+              paddingBottom: '0.25rem',
+              lineHeight: 1.25,
+            }}
+          >
             {numbering}
             <AbbreviatedBreakdown
               day={day}
@@ -117,24 +139,24 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
         )
       }
       rows.push(
-        <div
+        <HoverableBox
           key={i}
-          style={{
+          sx={{
             display: 'grid',
             gridTemplateColumns: 'repeat(7, 1fr)',
           }}
+          onClick={() => onExpand(days[i])}
         >
           {week}
-        </div>
+        </HoverableBox>
       )
     }
 
     return (
       <div
         style={{
-          border: '3px dashed #f0a',
           display: 'grid',
-          gridAutoRows: '6.5rem',
+          gridAutoRows: '6rem',
         }}
       >
         {rows}
@@ -148,108 +170,9 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   const month = active.format('M')
   const year = active.year()
 
-  const calendarBody = useMemo(() => {
-    log(`📆 (${(Math.random() * 1000).toFixed()}) memoizing month display`)
-    const days = []
-    const today = dayjs()
-    const startOfMonth = active.startOf('month')
-    const endOfMonth = active.endOf('month')
-
-    let d = startOfMonth
-    let pad = d.day(0)
-
-    while (pad.isBefore(d)) {
-      days.push(pad)
-      pad = pad.add(1, 'day')
-    }
-
-    while (d.isBefore(endOfMonth)) {
-      days.push(d)
-      d = d.add(1, 'day')
-    }
-
-    while (d.day() !== 0) {
-      days.push(d)
-      d = d.add(1, 'day')
-    }
-
-    const body = []
-
-    // Build a TableRow for every week
-    for (let i = 0; i < days.length; i += 7) {
-      const week = []
-      for (let j = i; j < i + 7; j++) {
-        const day = days[j]
-        week.push(
-          <TableCell
-            key={day.format('MM D')}
-            sx={{
-              paddingLeft: 0.25,
-              paddingRight: 0.25,
-              paddingTop: 0.25,
-              paddingBottom: 1.25,
-              height: '5rem',
-              overflow: 'hidden',
-              maxWidth: 0, // Does the opposite of what you'd think
-              verticalAlign: 'top',
-            }}
-          >
-            {day.isSame(today, 'day') ? (
-              <Typography
-                component="span"
-                sx={{
-                  backgroundColor: 'secondary.main',
-                  color: 'secondary.contrastText',
-                  paddingLeft: 0.5,
-                  paddingRight: 0.5,
-                  borderRadius: 2,
-                }}
-              >
-                {day.format('D')}
-              </Typography>
-            ) : (
-              <Typography
-                component="span"
-                sx={{
-                  opacity:
-                    day.isBefore(startOfMonth) || day.isAfter(endOfMonth)
-                      ? 0.2
-                      : undefined,
-                }}
-              >
-                {day.format('D')}
-              </Typography>
-            )}
-
-            <AbbreviatedBreakdown
-              day={day}
-              unfilteredEvents={unfilteredEvents}
-            />
-          </TableCell>
-        )
-      }
-
-      body.push(
-        <HoverableRow
-          key={days[i].format('MM D')}
-          onClick={() => onExpand(days[i])}
-        >
-          {week}
-        </HoverableRow>
-      )
-    }
-
-    return <TableBody>{body}</TableBody>
-  }, [active, onExpand, unfilteredEvents])
-
   return (
     <Box>
       <Paper elevation={1} sx={{ px: [2, 2], py: [0, 2] }}>
-        <h3>incomplete test grid</h3>
-
-        <MonthGrid date={active} unfilteredEvents={unfilteredEvents}/>
-
-
         <Stack direction="row">
           <IconButton
             aria-label="previous month"
@@ -263,11 +186,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
             <NavigateBeforeIcon />
           </IconButton>
 
-          <Stack
-            direction="row"
-            flexWrap="wrap"
-            sx={{ mt: 1, mb: 4, flexGrow: 1 }}
-          >
+          <Stack direction="column" sx={{ mt: 1, mb: 4, flexGrow: 1 }}>
             <div>
               <FormControl sx={{ mr: 1, mt: 1, ml: [3, 0] }} variant="standard">
                 <Select
@@ -301,21 +220,14 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 {year}
               </Typography>
             </div>
-
-            <TableContainer
-              sx={{ minWidth: '0px', width: '100%', border: '1px dashed #0af' }}
-            >
-              <Table
-                sx={{
-                  minWidth: '0px',
-                  width: '100%',
-                  border: '1px dashed #fa0',
-                }}
-              >
-                <WeekdayHeader />
-                {calendarBody}
-              </Table>
-            </TableContainer>
+            <div>
+              <GridHeader />
+              <MonthGrid
+                date={active}
+                unfilteredEvents={unfilteredEvents}
+                onExpand={onExpand}
+              />
+            </div>
           </Stack>
 
           <IconButton
