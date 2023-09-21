@@ -169,7 +169,7 @@ function reduceEventList(eventList, action) {
  * Wraps the Event List to provide history/undo functionality
  */
 function reduceEventListHistory(history, action) {
-  const maxHistory = 40
+  const maxHistory = 20
 
   function copySnapshot(original) {
     return original.map(event => ({
@@ -183,10 +183,15 @@ function reduceEventListHistory(history, action) {
 
   switch (action.type) {
     case 'undo':
-      if (clone.length === 1) return clone
+      if (clone.length === 1) {
+        return clone
+      }
+
       return clone.slice(0, -1)
     default:
-      if (history.length > maxHistory) clone.shift()
+      if (history.length > maxHistory) {
+        clone.shift()
+      }
 
       return [...clone, reduceEventList(history[history.length - 1], action)]
   }

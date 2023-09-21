@@ -6,7 +6,9 @@ export function WeekdayHeader() {
     <TableHead>
       <TableRow>
         {weekdayAbbreviations.map(d => (
-          <TableCell key={d}>{d}</TableCell>
+          <TableCell key={d} sx={{ px: [0.5, 1] }}>
+            {d}
+          </TableCell>
         ))}
       </TableRow>
     </TableHead>

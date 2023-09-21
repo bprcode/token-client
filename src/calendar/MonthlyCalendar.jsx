@@ -144,11 +144,16 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
 
   return (
     <Box>
-      <Paper elevation={1} sx={{ px: 2, py: 2 }}>
+      <Paper elevation={1} sx={{ px: [2,2], py: [0,2] }}>
         <Stack direction="row">
           <IconButton
             aria-label="previous month"
             onClick={() => setActive(active.subtract(1, 'month'))}
+            sx={{
+              position: ['absolute', 'static'],
+              top: '1.75rem',
+              left: '-0.25rem',
+            }}
           >
             <NavigateBeforeIcon />
           </IconButton>
@@ -159,7 +164,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
             sx={{ mt: 1, mb: 4, flexGrow: 1 }}
           >
             <div>
-              <FormControl sx={{ m: 1 }} variant="standard">
+              <FormControl sx={{ mr: 1, mt: 1, ml: [3,0] }} variant="standard">
                 <Select
                   value={month}
                   onChange={e => setActive(active.month(e.target.value - 1))}
@@ -200,6 +205,11 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
           <IconButton
             aria-label="next month"
             onClick={() => setActive(active.add(1, 'month'))}
+            sx={{
+            position: ['absolute', 'static'],
+              top: '1.75rem',
+              right: '0.25rem',
+            }}
           >
             <NavigateNextIcon />
           </IconButton>

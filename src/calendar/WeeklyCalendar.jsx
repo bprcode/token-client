@@ -8,6 +8,7 @@ import {
   TableRow,
   Typography,
   styled,
+  useMediaQuery,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
@@ -42,7 +43,7 @@ function useCalendarBody({ date, eventList, onExpand }) {
             // additional y-padding to fit overflow indicator arrows:
             <StyledAlternateCell
               key={d.format('MM D')}
-              sx={{ px: [0.5,1], py: 3 }}
+              sx={{ px: [0.5, 1], py: 3 }}
               onClick={() => onExpand(d)}
             >
               <DailyBreakdown
@@ -67,11 +68,16 @@ export function WeeklyCalendar({
 }) {
   const [date, setDate] = useState(initialDate)
   const calendarBody = useCalendarBody({ date, eventList, onExpand })
+  const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h5'
 
   log(`(${(Math.random() * 1000).toFixed()}) Rendering weekly calendar`)
   return (
-    <Paper elevation={1} sx={{ px: [1,2], py: 2}}>
-      <Typography variant="h5" component="div" sx={{ width: '100%', mb: 2 }}>
+    <Paper elevation={1} sx={{ px: [0.5, 2], py: 2 }}>
+      <Typography
+        variant={typeVariant}
+        component="div"
+        sx={{ width: '100%', mb: 2 }}
+      >
         <IconButton aria-label="back to monthly view" onClick={onBack}>
           <ArrowBackIcon />
         </IconButton>
@@ -87,7 +93,7 @@ export function WeeklyCalendar({
         <IconButton
           aria-label="previous week"
           onClick={() => setDate(date.subtract(1, 'week'))}
-          sx={{display: ['none', 'block'] }}
+          sx={{ display: ['none', 'block'] }}
         >
           <NavigateBeforeIcon />
         </IconButton>
@@ -100,7 +106,7 @@ export function WeeklyCalendar({
         <IconButton
           aria-label="next week"
           onClick={() => setDate(date.add(1, 'week'))}
-          sx={{display: ['none', 'block'] }}
+          sx={{ display: ['none', 'block'] }}
         >
           <NavigateNextIcon />
         </IconButton>

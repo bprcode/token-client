@@ -5,6 +5,7 @@ import {
   Stack,
   Typography,
   Collapse,
+  useMediaQuery,
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
@@ -107,6 +108,10 @@ export function DayPage({
 }
 
 function DayHeader({ onBack, day }) {
+  const typeVariant = useMediaQuery('(max-width: 380px)')
+  ? "subtitle1"
+  : 'h5'
+
   return (
     <Stack direction="row" sx={{ borderBottom: '1px solid #0006' }}>
       <IconButton
@@ -116,7 +121,7 @@ function DayHeader({ onBack, day }) {
       >
         <ArrowBackIcon />
       </IconButton>
-      <Typography variant="h5" component="div" mb={2} mt={2}>
+      <Typography variant={typeVariant} component="div" mb={2} mt={2}>
         {day.format('dddd, MMMM D')}
       </Typography>
     </Stack>
