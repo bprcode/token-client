@@ -92,6 +92,11 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
       const week = []
       for (let j = i; j < i + 7; j++) {
         const day = days[j]
+        // hsl(191deg 17% 15%)
+        const hue = 190 + 0.7*(j%2 ? j : -j)
+        // const saturation = (j+1)%2 ? 15 - 1.5*(j%7 + j/7) : 17
+        const saturation = 17
+        const lightness = 21 - 0.3*(j%7 + j/7) + ((j+1)%2 ? 2 : 0)
 
         const numbering = day.isSame(today, 'day') ? (
           <Typography
@@ -113,7 +118,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
               opacity:
                 day.isBefore(startOfMonth) || day.isAfter(endOfMonth)
                   ? 0.2
-                  : undefined,
+                  : 0.8,
             }}
           >
             {day.format('D')}
@@ -128,6 +133,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
               paddingRight: '0.25rem',
               paddingBottom: '0.25rem',
               lineHeight: 1.25,
+              backgroundColor: `hsl(${hue}deg ${saturation}% ${lightness}%)`,
             }}
           >
             {numbering}
