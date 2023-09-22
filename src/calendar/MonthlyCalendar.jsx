@@ -9,6 +9,7 @@ import {
   styled,
   FormControl,
   MenuItem,
+  Container,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import * as dayjs from 'dayjs'
@@ -45,9 +46,11 @@ function GridHeader() {
       style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
-        textAlign: 'left',
-        paddingTop: '1.5rem',
-        paddingBottom: '1rem',
+        textAlign: 'center',
+        paddingTop: '1rem',
+        paddingBottom: '0.5rem',
+        borderBottom: '1px solid #aaf3',
+        opacity: 0.8,
       }}
     >
       {weekdayAbbreviations.map(a => (
@@ -93,10 +96,10 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
       for (let j = i; j < i + 7; j++) {
         const day = days[j]
         // hsl(191deg 17% 15%)
-        const hue = 190 + 0.7*(j%2 ? j : -j)
+        const hue = 190 //+ 0.7 * (j % 2 ? j : -j)
         // const saturation = (j+1)%2 ? 15 - 1.5*(j%7 + j/7) : 17
         const saturation = 17
-        const lightness = 21 - 0.3*(j%7 + j/7) + ((j+1)%2 ? 2 : 0)
+        const lightness = 18 - 0.3 * ((j % 7) + j / 7) + ((j + 1) % 2 ? 3 : 0)
 
         const numbering = day.isSame(today, 'day') ? (
           <Typography
@@ -118,7 +121,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
               opacity:
                 day.isBefore(startOfMonth) || day.isAfter(endOfMonth)
                   ? 0.2
-                  : 0.8,
+                  : 0.85,
             }}
           >
             {day.format('D')}
@@ -130,10 +133,11 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
             key={day.format('MM D')}
             style={{
               overflow: 'hidden',
+              paddingLeft: '0.25rem',
               paddingRight: '0.25rem',
               paddingBottom: '0.25rem',
               lineHeight: 1.25,
-              backgroundColor: `hsl(${hue}deg ${saturation}% ${lightness}%)`,
+              backgroundColor: `hsl(${hue}deg ${saturation}% ${lightness}% /0.6)`,
             }}
           >
             {numbering}
@@ -163,6 +167,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
         style={{
           display: 'grid',
           gridAutoRows: '6rem',
+          boxShadow: '1rem 1.5rem 2rem #0124',
         }}
       >
         {rows}
@@ -178,7 +183,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
 
   return (
     <Box>
-      <Paper elevation={1} sx={{ px: [2, 2], py: [0, 2] }}>
+      <Paper elevation={1} sx={{ px: [1, 2], py: [0, 2] }}>
         <Stack direction="row">
           <IconButton
             aria-label="previous month"
@@ -226,14 +231,14 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 {year}
               </Typography>
             </div>
-            <div>
+            <Container maxWidth="sm" disableGutters>
               <GridHeader />
               <MonthGrid
                 date={active}
                 unfilteredEvents={unfilteredEvents}
                 onExpand={onExpand}
               />
-            </div>
+            </Container>
           </Stack>
 
           <IconButton
