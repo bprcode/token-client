@@ -9,7 +9,6 @@ import {
   styled,
   FormControl,
   MenuItem,
-  Container,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import * as dayjs from 'dayjs'
@@ -22,7 +21,10 @@ import { alternatingShades } from '../blueDigitalTheme'
 
 const HoverableBox = styled(Box)(({ theme }) => ({
   '&:hover': {
-    backgroundColor: theme.palette.action.hover,
+    // debug -- not working, regression
+    backgroundColor: 'red',
+    //boxShadow: '0 0 5rem inset magenta',
+    // backgroundColor: theme.palette.action.hover,
   },
 }))
 
@@ -30,8 +32,11 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
   '& .MuiInputBase-input': {
     borderRadius: 4,
     position: 'relative',
-    ...theme.typography.h4,
     marginRight: '-1.25rem',
+    ...theme.typography.h4,
+    [theme.breakpoints.down('sm')]: {
+      ...theme.typography.h5,
+    },
   },
   '& .MuiSvgIcon-root': {
     display: 'none', // hide dropdown triangle
@@ -41,21 +46,33 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
   },
 }))
 
+const YearTypography = styled(Box)(({ theme }) => ({
+  ...theme.typography.h4,
+  [theme.breakpoints.down('sm')]: {
+    ...theme.typography.h5,
+  },
+}))
+
 function GridHeader() {
   return (
     <div
       style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
-        textAlign: 'center',
-        paddingTop: '1rem',
-        paddingBottom: '0.5rem',
-        borderBottom: '1px solid #aaf3',
-        opacity: 0.8,
+        // textAlign: 'center',
+        paddingTop: '0.0rem',
+        marginTop: '1.25rem',
+        paddingBottom: '0rem',
+        borderTop: '1px solid #aaf3',
       }}
     >
-      {weekdayAbbreviations.map(a => (
-        <div key={a}>{a}</div>
+      {weekdayAbbreviations.map((a, j) => (
+        <div key={a} style={{ 
+          backgroundColor: alternatingShades(j-1, 0.6) 
+          }}>
+            <div style={{marginLeft: '8px', opacity: 0.85}}>
+          {a}</div>
+        </div>
       ))}
     </div>
   )
@@ -125,12 +142,12 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
         )
 
         week.push(
-          <div
+          <Box
             key={day.format('MM D')}
-            style={{
+            sx={{
               overflow: 'hidden',
-              paddingLeft: '0.25rem',
-              paddingRight: '0.25rem',
+              paddingLeft: ['0.25rem', '0.5rem'],
+              paddingRight: ['0.25rem', '0.5rem'],
               paddingBottom: '0.25rem',
               lineHeight: 1.25,
               backgroundColor: alternatingShades(j),
@@ -141,7 +158,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
               day={day}
               unfilteredEvents={unfilteredEvents}
             />
-          </div>
+          </Box>
         )
       }
       rows.push(
@@ -180,20 +197,22 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   return (
     <Box>
       <Paper elevation={1} sx={{ px: [1, 2], py: [0, 2] }}>
-        <Stack direction="row">
+        <Stack direction="row" sx={{ maxWidth: '840px', mx: 'auto' }}>
           <IconButton
             aria-label="previous month"
             onClick={() => setActive(active.subtract(1, 'month'))}
             sx={{
               position: ['absolute', 'static'],
-              top: '1.75rem',
+              top: '0.75rem',
               left: '-0.25rem',
+              borderTopRightRadius: 0,
+              borderBottomRightRadius: 0,
             }}
           >
             <NavigateBeforeIcon />
           </IconButton>
 
-          <Stack direction="column" sx={{ mt: 1, mb: 4, flexGrow: 1 }}>
+          <Stack direction="column" sx={{ mt: [0, 1], mb: 4, flexGrow: 1 }}>
             <div>
               <FormControl sx={{ mr: 1, mt: 1, ml: [3, 0] }} variant="standard">
                 <Select
@@ -216,8 +235,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 </Select>
               </FormControl>
 
-              <Typography
-                variant="h4"
+              <YearTypography
                 component="span"
                 sx={{
                   transform: 'translateY(0.75rem)',
@@ -225,16 +243,16 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 }}
               >
                 {year}
-              </Typography>
+              </YearTypography>
             </div>
-            <Container maxWidth="sm" disableGutters>
+            <Box>
               <GridHeader />
               <MonthGrid
                 date={active}
                 unfilteredEvents={unfilteredEvents}
                 onExpand={onExpand}
               />
-            </Container>
+            </Box>
           </Stack>
 
           <IconButton
@@ -242,8 +260,10 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
             onClick={() => setActive(active.add(1, 'month'))}
             sx={{
               position: ['absolute', 'static'],
-              top: '1.75rem',
+              top: '0.75rem',
               right: '0.25rem',
+              borderBottomLeftRadius: 0,
+              borderTopLeftRadius: 0,
             }}
           >
             <NavigateNextIcon />
