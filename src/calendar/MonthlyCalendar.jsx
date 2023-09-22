@@ -18,6 +18,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { AbbreviatedBreakdown } from './AbbreviatedBreakdown'
 import { log } from './log.mjs'
 import { weekdayAbbreviations } from './dateLogic.mjs'
+import { alternatingShades } from '../blueDigitalTheme'
 
 const HoverableBox = styled(Box)(({ theme }) => ({
   '&:hover': {
@@ -95,11 +96,6 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
       const week = []
       for (let j = i; j < i + 7; j++) {
         const day = days[j]
-        // hsl(191deg 17% 15%)
-        const hue = 190 //+ 0.7 * (j % 2 ? j : -j)
-        // const saturation = (j+1)%2 ? 15 - 1.5*(j%7 + j/7) : 17
-        const saturation = 17
-        const lightness = 18 - 0.3 * ((j % 7) + j / 7) + ((j + 1) % 2 ? 3 : 0)
 
         const numbering = day.isSame(today, 'day') ? (
           <Typography
@@ -137,7 +133,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
               paddingRight: '0.25rem',
               paddingBottom: '0.25rem',
               lineHeight: 1.25,
-              backgroundColor: `hsl(${hue}deg ${saturation}% ${lightness}% /0.6)`,
+              backgroundColor: alternatingShades(j),
             }}
           >
             {numbering}
@@ -167,7 +163,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
         style={{
           display: 'grid',
           gridAutoRows: '6rem',
-          boxShadow: '1rem 1.5rem 2rem #0124',
+          boxShadow: '1rem 1.5rem 2rem #0114',
         }}
       >
         {rows}

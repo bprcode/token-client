@@ -45,5 +45,13 @@ const barTheme = createTheme({
   },
 })
 
+export function alternatingShades(j) {
+  const hue = 190
+  const saturation = 17
+  const lightness = 18 - 0.5 * ((j % 7) + j / 7) + ((j + 1) % 2 ? 3 : 0)
+
+  return `hsl(${hue}deg ${saturation}% ${lightness}%)`
+}
+
 export { barTheme }
 export default theme
