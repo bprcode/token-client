@@ -48,12 +48,12 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
 
 function GridHeader() {
   return (
-    <div
-      style={{
+    <Box
+      sx={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         paddingTop: '0.0rem',
-        marginTop: '1.25rem',
+        marginTop: [1, 2],
         paddingBottom: '0rem',
         borderTop: '1px solid #aaf3',
       }}
@@ -65,10 +65,10 @@ function GridHeader() {
             backgroundColor: alternatingShades(j - 1, 0.6),
           }}
         >
-          <div style={{ marginLeft: '8px', opacity: 0.85 }}>{a}</div>
+          <Box sx={{ ml: ['1px',1], opacity: 0.85 }}>{a}</Box>
         </div>
       ))}
-    </div>
+    </Box>
   )
 }
 
@@ -140,7 +140,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
             key={day.format('MM D')}
             sx={{
               overflow: 'hidden',
-              paddingLeft: ['0.25rem', '0.5rem'],
+              paddingLeft: ['1px', '0.5rem'],
               paddingRight: ['0.25rem', '0.5rem'],
               paddingBottom: '0.25rem',
               lineHeight: 1.25,
@@ -189,20 +189,20 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   const year = active.year()
 
   const yearSelections = []
-  for (let y = year - 5; y <= year + 5; y++) {
+  for (let y = year - 10; y <= year + 10; y++) {
     yearSelections.push(y)
   }
 
   return (
     <Box>
-      <Paper elevation={1} sx={{ px: [1, 2], py: [0, 2] }}>
+      <Paper elevation={1} sx={{ px: 1, py: [0, 2] }}>
         <Stack direction="row" sx={{ maxWidth: '840px', mx: 'auto' }}>
           <IconButton
             aria-label="previous month"
             onClick={() => setActive(active.subtract(1, 'month'))}
             sx={{
               position: ['absolute', 'static'],
-              top: '0.75rem',
+              top: '0.5rem',
               left: '-0.25rem',
               borderTopRightRadius: 0,
               borderBottomRightRadius: 0,
@@ -263,7 +263,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
             onClick={() => setActive(active.add(1, 'month'))}
             sx={{
               position: ['absolute', 'static'],
-              top: '0.75rem',
+              top: '0.5rem',
               right: '0.25rem',
               borderBottomLeftRadius: 0,
               borderTopLeftRadius: 0,
