@@ -46,20 +46,12 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
   },
 }))
 
-const YearTypography = styled(Box)(({ theme }) => ({
-  ...theme.typography.h4,
-  [theme.breakpoints.down('sm')]: {
-    ...theme.typography.h5,
-  },
-}))
-
 function GridHeader() {
   return (
     <div
       style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
-        // textAlign: 'center',
         paddingTop: '0.0rem',
         marginTop: '1.25rem',
         paddingBottom: '0rem',
@@ -67,11 +59,13 @@ function GridHeader() {
       }}
     >
       {weekdayAbbreviations.map((a, j) => (
-        <div key={a} style={{ 
-          backgroundColor: alternatingShades(j-1, 0.6) 
-          }}>
-            <div style={{marginLeft: '8px', opacity: 0.85}}>
-          {a}</div>
+        <div
+          key={a}
+          style={{
+            backgroundColor: alternatingShades(j - 1, 0.6),
+          }}
+        >
+          <div style={{ marginLeft: '8px', opacity: 0.85 }}>{a}</div>
         </div>
       ))}
     </div>
@@ -194,6 +188,11 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   const month = active.format('M')
   const year = active.year()
 
+  const yearSelections = []
+  for (let y = year - 5; y <= year + 5; y++) {
+    yearSelections.push(y)
+  }
+
   return (
     <Box>
       <Paper elevation={1} sx={{ px: [1, 2], py: [0, 2] }}>
@@ -235,15 +234,19 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 </Select>
               </FormControl>
 
-              <YearTypography
-                component="span"
-                sx={{
-                  transform: 'translateY(0.75rem)',
-                  display: 'inline-block',
-                }}
-              >
-                {year}
-              </YearTypography>
+              <FormControl sx={{ mt: 1 }} variant="standard">
+                <Select
+                  value={year}
+                  onChange={e => setActive(active.year(e.target.value))}
+                  input={<LeanSelector />}
+                >
+                  {yearSelections.map(s => (
+                    <MenuItem value={s} key={s}>
+                      {s}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
             </div>
             <Box>
               <GridHeader />
