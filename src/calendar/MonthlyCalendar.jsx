@@ -9,6 +9,8 @@ import {
   styled,
   FormControl,
   MenuItem,
+  Autocomplete,
+  TextField,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import * as dayjs from 'dayjs'
@@ -28,11 +30,24 @@ const HoverableBox = styled(Box)(({ theme }) => ({
   },
 }))
 
+const ResponsiveTextField = styled(TextField)(({ theme}) => ({
+  '& .MuiInputBase-input': {
+    ...theme.typography.h4,
+    [theme.breakpoints.down('sm')]: {
+      ...theme.typography.h5,
+    },
+  },
+  '& .MuiInputBase-root::before': {
+    border: 'none',
+  }
+  
+}))
+
 const LeanSelector = styled(InputBase)(({ theme }) => ({
+  
   '& .MuiInputBase-input': {
     borderRadius: 4,
     position: 'relative',
-    marginRight: '-1.25rem',
     ...theme.typography.h4,
     [theme.breakpoints.down('sm')]: {
       ...theme.typography.h5,
@@ -65,7 +80,7 @@ function GridHeader() {
             backgroundColor: alternatingShades(j - 1, 0.6),
           }}
         >
-          <Box sx={{ ml: ['1px',1], opacity: 0.85 }}>{a}</Box>
+          <Box sx={{ ml: ['1px', 1], opacity: 0.85 }}>{a}</Box>
         </div>
       ))}
     </Box>
@@ -73,7 +88,12 @@ function GridHeader() {
 }
 
 function MonthGrid({ date, onExpand, unfilteredEvents }) {
+  const activeDay = date.date()
+  const activeMonth = date.month()
+  const activeYear = date.year()
+
   return useMemo(() => {
+    const date = dayjs().date(activeDay).month(activeMonth).year(activeYear)
     log(`🧮 (${(Math.random() * 1000).toFixed()}) memoizing grid calendar`)
 
     const days = []
@@ -180,7 +200,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
         {rows}
       </div>
     )
-  }, [date, onExpand, unfilteredEvents])
+  }, [activeDay, activeMonth, activeYear, onExpand, unfilteredEvents])
 }
 
 export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
@@ -188,9 +208,9 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   const month = active.format('M')
   const year = active.year()
 
-  const yearSelections = []
-  for (let y = year - 10; y <= year + 10; y++) {
-    yearSelections.push(y)
+  const yearOptions = []
+  for (let y = year - 5; y <= year + 5; y++) {
+    yearOptions.push({ label: String(y) })
   }
 
   return (
@@ -213,8 +233,10 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
 
           <Stack direction="column" sx={{ mt: [0, 1], mb: 4, flexGrow: 1 }}>
             <div>
-              <FormControl sx={{ mr: 1, mt: 1, ml: [3, 0] }} variant="standard">
+              <FormControl sx={{ mt: 1, ml: [3, 0] }} variant="standard">
                 <Select
+                sx={{ 
+              '&&& .MuiSelect-select': { paddingRight: 0, marginRight: [1.25,1.5]}}}
                   value={month}
                   onChange={e => setActive(active.month(e.target.value - 1))}
                   input={<LeanSelector />}
@@ -233,20 +255,28 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                   <MenuItem value={12}>December</MenuItem>
                 </Select>
               </FormControl>
-
-              <FormControl sx={{ mt: 1 }} variant="standard">
-                <Select
-                  value={year}
-                  onChange={e => setActive(active.year(e.target.value))}
-                  input={<LeanSelector />}
-                >
-                  {yearSelections.map(s => (
-                    <MenuItem value={s} key={s}>
-                      {s}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
+              <Autocomplete
+                freeSolo
+                disableClearable
+                options={yearOptions}
+                value={String(year)}
+                onChange={(event, newValue) =>
+                  setActive(active.year(newValue.label))
+                }
+                sx={{ width: ['6.5ch','9ch'], display: 'inline-block' }}
+                renderInput={params => (
+                  <ResponsiveTextField
+                    {...params}
+                    sx={{mt: 1, transform: ['translateY(-1px)', 'translateY(-3px)']}}
+                    aria-label='year'
+                    variant="standard"
+                    onChange={e => {
+                      const matched = e.target.value.match(/\d{4}/)
+                      if (matched) setActive(active.year(matched[0]))
+                    }}
+                  />
+                )}
+              />
             </div>
             <Box>
               <GridHeader />
