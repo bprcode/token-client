@@ -114,7 +114,14 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
         <div
           style={{ marginBottom: '1rem', display: 'flex', flexWrap: 'wrap' }}
         >
-          <EventTypeSelect type={type} typeList={typeList} onSelect={setType} />
+          <EventTypeSelect
+            type={type}
+            typeList={typeList}
+            onSelect={v => {
+              setType(v)
+              setSummary(v)
+            }}
+          />
 
           {type === 'Other...' && (
             <span>

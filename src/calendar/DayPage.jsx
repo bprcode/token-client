@@ -47,9 +47,24 @@ export function DayPage({
           position: 'relative',
         }}
       >
-        <DayHeader onBack={onBack} day={day} />
-
-        <Box sx={{ height: '100%' }}>
+        <Box
+          sx={{
+            height: '100%',
+            width: '100%',
+            maxWidth: '840px',
+            mx: 'auto',
+            position: 'relative',
+          }}
+        >
+          <DayHeader onBack={onBack} day={day} />
+          <ActionBar
+            onBehavior={b => {
+              setSelection(null)
+              if (b === 'undo') return onUndo()
+              setAction(b)
+            }}
+            canUndo={canUndo}
+          />
           <SectionedInterval
             initial={day.startOf('day')}
             final={day.endOf('day')}
@@ -93,24 +108,13 @@ export function DayPage({
             <EventPicker />
           </Collapse>
         </div>
-
-        <ActionBar
-          onBehavior={b => {
-            setSelection(null)
-            if (b === 'undo') return onUndo()
-            setAction(b)
-          }}
-          canUndo={canUndo}
-        />
       </Paper>
     </ActionContext.Provider>
   )
 }
 
 function DayHeader({ onBack, day }) {
-  const typeVariant = useMediaQuery('(max-width: 380px)')
-  ? "subtitle1"
-  : 'h5'
+  const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h5'
 
   return (
     <Stack direction="row" sx={{ borderBottom: '1px solid #0006' }}>

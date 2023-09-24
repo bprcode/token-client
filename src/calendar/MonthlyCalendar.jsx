@@ -19,18 +19,9 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { AbbreviatedBreakdown } from './AbbreviatedBreakdown'
 import { log } from './log.mjs'
 import { weekdayAbbreviations } from './dateLogic.mjs'
-import { alternatingShades } from '../blueDigitalTheme'
+import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 
-const HoverableBox = styled(Box)(({ theme }) => ({
-  '&:hover': {
-    // debug -- not working, regression
-    backgroundColor: 'red',
-    //boxShadow: '0 0 5rem inset magenta',
-    // backgroundColor: theme.palette.action.hover,
-  },
-}))
-
-const ResponsiveTextField = styled(TextField)(({ theme}) => ({
+const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
     ...theme.typography.h4,
     [theme.breakpoints.down('sm')]: {
@@ -39,12 +30,10 @@ const ResponsiveTextField = styled(TextField)(({ theme}) => ({
   },
   '& .MuiInputBase-root::before': {
     border: 'none',
-  }
-  
+  },
 }))
 
 const LeanSelector = styled(InputBase)(({ theme }) => ({
-  
   '& .MuiInputBase-input': {
     borderRadius: 4,
     position: 'relative',
@@ -218,9 +207,11 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
       <Paper elevation={1} sx={{ px: 1, py: [0, 2] }}>
         <Stack direction="row" sx={{ maxWidth: '840px', mx: 'auto' }}>
           <IconButton
+            disableTouchRipple
             aria-label="previous month"
             onClick={() => setActive(active.subtract(1, 'month'))}
             sx={{
+              '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
               position: ['absolute', 'static'],
               top: '0.5rem',
               left: '-0.25rem',
@@ -235,8 +226,12 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
             <div>
               <FormControl sx={{ mt: 1, ml: [3, 0] }} variant="standard">
                 <Select
-                sx={{ 
-              '&&& .MuiSelect-select': { paddingRight: 0, marginRight: [1.25,1.5]}}}
+                  sx={{
+                    '&&& .MuiSelect-select': {
+                      paddingRight: 0,
+                      marginRight: [1.25, 1.5],
+                    },
+                  }}
                   value={month}
                   onChange={e => setActive(active.month(e.target.value - 1))}
                   input={<LeanSelector />}
@@ -263,12 +258,15 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 onChange={(event, newValue) =>
                   setActive(active.year(newValue.label))
                 }
-                sx={{ width: ['6.5ch','9ch'], display: 'inline-block' }}
+                sx={{ width: ['6.5ch', '9ch'], display: 'inline-block' }}
                 renderInput={params => (
                   <ResponsiveTextField
                     {...params}
-                    sx={{mt: 1, transform: ['translateY(-1px)', 'translateY(-3px)']}}
-                    aria-label='year'
+                    sx={{
+                      mt: 1,
+                      transform: ['translateY(-1px)', 'translateY(-3px)'],
+                    }}
+                    aria-label="year"
                     variant="standard"
                     onChange={e => {
                       const matched = e.target.value.match(/\d{4}/)
@@ -290,8 +288,10 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
 
           <IconButton
             aria-label="next month"
+            disableTouchRipple
             onClick={() => setActive(active.add(1, 'month'))}
             sx={{
+              '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
               position: ['absolute', 'static'],
               top: '0.5rem',
               right: '0.25rem',

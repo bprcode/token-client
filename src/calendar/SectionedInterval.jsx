@@ -1,4 +1,5 @@
 import { styled, Box } from '@mui/material'
+import { alternatingShades, sunriseShades } from '../blueDigitalTheme'
 
 const StyledAlternateBox = styled(Box)(() => ({
   '&:nth-of-type(odd)': { backgroundColor: '#0004' },
@@ -23,6 +24,7 @@ export function SectionedInterval({
   const t1 = initial.add(...step)
   const stepPercentage = (100 * t1.diff(initial)) / final.diff(initial)
   let n = 0
+  let j = 0
   while (t.isBefore(final)) {
     sections.push(
       <StyledAlternateBox
@@ -34,6 +36,8 @@ export function SectionedInterval({
           height: stepPercentage + '%',
           width: '100%',
           color: '#fff4',
+          backgroundColor: sunriseShades(j++),
+          //backgroundColor: alternatingShades((j++ % 6), 1.6),
         }}
       >
         <span style={{

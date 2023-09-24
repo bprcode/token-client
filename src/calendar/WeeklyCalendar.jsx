@@ -2,7 +2,6 @@ import {
   IconButton,
   Paper,
   Typography,
-  styled,
   useMediaQuery,
   Box,
 } from '@mui/material'
@@ -12,11 +11,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { DailyBreakdown } from './DailyBreakdown'
 import { log } from './log.mjs'
-import { alternatingShades } from '../blueDigitalTheme'
-
-const HoverableBox = styled(Box)(({ theme }) => ({
-  '&:hover': { backgroundColor: theme.palette.action.hover },
-}))
+import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 
 function CalendarBody({ date, eventList, onExpand }) {
   return useMemo(() => {
@@ -84,21 +79,14 @@ export function WeeklyCalendar({
   log(`(${(Math.random() * 1000).toFixed()}) Rendering weekly calendar`)
   return (
     <Paper elevation={1} sx={{ px: [1, 2], py: [0, 2] }}>
-      <Typography
-        variant={typeVariant}
-        component="div"
-        sx={{ width: '100%', mb: 2 }}
-      >
-        <IconButton aria-label="back to monthly view" onClick={onBack}>
-          <ArrowBackIcon />
-        </IconButton>
-        Week of {date.startOf('week').format('MMMM D, YYYY')}
-      </Typography>
-
       <div
         style={{
           display: 'flex',
           position: 'relative',
+          width: '100%',
+          maxWidth: '840px',
+          marginLeft: 'auto',
+          marginRight: 'auto',
         }}
       >
         <IconButton
@@ -113,7 +101,22 @@ export function WeeklyCalendar({
           <NavigateBeforeIcon />
         </IconButton>
 
-        <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
+        <div
+          style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
+        >
+          <Typography
+            variant={typeVariant}
+            component="div"
+            sx={{ width: '100%', mt: 1, mb: 1 }}
+          >
+            <IconButton aria-label="back to monthly view" onClick={onBack}>
+              <ArrowBackIcon />
+            </IconButton>
+            Week of {date.startOf('week').format('MMMM D, YYYY')}
+          </Typography>
+
+          <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
+        </div>
 
         <IconButton
           aria-label="next week"
