@@ -308,7 +308,7 @@ export function EventPane({
             left: indent * (100 / columns) + '%',
             height: (windowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
-            zIndex: selected ? 2 : 1,
+            zIndex: selected ? 3 : 2,
             transition: 'top 0.35s ease-out, height 0.35s ease-out',
             opacity: ghost && 0.5,
             userSelect: 'none',
@@ -466,7 +466,7 @@ export function EventPane({
               !overflowBefore &&
               !overflowAfter &&
               `0 0 3rem inset ${accentColor}`,
-            zIndex: 2,
+            zIndex: 3,
           }}
         ></div>
       )}
@@ -474,14 +474,17 @@ export function EventPane({
       {/* drop shadow mock pseudo-element for correct z-indexing: */}
       {!deleting && (
         <div
+        className='foo'
           style={{
             position: 'absolute',
             top: (topOffset / intervalSize) * 100 + '%',
             left: indent * (100 / columns) + '%',
             height: (windowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
-            boxShadow: !selected && '0.25rem 0.25rem 0.5rem #0008',
+            boxShadow: !selected && '0.25rem 0.5rem 1.5rem #0008',
             transition: 'top 0.35s ease-out, height 0.35s ease-out',
+
+            zIndex: 1,
           }}
         />
       )}

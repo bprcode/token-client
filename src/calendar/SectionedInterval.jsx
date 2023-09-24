@@ -1,5 +1,5 @@
 import { styled, Box } from '@mui/material'
-import { alternatingShades, sunriseShades } from '../blueDigitalTheme'
+import { sunriseShades } from '../blueDigitalTheme'
 
 const StyledAlternateBox = styled(Box)(() => ({
   '&:nth-of-type(odd)': { backgroundColor: '#0004' },
