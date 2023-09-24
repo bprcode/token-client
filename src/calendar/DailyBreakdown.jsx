@@ -80,7 +80,7 @@ export function DailyBreakdown({
         ...style,
         position: 'relative',
         marginLeft: margin,
-        marginRight: [0,'0.5rem'],
+        // marginRight: [0,'0.5rem'],
       }}
     >
       {relevantEvents.map(r => (
