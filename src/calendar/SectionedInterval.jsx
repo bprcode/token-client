@@ -1,6 +1,5 @@
 import { Box } from '@mui/material'
-import { sunriseColor } from '../blueDigitalTheme'
-import skyTexture from '../assets/sky512-transparent2.png'
+import { gradualShades } from '../blueDigitalTheme'
 
 export function SectionedInterval({
   initial,
@@ -29,8 +28,7 @@ export function SectionedInterval({
           height: stepPercentage + '%',
           width: '100%',
           color: '#fff4',
-          backgroundColor: sunriseColor(j),
-          // mixBlendMode: 'hue',
+          backgroundColor: gradualShades(j),
         }}
       >
         <span
@@ -57,6 +55,7 @@ export function SectionedInterval({
         height: outsideHeight,
         userSelect: 'none',
         WebkitUserSelect: 'none',
+        backgroundColor: `hsl(190deg 8% 10%)`,
 
       }}
     >
@@ -73,17 +72,6 @@ export function SectionedInterval({
       >
         {children}
         {sections}
-        <div style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-
-          backgroundImage: `url(${skyTexture})`,
-          backgroundSize: 'cover',
-          mixBlendMode: 'multiply',
-        }}/>
       </Box>
     </div>
   )
