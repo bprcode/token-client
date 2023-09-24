@@ -1,5 +1,6 @@
 import { styled, Box } from '@mui/material'
 import { sunriseShades } from '../blueDigitalTheme'
+import skyTexture from '../assets/sky512.jpg'
 
 const StyledAlternateBox = styled(Box)(() => ({
   '&:nth-of-type(odd)': { backgroundColor: '#0004' },
@@ -19,13 +20,15 @@ export function SectionedInterval({
   insideHeight,
   onClick,
 }) {
+  console.log('skyTexture=', skyTexture)
   const sections = []
   let t = initial
   const t1 = initial.add(...step)
   const stepPercentage = (100 * t1.diff(initial)) / final.diff(initial)
   let n = 0
-  let j = 0
+  let j = -1
   while (t.isBefore(final)) {
+    j++
     sections.push(
       <StyledAlternateBox
         key={sections.length}
@@ -36,15 +39,18 @@ export function SectionedInterval({
           height: stepPercentage + '%',
           width: '100%',
           color: '#fff4',
-          backgroundColor: sunriseShades(j++),
+          backgroundColor: sunriseShades(j),
+          mixBlendMode: 'multiply',
           //backgroundColor: alternatingShades((j++ % 6), 1.6),
         }}
       >
-        <span style={{
-          paddingLeft: '0.25rem',
-          fontSize: '0.875em',
-        }}>
-        {t.format('h:mm A')}
+        <span
+          style={{
+            paddingLeft: '0.25rem',
+            fontSize: '0.875em',
+          }}
+        >
+          {t.format('h:mm A')}
         </span>
       </StyledAlternateBox>
     )
@@ -71,6 +77,9 @@ export function SectionedInterval({
           paddingLeft: ['0.5rem', '5rem'],
           paddingRight: '0.5rem',
           marginBottom: '8rem',
+
+          backgroundImage: `url(${skyTexture})`,
+          backgroundSize: 'cover',
         }}
       >
         {children}

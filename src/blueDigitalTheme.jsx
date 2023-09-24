@@ -56,9 +56,9 @@ export function alternatingShades(j, contrast = 1.0) {
 
 export function sunriseShades(j, contrast = 1.0) {
   const daylight = Math.max(0, Math.cos(0.7*(j-12) / 24 * 2 * Math.PI))
-  const hue = 155 + 180 * j/24 + 270*Math.max(0, (j-12) / 24)
-  const saturation = 17 + (daylight * 50/25 * (j-12)**2)
-  const lightness = 7 + 40 * daylight
+  const hue = 155 + 180 * j/24 + 360*Math.max(0, (j-9) / 24)**2
+  const saturation = 10 + (daylight * 50/25 * (j-12)**2)
+  const lightness = 7 + 90 * daylight
     //18 //+ contrast * j + contrast * (j % 2 ? 0 : 3)
 
   return `hsl(${hue}deg ${saturation}% ${lightness}%)`
