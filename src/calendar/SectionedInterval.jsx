@@ -55,8 +55,7 @@ export function SectionedInterval({
         height: outsideHeight,
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        backgroundColor: `hsl(190deg 8% 11%)`,
-
+        backgroundColor: `hsl(190deg 8% 10%)`,
       }}
     >
       <Box
@@ -65,9 +64,8 @@ export function SectionedInterval({
           height: insideHeight,
           paddingLeft: ['0.5rem', '5rem'],
           paddingRight: '0.5rem',
-          marginBottom: '8rem',
-
-          
+          marginBottom: '0rem',
+          borderBottom: '8rem solid hsl(295deg 4% 10%)',
         }}
       >
         {children}

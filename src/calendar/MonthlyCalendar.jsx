@@ -266,7 +266,6 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                   if (!event) {
                     return
                   }
-                  console.log(event.target.selectionStart)
                   if (!newInputValue.match(/^\d*$/)) {
                     return
                   }
@@ -281,7 +280,6 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                       )
                     }
                   }
-                  console.log('using ', String(newInputValue))
                   setYearInput(String(newInputValue))
                   setActive(active.year(String(newInputValue)))
                 }}
