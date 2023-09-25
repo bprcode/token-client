@@ -79,8 +79,8 @@ export function DailyBreakdown({
         height: '100%',
         ...style,
         position: 'relative',
-        marginLeft: margin,
-        // marginRight: [0,'0.5rem'],
+        marginLeft: [margin, '0.5rem'],
+        marginRight: [0,'0.5rem'],
       }}
     >
       {relevantEvents.map(r => (

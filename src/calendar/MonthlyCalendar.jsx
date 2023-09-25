@@ -193,7 +193,6 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
 }
 
 export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
-  const [yearInput, setYearInput] = useState(initialDate.year())
   const [active, setActive] = useState(initialDate)
   const month = active.format('M')
   const year = active.year()
@@ -236,7 +235,10 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                     },
                   }}
                   value={month}
-                  onChange={e => setActive(active.month(e.target.value - 1))}
+                  onChange={e => {
+                    setActive(active.month(e.target.value - 1))
+                    //setYearInput(active.month(e.target.value - 1).year())
+                  }}
                   input={<LeanSelector />}
                 >
                   <MenuItem value={1}>January</MenuItem>
@@ -261,7 +263,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 onChange={(event, newValue) =>
                   setActive(active.year(newValue.label))
                 }
-                inputValue={String(yearInput)}
+                inputValue={String(active.year())}
                 onInputChange={(event, newInputValue) => {
                   if (!event) {
                     return
@@ -280,7 +282,6 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                       )
                     }
                   }
-                  setYearInput(String(newInputValue))
                   setActive(active.year(String(newInputValue)))
                 }}
                 sx={{ width: ['6.5ch', '9ch'], display: 'inline-block' }}
@@ -293,12 +294,6 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                     }}
                     aria-label="year"
                     variant="standard"
-                    // value={'abc'}
-                    //   onChange={e => {
-                    //     const matched = e.target.value.match(/\d{4}/)
-                    //     console.log('computing from ', e.target.value)
-                    //     if (matched) setActive(active.year(matched[0]))
-                    //   }}
                   />
                 )}
               />
