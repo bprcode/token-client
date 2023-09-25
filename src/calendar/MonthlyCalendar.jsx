@@ -200,7 +200,9 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
 
   const yearOptions = []
   for (let y = year - 5; y <= year + 5; y++) {
-    yearOptions.push({ label: String(y) })
+    if (y > 0) {
+      yearOptions.push({ label: String(y) })
+    }
   }
 
   return (
@@ -259,35 +261,46 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 onChange={(event, newValue) =>
                   setActive(active.year(newValue.label))
                 }
-
                 inputValue={String(yearInput)}
                 onInputChange={(event, newInputValue) => {
+                  if (!event) {
+                    return
+                  }
+                  console.log(event.target.selectionStart)
                   if (!newInputValue.match(/^\d*$/)) {
                     return
                   }
                   if (newInputValue.length > 4) {
-                    return
+                    if (event.target.selectionStart > 4) {
+                      newInputValue =
+                        newInputValue.slice(0, 3) + newInputValue.slice(-1)
+                    } else {
+                      newInputValue = newInputValue.slice(
+                        0,
+                        event.target.selectionStart
+                      )
+                    }
                   }
-                  console.log('using ',String(newInputValue))
+                  console.log('using ', String(newInputValue))
                   setYearInput(String(newInputValue))
                   setActive(active.year(String(newInputValue)))
                 }}
                 sx={{ width: ['6.5ch', '9ch'], display: 'inline-block' }}
                 renderInput={params => (
                   <ResponsiveTextField
-                  {...params}
-                  sx={{
-                    mt: 1,
-                    transform: ['translateY(-1px)', 'translateY(-3px)'],
-                  }}
-                  aria-label="year"
-                  variant="standard"
-                  // value={'abc'}
-                  //   onChange={e => {
-                  //     const matched = e.target.value.match(/\d{4}/)
-                  //     console.log('computing from ', e.target.value)
-                  //     if (matched) setActive(active.year(matched[0]))
-                  //   }}
+                    {...params}
+                    sx={{
+                      mt: 1,
+                      transform: ['translateY(-1px)', 'translateY(-3px)'],
+                    }}
+                    aria-label="year"
+                    variant="standard"
+                    // value={'abc'}
+                    //   onChange={e => {
+                    //     const matched = e.target.value.match(/\d{4}/)
+                    //     console.log('computing from ', e.target.value)
+                    //     if (matched) setActive(active.year(matched[0]))
+                    //   }}
                   />
                 )}
               />
