@@ -78,6 +78,11 @@ function Demo() {
                 onBack={() => setMode('week')}
                 day={expandedDate}
                 unfilteredEvents={eventList}
+                onCreate={addition =>
+                  dispatchEventList({
+                    type: 'create',
+                    addition
+                })}
                 onUpdate={updates =>
                   dispatchEventList({
                     type: 'update',

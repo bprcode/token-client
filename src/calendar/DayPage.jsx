@@ -20,6 +20,7 @@ import { createSampleEvent } from './mockCalendar.mjs'
 
 export function DayPage({
   onBack,
+  onCreate,
   onUpdate,
   onDelete,
   onUndo,
@@ -82,11 +83,6 @@ export function DayPage({
               const minutes =
                 (24 * 60 * (e.clientY - innerBounds.top)) / innerBounds.height
 
-              console.log(
-                'Start at: ',
-                day.minute(minutes - (minutes % 15)).format('h:mm a')
-              )
-
               const initialCreationTime = day.minute(minutes - (minutes % 15))
               setCreation(
                 createSampleEvent({
@@ -109,11 +105,6 @@ export function DayPage({
                   term.diff(initialCreationTime) / 1000 / 60
 
                 if (updatedDragDuration !== lastDragDuration && tick !== 0) {
-                  console.log(
-                    'updating to ',
-                    updatedDragDuration,
-                    ' minute interval'
-                  )
                   lastDragDuration = updatedDragDuration
 
                   const start = initialCreationTime.isBefore(term)
@@ -137,15 +128,7 @@ export function DayPage({
               if (action !== 'create') {
                 return
               }
-              const innerBounds =
-                e.currentTarget.childNodes[0].getBoundingClientRect()
-              const minutes =
-                (24 * 60 * (e.clientY - innerBounds.top)) / innerBounds.height
-
-              console.log(
-                'End at: ',
-                day.minute(minutes - (minutes % 15)).format('h:mm a')
-              )
+              onCreate(creation)
               setCreation(null)
             }}
             // keep this:
