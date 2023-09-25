@@ -55,7 +55,7 @@ export function SectionedInterval({
         height: outsideHeight,
         userSelect: 'none',
         WebkitUserSelect: 'none',
-        backgroundColor: `hsl(190deg 8% 10%)`,
+        backgroundColor: `hsl(190deg 8% 11%)`,
 
       }}
     >

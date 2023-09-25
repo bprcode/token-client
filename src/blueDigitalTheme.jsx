@@ -49,23 +49,15 @@ export function alternatingShades(j, contrast = 1.0) {
   const hue = 190
   const saturation = 17
   const lightness =
-    18
-    - contrast * 0.5 * ((j % 7) + j / 7)
-    + contrast * (j % 2 ? 0 : 3)
+    18 - contrast * 0.5 * ((j % 7) + j / 7) + contrast * (j % 2 ? 0 : 3)
 
   return `hsl(${hue}deg ${saturation}% ${lightness}%)`
 }
 
 export function gradualShades(j, contrast = 1.0) {
-  const daylight = Math.max(0, Math.cos(Math.PI/2 * (j-13)/8)) ** 0.2
-
-  const hue = 190 + 70 * j/24
-  const saturation = 12 + daylight * 10
-  //const saturation = 17 + (5 * j/24) * (j%2)
-  const lightness =
-  8
-  + 16 * daylight
-  + contrast * (j % 2 ? 2 + 2 * daylight : 0)
+  const hue = 190 + (105 * j) / 24
+  const saturation = 17 + ((5 * j) / 24) * (j % 2)
+  const lightness = 12 + contrast * (j % 2 ? 3 : 0)
 
   return `hsl(${hue}deg ${saturation}% ${lightness}%)`
 }
@@ -84,7 +76,7 @@ export const HoverableBox = styled(Box)(({ theme }) => ({
   },
   '&:active::after': {
     backgroundColor: theme.palette.action.selected,
-  }
+  },
 }))
 
 export { barTheme }
