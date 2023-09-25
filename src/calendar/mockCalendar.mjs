@@ -2,7 +2,7 @@ import { createTheme } from '@mui/material'
 import * as dayjs from 'dayjs'
 import { useReducer } from 'react'
 
-function createSampleEvent({ startTime, endTime, summary }) {
+export function createSampleEvent({ startTime, endTime, summary }) {
   return {
     // text
     id: String(btoa((Math.random() * 1e6).toFixed())),

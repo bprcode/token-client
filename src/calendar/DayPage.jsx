@@ -16,6 +16,7 @@ import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { LayoutContext } from './LayoutContext.mjs'
 import { EventPicker } from './EventPicker'
+import { createSampleEvent } from './mockCalendar.mjs'
 
 export function DayPage({
   onBack,
@@ -28,6 +29,7 @@ export function DayPage({
 }) {
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
+  const [creation, setCreation] = useState(null)
 
   const [action, setAction] = useState(actionList[0])
   const layout = useContext(LayoutContext)
@@ -71,11 +73,89 @@ export function DayPage({
             step={[1, 'hour']}
             outsideHeight="100%"
             insideHeight="1800px"
+            onPointerDown={e => {
+              if (action !== 'create') {
+                return
+              }
+              const innerBounds =
+                e.currentTarget.childNodes[0].getBoundingClientRect()
+              const minutes =
+                (24 * 60 * (e.clientY - innerBounds.top)) / innerBounds.height
+
+              console.log(
+                'Start at: ',
+                day.minute(minutes - (minutes % 15)).format('h:mm a')
+              )
+
+              const initialCreationTime = day.minute(minutes - (minutes % 15))
+              setCreation(
+                createSampleEvent({
+                  startTime: initialCreationTime,
+                  endTime: day.minute(minutes - (minutes % 15) + 15),
+                  summary: 'Work',
+                })
+              )
+
+              e.currentTarget.setPointerCapture(e.pointerId)
+              let lastDragDuration = 15
+
+              const moveStart = e.clientY
+              e.currentTarget.onpointermove = move => {
+                const cursorMinutes =
+                  (24 * 60 * (move.clientY - moveStart)) / innerBounds.height
+                const tick = cursorMinutes - (cursorMinutes % 15) + 15
+                const term = initialCreationTime.add(tick, 'minutes')
+                const updatedDragDuration =
+                  term.diff(initialCreationTime) / 1000 / 60
+
+                if (updatedDragDuration !== lastDragDuration && tick !== 0) {
+                  console.log(
+                    'updating to ',
+                    updatedDragDuration,
+                    ' minute interval'
+                  )
+                  lastDragDuration = updatedDragDuration
+
+                  const start = initialCreationTime.isBefore(term)
+                    ? initialCreationTime
+                    : term
+                  const end = term.isAfter(initialCreationTime)
+                    ? term
+                    : initialCreationTime
+                  setCreation(
+                    createSampleEvent({
+                      startTime: start,
+                      endTime: end,
+                      summary: 'Work',
+                    })
+                  )
+                }
+              }
+            }}
+            onPointerUp={e => {
+              e.currentTarget.onpointermove = null
+              if (action !== 'create') {
+                return
+              }
+              const innerBounds =
+                e.currentTarget.childNodes[0].getBoundingClientRect()
+              const minutes =
+                (24 * 60 * (e.clientY - innerBounds.top)) / innerBounds.height
+
+              console.log(
+                'End at: ',
+                day.minute(minutes - (minutes % 15)).format('h:mm a')
+              )
+              setCreation(null)
+            }}
+            // keep this:
             onClick={() => setSelection(null)}
           >
             <DailyBreakdown
               day={day}
-              unfilteredEvents={unfilteredEvents}
+              unfilteredEvents={
+                creation ? [...unfilteredEvents, creation] : unfilteredEvents
+              }
               selection={selection}
               onSelect={s => setSelection(s)}
               onEdit={() => setEditing(true)}
@@ -103,7 +183,7 @@ export function DayPage({
           />
         )}
 
-        <div style={{ zIndex: 1, position: 'fixed', bottom: 0, width: '100%' }}>
+        <div style={{ zIndex: 2, position: 'fixed', bottom: 0, width: '100%' }}>
           <Collapse in={action === 'create'}>
             <EventPicker />
           </Collapse>

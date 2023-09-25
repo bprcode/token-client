@@ -9,6 +9,8 @@ export function SectionedInterval({
   outsideHeight,
   insideHeight,
   onClick,
+  onPointerDown,
+  onPointerUp,
 }) {
   const sections = []
   let t = initial
@@ -47,6 +49,8 @@ export function SectionedInterval({
 
   return (
     <div
+      onPointerDown={onPointerDown}
+      onPointerUp={onPointerUp}
       onClick={onClick}
       style={{
         paddingTop: '1.5rem',
@@ -64,8 +68,7 @@ export function SectionedInterval({
           height: insideHeight,
           paddingLeft: ['0.5rem', '5rem'],
           paddingRight: '0.5rem',
-          marginBottom: '0rem',
-          borderBottom: '8rem solid hsl(295deg 4% 10%)',
+          marginBottom: '8rem',
         }}
       >
         {children}
