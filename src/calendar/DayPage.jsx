@@ -117,7 +117,7 @@ function DayHeader({ onBack, day }) {
   const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h5'
 
   return (
-    <Stack direction="row" sx={{ borderBottom: '1px solid #0006' }}>
+    <Stack direction="row" sx={{ borderBottom: '1px solid #000a' }}>
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"

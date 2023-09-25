@@ -193,6 +193,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
 }
 
 export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
+  const [yearInput, setYearInput] = useState(initialDate.year())
   const [active, setActive] = useState(initialDate)
   const month = active.format('M')
   const year = active.year()
@@ -258,20 +259,35 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 onChange={(event, newValue) =>
                   setActive(active.year(newValue.label))
                 }
+
+                inputValue={String(yearInput)}
+                onInputChange={(event, newInputValue) => {
+                  if (!newInputValue.match(/^\d*$/)) {
+                    return
+                  }
+                  if (newInputValue.length > 4) {
+                    return
+                  }
+                  console.log('using ',String(newInputValue))
+                  setYearInput(String(newInputValue))
+                  setActive(active.year(String(newInputValue)))
+                }}
                 sx={{ width: ['6.5ch', '9ch'], display: 'inline-block' }}
                 renderInput={params => (
                   <ResponsiveTextField
-                    {...params}
-                    sx={{
-                      mt: 1,
-                      transform: ['translateY(-1px)', 'translateY(-3px)'],
-                    }}
-                    aria-label="year"
-                    variant="standard"
-                    onChange={e => {
-                      const matched = e.target.value.match(/\d{4}/)
-                      if (matched) setActive(active.year(matched[0]))
-                    }}
+                  {...params}
+                  sx={{
+                    mt: 1,
+                    transform: ['translateY(-1px)', 'translateY(-3px)'],
+                  }}
+                  aria-label="year"
+                  variant="standard"
+                  // value={'abc'}
+                  //   onChange={e => {
+                  //     const matched = e.target.value.match(/\d{4}/)
+                  //     console.log('computing from ', e.target.value)
+                  //     if (matched) setActive(active.year(matched[0]))
+                  //   }}
                   />
                 )}
               />
