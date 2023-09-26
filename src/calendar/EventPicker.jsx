@@ -8,11 +8,11 @@ export function EventPicker({ picks, onPick }) {
   const typeList = [...eventStyles.keys()].map(s =>
     s !== 'Default' ? s : 'Custom'
   )
-
+  
   const type = typeList.includes(picks.summary) ? picks.summary : 'Custom'
-  const color = picks.color
+  const color = picks.colorId
   const summary = picks.summary
-
+  console.log('EventPicker mounting with type=',type,'color=',color)
 
   return (
     <Paper
@@ -25,10 +25,17 @@ export function EventPicker({ picks, onPick }) {
         p: 1,
       }}
     >
-      <Typography variant="subtitle2" mb={2}>Tap & drag to create</Typography>
+      <Typography variant="subtitle2" mb={2}>
+        Tap & drag to create
+      </Typography>
 
-      <EventTypeSelect type={type} onSelect={type => {
-        onPick({...picks, summary: type})}} typeList={typeList} />
+      <EventTypeSelect
+        type={type}
+        onSelect={type => {
+          onPick({ ...picks, summary: type })
+        }}
+        typeList={typeList}
+      />
 
       {type === 'Custom' && (
         <>
@@ -37,14 +44,14 @@ export function EventPicker({ picks, onPick }) {
               label="Event"
               variant="standard"
               value={summary}
-              onChange={e => onPick({...picks, summary: e.target.value})}
-              />
+              onChange={e => onPick({ ...picks, summary: e.target.value })}
+            />
           </FormControl>
 
           <PaletteSelect
             color={color}
-            onSelect={color => {
-              onPick({...picks, colorId: color })
+            onSelect={colorId => {
+              onPick({ ...picks, colorId })
             }}
             palette={mockPalette}
           />

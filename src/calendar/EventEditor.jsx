@@ -16,7 +16,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { useState } from 'react'
-import { mockPalette, useEventStyles } from './mockCalendar.mjs'
+import { mockPalette, retrieveColor, useEventStyles } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
@@ -27,6 +27,8 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
       'H:mm:ss'
     )} - ${event.end.dateTime.format('H:mm:ss')}`
   )
+  console.log('event has colorId:',event.colorId)
+  console.log('which retrieves:', retrieveColor(event.colorId))
 
   const [showConfirm, setShowConfirm] = useState(false)
 
@@ -35,7 +37,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
   const [summary, setSummary] = useState(event.summary)
   const [description, setDescription] = useState(event.description || '')
   const [color, setColor] = useState(mockPalette[0])
-  const augmentedColor = theme.palette.augmentColor({ color: { main: color } })
+  // const augmentedColor = theme.palette.augmentColor({ color: { main: color } })
   const [type, setType] = useState(event.summary || 'Default')
 
   const [startTime, setStartTime] = useState(event.start.dateTime)
@@ -51,10 +53,13 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
     typeStyles.push({ key: key === 'Default' ? 'Other...' : key, value })
   }
 
-  const titleColor =
-    type === 'Other...'
-      ? augmentedColor
-      : typeStyles.find(s => s.key === type).value.augmentedColors
+  const titleColor = theme.palette.augmentColor({
+    color:
+    { main: retrieveColor(event.colorId) }
+  })
+    // type === 'Other...'
+    //   ? augmentedColor
+    //   : typeStyles.find(s => s.key === type).value.augmentedColors
 
   function isChanged() {
     return (

@@ -20,7 +20,7 @@ import { createSampleEvent, mockPalette } from './mockCalendar.mjs'
 
 const defaultEventPicks = {
   type: 'Custom',
-  color: mockPalette[0],
+  colorId: mockPalette[0],
   summary: 'New Event',
 }
 
@@ -83,14 +83,15 @@ export function DayPage({
             insideHeight="1800px"
             onPointerDown={e => {
               if (action === 'create') {
-                handleCreationTap({event: e, day, setCreation, picks})
+                handleCreationTap({ event: e, day, setCreation, picks })
               }
             }}
             onPointerUp={e => {
               e.currentTarget.onpointermove = null
-              if (action !== 'create') {
+              if (action !== 'create' || !creation) {
                 return
               }
+              console.log('creating with picks:',picks)
               onCreate(creation)
               setCreation(null)
             }}
@@ -139,7 +140,7 @@ export function DayPage({
   )
 }
 
-function handleCreationTap({event, picks, day, setCreation}) {
+function handleCreationTap({ event, picks, day, setCreation }) {
   const innerBounds = event.currentTarget.childNodes[0].getBoundingClientRect()
   const minutes =
     (24 * 60 * (event.clientY - innerBounds.top)) / innerBounds.height
@@ -150,7 +151,7 @@ function handleCreationTap({event, picks, day, setCreation}) {
       startTime: initialCreationTime,
       endTime: day.minute(minutes - (minutes % 15) + 15),
       summary: picks.summary,
-      colorId: picks.color,
+      colorId: picks.colorId,
     })
   )
 
@@ -177,7 +178,7 @@ function handleCreationTap({event, picks, day, setCreation}) {
           startTime: start,
           endTime: end,
           summary: picks.summary,
-      colorId: picks.color,
+          colorId: picks.colorId,
         })
       )
     }

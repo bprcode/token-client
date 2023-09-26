@@ -2,7 +2,7 @@ import { createTheme } from '@mui/material'
 import * as dayjs from 'dayjs'
 import { useReducer } from 'react'
 
-export function createSampleEvent({ startTime, endTime, summary }) {
+export function createSampleEvent({ startTime, endTime, summary, colorId }) {
   return {
     // text
     id: String(btoa((Math.random() * 1e6).toFixed())),
@@ -28,7 +28,7 @@ export function createSampleEvent({ startTime, endTime, summary }) {
       mock: 'end test data',
     },
     // string
-    colorId: retrieveColor(summary),
+    colorId: colorId || summary,
     // array
     //recurrence: ['string'], c.f. RFC 5545 -- not yet implemented
   }
@@ -66,19 +66,12 @@ const defaultTheme = createTheme({
  * otherwise return a default color.
  */
 export function retrieveColor(colorId) {
-  if (mockCustomPalette.has(colorId)) return mockCustomPalette.get(colorId)
-
   if (mockStyles.has(colorId)) return mockStyles.get(colorId).accentColor
 
-  if (mockPalette[colorId]) return mockPalette[colorId]
+  if (recognizedColors.has(colorId)) return recognizedColors.get(colorId)
 
   return mockStyles.get('Default').accentColor
 }
-
-const mockCustomPalette = new Map([
-  ['Brunch', '#2e0014'],
-  ['Dressage', '#228223'],
-])
 
 export const mockPalette = [
   '#942911',
@@ -90,6 +83,10 @@ export const mockPalette = [
   '#518ed0',
   '#5351d0',
 ]
+
+const recognizedColors = new Map(
+  mockPalette.map(c => [c,c])
+)
 
 export const mockStyles = new Map([
   [

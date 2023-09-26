@@ -3,7 +3,7 @@ import DoubleDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
-import { mockStyles } from './mockCalendar.mjs'
+import { mockStyles, retrieveColor } from './mockCalendar.mjs'
 import { Box, IconButton, Zoom, useTheme } from '@mui/material'
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
@@ -95,9 +95,11 @@ export function EventPane({
   // Styling constants
   const referenceStyle =
     mockStyles.get(event.summary) || mockStyles.get('Default')
-  const accentColor = referenceStyle.augmentedColors.main
-  const shadeColor = referenceStyle.augmentedColors.dark
-  const augmentedColors = referenceStyle.augmentedColors
+  // Memoize me please:
+  const augmentedColors = theme.palette.augmentColor({ color: { main: retrieveColor(event.colorId) } })
+  
+  const accentColor = augmentedColors.main
+  const shadeColor = augmentedColors.dark
   const verboseBackground = selected && selectable ? '#6e2a08' : '#223'
 
   let borderColor = accentColor
@@ -164,13 +166,15 @@ export function EventPane({
           <>
             <br />
             {event.description}
-            &mdash;Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+            <br/>colorId:{event.colorId}
+            <br/>{accentColor}
+            {/* &mdash;Lorem ipsum dolor sit, amet consectetur adipisicing elit.
             Dolor, qui illum dolorum, quaerat corporis dolores optio
             exercitationem totam perspiciatis libero aliquid provident ullam
             similique aut in temporibus autem eligendi obcaecati vel facere at!
             Temporibus eius, iure voluptatibus est dolorem porro. Adipisci
             blanditiis tempora ad architecto reprehenderit deleniti dolor sunt
-            officia?
+            officia? */}
             <br />
           </>
         )}
