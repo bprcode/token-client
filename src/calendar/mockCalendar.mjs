@@ -94,6 +94,16 @@ export function getAugmentedColor(colorId) {
   return getAugmentedColor.memo.get(colorId)
 }
 
+export function isDefaultStyle(event, styleList) {
+  if (
+    styleList.has(event.summary) &&
+    styleList.get(event.summary).accentColor === resolveColor(event.colorId)
+  ) {
+    return true
+  }
+  return false
+}
+
 export const mockPalette = [
   '#942911',
   '#d46239',
@@ -222,4 +232,8 @@ export function useEventListHistory() {
 
 export function useEventStyles() {
   return mockStyles
+}
+
+export function usePalette() {
+  return mockPalette
 }

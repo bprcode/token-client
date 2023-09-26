@@ -17,8 +17,8 @@ import {
 import { useState } from 'react'
 import {
   getAugmentedColor,
-  mockPalette,
-  resolveColor,
+  isDefaultStyle,
+  usePalette,
   useEventStyles,
 } from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
@@ -38,8 +38,10 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
   const sideBySide = useMediaQuery('(min-width: 660px)')
   const [summary, setSummary] = useState(event.summary)
   const [description, setDescription] = useState(event.description || '')
+
+  const palette = usePalette()
   const [colorPick, setColorPick] = useState(
-    mockPalette.includes(event.colorId) ? event.colorId : mockPalette[0]
+    palette.includes(event.colorId) ? event.colorId : palette[0]
   )
   const [colorId, setColorId] = useState(event.colorId)
 
@@ -56,11 +58,9 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
     typeStyles.push({ key: key === 'Default' ? 'Other...' : key, value })
   }
 
-  const isDefaultStyle =
-    eventStyles.has(event.summary) &&
-    eventStyles.get(event.summary).accentColor === resolveColor(event.colorId)
-
-  const [type, setType] = useState(isDefaultStyle ? event.summary : 'Other...')
+  const [type, setType] = useState(
+    isDefaultStyle(event, eventStyles) ? event.summary : 'Other...'
+  )
 
   const titleColor = getAugmentedColor(colorId)
 
@@ -151,7 +151,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
                   setColorPick(s)
                   setColorId(s)
                 }}
-                palette={mockPalette}
+                palette={palette}
               />
             </span>
           )}

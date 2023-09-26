@@ -1,15 +1,16 @@
 import { FormControl, Paper, TextField, Typography } from '@mui/material'
-import { useEventStyles, mockPalette } from './mockCalendar.mjs'
+import { useEventStyles, usePalette, isDefaultStyle } from './mockCalendar.mjs'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
 
 export function EventPicker({ picks, onPick }) {
+  const palette = usePalette()
   const eventStyles = useEventStyles()
   const typeList = [...eventStyles.keys()].map(s =>
     s !== 'Default' ? s : 'Custom'
   )
-  
-  const type = typeList.includes(picks.summary) ? picks.summary : 'Custom'
+
+  const type = isDefaultStyle(picks, eventStyles) ? picks.summary : 'Custom'
   const color = picks.colorId
   const summary = picks.summary
 
@@ -31,7 +32,11 @@ export function EventPicker({ picks, onPick }) {
       <EventTypeSelect
         type={type}
         onSelect={type => {
-          onPick({ ...picks, summary: type })
+          onPick({
+            ...picks,
+            summary: type,
+            colorId: type !== 'Custom' ? type : palette[0],
+          })
         }}
         typeList={typeList}
       />
@@ -52,7 +57,7 @@ export function EventPicker({ picks, onPick }) {
             onSelect={colorId => {
               onPick({ ...picks, colorId })
             }}
-            palette={mockPalette}
+            palette={palette}
           />
         </>
       )}

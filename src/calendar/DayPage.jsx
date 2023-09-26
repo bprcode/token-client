@@ -16,13 +16,7 @@ import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { LayoutContext } from './LayoutContext.mjs'
 import { EventPicker } from './EventPicker'
-import { createSampleEvent, mockPalette } from './mockCalendar.mjs'
-
-const defaultEventPicks = {
-  type: 'Custom',
-  colorId: mockPalette[0],
-  summary: 'New Event',
-}
+import { createSampleEvent, usePalette } from './mockCalendar.mjs'
 
 export function DayPage({
   onBack,
@@ -34,6 +28,13 @@ export function DayPage({
   day,
   unfilteredEvents,
 }) {
+  const palette = usePalette()
+  const defaultEventPicks = {
+    type: 'Custom',
+    colorId: palette[0],
+    summary: 'New Event',
+  }
+
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
   const [creation, setCreation] = useState(null)
