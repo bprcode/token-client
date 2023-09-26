@@ -1,4 +1,4 @@
-import { mockStyles } from './mockCalendar.mjs'
+import { getAugmentedColor } from './mockCalendar.mjs'
 import { isOverlap } from './dateLogic.mjs'
 
 export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
@@ -34,14 +34,14 @@ export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
       break
     }
 
-    const style = mockStyles.get(r.summary) || mockStyles.get('Default')
+    const augmentedColor = getAugmentedColor(r.colorId)
 
     list.push(
       <div
         key={list.length}
         style={{
-          backgroundColor: style.augmentedColors.main,
-          color: style.augmentedColors.contrastText,
+          backgroundColor: augmentedColor.main,
+          color: augmentedColor.contrastText,
           fontSize: '0.75em',
           paddingLeft: '0.25rem',
           paddingRight: '0.25rem',
@@ -50,6 +50,7 @@ export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
           borderBottomLeftRadius: r === lastMatch && 4,
           borderBottomRightRadius: r === lastMatch && 4,
           overflow: 'hidden',
+          whiteSpace: 'nowrap',
         }}
       >
         {r.summary}
