@@ -137,7 +137,6 @@ export const mockStyles = new Map([
 function reduceEventList(eventList, action) {
   switch (action.type) {
     case 'create':
-      console.log('got create', action.addition)
       return [...eventList, action.addition]
 
     case 'update':

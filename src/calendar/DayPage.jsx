@@ -16,7 +16,13 @@ import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { LayoutContext } from './LayoutContext.mjs'
 import { EventPicker } from './EventPicker'
-import { createSampleEvent } from './mockCalendar.mjs'
+import { createSampleEvent, mockPalette } from './mockCalendar.mjs'
+
+const defaultEventPicks = {
+  type: 'Custom',
+  color: mockPalette[0],
+  summary: 'New Event',
+}
 
 export function DayPage({
   onBack,
@@ -31,6 +37,7 @@ export function DayPage({
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
   const [creation, setCreation] = useState(null)
+  const [picks, setPicks] = useState(defaultEventPicks)
 
   const [action, setAction] = useState(actionList[0])
   const layout = useContext(LayoutContext)
@@ -61,12 +68,12 @@ export function DayPage({
         >
           <DayHeader onBack={onBack} day={day} />
           <ActionBar
+            canUndo={canUndo}
             onBehavior={b => {
               setSelection(null)
               if (b === 'undo') return onUndo()
               setAction(b)
             }}
-            canUndo={canUndo}
           />
           <SectionedInterval
             initial={day.startOf('day')}
@@ -75,52 +82,8 @@ export function DayPage({
             outsideHeight="100%"
             insideHeight="1800px"
             onPointerDown={e => {
-              if (action !== 'create') {
-                return
-              }
-              const innerBounds =
-                e.currentTarget.childNodes[0].getBoundingClientRect()
-              const minutes =
-                (24 * 60 * (e.clientY - innerBounds.top)) / innerBounds.height
-
-              const initialCreationTime = day.minute(minutes - (minutes % 15))
-              setCreation(
-                createSampleEvent({
-                  startTime: initialCreationTime,
-                  endTime: day.minute(minutes - (minutes % 15) + 15),
-                  summary: 'Work',
-                })
-              )
-
-              e.currentTarget.setPointerCapture(e.pointerId)
-              let lastDragDuration = 15
-
-              const moveStart = e.clientY
-              e.currentTarget.onpointermove = move => {
-                const cursorMinutes =
-                  (24 * 60 * (move.clientY - moveStart)) / innerBounds.height
-                const tick = cursorMinutes - (cursorMinutes % 15) + 15
-                const term = initialCreationTime.add(tick, 'minutes')
-                const updatedDragDuration =
-                  term.diff(initialCreationTime) / 1000 / 60
-
-                if (updatedDragDuration !== lastDragDuration && tick !== 0) {
-                  lastDragDuration = updatedDragDuration
-
-                  const start = initialCreationTime.isBefore(term)
-                    ? initialCreationTime
-                    : term
-                  const end = term.isAfter(initialCreationTime)
-                    ? term
-                    : initialCreationTime
-                  setCreation(
-                    createSampleEvent({
-                      startTime: start,
-                      endTime: end,
-                      summary: 'Work',
-                    })
-                  )
-                }
+              if (action === 'create') {
+                handleCreationTap({event: e, day, setCreation, picks})
               }
             }}
             onPointerUp={e => {
@@ -131,7 +94,7 @@ export function DayPage({
               onCreate(creation)
               setCreation(null)
             }}
-            // keep this:
+            // deselect if the click was not intercepted by an EventPane
             onClick={() => setSelection(null)}
           >
             <DailyBreakdown
@@ -168,12 +131,57 @@ export function DayPage({
 
         <div style={{ zIndex: 2, position: 'fixed', bottom: 0, width: '100%' }}>
           <Collapse in={action === 'create'}>
-            <EventPicker />
+            <EventPicker picks={picks} onPick={setPicks} />
           </Collapse>
         </div>
       </Paper>
     </ActionContext.Provider>
   )
+}
+
+function handleCreationTap({event, picks, day, setCreation}) {
+  const innerBounds = event.currentTarget.childNodes[0].getBoundingClientRect()
+  const minutes =
+    (24 * 60 * (event.clientY - innerBounds.top)) / innerBounds.height
+
+  const initialCreationTime = day.minute(minutes - (minutes % 15))
+  setCreation(
+    createSampleEvent({
+      startTime: initialCreationTime,
+      endTime: day.minute(minutes - (minutes % 15) + 15),
+      summary: picks.summary,
+      colorId: picks.color,
+    })
+  )
+
+  event.currentTarget.setPointerCapture(event.pointerId)
+  let lastDragDuration = 15
+
+  const moveStart = event.clientY
+  event.currentTarget.onpointermove = move => {
+    const cursorMinutes =
+      (24 * 60 * (move.clientY - moveStart)) / innerBounds.height
+    const tick = cursorMinutes - (cursorMinutes % 15) + 15
+    const term = initialCreationTime.add(tick, 'minutes')
+    const updatedDragDuration = term.diff(initialCreationTime) / 1000 / 60
+
+    if (updatedDragDuration !== lastDragDuration && tick !== 0) {
+      lastDragDuration = updatedDragDuration
+
+      const start = initialCreationTime.isBefore(term)
+        ? initialCreationTime
+        : term
+      const end = term.isAfter(initialCreationTime) ? term : initialCreationTime
+      setCreation(
+        createSampleEvent({
+          startTime: start,
+          endTime: end,
+          summary: picks.summary,
+      colorId: picks.color,
+        })
+      )
+    }
+  }
 }
 
 function DayHeader({ onBack, day }) {

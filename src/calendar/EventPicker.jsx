@@ -1,18 +1,18 @@
 import { FormControl, Paper, TextField, Typography } from '@mui/material'
 import { useEventStyles, mockPalette } from './mockCalendar.mjs'
-import { useState } from 'react'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
 
-export function EventPicker() {
+export function EventPicker({ picks, onPick }) {
   const eventStyles = useEventStyles()
-  const [type, setType] = useState('Custom')
-  const [color, setColor] = useState(mockPalette[0])
-  const [summary, setSummary] = useState('New Event')
-
   const typeList = [...eventStyles.keys()].map(s =>
     s !== 'Default' ? s : 'Custom'
   )
+
+  const type = typeList.includes(picks.summary) ? picks.summary : 'Custom'
+  const color = picks.color
+  const summary = picks.summary
+
 
   return (
     <Paper
@@ -27,7 +27,8 @@ export function EventPicker() {
     >
       <Typography variant="subtitle2" mb={2}>Tap & drag to create</Typography>
 
-      <EventTypeSelect type={type} onSelect={setType} typeList={typeList} />
+      <EventTypeSelect type={type} onSelect={type => {
+        onPick({...picks, summary: type})}} typeList={typeList} />
 
       {type === 'Custom' && (
         <>
@@ -36,13 +37,15 @@ export function EventPicker() {
               label="Event"
               variant="standard"
               value={summary}
-              onChange={e => setSummary(e.target.value)}
-            />
+              onChange={e => onPick({...picks, summary: e.target.value})}
+              />
           </FormControl>
 
           <PaletteSelect
             color={color}
-            onSelect={setColor}
+            onSelect={color => {
+              onPick({...picks, colorId: color })
+            }}
             palette={mockPalette}
           />
         </>
