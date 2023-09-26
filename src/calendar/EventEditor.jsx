@@ -13,10 +13,14 @@ import {
   InputAdornment,
   TextField,
   useMediaQuery,
-  useTheme,
 } from '@mui/material'
 import { useState } from 'react'
-import { mockPalette, retrieveColor, useEventStyles } from './mockCalendar.mjs'
+import {
+  getAugmentedColor,
+  mockPalette,
+  resolveColor,
+  useEventStyles,
+} from './mockCalendar.mjs'
 import { ClockPicker } from './ClockPicker'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
@@ -27,18 +31,17 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
       'H:mm:ss'
     )} - ${event.end.dateTime.format('H:mm:ss')}`
   )
-  console.log('event has colorId:',event.colorId)
-  console.log('which retrieves:', retrieveColor(event.colorId))
+  console.log('event has colorId:', event.colorId)
 
   const [showConfirm, setShowConfirm] = useState(false)
 
   const sideBySide = useMediaQuery('(min-width: 660px)')
-  const theme = useTheme()
   const [summary, setSummary] = useState(event.summary)
   const [description, setDescription] = useState(event.description || '')
-  const [color, setColor] = useState(mockPalette[0])
-  // const augmentedColor = theme.palette.augmentColor({ color: { main: color } })
-  const [type, setType] = useState(event.summary || 'Default')
+  const [colorPick, setColorPick] = useState(
+    mockPalette.includes(event.colorId) ? event.colorId : mockPalette[0]
+  )
+  const [colorId, setColorId] = useState(event.colorId)
 
   const [startTime, setStartTime] = useState(event.start.dateTime)
   const [endTime, setEndTime] = useState(event.end.dateTime)
@@ -53,18 +56,19 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
     typeStyles.push({ key: key === 'Default' ? 'Other...' : key, value })
   }
 
-  const titleColor = theme.palette.augmentColor({
-    color:
-    { main: retrieveColor(event.colorId) }
-  })
-    // type === 'Other...'
-    //   ? augmentedColor
-    //   : typeStyles.find(s => s.key === type).value.augmentedColors
+  const isDefaultStyle =
+    eventStyles.has(event.summary) &&
+    eventStyles.get(event.summary).accentColor === resolveColor(event.colorId)
+
+  const [type, setType] = useState(isDefaultStyle ? event.summary : 'Other...')
+
+  const titleColor = getAugmentedColor(colorId)
 
   function isChanged() {
     return (
       summary != event.summary ||
       type !== event.summary ||
+      colorId !== event.colorId ||
       description != event.description ||
       !startTime.isSame(event.start.dateTime) ||
       !endTime.isSame(event.end.dateTime)
@@ -78,6 +82,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
     onSave({
       summary,
       description,
+      colorId,
       start: { dateTime: firstTime },
       end: { dateTime: secondTime },
     })
@@ -125,6 +130,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
             onSelect={v => {
               setType(v)
               setSummary(v)
+              setColorId(v === 'Other...' ? colorPick : v)
             }}
           />
 
@@ -140,8 +146,11 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
               </FormControl>
 
               <PaletteSelect
-                color={color}
-                onSelect={setColor}
+                color={colorPick}
+                onSelect={s => {
+                  setColorPick(s)
+                  setColorId(s)
+                }}
                 palette={mockPalette}
               />
             </span>

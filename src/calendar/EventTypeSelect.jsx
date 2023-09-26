@@ -1,6 +1,6 @@
 import EventIcon from '@mui/icons-material/Event'
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
-import { retrieveColor } from './mockCalendar.mjs'
+import { resolveColor } from './mockCalendar.mjs'
 
 export function EventTypeSelect({ type, typeList, onSelect }) {
   return (
@@ -22,7 +22,7 @@ export function EventTypeSelect({ type, typeList, onSelect }) {
               sx={{
                 position: 'absolute',
                 mr: 1,
-                color: retrieveColor(t),
+                color: resolveColor(t),
               }}
             />
             <span style={{ paddingLeft: '2rem' }}>{t}</span>

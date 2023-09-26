@@ -15,8 +15,6 @@ export function ActionBar({ onBehavior, canUndo }) {
   const theme = useTheme()
   const faintPrimary = alpha(theme.palette.primary.main, 0.2)
 
-  console.log('layout should be: ', layout)
-
   const interactions = [
     { label: 'edit', icon: <EditIcon fontSize="large" /> },
     { label: 'delete', icon: <DeleteIcon fontSize="large" /> },

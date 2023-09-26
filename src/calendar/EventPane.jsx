@@ -3,7 +3,7 @@ import DoubleDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
-import { mockStyles, retrieveColor } from './mockCalendar.mjs'
+import { mockStyles, getAugmentedColor } from './mockCalendar.mjs'
 import { Box, IconButton, Zoom, useTheme } from '@mui/material'
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
@@ -95,9 +95,11 @@ export function EventPane({
   // Styling constants
   const referenceStyle =
     mockStyles.get(event.summary) || mockStyles.get('Default')
-  // Memoize me please:
-  const augmentedColors = theme.palette.augmentColor({ color: { main: retrieveColor(event.colorId) } })
-  
+  const augmentedColors = getAugmentedColor(event.colorId)
+  if (!augmentedColors) {
+    console.log('failed to retrieve ', event.colorId)
+  }
+
   const accentColor = augmentedColors.main
   const shadeColor = augmentedColors.dark
   const verboseBackground = selected && selectable ? '#6e2a08' : '#223'
@@ -166,8 +168,10 @@ export function EventPane({
           <>
             <br />
             {event.description}
-            <br/>colorId:{event.colorId}
-            <br/>{accentColor}
+            <br />
+            colorId:{event.colorId}
+            <br />
+            {accentColor}
             {/* &mdash;Lorem ipsum dolor sit, amet consectetur adipisicing elit.
             Dolor, qui illum dolorum, quaerat corporis dolores optio
             exercitationem totam perspiciatis libero aliquid provident ullam
@@ -218,7 +222,7 @@ export function EventPane({
 
     switch (action) {
       case 'delete':
-        if(deleting) return
+        if (deleting) return
         console.log('handling deletion')
         setDeleting(true)
         setTimeout(() => onDelete(event.id), 350)
@@ -478,7 +482,7 @@ export function EventPane({
       {/* drop shadow mock pseudo-element for correct z-indexing: */}
       {!deleting && (
         <div
-        className='foo'
+          className="foo"
           style={{
             position: 'absolute',
             top: (topOffset / intervalSize) * 100 + '%',

@@ -12,7 +12,6 @@ export function EventPicker({ picks, onPick }) {
   const type = typeList.includes(picks.summary) ? picks.summary : 'Custom'
   const color = picks.colorId
   const summary = picks.summary
-  console.log('EventPicker mounting with type=',type,'color=',color)
 
   return (
     <Paper

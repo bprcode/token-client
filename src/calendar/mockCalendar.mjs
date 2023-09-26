@@ -65,12 +65,33 @@ const defaultTheme = createTheme({
  * 3. the default color palette,
  * otherwise return a default color.
  */
-export function retrieveColor(colorId) {
+export function resolveColor(colorId) {
   if (mockStyles.has(colorId)) return mockStyles.get(colorId).accentColor
 
   if (recognizedColors.has(colorId)) return recognizedColors.get(colorId)
 
   return mockStyles.get('Default').accentColor
+}
+
+/**
+ * Returns a MUI augmented color object based on the colorId,
+ * memoizing the result.
+ */
+export function getAugmentedColor(colorId) {
+  if (!getAugmentedColor.memo) {
+    getAugmentedColor.memo = new Map()
+  }
+  if (getAugmentedColor.memo.has(colorId)) {
+    return getAugmentedColor.memo.get(colorId)
+  }
+
+  getAugmentedColor.memo.set(
+    colorId,
+    defaultTheme.palette.augmentColor({
+      color: { main: resolveColor(colorId) },
+    })
+  )
+  return getAugmentedColor.memo.get(colorId)
 }
 
 export const mockPalette = [
@@ -84,9 +105,7 @@ export const mockPalette = [
   '#5351d0',
 ]
 
-const recognizedColors = new Map(
-  mockPalette.map(c => [c,c])
-)
+const recognizedColors = new Map(mockPalette.map(c => [c, c]))
 
 export const mockStyles = new Map([
   [
