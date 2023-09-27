@@ -25,9 +25,10 @@ export function PaletteSelect({ color, onSelect, palette, smaller }) {
             <Box
               sx={{
                 backgroundColor: c,
-                height: '1.2rem',
+                height: '1.1rem',
                 width: [smaller ? '2rem' : '3rem', '2.25rem'],
                 borderRadius: ['10%', '2px'],
+                transform: 'translateY(2px)'
               }} />
           </MenuItem>
         ))}

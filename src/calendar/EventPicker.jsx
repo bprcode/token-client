@@ -1,9 +1,10 @@
-import { FormControl, Paper, TextField, Typography } from '@mui/material'
+import { FormControl, Paper, TextField, Typography, useTheme } from '@mui/material'
 import { useEventStyles, usePalette, isDefaultStyle } from './mockCalendar.mjs'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
 
 export function EventPicker({ picks, onPick, variant = 'subtitle2' }) {
+  const theme = useTheme()
   const palette = usePalette()
   const eventStyles = useEventStyles()
   const typeList = [...eventStyles.keys()].map(s =>
@@ -53,14 +54,20 @@ export function EventPicker({ picks, onPick, variant = 'subtitle2' }) {
         />
 
         {type === 'Custom' && (
-          <FormControl sx={{ mr: 2, mb: 1, flexGrow: 1 }}>
+          <FormControl sx={{ mr: 2, flexGrow: 1 }}>
             <TextField
               label="Title"
               variant="standard"
               sx={{
                 '& .MuiInputBase-input': {
-                  fontSize: t => t.typography[variant],
+                  ...theme.typography[variant],
+                  height: '2rem',
+                  pt: '0px',
+                  pb: '0px',
                 },
+                '& .MuiInputLabel-root': {
+                  marginTop: '-1px',
+                }
               }}
               value={summary}
               onChange={e => onPick({ ...picks, summary: e.target.value })}
