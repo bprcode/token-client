@@ -146,6 +146,7 @@ export function DayPage({
 }
 
 function handleCreationTap({ event, picks, day, setCreation }) {
+  console.log('cf creator parent:', event.currentTarget.childNodes[0].getBoundingClientRect())
   const innerBounds = event.currentTarget.childNodes[0].getBoundingClientRect()
   const minutes =
     (24 * 60 * (event.clientY - innerBounds.top)) / innerBounds.height

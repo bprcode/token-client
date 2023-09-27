@@ -51,6 +51,7 @@ export function SectionedInterval({
 
   return (
     <div
+      className="section-outer"
       onPointerDown={onPointerDown}
       onPointerUp={onPointerUp}
       onClick={onClick}
@@ -65,6 +66,7 @@ export function SectionedInterval({
       }}
     >
       <Box
+      className="section-inner"
         sx={{
           zIndex: 1,
           position: 'relative',
@@ -82,7 +84,7 @@ export function SectionedInterval({
         style={{
           zIndex: 0,
           backgroundImage:
-            'radial-gradient(70% 120% at bottom right, '
+            'radial-gradient(60% 120% at bottom right, '
             +'hsl(190deg 8% 12%) 30%, transparent 150%)',
           position: 'absolute',
           bottom: 0,

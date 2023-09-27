@@ -215,7 +215,20 @@ export function EventPane({
 
   // Interaction handlers:
   function handlePointerDown(e) {
-    const tickSize = 24
+    let tickSize = 24
+    try {
+      const inner = e.currentTarget.closest('.section-inner')
+
+      if (!inner) {
+        throw Error('EventPane ancestor DOM mismatch')
+      }
+
+      const fifteenMinuteSliceCount = intervalSize / 1000 / 60 / 15
+      const bounds = inner.getBoundingClientRect()
+      tickSize = bounds.height / fifteenMinuteSliceCount
+    } catch (e) {
+      console.warn('EventPane ancestor DOM mismatch. Using default tickSize.')
+    }
 
     const touchStart = { x: e.clientX, y: e.clientY }
     const touchTarget = e.currentTarget
@@ -359,6 +372,7 @@ export function EventPane({
             {selected && (
               <PaneControls
                 augmentedColors={augmentedColors}
+                intervalSize={intervalSize}
                 showTop={!overflowBefore}
                 showBottom={!overflowAfter}
                 showTabs={!ghost}
@@ -500,10 +514,23 @@ export function EventPane({
   )
 }
 
-function handleDrag(event, onAdjust) {
+function handleDrag(event, onAdjust, intervalSize) {
   event.currentTarget.setPointerCapture(event.pointerId)
 
-  const tickSize = 24
+  let tickSize = 24
+  try {
+    const inner = event.currentTarget.closest('.section-inner')
+    if (!inner) {
+      throw Error('EventPane ancestor DOM mismatch')
+    }
+
+    const fifteenMinuteSliceCount = intervalSize / 1000 / 60 / 15
+    const bounds = inner.getBoundingClientRect()
+    tickSize = bounds.height / fifteenMinuteSliceCount
+  } catch (e) {
+    console.warn('EventPane ancestor DOM mismatch. Using default tickSize.')
+  }
+
   const moveStart = event.clientY
   event.currentTarget.onpointermove = move => {
     onAdjust(Math.round((move.clientY - moveStart) / tickSize))
@@ -519,6 +546,7 @@ function PaneControls({
   onAdjustBottom,
   showTop,
   showBottom,
+  intervalSize,
 }) {
   function beginDrag() {
     onGhostStart()
@@ -552,7 +580,7 @@ function PaneControls({
           }}
           onPointerDown={e => {
             beginDrag()
-            handleDrag(e, onAdjustTop)
+            handleDrag(e, onAdjustTop, intervalSize)
             e.stopPropagation()
           }}
           onPointerUp={e => {
@@ -588,7 +616,7 @@ function PaneControls({
           }}
           onPointerDown={e => {
             beginDrag()
-            handleDrag(e, onAdjustBottom)
+            handleDrag(e, onAdjustBottom, intervalSize)
             e.stopPropagation()
           }}
           onPointerUp={e => {
