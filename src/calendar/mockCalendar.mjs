@@ -1,6 +1,7 @@
 import { createTheme } from '@mui/material'
 import * as dayjs from 'dayjs'
 import { useReducer } from 'react'
+import { isOverlap } from './dateLogic.mjs'
 
 export function createSampleEvent({ startTime, endTime, summary, colorId }) {
   return {
@@ -160,12 +161,63 @@ export const mockStyles = new Map([
   ],
 ])
 
+function isSimilarEvent(a, b) {
+  return (
+    isOverlap(
+      a.start.dateTime,
+      a.end.dateTime,
+      b.start.dateTime,
+      b.end.dateTime
+    ) &&
+    a.colorId === b.colorId &&
+    a.summary === b.summary &&
+    a.description === b.description
+  )
+}
+
+function mergeEventIntoList(event, list) {
+  const disjoint = list.filter(e => !isSimilarEvent(e, event))
+  const overlaps = list.filter(e => isSimilarEvent(e, event))
+  console.log('This event would intersect:', overlaps)
+  console.log('No overlap with:', disjoint)
+
+  if (overlaps.length === 0) {
+    disjoint.push(event)
+    return disjoint
+  }
+
+  // Merge overlaps into one event:
+  overlaps.push(event)
+  // ar.reduce((prev,cur) => cur < prev ? cur : prev)
+  const earliest = overlaps.reduce((previous, current) =>
+    previous.start.dateTime.isBefore(current.start.dateTime)
+      ? previous
+      : current
+  )
+  const latest = overlaps.reduce((previous, current) =>
+    previous.end.dateTime.isAfter(current.end.dateTime) ? previous : current
+  )
+  const merged = {
+    ...event,
+    start: { ...event.start, dateTime: earliest.start.dateTime },
+    end: { ...event.end, dateTime: latest.end.dateTime },
+  }
+  // transitive property time. Gotta check the new result...
+  return mergeEventIntoList(merged, disjoint)
+}
+
 function reduceEventList(eventList, action) {
   switch (action.type) {
     case 'create':
+      if (action.merge) {
+        return mergeEventIntoList(action.addition, eventList)
+      }
       return [...eventList, action.addition]
 
     case 'update':
+      if (action.merge) {
+        console.log('I should merge this update')
+      }
       return eventList.map(e => {
         if (e.id !== action.id) return e
 

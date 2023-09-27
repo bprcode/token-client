@@ -8,7 +8,7 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import * as dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
 import { useEventListHistory } from './calendar/mockCalendar.mjs'
@@ -16,10 +16,12 @@ import { WeeklyCalendar } from './calendar/WeeklyCalendar'
 import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
 import { LayoutContext } from './calendar/LayoutContext.mjs'
+import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 
 const currentDate = dayjs()
 
 function Demo() {
+  const preferences = useContext(PreferencesContext)
   const [eventListHistory, dispatchEventListHistory] = useEventListHistory()
   const eventList = eventListHistory[eventListHistory.length - 1]
   const dispatchEventList = dispatchEventListHistory
@@ -81,12 +83,15 @@ function Demo() {
                 onCreate={addition =>
                   dispatchEventList({
                     type: 'create',
-                    addition
-                })}
+                    merge: preferences.merge,
+                    addition,
+                  })
+                }
                 onUpdate={updates =>
                   dispatchEventList({
                     type: 'update',
                     id: updates.id,
+                    merge: preferences.merge,
                     updates,
                   })
                 }
