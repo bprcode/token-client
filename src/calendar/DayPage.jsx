@@ -178,7 +178,9 @@ function handleCreationTap({ event, picks, day, setCreation }) {
       const start = initialCreationTime.isBefore(term)
         ? initialCreationTime
         : term
-      const end = term.isAfter(initialCreationTime) ? term : initialCreationTime
+      const end = term.isAfter(initialCreationTime)
+        ? term
+        : initialCreationTime.add(15, 'minutes')
       setCreation(
         createSampleEvent({
           startTime: start,
