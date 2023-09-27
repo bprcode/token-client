@@ -11,6 +11,8 @@ export function SectionedInterval({
   onClick,
   onPointerDown,
   onPointerUp,
+  endMargin = '8rem',
+  lockScroll,
 }) {
   const sections = []
   let t = initial
@@ -64,16 +66,32 @@ export function SectionedInterval({
     >
       <Box
         sx={{
+          zIndex: 1,
           position: 'relative',
           height: insideHeight,
           paddingLeft: ['0.5rem', '5rem'],
           paddingRight: '0.5rem',
-          marginBottom: '8rem',
+          marginBottom: endMargin,
+          touchAction: lockScroll ? 'none' : undefined,
         }}
       >
         {children}
         {sections}
       </Box>
+      <div
+        style={{
+          zIndex: 0,
+          backgroundImage:
+            'radial-gradient(70% 120% at bottom right, '
+            +'hsl(190deg 8% 12%) 30%, transparent 150%)',
+          position: 'absolute',
+          bottom: 0,
+          height: endMargin,
+          width: '100%',
+        }}
+      >
+        foo
+      </div>
     </div>
   )
 }

@@ -2,11 +2,11 @@ import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import { useContext } from 'react'
 import { LayoutContext } from './LayoutContext.mjs'
 
-export function PaletteSelect({ color, onSelect, palette }) {
+export function PaletteSelect({ color, onSelect, palette, smaller }) {
   const isMobile = useContext(LayoutContext) === 'mobile'
 
   return (
-    <FormControl sx={{ mr: 2, mb: 2 }}>
+    <FormControl sx={{ mb: 2, flexShrink: 0 }}>
       <InputLabel id="color-select-label" sx={{ paddingTop: 1, ml: -1.5 }}>
         Color
       </InputLabel>
@@ -25,8 +25,8 @@ export function PaletteSelect({ color, onSelect, palette }) {
             <Box
               sx={{
                 backgroundColor: c,
-                height: '1.25rem',
-                width: ['3rem', '2.25rem'],
+                height: '1.2rem',
+                width: [smaller ? '2rem' : '3rem', '2.25rem'],
                 borderRadius: ['10%', '2px'],
               }} />
           </MenuItem>

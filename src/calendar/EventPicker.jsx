@@ -3,7 +3,7 @@ import { useEventStyles, usePalette, isDefaultStyle } from './mockCalendar.mjs'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
 
-export function EventPicker({ picks, onPick }) {
+export function EventPicker({ picks, onPick, variant = 'subtitle2' }) {
   const palette = usePalette()
   const eventStyles = useEventStyles()
   const typeList = [...eventStyles.keys()].map(s =>
@@ -25,42 +25,59 @@ export function EventPicker({ picks, onPick }) {
         p: 1,
       }}
     >
-      <Typography variant="subtitle2" mb={2}>
-        Tap & drag to create
-      </Typography>
+      {/* top */}
+      <div style={{ display: 'flex' }}>
+        <Typography
+          variant={variant}
+          mb={2}
+          component={'span'}
+          sx={{ flexGrow: 1 }}
+        >
+          Tap & drag to create
+        </Typography>
+      </div>
 
-      <EventTypeSelect
-        type={type}
-        onSelect={type => {
-          onPick({
-            ...picks,
-            summary: type,
-            colorId: type !== 'Custom' ? type : palette[0],
-          })
-        }}
-        typeList={typeList}
-      />
+      {/* second row */}
+      <div style={{ display: 'flex' }}>
+        <EventTypeSelect
+          type={type}
+          variant={variant}
+          onSelect={type => {
+            onPick({
+              ...picks,
+              summary: type,
+              colorId: type !== 'Custom' ? type : palette[0],
+            })
+          }}
+          typeList={typeList}
+        />
 
-      {type === 'Custom' && (
-        <>
-          <FormControl sx={{ mr: 2, mb: 2 }}>
+        {type === 'Custom' && (
+          <FormControl sx={{ mr: 2, mb: 1, flexGrow: 1 }}>
             <TextField
-              label="Event"
+              label="Title"
               variant="standard"
+              sx={{
+                '& .MuiInputBase-input': {
+                  fontSize: t => t.typography[variant],
+                },
+              }}
               value={summary}
               onChange={e => onPick({ ...picks, summary: e.target.value })}
             />
           </FormControl>
-
+        )}
+        {type === 'Custom' && (
           <PaletteSelect
+            smaller
             color={color}
             onSelect={colorId => {
               onPick({ ...picks, colorId })
             }}
             palette={palette}
           />
-        </>
-      )}
+        )}
+      </div>
     </Paper>
   )
 }

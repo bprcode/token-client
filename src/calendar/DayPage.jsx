@@ -82,6 +82,8 @@ export function DayPage({
             step={[1, 'hour']}
             outsideHeight="100%"
             insideHeight="1800px"
+            endMargin={action === 'create' ? '14rem' : '14rem'}
+            lockScroll={action === 'create'}
             onPointerDown={e => {
               if (action === 'create') {
                 handleCreationTap({ event: e, day, setCreation, picks })
@@ -92,9 +94,10 @@ export function DayPage({
               if (action !== 'create' || !creation) {
                 return
               }
-              console.log('creating with picks:',picks)
+              console.log('creating with picks:', picks)
               onCreate(creation)
               setCreation(null)
+              setAction('edit')
             }}
             // deselect if the click was not intercepted by an EventPane
             onClick={() => setSelection(null)}
@@ -114,24 +117,25 @@ export function DayPage({
               onDelete={onDelete}
             />
           </SectionedInterval>
+
+          {editing && selection && (
+            <EventEditor
+              onSave={updates => {
+                onUpdate({
+                  ...updates,
+                  id: selection,
+                })
+                setSelection(null)
+              }}
+              onClose={() => setEditing(false)}
+              onDelete={onDelete}
+              event={unfilteredEvents.find(e => e.id === selection)}
+            />
+          )}
         </Box>
-
-        {editing && selection && (
-          <EventEditor
-            onSave={updates => {
-              onUpdate({
-                ...updates,
-                id: selection,
-              })
-              setSelection(null)
-            }}
-            onClose={() => setEditing(false)}
-            onDelete={onDelete}
-            event={unfilteredEvents.find(e => e.id === selection)}
-          />
-        )}
-
-        <div style={{ zIndex: 2, position: 'fixed', bottom: 0, width: '100%' }}>
+        <div
+          style={{ zIndex: 2, position: 'sticky', bottom: 0, width: '100%' }}
+        >
           <Collapse in={action === 'create'}>
             <EventPicker picks={picks} onPick={setPicks} />
           </Collapse>
@@ -147,6 +151,7 @@ function handleCreationTap({ event, picks, day, setCreation }) {
     (24 * 60 * (event.clientY - innerBounds.top)) / innerBounds.height
 
   const initialCreationTime = day.minute(minutes - (minutes % 15))
+
   setCreation(
     createSampleEvent({
       startTime: initialCreationTime,
