@@ -178,8 +178,6 @@ function isSimilarEvent(a, b) {
 function mergeEventIntoList(event, list) {
   const disjoint = list.filter(e => !isSimilarEvent(e, event))
   const overlaps = list.filter(e => isSimilarEvent(e, event))
-  console.log('This event would intersect:', overlaps)
-  console.log('No overlap with:', disjoint)
 
   if (overlaps.length === 0) {
     disjoint.push(event)
@@ -216,8 +214,28 @@ function reduceEventList(eventList, action) {
 
     case 'update':
       if (action.merge) {
-        console.log('I should merge this update')
+        const prior = eventList.find(e => e.id === action.id)
+
+        const startTime = (
+          (action.updates.start && action.updates.start.dateTime) ||
+          prior.start.dateTime
+        ).clone()
+        const endTime = (
+          (action.updates.end && action.updates.end.dateTime) ||
+          prior.end.dateTime
+        ).clone()
+
+        const updated = {
+          ...prior,
+          ...action.updates,
+          start: {...prior.start, ...action.updates.start, dateTime: startTime },
+          end: {...prior.end, ...action.updates.end, dateTime: endTime }
+        }
+
+        const omitted = eventList.filter(e => e.id !== action.id)
+        return mergeEventIntoList(updated, omitted)
       }
+      // Non-merging update:
       return eventList.map(e => {
         if (e.id !== action.id) return e
 
@@ -246,6 +264,13 @@ function reduceEventList(eventList, action) {
   }
 }
 
+function deepCloneEvent(event) {
+  return {
+    ...event,
+      start: { ...event.start, dateTime: event.start.dateTime.clone() },
+      end: { ...event.end, dateTime: event.end.dateTime.clone() },
+  }
+}
 /**
  * Wraps the Event List to provide history/undo functionality
  */
@@ -253,11 +278,7 @@ function reduceEventListHistory(history, action) {
   const maxHistory = 20
 
   function copySnapshot(original) {
-    return original.map(event => ({
-      ...event,
-      start: { ...event.start, dateTime: event.start.dateTime.clone() },
-      end: { ...event.end, dateTime: event.end.dateTime.clone() },
-    }))
+    return original.map(e => deepCloneEvent(e))
   }
 
   const clone = history.map(snap => copySnapshot(snap))
