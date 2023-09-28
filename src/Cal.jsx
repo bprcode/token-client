@@ -9,7 +9,7 @@ import {
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import { useContext, useState } from 'react'
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
 import { useEventListHistory } from './calendar/mockCalendar.mjs'
 import { WeeklyCalendar } from './calendar/WeeklyCalendar'

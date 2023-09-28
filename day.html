@@ -8,23 +8,25 @@
 </head>
 <body>
   <p>🦢 experimenting with day.js</p>
+  <p>Test 2</p>
 
 </body>
 </html>
 
 <script type="module">
-  import * as dayjs from 'dayjs'
-  import * as utc from 'dayjs/plugin/utc'
-  import * as timezone from 'dayjs/plugin/timezone'
-  import * as localizedFormat from 'dayjs/plugin/localizedFormat'
+  import dayjs from 'dayjs'
+  // import * as utc from 'dayjs/plugin/utc'
+  // import * as timezone from 'dayjs/plugin/timezone'
+  // import * as localizedFormat from 'dayjs/plugin/localizedFormat'
   
-  dayjs.extend(utc)
-  dayjs.extend(timezone)
-  dayjs.extend(localizedFormat)
+  // dayjs.extend(utc)
+  // dayjs.extend(timezone)
+  // dayjs.extend(localizedFormat)
   
-  console.log('foo')
+  console.log(`foo. Dayjs workin'?`)
   console.log(dayjs().format())
-  console.log(dayjs().utc().format())
+  console.log('???')
+  // console.log(dayjs().utc().format())
   
   window.dayjs = dayjs
 

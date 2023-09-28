@@ -13,7 +13,7 @@ import {
   TextField,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { AbbreviatedBreakdown } from './AbbreviatedBreakdown'

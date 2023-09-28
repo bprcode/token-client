@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material'
-import * as dayjs from 'dayjs'
+import dayjs from 'dayjs'
 import { useReducer } from 'react'
 import { isOverlap } from './dateLogic.mjs'
 
@@ -247,14 +247,6 @@ function reduceEventList(eventList, action) {
 
     default:
       throw Error('Unhandled dispatch: ' + action.type)
-  }
-}
-
-function deepCloneEvent(event) {
-  return {
-    ...event,
-    start: { ...event.start, dateTime: event.start.dateTime.clone() },
-    end: { ...event.end, dateTime: event.end.dateTime.clone() },
   }
 }
 
