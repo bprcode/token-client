@@ -40,7 +40,7 @@ export function createSampleWeek(aroundDate) {
   const startOfPriorWeek = aroundDate.subtract(1, 'week').startOf('week')
   const sampleEvents = []
 
-  for (let i = 0; i < 180; i++) {
+  for (let i = 0; i < 360; i++) {
     // Split a three-week interval into random 15-minute chunks:
     const offsetMinutes = Math.trunc(Math.random() * 2016) * 15
     const startTime = startOfPriorWeek.add(offsetMinutes, 'minutes')
@@ -186,7 +186,7 @@ function mergeEventIntoList(event, list) {
 
   // Merge overlaps into one event:
   overlaps.push(event)
-  // ar.reduce((prev,cur) => cur < prev ? cur : prev)
+
   const earliest = overlaps.reduce((previous, current) =>
     previous.start.dateTime.isBefore(current.start.dateTime)
       ? previous
@@ -228,8 +228,12 @@ function reduceEventList(eventList, action) {
         const updated = {
           ...prior,
           ...action.updates,
-          start: {...prior.start, ...action.updates.start, dateTime: startTime },
-          end: {...prior.end, ...action.updates.end, dateTime: endTime }
+          start: {
+            ...prior.start,
+            ...action.updates.start,
+            dateTime: startTime,
+          },
+          end: { ...prior.end, ...action.updates.end, dateTime: endTime },
         }
 
         const omitted = eventList.filter(e => e.id !== action.id)
@@ -267,35 +271,38 @@ function reduceEventList(eventList, action) {
 function deepCloneEvent(event) {
   return {
     ...event,
-      start: { ...event.start, dateTime: event.start.dateTime.clone() },
-      end: { ...event.end, dateTime: event.end.dateTime.clone() },
+    start: { ...event.start, dateTime: event.start.dateTime.clone() },
+    end: { ...event.end, dateTime: event.end.dateTime.clone() },
   }
 }
-/**
- * Wraps the Event List to provide history/undo functionality
- */
+
 function reduceEventListHistory(history, action) {
+  const hlen = history.length
+  const logId = (Math.random() * 1e3).toFixed()
+  console.time(`(${logId}) Reduced history ${hlen}`)
+
   const maxHistory = 20
 
-  function copySnapshot(original) {
-    return original.map(e => deepCloneEvent(e))
-  }
-
-  const clone = history.map(snap => copySnapshot(snap))
+  let present
 
   switch (action.type) {
     case 'undo':
-      if (clone.length === 1) {
-        return clone
+      if (history.length === 1) {
+        console.timeEnd('Reduced history')
+        return history
       }
+      return history.slice(0, -1)
 
-      return clone.slice(0, -1)
     default:
-      if (history.length > maxHistory) {
-        clone.shift()
+      present = history.concat([
+        reduceEventList(history[history.length - 1], action),
+      ])
+      if (present.length > maxHistory) {
+        console.timeEnd(`(${logId}) Reduced history ${hlen}`)
+        return present.slice(1)
       }
-
-      return [...clone, reduceEventList(history[history.length - 1], action)]
+      console.timeEnd(`(${logId}) Reduced history ${hlen}`)
+      return present
   }
 }
 
