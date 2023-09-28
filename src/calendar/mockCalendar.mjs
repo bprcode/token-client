@@ -200,7 +200,7 @@ function mergeEventIntoList(event, list) {
     start: { ...event.start, dateTime: earliest.start.dateTime },
     end: { ...event.end, dateTime: latest.end.dateTime },
   }
-  // transitive property time. Gotta check the new result...
+  // Recursively check for further overlaps:
   return mergeEventIntoList(merged, disjoint)
 }
 
@@ -212,53 +212,35 @@ function reduceEventList(eventList, action) {
       }
       return [...eventList, action.addition]
 
-    case 'update':
+    case 'update': {
+      const prior = eventList.find(e => e.id === action.id)
+
+      const startTime = (
+        (action.updates.start && action.updates.start.dateTime) ||
+        prior.start.dateTime
+      ).clone()
+      const endTime = (
+        (action.updates.end && action.updates.end.dateTime) ||
+        prior.end.dateTime
+      ).clone()
+
+      const updated = {
+        ...prior,
+        ...action.updates,
+        start: {
+          ...prior.start,
+          ...action.updates.start,
+          dateTime: startTime,
+        },
+        end: { ...prior.end, ...action.updates.end, dateTime: endTime },
+      }
+
+      const omitted = eventList.filter(e => e.id !== action.id)
       if (action.merge) {
-        const prior = eventList.find(e => e.id === action.id)
-
-        const startTime = (
-          (action.updates.start && action.updates.start.dateTime) ||
-          prior.start.dateTime
-        ).clone()
-        const endTime = (
-          (action.updates.end && action.updates.end.dateTime) ||
-          prior.end.dateTime
-        ).clone()
-
-        const updated = {
-          ...prior,
-          ...action.updates,
-          start: {
-            ...prior.start,
-            ...action.updates.start,
-            dateTime: startTime,
-          },
-          end: { ...prior.end, ...action.updates.end, dateTime: endTime },
-        }
-
-        const omitted = eventList.filter(e => e.id !== action.id)
         return mergeEventIntoList(updated, omitted)
       }
-      // Non-merging update:
-      return eventList.map(e => {
-        if (e.id !== action.id) return e
-
-        const startTime = (
-          (action.updates.start && action.updates.start.dateTime) ||
-          e.start.dateTime
-        ).clone()
-        const endTime = (
-          (action.updates.end && action.updates.end.dateTime) ||
-          e.end.dateTime
-        ).clone()
-
-        return {
-          ...e,
-          ...action.updates,
-          start: { ...e.start, ...action.updates.start, dateTime: startTime },
-          end: { ...e.end, ...action.updates.end, dateTime: endTime },
-        }
-      })
+      return omitted.concat(updated)
+    }
 
     case 'delete':
       return eventList.filter(e => e.id !== action.id)
@@ -277,10 +259,6 @@ function deepCloneEvent(event) {
 }
 
 function reduceEventListHistory(history, action) {
-  const hlen = history.length
-  const logId = (Math.random() * 1e3).toFixed()
-  console.time(`(${logId}) Reduced history ${hlen}`)
-
   const maxHistory = 20
 
   let present
@@ -288,7 +266,6 @@ function reduceEventListHistory(history, action) {
   switch (action.type) {
     case 'undo':
       if (history.length === 1) {
-        console.timeEnd('Reduced history')
         return history
       }
       return history.slice(0, -1)
@@ -298,10 +275,8 @@ function reduceEventListHistory(history, action) {
         reduceEventList(history[history.length - 1], action),
       ])
       if (present.length > maxHistory) {
-        console.timeEnd(`(${logId}) Reduced history ${hlen}`)
         return present.slice(1)
       }
-      console.timeEnd(`(${logId}) Reduced history ${hlen}`)
       return present
   }
 }
