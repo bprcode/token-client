@@ -207,7 +207,14 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   return (
     <Stack
       direction="row"
-      sx={{ maxWidth: '840px', mx: 'auto', px: 1, py: [0, 1] }}
+      sx={{
+        mx: 'auto',
+        px: 1,
+        pt: [0, 1],
+        width: '100%',
+        height: '100%',
+        overflowY: 'auto',
+      }}
     >
       <IconButton
         disableTouchRipple
@@ -299,7 +306,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
             )}
           />
         </div>
-        <Box>
+        <Box sx={{ pb: '2rem' }}>
           <GridHeader />
           <MonthGrid
             date={active}

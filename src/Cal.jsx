@@ -17,9 +17,12 @@ import {
   Box,
   IconButton,
   Paper,
+  Button,
+  Grow,
+  Slide,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
-import { useContext, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
 import { useEventListHistory } from './calendar/mockCalendar.mjs'
@@ -110,9 +113,88 @@ function Sidebar({ width = '240px' }) {
     </>
   ) : (
     // Wide, always visible
-    <nav style={{ width, flexShrink: 0, backgroundColor: '#0f42', }}>
+    <nav style={{ width, flexShrink: 0, backgroundColor: '#0f42' }}>
       {content}
     </nav>
+  )
+}
+
+function Carousel({ children = [], index }) {
+  const [animating, setAnimating] = useState(false)
+  const count = Array.isArray(children) ? children.length : 1
+  const prev = index - 1 >= 0 ? index - 1 : count - 1
+  const next = index + 1 < count ? index + 1 : 0
+
+  useEffect(() => {
+    setAnimating(true)
+    console.log('start animating')
+    setTimeout(() => {
+      console.log('stop animating? index=', index)
+      setAnimating(false)
+    }, 1000)
+  }, [index])
+
+  if (count <= 1) return children
+
+  return (
+    <div
+      style={{
+        position: 'relative',
+        border: '1px solid limegreen',
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+      }}
+    >
+      {animating && count >= 3 && (
+        <div
+          key={prev}
+          style={{
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            transform: 'translateX(-100%)',
+            transition: 'transform 1s ease-out',
+          }}
+        >
+          {children[prev]}
+        </div>
+      )}
+
+      <div
+        key={index}
+        style={{
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          position: 'absolute',
+          transform: 'translateX(0)',
+          transition: 'transform 1s ease-out',
+        }}
+      >
+        {children[index]}
+      </div>
+
+      {animating && count >= 2 && (
+        <div
+          key={next}
+          style={{
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            position: 'absolute',
+            transform: 'translateX(100%)',
+            transition: 'transform 1s ease-out',
+          }}
+        >
+          {children[next]}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -126,81 +208,89 @@ function Demo() {
   const [mode, setMode] = useState('month')
   const [expandedDate, setExpandedDate] = useState(null)
 
+  const [test, setTest] = useState(false)
+  const [testIndex, setTestIndex] = useState(0)
+
+  const carouselIndex = {
+    month: 0,
+    week: 1,
+    day: 2,
+  }[mode]
+  console.log(carouselIndex)
+
   return (
     <RootLayout>
       <Paper
         elevation={1}
         sx={{
           height: '100%',
-          border: '5px solid green',
         }}
       >
-        {/* <TransitionGroup>
+        <Carousel index={carouselIndex}>
+          {/* <TransitionGroup>
           {mode === 'month' && (
-            <Collapse timeout={350}>
-              <MonthlyCalendar
-                initialDate={currentDate}
-                unfilteredEvents={eventList}
-                onExpand={date => {
-                  setExpandedDate(date)
-                  setMode('week')
-                }}
-              />
-            </Collapse>
+          <Collapse timeout={350}>*/}
+          <MonthlyCalendar
+            initialDate={currentDate}
+            unfilteredEvents={eventList}
+            onExpand={date => {
+              setExpandedDate(date)
+              setMode('week')
+            }}
+          />
+          {/*</Collapse>
           )}
 
           {mode === 'week' && (
-            <Collapse timeout={350}>
-              <WeeklyCalendar
-                onBack={() => {
-                  setExpandedDate(null)
-                  setMode('month')
-                }}
-                key={(expandedDate || currentDate).format('MM D')}
-                initialDate={expandedDate || currentDate}
-                eventList={eventList}
-                onExpand={date => {
-                  setExpandedDate(date)
-                  setMode('day')
-                }}
-              />
-            </Collapse>
+          <Collapse timeout={350}>*/}
+          <WeeklyCalendar
+            onBack={() => {
+              setExpandedDate(null)
+              setMode('month')
+            }}
+            key={(expandedDate || currentDate).format('MM D')}
+            initialDate={expandedDate || currentDate}
+            eventList={eventList}
+            onExpand={date => {
+              setExpandedDate(date)
+              setMode('day')
+            }}
+          />
+          {/*</Collapse>
           )}
           {mode === 'day' && ( */}
-            {/* <Collapse timeout={350} in={true} sx={{
-              border: '8px dashed red',
-              height: '100%',
-            }}> */}
-              <DayPage
-                onBack={() => setMode('week')}
-                day={expandedDate || dayjs()}
-                unfilteredEvents={eventList}
-                onCreate={addition =>
-                  dispatchEventList({
-                    type: 'create',
-                    merge: preferences.merge,
-                    addition,
-                  })
-                }
-                onUpdate={updates =>
-                  dispatchEventList({
-                    type: 'update',
-                    id: updates.id,
-                    merge: preferences.merge,
-                    updates,
-                  })
-                }
-                onDelete={id =>
-                  dispatchEventList({
-                    type: 'delete',
-                    id: id,
-                  })
-                }
-                onUndo={() => dispatchEventList({ type: 'undo' })}
-                canUndo={canUndo}
-              />
-            {/* </Collapse> */}
-           {/* )}
+          {/* <Carousel index={0}> */}
+          <DayPage
+            onBack={() => setMode('week')}
+            day={expandedDate || dayjs()}
+            unfilteredEvents={eventList}
+            onCreate={addition =>
+              dispatchEventList({
+                type: 'create',
+                merge: preferences.merge,
+                addition,
+              })
+            }
+            onUpdate={updates =>
+              dispatchEventList({
+                type: 'update',
+                id: updates.id,
+                merge: preferences.merge,
+                updates,
+              })
+            }
+            onDelete={id =>
+              dispatchEventList({
+                type: 'delete',
+                id: id,
+              })
+            }
+            onUndo={() => dispatchEventList({ type: 'undo' })}
+            canUndo={canUndo}
+          />
+        </Carousel>
+        {/* </Carousel> */}
+        {/* )}
          </TransitionGroup> */}
       </Paper>
     </RootLayout>

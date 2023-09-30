@@ -45,14 +45,13 @@ export function DayPage({
 
   return (
     <ActionContext.Provider value={action}>
-
       <Paper
         elevation={1}
         sx={{
-          border: '8px dashed blue',
           display: 'flex',
           flexDirection: 'column',
           height: '100%',
+          width: '100%',
           px: padding,
           py: 0,
           position: 'relative',
@@ -60,70 +59,70 @@ export function DayPage({
       >
         <DayHeader onBack={onBack} day={day} />
 
-          <ActionBar
-            canUndo={canUndo}
-            onBehavior={b => {
+        <ActionBar
+          canUndo={canUndo}
+          onBehavior={b => {
+            setSelection(null)
+            if (b === 'undo') return onUndo()
+            setAction(b)
+          }}
+        />
+        <SectionedInterval
+          initial={day.startOf('day')}
+          final={day.endOf('day')}
+          step={[1, 'hour']}
+          outsideHeight="100%"
+          insideHeight="1800px"
+          endMargin={action === 'create' ? '14rem' : '14rem'}
+          lockScroll={action === 'create'}
+          onPointerDown={e => {
+            if (action === 'create') {
+              handleCreationTap({ event: e, day, setCreation, picks })
+            }
+          }}
+          onPointerUp={e => {
+            e.currentTarget.onpointermove = null
+            if (action !== 'create' || !creation) {
+              return
+            }
+            console.log('creating with picks:', picks)
+            onCreate(creation)
+            setCreation(null)
+            setAction('edit')
+          }}
+          // deselect if the click was not intercepted by an EventPane
+          onClick={() => setSelection(null)}
+        >
+          <DailyBreakdown
+            day={day}
+            unfilteredEvents={
+              creation ? [...unfilteredEvents, creation] : unfilteredEvents
+            }
+            selection={selection}
+            onSelect={s => setSelection(s)}
+            onEdit={() => setEditing(true)}
+            onUpdate={updates => {
+              onUpdate(updates)
               setSelection(null)
-              if (b === 'undo') return onUndo()
-              setAction(b)
             }}
+            onDelete={onDelete}
           />
-          <SectionedInterval
-            initial={day.startOf('day')}
-            final={day.endOf('day')}
-            step={[1, 'hour']}
-            outsideHeight="100%"
-            insideHeight="1800px"
-            endMargin={action === 'create' ? '14rem' : '14rem'}
-            lockScroll={action === 'create'}
-            onPointerDown={e => {
-              if (action === 'create') {
-                handleCreationTap({ event: e, day, setCreation, picks })
-              }
-            }}
-            onPointerUp={e => {
-              e.currentTarget.onpointermove = null
-              if (action !== 'create' || !creation) {
-                return
-              }
-              console.log('creating with picks:', picks)
-              onCreate(creation)
-              setCreation(null)
-              setAction('edit')
-            }}
-            // deselect if the click was not intercepted by an EventPane
-            onClick={() => setSelection(null)}
-          >
-            <DailyBreakdown
-              day={day}
-              unfilteredEvents={
-                creation ? [...unfilteredEvents, creation] : unfilteredEvents
-              }
-              selection={selection}
-              onSelect={s => setSelection(s)}
-              onEdit={() => setEditing(true)}
-              onUpdate={updates => {
-                onUpdate(updates)
-                setSelection(null)
-              }}
-              onDelete={onDelete}
-            />
-          </SectionedInterval>
+        </SectionedInterval>
 
-          {editing && selection && (
-            <EventEditor
-              onSave={updates => {
-                onUpdate({
-                  ...updates,
-                  id: selection,
-                })
-                setSelection(null)
-              }}
-              onClose={() => setEditing(false)}
-              onDelete={onDelete}
-              event={unfilteredEvents.find(e => e.id === selection)}
-            />
-          )}
+        {editing && selection && (
+          <EventEditor
+            onSave={updates => {
+              onUpdate({
+                ...updates,
+                id: selection,
+              })
+              setSelection(null)
+            }}
+            onClose={() => setEditing(false)}
+            onDelete={onDelete}
+            event={unfilteredEvents.find(e => e.id === selection)}
+          />
+        )}
         <div
           style={{ zIndex: 2, position: 'sticky', bottom: 0, width: '100%' }}
         >
@@ -137,7 +136,10 @@ export function DayPage({
 }
 
 function handleCreationTap({ event, picks, day, setCreation }) {
-  console.log('change this to .closest():', event.currentTarget.childNodes[0].getBoundingClientRect())
+  console.log(
+    'change this to .closest():',
+    event.currentTarget.childNodes[0].getBoundingClientRect()
+  )
   const innerBounds = event.currentTarget.childNodes[0].getBoundingClientRect()
   const minutes =
     (24 * 60 * (event.clientY - innerBounds.top)) / innerBounds.height
@@ -189,12 +191,10 @@ function DayHeader({ onBack, day }) {
   const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h5'
 
   return (
-    <Stack direction="row" sx={{ borderBottom: '1px solid #000a',
-    backgroundColor:'#f0f4',
-    position: 'sticky',
-    top: 0,
-    height: '100px',
-     }}>
+    <Stack
+      direction="row"
+      sx={{ borderBottom: '1px solid #000a', position: 'sticky', top: 0 }}
+    >
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"

@@ -76,18 +76,17 @@ export function WeeklyCalendar({
   const [date, setDate] = useState(initialDate)
   const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h5'
 
-  log(`(${(Math.random() * 1000).toFixed()}) Rendering weekly calendar`)
   return (
     <Box
       sx={{
         display: 'flex',
         position: 'relative',
         width: '100%',
-        maxWidth: '840px',
+        height: '100%',
         marginLeft: 'auto',
         marginRight: 'auto',
         px: [1, 2],
-        py: [0, 2],
+        overflowY: 'auto',
       }}
     >
       <IconButton
@@ -115,6 +114,7 @@ export function WeeklyCalendar({
         </Typography>
 
         <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
+        <div style={{ height: '4rem', flexShrink: 0 }} />
       </div>
 
       <IconButton
