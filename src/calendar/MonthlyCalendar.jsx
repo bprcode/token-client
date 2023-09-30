@@ -205,126 +205,125 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   }
 
   return (
-    <Box>
-      <Paper elevation={1} sx={{ px: 1, py: [0, 2] }}>
-        <Stack direction="row" sx={{ maxWidth: '840px', mx: 'auto' }}>
-          <IconButton
-            disableTouchRipple
-            aria-label="previous month"
-            onClick={() => setActive(active.subtract(1, 'month'))}
-            sx={{
-              '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
-              position: ['absolute', 'static'],
-              top: '0.5rem',
-              left: '-0.25rem',
-              borderTopRightRadius: 0,
-              borderBottomRightRadius: 0,
-            }}
-          >
-            <NavigateBeforeIcon />
-          </IconButton>
+    <Stack
+      direction="row"
+      sx={{ maxWidth: '840px', mx: 'auto', px: 1, py: [0, 1] }}
+    >
+      <IconButton
+        disableTouchRipple
+        aria-label="previous month"
+        onClick={() => setActive(active.subtract(1, 'month'))}
+        sx={{
+          '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
+          position: ['absolute', 'static'],
+          top: '0.5rem',
+          left: '-0.25rem',
+          borderTopRightRadius: 0,
+          borderBottomRightRadius: 0,
+        }}
+      >
+        <NavigateBeforeIcon />
+      </IconButton>
 
-          <Stack direction="column" sx={{ mt: [0, 1], mb: 4, flexGrow: 1 }}>
-            <div>
-              <FormControl sx={{ mt: 1, ml: [3, 0] }} variant="standard">
-                <Select
-                  sx={{
-                    '&&& .MuiSelect-select': {
-                      paddingRight: 0,
-                      marginRight: [1.25, 1.5],
-                    },
-                  }}
-                  value={month}
-                  onChange={e => {
-                    setActive(active.month(e.target.value - 1))
-                    //setYearInput(active.month(e.target.value - 1).year())
-                  }}
-                  input={<LeanSelector />}
-                >
-                  <MenuItem value={1}>January</MenuItem>
-                  <MenuItem value={2}>February</MenuItem>
-                  <MenuItem value={3}>March</MenuItem>
-                  <MenuItem value={4}>April</MenuItem>
-                  <MenuItem value={5}>May</MenuItem>
-                  <MenuItem value={6}>June</MenuItem>
-                  <MenuItem value={7}>July</MenuItem>
-                  <MenuItem value={8}>August</MenuItem>
-                  <MenuItem value={9}>September</MenuItem>
-                  <MenuItem value={10}>October</MenuItem>
-                  <MenuItem value={11}>November</MenuItem>
-                  <MenuItem value={12}>December</MenuItem>
-                </Select>
-              </FormControl>
-              <Autocomplete
-                freeSolo
-                disableClearable
-                options={yearOptions}
-                value={String(year)}
-                onChange={(event, newValue) =>
-                  setActive(active.year(newValue.label))
+      <Stack direction="column" sx={{ mt: [0, 1], mb: 4, flexGrow: 1 }}>
+        <div>
+          <FormControl sx={{ mt: 1, ml: [3, 0] }} variant="standard">
+            <Select
+              sx={{
+                '&&& .MuiSelect-select': {
+                  paddingRight: 0,
+                  marginRight: [1.25, 1.5],
+                },
+              }}
+              value={month}
+              onChange={e => {
+                setActive(active.month(e.target.value - 1))
+                //setYearInput(active.month(e.target.value - 1).year())
+              }}
+              input={<LeanSelector />}
+            >
+              <MenuItem value={1}>January</MenuItem>
+              <MenuItem value={2}>February</MenuItem>
+              <MenuItem value={3}>March</MenuItem>
+              <MenuItem value={4}>April</MenuItem>
+              <MenuItem value={5}>May</MenuItem>
+              <MenuItem value={6}>June</MenuItem>
+              <MenuItem value={7}>July</MenuItem>
+              <MenuItem value={8}>August</MenuItem>
+              <MenuItem value={9}>September</MenuItem>
+              <MenuItem value={10}>October</MenuItem>
+              <MenuItem value={11}>November</MenuItem>
+              <MenuItem value={12}>December</MenuItem>
+            </Select>
+          </FormControl>
+          <Autocomplete
+            freeSolo
+            disableClearable
+            options={yearOptions}
+            value={String(year)}
+            onChange={(event, newValue) =>
+              setActive(active.year(newValue.label))
+            }
+            inputValue={String(active.year())}
+            onInputChange={(event, newInputValue) => {
+              if (!event) {
+                return
+              }
+              if (!newInputValue.match(/^\d*$/)) {
+                return
+              }
+              if (newInputValue.length > 4) {
+                if (event.target.selectionStart > 4) {
+                  newInputValue =
+                    newInputValue.slice(0, 3) + newInputValue.slice(-1)
+                } else {
+                  newInputValue = newInputValue.slice(
+                    0,
+                    event.target.selectionStart
+                  )
                 }
-                inputValue={String(active.year())}
-                onInputChange={(event, newInputValue) => {
-                  if (!event) {
-                    return
-                  }
-                  if (!newInputValue.match(/^\d*$/)) {
-                    return
-                  }
-                  if (newInputValue.length > 4) {
-                    if (event.target.selectionStart > 4) {
-                      newInputValue =
-                        newInputValue.slice(0, 3) + newInputValue.slice(-1)
-                    } else {
-                      newInputValue = newInputValue.slice(
-                        0,
-                        event.target.selectionStart
-                      )
-                    }
-                  }
-                  setActive(active.year(String(newInputValue)))
-                }}
-                sx={{ width: ['6.5ch', '9ch'], display: 'inline-block' }}
-                renderInput={params => (
-                  <ResponsiveTextField
-                    {...params}
-                    sx={{
-                      mt: 1,
-                      transform: ['translateY(-1px)', 'translateY(-3px)'],
-                    }}
-                    aria-label="year"
-                    variant="standard"
-                  />
-                )}
-              />
-            </div>
-            <Box>
-              <GridHeader />
-              <MonthGrid
-                date={active}
-                unfilteredEvents={unfilteredEvents}
-                onExpand={onExpand}
-              />
-            </Box>
-          </Stack>
-
-          <IconButton
-            aria-label="next month"
-            disableTouchRipple
-            onClick={() => setActive(active.add(1, 'month'))}
-            sx={{
-              '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
-              position: ['absolute', 'static'],
-              top: '0.5rem',
-              right: '0.25rem',
-              borderBottomLeftRadius: 0,
-              borderTopLeftRadius: 0,
+              }
+              setActive(active.year(String(newInputValue)))
             }}
-          >
-            <NavigateNextIcon />
-          </IconButton>
-        </Stack>
-      </Paper>
-    </Box>
+            sx={{ width: ['6.5ch', '9ch'], display: 'inline-block' }}
+            renderInput={params => (
+              <ResponsiveTextField
+                {...params}
+                sx={{
+                  mt: 1,
+                  transform: ['translateY(-1px)', 'translateY(-3px)'],
+                }}
+                aria-label="year"
+                variant="standard"
+              />
+            )}
+          />
+        </div>
+        <Box>
+          <GridHeader />
+          <MonthGrid
+            date={active}
+            unfilteredEvents={unfilteredEvents}
+            onExpand={onExpand}
+          />
+        </Box>
+      </Stack>
+
+      <IconButton
+        aria-label="next month"
+        disableTouchRipple
+        onClick={() => setActive(active.add(1, 'month'))}
+        sx={{
+          '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
+          position: ['absolute', 'static'],
+          top: '0.5rem',
+          right: '0.25rem',
+          borderBottomLeftRadius: 0,
+          borderTopLeftRadius: 0,
+        }}
+      >
+        <NavigateNextIcon />
+      </IconButton>
+    </Stack>
   )
 }
