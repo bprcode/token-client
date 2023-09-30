@@ -80,7 +80,7 @@ export function SectionedInterval({
         {children}
         {sections}
       </Box>
-      <div
+      {/* <div
         style={{
           zIndex: 0,
           backgroundImage:
@@ -92,8 +92,7 @@ export function SectionedInterval({
           width: '100%',
         }}
       >
-        foo
-      </div>
+      </div> */}
     </div>
   )
 }

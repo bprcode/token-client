@@ -39,12 +39,23 @@ function RootLayout({ children }) {
       <Container
         maxWidth="md"
         disableGutters
-        sx={{ border: '3px solid purple', height: '100vh', overflow: 'hidden', }}
+        sx={{ border: '3px solid purple', height: '100vh', overflow: 'hidden' }}
       >
-        <Box sx={{ border: '4px solid red', height: '100%', overflow: 'hidden', display: 'flex' }}>
+        <Box
+          sx={{
+            border: '4px solid red',
+            height: '100%',
+            display: 'flex',
+          }}
+        >
           <Sidebar />
 
-          <div style={{ border: '1px dashed yellow', flexGrow: 1, height: '100%', overflowY: 'auto', }}>
+          <div
+            style={{
+              border: '2px dashed yellow',
+              flexGrow: 1,
+            }}
+          >
             {children}
           </div>
         </Box>
@@ -86,7 +97,7 @@ function Sidebar({ width = '240px' }) {
           position: 'fixed',
           top: 0,
           left: 0,
-          zIndex: 2,
+          zIndex: 1,
         }}
         onClick={() => setMenuOpen(true)}
       >
@@ -99,7 +110,7 @@ function Sidebar({ width = '240px' }) {
     </>
   ) : (
     // Wide, always visible
-    <nav style={{ width, flexShrink: 0, backgroundColor: '#0f42' }}>
+    <nav style={{ width, flexShrink: 0, backgroundColor: '#0f42', }}>
       {content}
     </nav>
   )
@@ -117,74 +128,80 @@ function Demo() {
 
   return (
     <RootLayout>
-      <Paper elevation={1} sx={{
-        minHeight: '100%',
-        // overflowY: 'auto',
-        border: '5px solid green',
-        }}>
-      {/* <TransitionGroup>
-        {mode === 'month' && ( */}
-          <Collapse timeout={350} in={true}>
-            <MonthlyCalendar
-              initialDate={currentDate}
-              unfilteredEvents={eventList}
-              onExpand={date => {
-                setExpandedDate(date)
-                setMode('week')
-              }}
-            />
-          </Collapse>
-        {/* )}
-        {mode === 'week' && (
-          <Collapse timeout={350}>
-            <WeeklyCalendar
-              onBack={() => {
-                setExpandedDate(null)
-                setMode('month')
-              }}
-              key={(expandedDate || currentDate).format('MM D')}
-              initialDate={expandedDate || currentDate}
-              eventList={eventList}
-              onExpand={date => {
-                setExpandedDate(date)
-                setMode('day')
-              }}
-            />
-          </Collapse>
-        )}
-        {mode === 'day' && (
-          <Collapse timeout={350}>
-            <DayPage
-              onBack={() => setMode('week')}
-              day={expandedDate}
-              unfilteredEvents={eventList}
-              onCreate={addition =>
-                dispatchEventList({
-                  type: 'create',
-                  merge: preferences.merge,
-                  addition,
-                })
-              }
-              onUpdate={updates =>
-                dispatchEventList({
-                  type: 'update',
-                  id: updates.id,
-                  merge: preferences.merge,
-                  updates,
-                })
-              }
-              onDelete={id =>
-                dispatchEventList({
-                  type: 'delete',
-                  id: id,
-                })
-              }
-              onUndo={() => dispatchEventList({ type: 'undo' })}
-              canUndo={canUndo}
-            />
-          </Collapse>
-        )}
-      </TransitionGroup> */}
+      <Paper
+        elevation={1}
+        sx={{
+          height: '100%',
+          border: '5px solid green',
+        }}
+      >
+        {/* <TransitionGroup>
+          {mode === 'month' && (
+            <Collapse timeout={350}>
+              <MonthlyCalendar
+                initialDate={currentDate}
+                unfilteredEvents={eventList}
+                onExpand={date => {
+                  setExpandedDate(date)
+                  setMode('week')
+                }}
+              />
+            </Collapse>
+          )}
+
+          {mode === 'week' && (
+            <Collapse timeout={350}>
+              <WeeklyCalendar
+                onBack={() => {
+                  setExpandedDate(null)
+                  setMode('month')
+                }}
+                key={(expandedDate || currentDate).format('MM D')}
+                initialDate={expandedDate || currentDate}
+                eventList={eventList}
+                onExpand={date => {
+                  setExpandedDate(date)
+                  setMode('day')
+                }}
+              />
+            </Collapse>
+          )}
+          {mode === 'day' && ( */}
+            {/* <Collapse timeout={350} in={true} sx={{
+              border: '8px dashed red',
+              height: '100%',
+            }}> */}
+              <DayPage
+                onBack={() => setMode('week')}
+                day={expandedDate || dayjs()}
+                unfilteredEvents={eventList}
+                onCreate={addition =>
+                  dispatchEventList({
+                    type: 'create',
+                    merge: preferences.merge,
+                    addition,
+                  })
+                }
+                onUpdate={updates =>
+                  dispatchEventList({
+                    type: 'update',
+                    id: updates.id,
+                    merge: preferences.merge,
+                    updates,
+                  })
+                }
+                onDelete={id =>
+                  dispatchEventList({
+                    type: 'delete',
+                    id: id,
+                  })
+                }
+                onUndo={() => dispatchEventList({ type: 'undo' })}
+                canUndo={canUndo}
+              />
+            {/* </Collapse> */}
+           {/* )}
+         </TransitionGroup> */}
       </Paper>
     </RootLayout>
   )

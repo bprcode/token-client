@@ -78,58 +78,56 @@ export function WeeklyCalendar({
 
   log(`(${(Math.random() * 1000).toFixed()}) Rendering weekly calendar`)
   return (
-    <Paper elevation={1} sx={{ px: [1, 2], py: [0, 2] }}>
-      <div
-        style={{
-          display: 'flex',
-          position: 'relative',
-          width: '100%',
-          maxWidth: '840px',
-          marginLeft: 'auto',
-          marginRight: 'auto',
+    <Box
+      sx={{
+        display: 'flex',
+        position: 'relative',
+        width: '100%',
+        maxWidth: '840px',
+        marginLeft: 'auto',
+        marginRight: 'auto',
+        px: [1, 2],
+        py: [0, 2],
+      }}
+    >
+      <IconButton
+        aria-label="previous week"
+        onClick={() => setDate(date.subtract(1, 'week'))}
+        sx={{
+          display: ['none', 'block'],
+          borderTopRightRadius: 0,
+          borderBottomRightRadius: 0,
         }}
       >
-        <IconButton
-          aria-label="previous week"
-          onClick={() => setDate(date.subtract(1, 'week'))}
-          sx={{
-            display: ['none', 'block'],
-            borderTopRightRadius: 0,
-            borderBottomRightRadius: 0,
-          }}
-        >
-          <NavigateBeforeIcon />
-        </IconButton>
+        <NavigateBeforeIcon />
+      </IconButton>
 
-        <div
-          style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
+      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <Typography
+          variant={typeVariant}
+          component="div"
+          sx={{ width: '100%', mt: 1, mb: 1 }}
         >
-          <Typography
-            variant={typeVariant}
-            component="div"
-            sx={{ width: '100%', mt: 1, mb: 1 }}
-          >
-            <IconButton aria-label="back to monthly view" onClick={onBack}>
-              <ArrowBackIcon />
-            </IconButton>
-            Week of {date.startOf('week').format('MMMM D, YYYY')}
-          </Typography>
+          <IconButton aria-label="back to monthly view" onClick={onBack}>
+            <ArrowBackIcon />
+          </IconButton>
+          Week of {date.startOf('week').format('MMMM D, YYYY')}
+        </Typography>
 
-          <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
-        </div>
-
-        <IconButton
-          aria-label="next week"
-          onClick={() => setDate(date.add(1, 'week'))}
-          sx={{
-            display: ['none', 'block'],
-            borderBottomLeftRadius: 0,
-            borderTopLeftRadius: 0,
-          }}
-        >
-          <NavigateNextIcon />
-        </IconButton>
+        <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
       </div>
-    </Paper>
+
+      <IconButton
+        aria-label="next week"
+        onClick={() => setDate(date.add(1, 'week'))}
+        sx={{
+          display: ['none', 'block'],
+          borderBottomLeftRadius: 0,
+          borderTopLeftRadius: 0,
+        }}
+      >
+        <NavigateNextIcon />
+      </IconButton>
+    </Box>
   )
 }
