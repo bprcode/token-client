@@ -1,6 +1,5 @@
 import {
   IconButton,
-  Paper,
   Typography,
   useMediaQuery,
   Box,
@@ -10,7 +9,6 @@ import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { DailyBreakdown } from './DailyBreakdown'
-import { log } from './log.mjs'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 
 function CalendarBody({ date, eventList, onExpand }) {

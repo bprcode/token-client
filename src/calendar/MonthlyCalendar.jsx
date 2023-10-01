@@ -2,7 +2,6 @@ import {
   Box,
   IconButton,
   InputBase,
-  Paper,
   Stack,
   Typography,
   Select,

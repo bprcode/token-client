@@ -20,6 +20,8 @@ import {
   Button,
   Grow,
   Slide,
+  Fade,
+  Zoom,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
 import { useContext, useEffect, useRef, useState } from 'react'
@@ -42,11 +44,10 @@ function RootLayout({ children }) {
       <Container
         maxWidth="md"
         disableGutters
-        sx={{ border: '3px solid purple', height: '100vh', overflow: 'hidden' }}
+        sx={{ height: '100vh', overflow: 'hidden' }}
       >
         <Box
           sx={{
-            border: '4px solid red',
             height: '100%',
             display: 'flex',
           }}
@@ -55,7 +56,6 @@ function RootLayout({ children }) {
 
           <div
             style={{
-              border: '2px dashed yellow',
               flexGrow: 1,
             }}
           >
@@ -113,7 +113,14 @@ function Sidebar({ width = '240px' }) {
     </>
   ) : (
     // Wide, always visible
-    <nav style={{ width, flexShrink: 0, backgroundColor: '#0f42' }}>
+    <nav
+      style={{
+        width,
+        flexShrink: 0,
+        backgroundColor: '#0f42',
+        borderRight: '1px solid #fff4',
+      }}
+    >
       {content}
     </nav>
   )
@@ -141,7 +148,8 @@ function Demo() {
       >
         <TransitionGroup>
           {view === 'month' && (
-            <Grow
+            <Slide
+              direction="left"
               timeout={350}
               sx={{
                 position: 'relative',
@@ -166,10 +174,11 @@ function Demo() {
                   }}
                 />
               </div>
-            </Grow>
+            </Slide>
           )}
           {view === 'week' && (
-            <Grow
+            <Slide
+              direction="left"
               timeout={350}
               sx={{
                 position: 'relative',
@@ -199,10 +208,11 @@ function Demo() {
                   }}
                 />
               </div>
-            </Grow>
+            </Slide>
           )}
           {view === 'day' && (
-            <Grow
+            <Slide
+              direction="left"
               timeout={350}
               sx={{
                 position: 'relative',
@@ -247,7 +257,7 @@ function Demo() {
                   canUndo={canUndo}
                 />
               </div>
-            </Grow>
+            </Slide>
           )}
         </TransitionGroup>
       </Paper>
