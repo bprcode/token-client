@@ -136,11 +136,10 @@ export function DayPage({
 }
 
 function handleCreationTap({ event, picks, day, setCreation }) {
-  console.log(
-    'change this to .closest():',
-    event.currentTarget.childNodes[0].getBoundingClientRect()
-  )
-  const innerBounds = event.currentTarget.childNodes[0].getBoundingClientRect()
+  const innerBounds = document.body
+    .querySelector('.section-inner')
+    .getBoundingClientRect()
+
   const minutes =
     (24 * 60 * (event.clientY - innerBounds.top)) / innerBounds.height
 

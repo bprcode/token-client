@@ -5,7 +5,6 @@ import {
   Container,
   Typography,
   CssBaseline,
-  Collapse,
   Divider,
   useMediaQuery,
   Drawer,
@@ -17,14 +16,10 @@ import {
   Box,
   IconButton,
   Paper,
-  Button,
-  Grow,
   Slide,
-  Fade,
-  Zoom,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useState } from 'react'
 import dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
 import { useEventListHistory } from './calendar/mockCalendar.mjs'
