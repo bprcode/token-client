@@ -319,12 +319,14 @@ export function EventPane({
     <>
       <Zoom in={!deleting} appear={false} timeout={250}>
         <Box
+          onPointerCancel={() => console.log('🥲 Pointer cancel received')}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onClick={e => {
             if (label === 'detailed') e.stopPropagation()
           }}
           sx={{
+            touchAction: 'none',
             position: 'absolute',
             top: (topOffset / intervalSize) * 100 + '%',
             left: indent * (100 / columns) + '%',
@@ -575,10 +577,6 @@ function PaneControls({
               backgroundColor: augmentedColors.light,
             },
           }}
-          onClick={e => {
-            // Prevent propagation to the parent pane:
-            e.stopPropagation()
-          }}
           onPointerDown={e => {
             beginDrag()
             handleDrag(e, onAdjustTop, intervalSize)
@@ -610,10 +608,6 @@ function PaneControls({
             '&:hover': {
               backgroundColor: augmentedColors.light,
             },
-          }}
-          onClick={e => {
-            // Prevent propagation to the parent pane:
-            e.stopPropagation()
           }}
           onPointerDown={e => {
             beginDrag()
