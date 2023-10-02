@@ -10,6 +10,12 @@
   <p>🦢 experimenting with day.js</p>
   <p>Test 2</p>
 
+  <div id="box" style="position: absolute; top: 0; left: 200px;">
+  <div style="touch-action: none; background-color: #c22; width: 100px; height: 100px; border-radius: 10%; display: grid; place-items: center;">
+    Drag Me
+  </div>
+  </div>
+
 </body>
 </html>
 
@@ -23,13 +29,32 @@
   // dayjs.extend(timezone)
   // dayjs.extend(localizedFormat)
   
-  console.log(`foo. Dayjs workin'?`)
   console.log(dayjs().format())
-  console.log('???')
   // console.log(dayjs().utc().format())
   
   window.dayjs = dayjs
+  box.addEventListener('pointercancel', e => {
+    console.log('pointer cancel')
+  })
+  
+  box.addEventListener('pointerdown', e => {
+    console.log('pointer down')
+    const offsetX = e.clientX - (window.getComputedStyle(box).left.match(/\d*/)[0])
+    const offsetY = e.clientY - Number(window.getComputedStyle(box).top.match(/\d*/)[0])
+    console.log('offsetX, y:', offsetX,offsetY)
+    e.currentTarget.setPointerCapture(e.pointerId)
+    e.currentTarget.onpointermove = move => {
+      box.style.left = `${move.clientX - offsetX}px`
+      box.style.top = `${move.clientY - offsetY}px`
+    }
+    e.currentTarget.onpointerup = up => {
+      console.log('pointer released')
+    }
+  })
 
+function startDrag() {
+  console.log('drag start')
+}
 </script>
 <style>
 * {
@@ -39,6 +64,7 @@
 }
 
 body {
+  position: relative;
   background-color: #111;
   color: #eee;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;

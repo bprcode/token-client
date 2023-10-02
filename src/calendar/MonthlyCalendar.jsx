@@ -10,6 +10,8 @@ import {
   MenuItem,
   Autocomplete,
   TextField,
+  useMediaQuery,
+  AppBar,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
@@ -19,6 +21,7 @@ import { AbbreviatedBreakdown } from './AbbreviatedBreakdown'
 import { log } from './log.mjs'
 import { weekdayAbbreviations } from './dateLogic.mjs'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
+import { ViewHeader } from './ViewHeader'
 
 const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
@@ -192,6 +195,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
 }
 
 export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
+  const isNarrow = useMediaQuery('(max-width: 800px)')
   const [active, setActive] = useState(initialDate)
   const month = active.format('M')
   const year = active.year()
@@ -203,16 +207,10 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
     }
   }
 
-  return (
-    <Stack
-      direction="row"
+  const leftArrow = (
+    <Box
       sx={{
-        mx: 'auto',
-        px: 1,
-        pt: [0, 1],
-        width: '100%',
-        height: '100%',
-        overflowY: 'auto',
+        display: 'inline-flex',
       }}
     >
       <IconButton
@@ -221,19 +219,58 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
         onClick={() => setActive(active.subtract(1, 'month'))}
         sx={{
           '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
-          position: ['absolute', 'static'],
-          top: '0.5rem',
-          left: '-0.25rem',
           borderTopRightRadius: 0,
           borderBottomRightRadius: 0,
         }}
       >
         <NavigateBeforeIcon />
       </IconButton>
+    </Box>
+  )
 
-      <Stack direction="column" sx={{ mt: [0, 1], mb: 4, flexGrow: 1 }}>
-        <div>
-          <FormControl sx={{ mt: 1, ml: [3, 0] }} variant="standard">
+  const rightArrow = (
+    <Box
+      sx={{
+        display: 'inline-flex',
+      }}
+    >
+      <IconButton
+        aria-label="next month"
+        disableTouchRipple
+        onClick={() => setActive(active.add(1, 'month'))}
+        sx={{
+          '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
+          borderBottomLeftRadius: 0,
+          borderTopLeftRadius: 0,
+        }}
+      >
+        <NavigateNextIcon />
+      </IconButton>
+    </Box>
+  )
+
+  return (<>
+  
+
+
+    <Stack
+      direction="column"
+      sx={{
+        mx: 'auto',
+        // px: [1,2],
+        // pt: [1, 0],
+        // pt: '4rem',
+        width: '100%',
+        height: '100%',
+        overflowY: 'auto',
+      }}
+    >
+      <ViewHeader>
+          {leftArrow}
+          <FormControl
+            sx={{ mt: 0, ml: 0}}
+            variant="standard"
+          >
             <Select
               sx={{
                 '&&& .MuiSelect-select': {
@@ -244,7 +281,6 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
               value={month}
               onChange={e => {
                 setActive(active.month(e.target.value - 1))
-                //setYearInput(active.month(e.target.value - 1).year())
               }}
               input={<LeanSelector />}
             >
@@ -291,45 +327,41 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
               }
               setActive(active.year(String(newInputValue)))
             }}
-            sx={{ width: ['6.5ch', '9ch'], display: 'inline-block' }}
+            sx={{
+              width: ['6.5ch', '10ch'],
+              display: 'inline-flex',
+            }}
             renderInput={params => (
               <ResponsiveTextField
                 {...params}
                 sx={{
-                  mt: 1,
-                  transform: ['translateY(-1px)', 'translateY(-3px)'],
+                  overflow: 'visible',
+                  '& .MuiInputBase-input.MuiInput-input': {
+                    transform: 'translateX(-1px) translateY(-3px)',
+                    textOverflow: 'unset',
+                    pb: 0,
+                  },
                 }}
                 aria-label="year"
                 variant="standard"
               />
             )}
           />
-        </div>
-        <Box sx={{ pb: '2rem' }}>
+          {rightArrow}
+        </ViewHeader>
+      <Stack
+        direction="column"
+        sx={{ mt: [0, 1], px: [1,2], mb: 4, flexGrow: 1, }}
+      >
+        
           <GridHeader />
           <MonthGrid
             date={active}
             unfilteredEvents={unfilteredEvents}
             onExpand={onExpand}
           />
-        </Box>
       </Stack>
-
-      <IconButton
-        aria-label="next month"
-        disableTouchRipple
-        onClick={() => setActive(active.add(1, 'month'))}
-        sx={{
-          '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
-          position: ['absolute', 'static'],
-          top: '0.5rem',
-          right: '0.25rem',
-          borderBottomLeftRadius: 0,
-          borderTopLeftRadius: 0,
-        }}
-      >
-        <NavigateNextIcon />
-      </IconButton>
     </Stack>
+    </>
   )
 }

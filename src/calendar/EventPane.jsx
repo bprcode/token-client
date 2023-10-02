@@ -215,7 +215,6 @@ export function EventPane({
 
   // Interaction handlers:
   function handlePointerDown(e) {
-    console.log('handlePointerDown called')
     let tickSize = 24
     try {
       const inner = e.currentTarget.closest('.section-inner')

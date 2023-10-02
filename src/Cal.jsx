@@ -91,15 +91,23 @@ function Sidebar({ width = '240px' }) {
     // Narrow, drawer with icon
     <>
       <IconButton
+      disableRipple
         sx={{
           position: 'fixed',
           top: 0,
           left: 0,
-          zIndex: 1,
+          pt: [1.5,2.5],
+          pl: [1,3],
+          zIndex: 2,
+          '&:hover > *': {
+            outline: '1px solid #fff8',
+            borderRadius: '4px',
+            outlineOffset: '4px',
+          }
         }}
         onClick={() => setMenuOpen(true)}
       >
-        <MenuIcon fontSize="large" />
+        <MenuIcon fontSize="medium" />
       </IconButton>
       <Drawer open={menuOpen} onClose={() => setMenuOpen(false)}>
         {content}

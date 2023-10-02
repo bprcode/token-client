@@ -63,6 +63,7 @@ export function SectionedInterval({
         userSelect: 'none',
         WebkitUserSelect: 'none',
         backgroundColor: `hsl(190deg 8% 10%)`,
+        touchAction: lockScroll ? 'none' : undefined,
       }}
     >
       <Box
@@ -74,7 +75,6 @@ export function SectionedInterval({
           paddingLeft: ['0.5rem', '5rem'],
           paddingRight: '0.5rem',
           marginBottom: endMargin,
-          touchAction: lockScroll ? 'none' : undefined,
         }}
       >
         {children}
