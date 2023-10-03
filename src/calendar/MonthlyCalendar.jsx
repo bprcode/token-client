@@ -10,6 +10,7 @@ import {
   MenuItem,
   Autocomplete,
   TextField,
+  Paper,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
@@ -44,6 +45,15 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
   },
   '& .MuiInputBase-input:focus': {
     backgroundColor: 'unset',
+  },
+}))
+
+const DropdownPaper = styled(Paper)(({ theme }) => ({
+  backgroundImage:
+    'linear-gradient(rgba(255, 255, 255, 0.12), ' +
+    'rgba(255, 255, 255, 0.12))',
+  '& li': {
+    transform: ['translateX(-0.25rem)', undefined],
   },
 }))
 
@@ -189,10 +199,9 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
   }, [activeDay, activeMonth, activeYear, onExpand, unfilteredEvents])
 }
 
-export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
-  const [active, setActive] = useState(initialDate)
-  const month = active.format('M')
-  const year = active.year()
+function MonthHeader({ date, onChange }) {
+  const month = date.format('M')
+  const year = date.year()
 
   const yearOptions = []
   for (let y = year - 5; y <= year + 5; y++) {
@@ -210,7 +219,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
       <IconButton
         disableTouchRipple
         aria-label="previous month"
-        onClick={() => setActive(active.subtract(1, 'month'))}
+        onClick={() => onChange(date.subtract(1, 'month'))}
         sx={{
           '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
           borderTopRightRadius: 0,
@@ -226,12 +235,14 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
     <Box
       sx={{
         display: 'inline-flex',
+        position: ['absolute', 'static'],
+        right: 0,
       }}
     >
       <IconButton
         aria-label="next month"
         disableTouchRipple
-        onClick={() => setActive(active.add(1, 'month'))}
+        onClick={() => onChange(date.add(1, 'month'))}
         sx={{
           '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
           borderBottomLeftRadius: 0,
@@ -244,117 +255,124 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   )
 
   return (
-    <>
+    <ViewHeader>
+      {leftArrow}
+      <FormControl sx={{ mt: 0, ml: 0 }} variant="standard">
+        <Select
+          sx={{
+            '&&& .MuiSelect-select': {
+              paddingRight: 0,
+              marginRight: [1.25, 1.5],
+            },
+          }}
+          value={month}
+          IconComponent={'div'}
+          onChange={e => {
+            onChange(date.month(e.target.value - 1))
+          }}
+          input={<LeanSelector />}
+        >
+          <MenuItem value={1}>January</MenuItem>
+          <MenuItem value={2}>February</MenuItem>
+          <MenuItem value={3}>March</MenuItem>
+          <MenuItem value={4}>April</MenuItem>
+          <MenuItem value={5}>May</MenuItem>
+          <MenuItem value={6}>June</MenuItem>
+          <MenuItem value={7}>July</MenuItem>
+          <MenuItem value={8}>August</MenuItem>
+          <MenuItem value={9}>September</MenuItem>
+          <MenuItem value={10}>October</MenuItem>
+          <MenuItem value={11}>November</MenuItem>
+          <MenuItem value={12}>December</MenuItem>
+        </Select>
+      </FormControl>
+      <Autocomplete
+        freeSolo
+        disableClearable
+        options={yearOptions}
+        value={String(year)}
+        onChange={(event, newValue) => onChange(date.year(newValue.label))}
+        inputValue={String(date.year())}
+        onInputChange={(event, newInputValue) => {
+          if (!event) {
+            return
+          }
+          if (!newInputValue.match(/^\d*$/)) {
+            return
+          }
+          if (newInputValue.length > 4) {
+            if (event.target.selectionStart > 4) {
+              newInputValue =
+                newInputValue.slice(0, 3) + newInputValue.slice(-1)
+            } else {
+              newInputValue = newInputValue.slice(
+                0,
+                event.target.selectionStart
+              )
+            }
+          }
+          onChange(date.year(String(newInputValue)))
+        }}
+        sx={{
+          width: ['6.5ch', '9.25ch'],
+          display: 'inline-flex',
+        }}
+        PaperComponent={DropdownPaper}
+        renderInput={params => (
+          <ResponsiveTextField
+            {...params}
+            sx={{
+              overflow: 'visible',
+              '& .MuiInputBase-input.MuiInput-input': {
+                transform: ['translate(-4px, -4.5px)', 'translate(-1px, -3px)'],
+                textOverflow: 'unset',
+                pb: 0,
+                pr: 0,
+              },
+              '& *::before': {
+                ml: ['-3px', 0],
+                width: ['5ch', '8.5ch'],
+              },
+              '& *::after': {
+                ml: ['-3px', 0],
+                width: ['5ch', '8.5ch'],
+              },
+            }}
+            aria-label="year"
+            variant="standard"
+          />
+        )}
+      />
+      {rightArrow}
+    </ViewHeader>
+  )
+}
+
+export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
+  const [active, setActive] = useState(initialDate)
+
+  return (
+    <Stack
+      direction="column"
+      sx={{
+        mx: 'auto',
+        width: '100%',
+        height: '100%',
+        overflowY: 'auto',
+      }}
+    >
+      <MonthHeader date={active} onChange={setActive} />
       <Stack
         direction="column"
-        sx={{
-          mx: 'auto',
-          width: '100%',
-          height: '100%',
-          overflowY: 'auto',
-        }}
+        sx={{ mt: [0, 1], px: [1, 2], mb: 4, flexGrow: 1 }}
       >
-        <ViewHeader>
-          {leftArrow}
-          <FormControl sx={{ mt: 0, ml: 0 }} variant="standard">
-            <Select
-              sx={{
-                '&&& .MuiSelect-select': {
-                  paddingRight: 0,
-                  marginRight: [1.25, 1.5],
-                },
-              }}
-              value={month}
-              IconComponent={'div'}
-              onChange={e => {
-                setActive(active.month(e.target.value - 1))
-              }}
-              input={<LeanSelector />}
-            >
-              <MenuItem value={1}>January</MenuItem>
-              <MenuItem value={2}>February</MenuItem>
-              <MenuItem value={3}>March</MenuItem>
-              <MenuItem value={4}>April</MenuItem>
-              <MenuItem value={5}>May</MenuItem>
-              <MenuItem value={6}>June</MenuItem>
-              <MenuItem value={7}>July</MenuItem>
-              <MenuItem value={8}>August</MenuItem>
-              <MenuItem value={9}>September</MenuItem>
-              <MenuItem value={10}>October</MenuItem>
-              <MenuItem value={11}>November</MenuItem>
-              <MenuItem value={12}>December</MenuItem>
-            </Select>
-          </FormControl>
-          <Autocomplete
-            freeSolo
-            disableClearable
-            options={yearOptions}
-            value={String(year)}
-            onChange={(event, newValue) =>
-              setActive(active.year(newValue.label))
-            }
-            inputValue={String(active.year())}
-            onInputChange={(event, newInputValue) => {
-              if (!event) {
-                return
-              }
-              if (!newInputValue.match(/^\d*$/)) {
-                return
-              }
-              if (newInputValue.length > 4) {
-                if (event.target.selectionStart > 4) {
-                  newInputValue =
-                    newInputValue.slice(0, 3) + newInputValue.slice(-1)
-                } else {
-                  newInputValue = newInputValue.slice(
-                    0,
-                    event.target.selectionStart
-                  )
-                }
-              }
-              setActive(active.year(String(newInputValue)))
-            }}
-            sx={{
-              width: ['5.5ch', '9.25ch'],
-              display: 'inline-flex',
-            }}
-            renderInput={params => (
-              <ResponsiveTextField
-                {...params}
-                sx={{
-                  overflow: 'visible',
-                  '& .MuiInputBase-input.MuiInput-input': {
-                    transform: ['translate(-4px, -4.5px)', 'translate(-1px, -3px)'],
-                    textOverflow: 'unset',
-                    pb: 0,
-                    pr: 0,
-                  },
-                  '& *::before': {
-                    width: ['5ch', '8.5ch']
-                  },
-                  '& *::after': {
-                    width: ['5ch', '8.5ch']
-                  }
-                }}
-                aria-label="year"
-                variant="standard"
-              />
-            )}
-          />
-          {rightArrow}
-        </ViewHeader>
-        <Stack
-          direction="column"
-          sx={{ mt: [0, 1], px: [1, 2], mb: 4, flexGrow: 1 }}
-        >
-          <GridHeader />
-          <MonthGrid
-            date={active}
-            unfilteredEvents={unfilteredEvents}
-            onExpand={onExpand}
-          />
-        </Stack>
+        <GridHeader />
+        <MonthGrid
+          date={active}
+          unfilteredEvents={unfilteredEvents}
+          onExpand={onExpand}
+        />
       </Stack>
-    </>
+    </Stack>
   )
 }
