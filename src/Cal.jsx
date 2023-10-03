@@ -1,6 +1,7 @@
 import { ThemeProvider } from '@mui/material/styles'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import MenuIcon from '@mui/icons-material/Menu'
+import FolderIcon from '@mui/icons-material/Folder'
 import {
   Container,
   Typography,
@@ -28,6 +29,7 @@ import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
 import { LayoutContext } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
+import { useTheme } from '@emotion/react'
 
 const currentDate = dayjs()
 
@@ -39,7 +41,7 @@ function RootLayout({ children }) {
       <Container
         maxWidth="md"
         disableGutters
-        sx={{ height: '100vh', overflow: 'hidden', }}
+        sx={{ height: '100vh', overflow: 'hidden' }}
       >
         <Box
           sx={{
@@ -63,21 +65,31 @@ function RootLayout({ children }) {
 }
 
 function Sidebar({ width = '240px' }) {
+  const theme = useTheme()
   const isNarrow = useMediaQuery('(max-width: 800px)')
   const [menuOpen, setMenuOpen] = useState(false)
 
+  console.log(theme.palette)
+
   const content = (
     <>
-      <Typography variant="h6" px={1} py={2}>
-        <CalendarMonthIcon /> Branding
-      </Typography>
+      <Box sx={{ height: '63px', px: 2, py: 2 }}>
+        <CalendarMonthIcon sx={{ transform: 'translateY(3px)', mr: 1 }} />
+
+        <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
+          Brand
+        </Typography>
+        <Typography variant="h6" component="span" sx={{ fontWeight: 300 }}>
+          Name
+        </Typography>
+      </Box>
       <Divider />
       <List disablePadding sx={{}}>
         {['Item One', 'Item Two', 'Item Three'].map(text => (
           <ListItem key={text} disablePadding>
             <ListItemButton>
-              <ListItemIcon>
-                <CalendarMonthIcon />
+              <ListItemIcon sx={{ ml: 1 }}>
+                <FolderIcon />
               </ListItemIcon>
               <ListItemText primary={text} />
             </ListItemButton>
@@ -88,44 +100,33 @@ function Sidebar({ width = '240px' }) {
   )
 
   return isNarrow ? (
-    // Narrow, drawer with icon
-    <>
-      <IconButton
-      disableRipple
+      <Drawer
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
         sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          pt: [2,3],
-          pl: [1,3],
-          zIndex: 2,
-          '&:hover > *': {
-            outline: '1px solid #fff8',
-            borderRadius: '4px',
-            outlineOffset: '4px',
-          }
+          '& .MuiDrawer-paper': {
+            width,
+            flexShrink: 0,
+            borderRight: `1px solid ${theme.palette.divider}`,
+            backgroundImage: 'unset',
+          },
         }}
-        onClick={() => setMenuOpen(true)}
       >
-        <MenuIcon fontSize="medium" />
-      </IconButton>
-      <Drawer open={menuOpen} onClose={() => setMenuOpen(false)}>
         {content}
         <Divider />
       </Drawer>
-    </>
   ) : (
-    // Wide, always visible
-    <nav
-      style={{
+    <Paper
+      component="nav"
+      elevation={0}
+      sx={{
         width,
         flexShrink: 0,
-        backgroundColor: '#0f42',
-        borderRight: '1px solid #fff4',
+        borderRight: `1px solid ${theme.palette.divider}`,
       }}
     >
       {content}
-    </nav>
+    </Paper>
   )
 }
 

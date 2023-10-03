@@ -3,6 +3,9 @@ import {
   Typography,
   useMediaQuery,
   Box,
+  Stack,
+  AppBar,
+  Toolbar,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
@@ -10,6 +13,7 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
+import { ViewHeader } from './ViewHeader'
 
 function CalendarBody({ date, eventList, onExpand }) {
   return useMemo(() => {
@@ -26,6 +30,8 @@ function CalendarBody({ date, eventList, onExpand }) {
     return (
       <div
         style={{
+          paddingLeft: '0.25rem',
+          paddingRight: '0.25rem',
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           width: '100%',
@@ -72,60 +78,50 @@ export function WeeklyCalendar({
   eventList = [],
 }) {
   const [date, setDate] = useState(initialDate)
-  const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h5'
+  // const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h6'
 
   return (
-    <Box
+    <Stack
+      direction="column"
       sx={{
-        display: 'flex',
-        position: 'relative',
+        mx: 'auto',
         width: '100%',
         height: '100%',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-        px: [1, 2],
         overflowY: 'auto',
       }}
     >
-      <IconButton
-        aria-label="previous week"
-        onClick={() => setDate(date.subtract(1, 'week'))}
-        sx={{
-          display: ['none', 'block'],
-          borderTopRightRadius: 0,
-          borderBottomRightRadius: 0,
-        }}
-      >
-        <NavigateBeforeIcon />
-      </IconButton>
-
-      <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-        <Typography
-          variant={typeVariant}
-          component="div"
-          sx={{ width: '100%', mt: 1, mb: 1 }}
+      <ViewHeader>
+        <IconButton aria-label="back to monthly view" onClick={onBack}>
+          <ArrowBackIcon />
+        </IconButton>
+        <IconButton
+          aria-label="previous week"
+          onClick={() => setDate(date.subtract(1, 'week'))}
+          sx={{
+            borderTopRightRadius: 0,
+            borderBottomRightRadius: 0,
+          }}
         >
-          <IconButton aria-label="back to monthly view" onClick={onBack}>
-            <ArrowBackIcon />
-          </IconButton>
+          <NavigateBeforeIcon />
+        </IconButton>
+
+        <Typography variant="h6" component="span" sx={{ width: '100%' }}>
           Week of {date.startOf('week').format('MMMM D, YYYY')}
         </Typography>
 
-        <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
-        <div style={{ height: '4rem', flexShrink: 0 }} />
-      </div>
+        <IconButton
+          aria-label="next week"
+          onClick={() => setDate(date.add(1, 'week'))}
+          sx={{
+            borderBottomLeftRadius: 0,
+            borderTopLeftRadius: 0,
+          }}
+        >
+          <NavigateNextIcon />
+        </IconButton>
+      </ViewHeader>
 
-      <IconButton
-        aria-label="next week"
-        onClick={() => setDate(date.add(1, 'week'))}
-        sx={{
-          display: ['none', 'block'],
-          borderBottomLeftRadius: 0,
-          borderTopLeftRadius: 0,
-        }}
-      >
-        <NavigateNextIcon />
-      </IconButton>
-    </Box>
+      <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
+    </Stack>
   )
 }

@@ -49,6 +49,10 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
 }))
 
 const DropdownPaper = styled(Paper)(({ theme }) => ({
+  boxShadow:
+    '0px 5px 5px -3px rgba(0,0,0,0.2),' +
+    '0px 8px 10px 1px rgba(0,0,0,0.14),' +
+    '0px 3px 14px 2px rgba(0,0,0,0.12)',
   backgroundImage:
     'linear-gradient(rgba(255, 255, 255, 0.12), ' +
     'rgba(255, 255, 255, 0.12))',
@@ -324,7 +328,10 @@ function MonthHeader({ date, onChange }) {
             sx={{
               overflow: 'visible',
               '& .MuiInputBase-input.MuiInput-input': {
-                transform: ['translate(-4px, -4.5px)', 'translate(-1px, -3px)'],
+                transform: [
+                  'translate(-3px, -2.325px)',
+                  'translate(0.5px, -4.25px)',
+                ],
                 textOverflow: 'unset',
                 pb: 0,
                 pr: 0,
