@@ -39,7 +39,7 @@ function RootLayout({ children }) {
       <Container
         maxWidth="md"
         disableGutters
-        sx={{ height: '100vh', overflow: 'hidden' }}
+        sx={{ height: '100vh', overflow: 'hidden', }}
       >
         <Box
           sx={{
