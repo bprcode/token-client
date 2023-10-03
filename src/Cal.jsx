@@ -1,6 +1,6 @@
 import { ThemeProvider } from '@mui/material/styles'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import MenuIcon from '@mui/icons-material/Menu'
+import HourglassTopIcon from '@mui/icons-material/HourglassTop';
 import FolderIcon from '@mui/icons-material/Folder'
 import {
   Container,
@@ -77,13 +77,12 @@ function Sidebar({ width = '240px' }) {
   const content = (
     <>
       <Box sx={{ height: '63px', px: 2, py: 2 }}>
-        <CalendarMonthIcon sx={{ transform: 'translateY(3px)', mr: 1 }} />
-
-        <Typography variant="h6" component="span" sx={{ fontWeight: 700 }}>
-          Brand
+        <HourglassTopIcon sx={{ transform: 'translateY(5px)', mr: 1, opacity: 0.75 }} />
+        <Typography variant="h6" component="span" sx={{ fontWeight: 500 }}>
+          Clear
         </Typography>
-        <Typography variant="h6" component="span" sx={{ fontWeight: 300 }}>
-          Name
+        <Typography variant="h6" component="span" sx={{ fontWeight: 300, opacity: 0.9 }}>
+          Time
         </Typography>
       </Box>
       <Divider />

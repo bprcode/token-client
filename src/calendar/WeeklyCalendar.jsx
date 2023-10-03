@@ -1,16 +1,8 @@
-import {
-  IconButton,
-  Typography,
-  useMediaQuery,
-  Box,
-  Stack,
-  AppBar,
-  Toolbar,
-} from '@mui/material'
-import { useMemo, useState } from 'react'
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
-import ArrowBackIcon from '@mui/icons-material/ArrowBack'
+import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
+import { IconButton, Typography, Box, Stack } from '@mui/material'
+import { useMemo, useState } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
@@ -92,7 +84,7 @@ export function WeeklyCalendar({
     >
       <ViewHeader>
         <IconButton aria-label="back to monthly view" onClick={onBack}>
-          <ArrowBackIcon />
+          <CalendarMonthIcon />
         </IconButton>
         <IconButton
           aria-label="previous week"
