@@ -96,7 +96,7 @@ function Sidebar({ width = '240px' }) {
           position: 'fixed',
           top: 0,
           left: 0,
-          pt: [1.5,2.5],
+          pt: [2,3],
           pl: [1,3],
           zIndex: 2,
           '&:hover > *': {

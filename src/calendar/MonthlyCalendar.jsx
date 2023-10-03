@@ -25,7 +25,7 @@ const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
     ...theme.typography.h4,
     [theme.breakpoints.down('sm')]: {
-      ...theme.typography.h5,
+      ...theme.typography.h6,
     },
   },
   '& .MuiInputBase-root::before': {
@@ -39,7 +39,7 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
     position: 'relative',
     ...theme.typography.h4,
     [theme.breakpoints.down('sm')]: {
-      ...theme.typography.h5,
+      ...theme.typography.h6,
     },
   },
   '& .MuiInputBase-input:focus': {
@@ -189,37 +189,6 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
   }, [activeDay, activeMonth, activeYear, onExpand, unfilteredEvents])
 }
 
-const MonthSelectInput = styled(InputBase)(({ theme }) => ({
-  '& .MuiInputBase-input': {
-    borderRadius: 4,
-    position: 'relative',
-    ...theme.typography.h4,
-    [theme.breakpoints.down('sm')]: {
-      ...theme.typography.h5,
-    },
-
-    '&:focus': {
-      borderRadius: 4,
-      borderColor: '#80bdff',
-      boxShadow: '0 0 0 0.2rem rgba(0,123,255,.25)',
-    },
-  },
-  '& .MuiSvgIcon-root': {
-    display: 'none', // hide dropdown triangle
-  },
-  // '& .MuiInputBase-input:focus': {
-  //   backgroundColor: 'unset',
-  // },
-}))
-
-function MonthOption(props) {
-  return (
-    <option {...props} style={{ fontSize: '1rem' }}>
-      {props.children}
-    </option>
-  )
-}
-
 export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
   const [active, setActive] = useState(initialDate)
   const month = active.format('M')
@@ -346,7 +315,7 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
               setActive(active.year(String(newInputValue)))
             }}
             sx={{
-              width: ['6.5ch', '10ch'],
+              width: ['5.5ch', '9.25ch'],
               display: 'inline-flex',
             }}
             renderInput={params => (
@@ -355,16 +324,16 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
                 sx={{
                   overflow: 'visible',
                   '& .MuiInputBase-input.MuiInput-input': {
-                    transform: 'translateX(-1px) translateY(-3px)',
+                    transform: ['translate(-4px, -4.5px)', 'translate(-1px, -3px)'],
                     textOverflow: 'unset',
                     pb: 0,
                     pr: 0,
                   },
                   '& *::before': {
-                    width: ['4.5ch', '8.75ch']
+                    width: ['5ch', '8.5ch']
                   },
                   '& *::after': {
-                    width: ['4.5ch', '8.75ch']
+                    width: ['5ch', '8.5ch']
                   }
                 }}
                 aria-label="year"

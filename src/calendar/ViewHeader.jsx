@@ -11,10 +11,11 @@ export function ViewHeader({ children }) {
         backdropFilter: 'blur(3px)',
         position: 'sticky',
         top: 0,
-        pt: 0.5,
+        pt: 1,
         pb: 0.5,
         pl: isNarrow ? ['2.5rem', '3.5rem'] : 1,
-        height: ['3rem', '4rem'],
+        height: ['3.5rem', '4rem'],
+        flexShrink: 0,
         borderBottom: `1px solid #0008`,
         zIndex: 1,
       }}
