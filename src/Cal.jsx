@@ -27,17 +27,19 @@ import { useEventListHistory } from './calendar/mockCalendar.mjs'
 import { WeeklyCalendar } from './calendar/WeeklyCalendar'
 import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
-import { LayoutContext } from './calendar/LayoutContext.mjs'
+import { DrawerContext, LayoutContext } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@emotion/react'
 
 const currentDate = dayjs()
 
 function RootLayout({ children }) {
+  const [expanded, setExpanded] = useState(false)
   const layoutQuery = useMediaQuery('(max-width: 600px)') ? 'mobile' : 'wide'
 
   return (
     <LayoutContext.Provider value={layoutQuery}>
+      <DrawerContext.Provider value={{expanded, setExpanded}}>
       <Container
         maxWidth="md"
         disableGutters
@@ -60,6 +62,7 @@ function RootLayout({ children }) {
           </div>
         </Box>
       </Container>
+      </DrawerContext.Provider>
     </LayoutContext.Provider>
   )
 }
@@ -67,7 +70,7 @@ function RootLayout({ children }) {
 function Sidebar({ width = '240px' }) {
   const theme = useTheme()
   const isNarrow = useMediaQuery('(max-width: 800px)')
-  const [menuOpen, setMenuOpen] = useState(false)
+  const { expanded, setExpanded } = useContext(DrawerContext)
 
   console.log(theme.palette)
 
@@ -101,8 +104,8 @@ function Sidebar({ width = '240px' }) {
 
   return isNarrow ? (
       <Drawer
-        open={menuOpen}
-        onClose={() => setMenuOpen(false)}
+        open={expanded}
+        onClose={() => setExpanded(false)}
         sx={{
           '& .MuiDrawer-paper': {
             width,
