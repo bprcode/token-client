@@ -1,7 +1,13 @@
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
-import { IconButton, Typography, Box, Stack } from '@mui/material'
+import {
+  IconButton,
+  Typography,
+  Box,
+  Stack,
+  useMediaQuery,
+} from '@mui/material'
 import { useMemo, useState } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
@@ -22,8 +28,8 @@ function CalendarBody({ date, eventList, onExpand }) {
     return (
       <div
         style={{
-          paddingLeft: '0.25rem',
-          paddingRight: '0.25rem',
+          paddingLeft: '0.5rem',
+          paddingRight: '0.5rem',
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           width: '100%',
@@ -69,8 +75,16 @@ export function WeeklyCalendar({
   onExpand,
   eventList = [],
 }) {
+  const isSmall = useMediaQuery('(max-width: 600px)')
+  const isExtraNarrow = useMediaQuery('(max-width: 400px)')
   const [date, setDate] = useState(initialDate)
-  // const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h6'
+
+  const sunday = date.startOf('week')
+  const saturday = sunday.add(6, 'days')
+  const isRollover = sunday.month() !== saturday.month()
+  const weekDescription = isSmall 
+  ? sunday.format('MMM D') + ' – ' + saturday.format(isRollover ? 'MMM D' : 'D')
+    :'Week of ' + sunday.format('MMMM D, YYYY')
 
   return (
     <Stack
@@ -88,8 +102,10 @@ export function WeeklyCalendar({
         </IconButton>
         <IconButton
           aria-label="previous week"
+          disableTouchRipple
           onClick={() => setDate(date.subtract(1, 'week'))}
           sx={{
+            '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
             borderTopRightRadius: 0,
             borderBottomRightRadius: 0,
           }}
@@ -97,16 +113,20 @@ export function WeeklyCalendar({
           <NavigateBeforeIcon />
         </IconButton>
 
-        <Typography variant="h6" component="span" sx={{ width: '100%' }}>
-          Week of {date.startOf('week').format('MMMM D, YYYY')}
+        <Typography variant="h6" component="span" sx={{}}>
+          {weekDescription}
         </Typography>
 
         <IconButton
           aria-label="next week"
+          disableTouchRipple
           onClick={() => setDate(date.add(1, 'week'))}
           sx={{
+            '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
             borderBottomLeftRadius: 0,
             borderTopLeftRadius: 0,
+            position: isExtraNarrow ? 'absolute' : 'static',
+            right: 0,
           }}
         >
           <NavigateNextIcon />

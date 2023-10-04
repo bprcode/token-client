@@ -11,6 +11,7 @@ import {
   Autocomplete,
   TextField,
   Paper,
+  useMediaQuery,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
@@ -204,6 +205,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
 }
 
 function MonthHeader({ date, onChange }) {
+  const isExtraNarrow = useMediaQuery(('(max-width: 400px)'))
   const month = date.format('M')
   const year = date.year()
 
@@ -239,7 +241,7 @@ function MonthHeader({ date, onChange }) {
     <Box
       sx={{
         display: 'inline-flex',
-        position: ['absolute', 'static'],
+        position: isExtraNarrow ? 'absolute' : 'static',
         right: 0,
       }}
     >

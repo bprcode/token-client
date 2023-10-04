@@ -12,7 +12,7 @@ export function ViewHeader({ children }) {
       position="sticky"
       sx={{
         boxShadow: 'none',
-        borderBottom: `1px solid #0128`,
+        borderBottom: `1px solid #0127`,
         backgroundColor: '#1f292bd1',
         backgroundImage: 'none',
         zIndex: 3,

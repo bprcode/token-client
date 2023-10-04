@@ -75,10 +75,11 @@ function Sidebar({ width = '240px', expand }) {
     <>
       <Box
         sx={{
-          height: '63px',
+          height: '64px',
           px: 2,
           py: 2,
           backgroundImage: `url(${hourglassPng})`,
+          backgroundColor: '#00182575',
         }}
       >
         <HourglassTopIcon
@@ -87,14 +88,14 @@ function Sidebar({ width = '240px', expand }) {
         <Typography
           variant="h6"
           component="span"
-          sx={{ fontWeight: 500, textShadow: '0 0 4px #000' }}
+          sx={{ fontWeight: 500, textShadow: '2px -1px 4px #000' }}
         >
           Clear
         </Typography>
         <Typography
           variant="h6"
           component="span"
-          sx={{ fontWeight: 300, opacity: 0.9, textShadow: '2px -1px 4px #000' }}
+          sx={{ fontWeight: 300, opacity: 0.9, textShadow: '1px -1px 4px #000' }}
         >
           Time
         </Typography>
