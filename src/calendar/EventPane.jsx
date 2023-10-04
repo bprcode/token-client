@@ -37,6 +37,11 @@ export function EventPane({
   const theme = useTheme()
   const selectable = label === 'detailed'
 
+  // Remove shadow elements to improve scrolling performance on Firefox Mobile
+  const hideShadows =
+    navigator.userAgent.includes('Mobile') &&
+    navigator.userAgent.includes('Firefox')
+
   const [sliding, setSliding] = useState(false)
   const [ghost, setGhost] = useState(false)
   const [ghostTop, setGhostTop] = useState(0)
@@ -172,13 +177,6 @@ export function EventPane({
             colorId:{event.colorId}
             <br />
             {accentColor}
-            {/* &mdash;Lorem ipsum dolor sit, amet consectetur adipisicing elit.
-            Dolor, qui illum dolorum, quaerat corporis dolores optio
-            exercitationem totam perspiciatis libero aliquid provident ullam
-            similique aut in temporibus autem eligendi obcaecati vel facere at!
-            Temporibus eius, iure voluptatibus est dolorem porro. Adipisci
-            blanditiis tempora ad architecto reprehenderit deleniti dolor sunt
-            officia? */}
             <br />
           </>
         )}
@@ -317,13 +315,13 @@ export function EventPane({
   return (
     <>
       <Zoom in={!deleting} appear={false} timeout={250}>
-        <Box
+        <div
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onClick={e => {
             if (label === 'detailed') e.stopPropagation()
           }}
-          sx={{
+          style={{
             touchAction: 'none',
             position: 'absolute',
             top: (topOffset / intervalSize) * 100 + '%',
@@ -461,7 +459,7 @@ export function EventPane({
               </div>
             )}
           </div>
-        </Box>
+        </div>
       </Zoom>
 
       {/* event outline ghost, displayed during drag-resizing: */}
@@ -495,7 +493,7 @@ export function EventPane({
       )}
 
       {/* drop shadow mock pseudo-element for correct z-indexing: */}
-      {!deleting && (
+      {!hideShadows && !deleting && (
         <div
           className="foo"
           style={{

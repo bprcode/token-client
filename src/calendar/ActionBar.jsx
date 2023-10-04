@@ -1,4 +1,4 @@
-import UndoIcon from '@mui/icons-material/Undo';
+import UndoIcon from '@mui/icons-material/Undo'
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
@@ -21,12 +21,11 @@ export function ActionBar({ onBehavior, canUndo }) {
   ]
 
   const alignment = { p: 0.5, ml: 1 }
-  const undo = <IconButton
-  disabled={!canUndo}
-    onClick={() => onBehavior('undo')}
-  >
-    <UndoIcon fontSize="large" />
-  </IconButton>
+  const undo = (
+    <IconButton disabled={!canUndo} onClick={() => onBehavior('undo')}>
+      <UndoIcon fontSize="large" />
+    </IconButton>
+  )
 
   const buttons = interactions.map(i => (
     <IconButton
@@ -50,9 +49,15 @@ export function ActionBar({ onBehavior, canUndo }) {
   ))
 
   return layout === 'mobile' ? (
-    <MobileBar>{undo}{buttons}</MobileBar>
+    <MobileBar>
+      {undo}
+      {buttons}
+    </MobileBar>
   ) : (
-    <OverlayBar>{undo}{buttons}</OverlayBar>
+    <OverlayBar>
+      {undo}
+      {buttons}
+    </OverlayBar>
   )
 }
 
@@ -75,6 +80,10 @@ function OverlayBar({ children }) {
 }
 
 function MobileBar({ children }) {
+  const disableBlur =
+    navigator.userAgent.includes('Mobile') &&
+    navigator.userAgent.includes('Firefox')
+
   return (
     <AppBar
       position="fixed"
@@ -82,8 +91,8 @@ function MobileBar({ children }) {
         top: 'auto',
         bottom: 0,
         borderTop: '1px solid #fff2',
-        backgroundColor: '#0007',
-        backdropFilter: 'blur(3px)',
+        backgroundColor: disableBlur ? '#000c' : '#0007',
+        backdropFilter: disableBlur ? undefined : 'blur(3px)',
       }}
     >
       <Toolbar>

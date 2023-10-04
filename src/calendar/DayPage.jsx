@@ -186,8 +186,9 @@ function handleCreationTap({ event, picks, day, setCreation }) {
 
 function DayHeader({ onBack, day }) {
   const isNarrow = useMediaQuery('(max-width: 350px)')
-  const formatted = isNarrow ? day.format('ddd, MMM D')
-  : day.format('dddd, MMMM D')
+  const formatted = isNarrow
+    ? day.format('ddd, MMM D')
+    : day.format('dddd, MMMM D')
 
   return (
     <ViewHeader>

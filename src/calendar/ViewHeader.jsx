@@ -6,6 +6,9 @@ import { ToggleMenuContext } from './LayoutContext.mjs'
 export function ViewHeader({ children }) {
   const toggleMenu = useContext(ToggleMenuContext)
   const isNarrow = useMediaQuery('(max-width: 800px)')
+  const disableBlur =
+    navigator.userAgent.includes('Mobile') &&
+    navigator.userAgent.includes('Firefox')
 
   return (
     <AppBar
@@ -13,14 +16,14 @@ export function ViewHeader({ children }) {
       sx={{
         boxShadow: 'none',
         borderBottom: `1px solid #0127`,
-        backgroundColor: '#1f292bc1',
+        backgroundColor: disableBlur ? '#1f292be1' : '#1f292bc1',
         backgroundImage: 'none',
         zIndex: 2,
       }}
     >
       <Toolbar
         sx={{
-          backdropFilter: 'blur(3px)',
+          backdropFilter: disableBlur ? undefined : 'blur(3px)',
         }}
       >
         {isNarrow && (
