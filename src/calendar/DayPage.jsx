@@ -16,6 +16,7 @@ import { ActionContext, actionList } from './ActionContext.mjs'
 import { LayoutContext } from './LayoutContext.mjs'
 import { EventPicker } from './EventPicker'
 import { createSampleEvent, usePalette } from './mockCalendar.mjs'
+import { ViewHeader } from './ViewHeader'
 
 export function DayPage({
   onBack,
@@ -57,7 +58,6 @@ export function DayPage({
           position: 'relative',
         }}
       >
-        <DayHeader onBack={onBack} day={day} />
 
         <ActionBar
           canUndo={canUndo}
@@ -92,7 +92,12 @@ export function DayPage({
           }}
           // deselect if the click was not intercepted by an EventPane
           onClick={() => setSelection(null)}
+          header={
+
+            <DayHeader onBack={onBack} day={day} />
+          }
         >
+
           <DailyBreakdown
             day={day}
             unfilteredEvents={
@@ -190,10 +195,7 @@ function DayHeader({ onBack, day }) {
   const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h5'
 
   return (
-    <Stack
-      direction="row"
-      sx={{ borderBottom: '1px solid #000a', position: 'sticky', top: 0 }}
-    >
+    <ViewHeader>
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"
@@ -204,6 +206,6 @@ function DayHeader({ onBack, day }) {
       <Typography variant={typeVariant} component="div" mb={2} mt={2}>
         {day.format('dddd, MMMM D')}
       </Typography>
-    </Stack>
+      </ViewHeader>
   )
 }

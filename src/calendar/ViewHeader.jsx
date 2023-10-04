@@ -15,7 +15,7 @@ export function ViewHeader({ children }) {
         borderBottom: `1px solid #0127`,
         backgroundColor: '#1f292bd1',
         backgroundImage: 'none',
-        zIndex: 3,
+        zIndex: 2,
       }}
     >
       <Toolbar

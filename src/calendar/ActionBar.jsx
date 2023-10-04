@@ -1,5 +1,4 @@
 import UndoIcon from '@mui/icons-material/Undo';
-import MenuIcon from '@mui/icons-material/Menu'
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
@@ -53,11 +52,11 @@ export function ActionBar({ onBehavior, canUndo }) {
   return layout === 'mobile' ? (
     <MobileBar>{undo}{buttons}</MobileBar>
   ) : (
-    <SideBar>{undo}{buttons}</SideBar>
+    <OverlayBar>{undo}{buttons}</OverlayBar>
   )
 }
 
-function SideBar({ children }) {
+function OverlayBar({ children }) {
   return (
     <Box
       sx={{
@@ -88,12 +87,7 @@ function MobileBar({ children }) {
       }}
     >
       <Toolbar>
-        <IconButton aria-label="menu">
-          <MenuIcon fontSize="large" />
-        </IconButton>
-
         <Box sx={{ flexGrow: 1 }} />
-
         {children}
       </Toolbar>
     </AppBar>

@@ -178,11 +178,6 @@ function Demo() {
             <Slide
               direction="left"
               timeout={350}
-              sx={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-              }}
             >
               <div
                 style={{
@@ -207,11 +202,6 @@ function Demo() {
             <Slide
               direction="left"
               timeout={350}
-              sx={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-              }}
             >
               <div
                 style={{
@@ -241,11 +231,6 @@ function Demo() {
             <Slide
               direction="left"
               timeout={350}
-              sx={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-              }}
             >
               <div
                 style={{

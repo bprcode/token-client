@@ -13,6 +13,7 @@ export function SectionedInterval({
   onPointerUp,
   endMargin = '8rem',
   lockScroll,
+  header,
 }) {
   const sections = []
   let t = initial
@@ -37,7 +38,7 @@ export function SectionedInterval({
       >
         <span
           style={{
-            paddingLeft: '0.25rem',
+            paddingLeft: '0.5rem',
             fontSize: '0.875em',
           }}
         >
@@ -50,6 +51,12 @@ export function SectionedInterval({
   }
 
   return (
+    <div style={{
+      width: '100%',
+      height: '100%',
+      overflowY: 'auto',
+    }}>
+      {header}
     <div
       className="section-outer"
       onPointerDown={onPointerDown}
@@ -58,14 +65,13 @@ export function SectionedInterval({
       style={{
         paddingTop: '1.5rem',
         paddingBottom: '1.5rem',
-        overflowY: 'auto',
         height: outsideHeight,
         userSelect: 'none',
         WebkitUserSelect: 'none',
         backgroundColor: `hsl(190deg 8% 10%)`,
         touchAction: lockScroll ? 'none' : undefined,
       }}
-    >
+      >
       <Box
       className="section-inner"
         sx={{
@@ -93,6 +99,7 @@ export function SectionedInterval({
         }}
       >
       </div> */}
+    </div>
     </div>
   )
 }
