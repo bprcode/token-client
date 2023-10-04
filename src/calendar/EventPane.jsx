@@ -318,7 +318,6 @@ export function EventPane({
     <>
       <Zoom in={!deleting} appear={false} timeout={250}>
         <Box
-          onPointerCancel={() => console.log('🥲 Pointer cancel received')}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onClick={e => {

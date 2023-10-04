@@ -76,7 +76,6 @@ export function WeeklyCalendar({
   eventList = [],
 }) {
   const isSmall = useMediaQuery('(max-width: 600px)')
-  const isExtraNarrow = useMediaQuery('(max-width: 400px)')
   const [date, setDate] = useState(initialDate)
 
   const sunday = date.startOf('week')
@@ -125,8 +124,6 @@ export function WeeklyCalendar({
             '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
             borderBottomLeftRadius: 0,
             borderTopLeftRadius: 0,
-            position: isExtraNarrow ? 'absolute' : 'static',
-            right: 0,
           }}
         >
           <NavigateNextIcon />

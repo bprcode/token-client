@@ -205,7 +205,6 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
 }
 
 function MonthHeader({ date, onChange }) {
-  const isExtraNarrow = useMediaQuery(('(max-width: 400px)'))
   const month = date.format('M')
   const year = date.year()
 
@@ -241,8 +240,6 @@ function MonthHeader({ date, onChange }) {
     <Box
       sx={{
         display: 'inline-flex',
-        position: isExtraNarrow ? 'absolute' : 'static',
-        right: 0,
       }}
     >
       <IconButton
