@@ -1,6 +1,6 @@
 import { ThemeProvider } from '@mui/material/styles'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import HourglassTopIcon from '@mui/icons-material/HourglassTop';
+
+import HourglassTopIcon from '@mui/icons-material/HourglassTop'
 import FolderIcon from '@mui/icons-material/Folder'
 import {
   Container,
@@ -15,7 +15,6 @@ import {
   ListItemIcon,
   ListItemText,
   Box,
-  IconButton,
   Paper,
   Slide,
 } from '@mui/material'
@@ -27,66 +26,86 @@ import { useEventListHistory } from './calendar/mockCalendar.mjs'
 import { WeeklyCalendar } from './calendar/WeeklyCalendar'
 import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
-import { DrawerContext, LayoutContext } from './calendar/LayoutContext.mjs'
+import { ToggleMenuContext, LayoutContext } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@emotion/react'
-
+import hourglassPng from './assets/hourglass2.png'
 const currentDate = dayjs()
 
 function RootLayout({ children }) {
-  const [expanded, setExpanded] = useState(false)
+  const [expand, setExpand] = useState(false)
   const layoutQuery = useMediaQuery('(max-width: 600px)') ? 'mobile' : 'wide'
 
   return (
     <LayoutContext.Provider value={layoutQuery}>
-      <DrawerContext.Provider value={{expanded, setExpanded}}>
-      <Container
-        maxWidth="md"
-        disableGutters
-        sx={{ height: '100vh', overflow: 'hidden' }}
-      >
-        <Box
-          sx={{
-            height: '100%',
-            display: 'flex',
-          }}
+      <ToggleMenuContext.Provider value={setExpand}>
+        <Container
+          maxWidth="md"
+          disableGutters
+          sx={{ height: '100vh', overflow: 'hidden' }}
         >
-          <Sidebar />
-
-          <div
-            style={{
-              flexGrow: 1,
+          <Box
+            sx={{
+              height: '100%',
+              display: 'flex',
             }}
           >
-            {children}
-          </div>
-        </Box>
-      </Container>
-      </DrawerContext.Provider>
+            <Sidebar expand={expand} />
+
+            <div
+              style={{
+                flexGrow: 1,
+              }}
+            >
+              {children}
+            </div>
+          </Box>
+        </Container>
+      </ToggleMenuContext.Provider>
     </LayoutContext.Provider>
   )
 }
 
-function Sidebar({ width = '240px' }) {
+function Sidebar({ width = '240px', expand }) {
   const theme = useTheme()
   const isNarrow = useMediaQuery('(max-width: 800px)')
-  const { expanded, setExpanded } = useContext(DrawerContext)
-
-  console.log(theme.palette)
+  const toggleMenu = useContext(ToggleMenuContext)
 
   const content = (
     <>
-      <Box sx={{ height: '63px', px: 2, py: 2 }}>
-        <HourglassTopIcon sx={{ transform: 'translateY(5px)', mr: 1, opacity: 0.75 }} />
-        <Typography variant="h6" component="span" sx={{ fontWeight: 500 }}>
+      <Box
+        sx={{
+          height: '63px',
+          px: 2,
+          py: 2,
+          backgroundImage: `url(${hourglassPng})`,
+        }}
+      >
+        <HourglassTopIcon
+          sx={{ transform: 'translateY(5px)', mr: 1, opacity: 0.75 }}
+        />
+        <Typography
+          variant="h6"
+          component="span"
+          sx={{ fontWeight: 500, textShadow: '0 0 4px #000' }}
+        >
           Clear
         </Typography>
-        <Typography variant="h6" component="span" sx={{ fontWeight: 300, opacity: 0.9 }}>
+        <Typography
+          variant="h6"
+          component="span"
+          sx={{ fontWeight: 300, opacity: 0.9, textShadow: '2px -1px 4px #000' }}
+        >
           Time
         </Typography>
       </Box>
       <Divider />
-      <List disablePadding sx={{}}>
+      <List
+        disablePadding
+        sx={{
+          backgroundColor: '#182629',
+        }}
+      >
         {['Item One', 'Item Two', 'Item Three'].map(text => (
           <ListItem key={text} disablePadding>
             <ListItemButton>
@@ -102,21 +121,22 @@ function Sidebar({ width = '240px' }) {
   )
 
   return isNarrow ? (
-      <Drawer
-        open={expanded}
-        onClose={() => setExpanded(false)}
-        sx={{
-          '& .MuiDrawer-paper': {
-            width,
-            flexShrink: 0,
-            borderRight: `1px solid ${theme.palette.divider}`,
-            backgroundImage: 'unset',
-          },
-        }}
-      >
-        {content}
-        <Divider />
-      </Drawer>
+    <Drawer
+      open={expand}
+      onClose={() => toggleMenu(false)}
+      sx={{
+        '& .MuiDrawer-paper': {
+          width,
+          flexShrink: 0,
+          borderRight: `1px solid ${theme.palette.divider}`,
+          backgroundImage: 'unset',
+          backgroundColor: '#101b1d',
+        },
+      }}
+    >
+      {content}
+      <Divider />
+    </Drawer>
   ) : (
     <Paper
       component="nav"

@@ -48,7 +48,7 @@ const LeanSelector = styled(InputBase)(({ theme }) => ({
   },
 }))
 
-const DropdownPaper = styled(Paper)(({ theme }) => ({
+const DropdownPaper = styled(Paper)({
   boxShadow:
     '0px 5px 5px -3px rgba(0,0,0,0.2),' +
     '0px 8px 10px 1px rgba(0,0,0,0.14),' +
@@ -59,7 +59,7 @@ const DropdownPaper = styled(Paper)(({ theme }) => ({
   '& li': {
     transform: ['translateX(-0.25rem)', undefined],
   },
-}))
+})
 
 function GridHeader() {
   return (
@@ -267,6 +267,7 @@ function MonthHeader({ date, onChange }) {
             '&&& .MuiSelect-select': {
               paddingRight: 0,
               marginRight: [1.25, 1.5],
+              transform: [undefined, 'translateY(4px)']
             },
           }}
           value={month}
@@ -320,6 +321,7 @@ function MonthHeader({ date, onChange }) {
         sx={{
           width: ['6.5ch', '9.25ch'],
           display: 'inline-flex',
+          transform: [undefined, 'translateY(4px)'],
         }}
         PaperComponent={DropdownPaper}
         renderInput={params => (
@@ -330,7 +332,7 @@ function MonthHeader({ date, onChange }) {
               '& .MuiInputBase-input.MuiInput-input': {
                 transform: [
                   'translate(-3px, -2.325px)',
-                  'translate(0.5px, -4.25px)',
+                  'translate(0.5px, -4.2px)',
                 ],
                 textOverflow: 'unset',
                 pb: 0,

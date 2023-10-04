@@ -1,10 +1,10 @@
 import MenuIcon from '@mui/icons-material/Menu'
 import { AppBar, IconButton, Toolbar, useMediaQuery } from '@mui/material'
-import { DrawerContext } from './LayoutContext.mjs'
 import { useContext } from 'react'
+import { ToggleMenuContext } from './LayoutContext.mjs'
 
 export function ViewHeader({ children }) {
-  const { setExpanded } = useContext(DrawerContext)
+  const toggleMenu = useContext(ToggleMenuContext)
   const isNarrow = useMediaQuery('(max-width: 800px)')
 
   return (
@@ -30,7 +30,7 @@ export function ViewHeader({ children }) {
             color="inherit"
             aria-label="menu"
             sx={{ mr: 2 }}
-            onClick={() => setExpanded(x => !x)}
+            onClick={() => toggleMenu(true)}
           >
             <MenuIcon />
           </IconButton>
