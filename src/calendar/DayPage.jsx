@@ -58,7 +58,6 @@ export function DayPage({
           position: 'relative',
         }}
       >
-
         <ActionBar
           canUndo={canUndo}
           onBehavior={b => {
@@ -85,19 +84,14 @@ export function DayPage({
             if (action !== 'create' || !creation) {
               return
             }
-            console.log('creating with picks:', picks)
             onCreate(creation)
             setCreation(null)
             setAction('edit')
           }}
           // deselect if the click was not intercepted by an EventPane
           onClick={() => setSelection(null)}
-          header={
-
-            <DayHeader onBack={onBack} day={day} />
-          }
+          header={<DayHeader onBack={onBack} day={day} />}
         >
-
           <DailyBreakdown
             day={day}
             unfilteredEvents={
@@ -192,7 +186,9 @@ function handleCreationTap({ event, picks, day, setCreation }) {
 }
 
 function DayHeader({ onBack, day }) {
-  const typeVariant = useMediaQuery('(max-width: 380px)') ? 'subtitle1' : 'h5'
+  const isNarrow = useMediaQuery('(max-width: 350px)')
+  const formatted = isNarrow ? day.format('ddd, MMM D')
+  : day.format('dddd, MMMM D')
 
   return (
     <ViewHeader>
@@ -203,9 +199,9 @@ function DayHeader({ onBack, day }) {
       >
         <ArrowBackIcon />
       </IconButton>
-      <Typography variant={typeVariant} component="div" mb={2} mt={2}>
-        {day.format('dddd, MMMM D')}
+      <Typography variant="h6" component="div" mb={2} mt={2}>
+        {formatted}
       </Typography>
-      </ViewHeader>
+    </ViewHeader>
   )
 }
