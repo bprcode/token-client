@@ -11,6 +11,7 @@ export function DailyBreakdown({
   onEdit,
   onUpdate,
   onDelete,
+  onLog,
   labels = 'detailed',
 }) {
   const startOfDay = day.startOf('day')
@@ -97,6 +98,7 @@ export function DailyBreakdown({
           onEdit={onEdit}
           onUpdate={onUpdate}
           onDelete={onDelete}
+          onLog={onLog}
         />
       ))}
     </Box>

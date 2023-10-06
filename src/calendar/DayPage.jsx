@@ -4,15 +4,15 @@ import {
   Typography,
   Collapse,
   useMediaQuery,
+  Box,
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
-import { useContext, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
-import { LayoutContext } from './LayoutContext.mjs'
 import { EventPicker } from './EventPicker'
 import { createSampleEvent, usePalette } from './mockCalendar.mjs'
 import { ViewHeader } from './ViewHeader'
@@ -34,17 +34,21 @@ export function DayPage({
     summary: 'New Event',
   }
 
+  const [log, setLog] = useState(['foo'])
+
+  const logEntry = m => setLog(l => [...l, m])
+
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
   const [creation, setCreation] = useState(null)
   const [picks, setPicks] = useState(defaultEventPicks)
 
   const [action, setAction] = useState(actionList[0])
-  const layout = useContext(LayoutContext)
-  const padding = layout === 'mobile' ? 0 : 0
 
   return (
     <ActionContext.Provider value={action}>
+        <Logger log={log} />
+
       <Paper
         elevation={1}
         sx={{
@@ -52,7 +56,7 @@ export function DayPage({
           flexDirection: 'column',
           height: '100%',
           width: '100%',
-          px: padding,
+          px: 0,
           py: 0,
           position: 'relative',
         }}
@@ -72,7 +76,6 @@ export function DayPage({
           outsideHeight="100%"
           insideHeight="1800px"
           endMargin={action === 'create' ? '14rem' : '14rem'}
-          lockScroll={action === 'create'}
           onPointerDown={e => {
             if (action === 'create') {
               handleCreationTap({ event: e, day, setCreation, picks })
@@ -104,6 +107,7 @@ export function DayPage({
               setSelection(null)
             }}
             onDelete={onDelete}
+            onLog={logEntry}
           />
         </SectionedInterval>
 
@@ -182,6 +186,26 @@ function handleCreationTap({ event, picks, day, setCreation }) {
       )
     }
   }
+}
+
+function Logger({ log }) {
+  const ref = useRef(null)
+  useEffect(() => {
+    ref.current.scrollTo(0, ref.current.scrollHeight)
+  },
+    [log])
+
+  return <Box ref={ref} sx={{
+    position: 'sticky',
+    top : 0,
+    width: '100%',
+    height: '8rem',
+    backgroundColor: '#333',
+    color: '#ccc',
+    overflowY: 'auto',
+  }}>
+    {log.map((m,i) => <div key={i}>{i}:&emsp;{m}</div>)}
+  </Box>
 }
 
 function DayHeader({ onBack, day }) {

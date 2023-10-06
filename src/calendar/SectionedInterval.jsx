@@ -12,7 +12,6 @@ export function SectionedInterval({
   onPointerDown,
   onPointerUp,
   endMargin = '8rem',
-  lockScroll,
   header,
 }) {
   const sections = []
@@ -69,7 +68,6 @@ export function SectionedInterval({
         userSelect: 'none',
         WebkitUserSelect: 'none',
         backgroundColor: `hsl(190deg 8% 10%)`,
-        touchAction: lockScroll ? 'none' : undefined,
       }}
       >
       <Box

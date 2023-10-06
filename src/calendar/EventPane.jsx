@@ -32,6 +32,7 @@ export function EventPane({
   onEdit = noop,
   onUpdate = noop,
   onDelete = noop,
+  onLog = noop,
 }) {
   const action = useContext(ActionContext)
   const theme = useTheme()
@@ -242,20 +243,35 @@ export function EventPane({
         /*
         DEBUG -- now fixing Safari issue
          */
-        touchTarget.setPointerCapture(e.pointerId)
+        onLog('setting capture')
+        // N.B. to work around this Safari setPointerCapture bug:
+        // https://bugs.webkit.org/show_bug.cgi?id=220196
+        // it is necessary to set capture on a child element,
+        // and prevent touchMove defaults on the parent of the currentTarget.
+
+        touchTarget.querySelector('.pane-inner').setPointerCapture(e.pointerId)
+        touchTarget.parentElement.ontouchmove = m => {
+          m.preventDefault()
+        }
+        
         touchTarget.onpointermove = move => {
+          onLog('move 1: ' + move.clientX)
+
           const distance = Math.sqrt(
             (move.clientX - touchStart.x) ** 2 +
               (move.clientY - touchStart.y) ** 2
           )
 
           if (distance / tickSize > 1) {
+            onLog('starting second move...')
             setSliding(true)
             setGhost(true)
             setGhostTop(0)
             setGhostBottom(0)
 
             touchTarget.onpointermove = move => {
+              onLog('move 2: ' + move.clientX)
+
               const dy = Math.round((move.clientY - touchStart.y) / tickSize)
               setGhostTop(dy)
               setGhostBottom(dy)
@@ -271,6 +287,7 @@ export function EventPane({
       case 'delete':
         return
       case 'edit':
+        e.currentTarget.parentElement.ontouchmove = undefined
         e.currentTarget.onpointermove = null
 
         if (sliding) {
@@ -321,6 +338,11 @@ export function EventPane({
         <div
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
+          onPointerCancel={() => {
+              setSliding(false)
+              setGhost(false)
+              onLog('interaction cancelled')
+          }}
           onClick={e => {
             if (label === 'detailed') e.stopPropagation()
           }}
@@ -337,11 +359,13 @@ export function EventPane({
             userSelect: 'none',
           }}
         >
-          {overflowArrows}
+          {/* {overflowArrows} */}
 
           {/* Inner container -- overflow hidden */}
           <div
+            className="pane-inner"
             style={{
+              touchAction: 'none',
               boxShadow:
                 label === 'none' && `0px 0px 0.75rem ${shadeColor} inset`,
               ...borderStyles,
@@ -358,7 +382,7 @@ export function EventPane({
             }}
           >
             {/* pane header */}
-            <div
+            {/* <div
               style={{
                 backgroundColor: selected ? augmentedColors.light : accentColor,
                 color: augmentedColors.contrastText,
@@ -369,9 +393,9 @@ export function EventPane({
               }}
             >
               {header}
-            </div>
+            </div> */}
             {/* pane body */}
-            {selected && (
+            {/* {selected && (
               <PaneControls
                 augmentedColors={augmentedColors}
                 intervalSize={intervalSize}
@@ -401,9 +425,9 @@ export function EventPane({
                   setGhostTop(offset)
                 }}
               />
-            )}
+            )} */}
 
-            {details && (
+            {/* {details && (
               <div
                 style={{
                   display: 'flex',
@@ -415,7 +439,6 @@ export function EventPane({
               >
                 {details}
 
-                {/* pencil icon */}
                 {selected && roomForIcon && !ghost && (
                   <IconButton
                     sx={{
@@ -460,15 +483,17 @@ export function EventPane({
                   />
                 )}
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </Zoom>
 
       {/* event outline ghost, displayed during drag-resizing: */}
+      {/* debug -- deactivated; testing safari workaround */}
       {ghost && (
         <div
           style={{
+            // touchAction: 'none',
             position: 'absolute',
             top: (ghostTopOffset / intervalSize) * 100 + '%',
             left: indent * (100 / columns) + '%',
@@ -516,7 +541,7 @@ export function EventPane({
   )
 }
 
-function handleDrag(event, onAdjust, intervalSize) {
+function handleTabDrag(event, onAdjust, intervalSize) {
   event.currentTarget.setPointerCapture(event.pointerId)
 
   let tickSize = 24
@@ -550,7 +575,7 @@ function PaneControls({
   showBottom,
   intervalSize,
 }) {
-  function beginDrag() {
+  function beginTabDrag() {
     onGhostStart()
     onAdjustTop(0)
     onAdjustBottom(0)
@@ -577,8 +602,8 @@ function PaneControls({
             },
           }}
           onPointerDown={e => {
-            beginDrag()
-            handleDrag(e, onAdjustTop, intervalSize)
+            beginTabDrag()
+            handleTabDrag(e, onAdjustTop, intervalSize)
             e.stopPropagation()
           }}
           onPointerUp={e => {
@@ -609,8 +634,8 @@ function PaneControls({
             },
           }}
           onPointerDown={e => {
-            beginDrag()
-            handleDrag(e, onAdjustBottom, intervalSize)
+            beginTabDrag()
+            handleTabDrag(e, onAdjustBottom, intervalSize)
             e.stopPropagation()
           }}
           onPointerUp={e => {

@@ -5,7 +5,8 @@
     <title>PointerCapture test</title>
     <style>
       html {
-        touch-action: none;
+        /*this is important, testing removal */
+        /* touch-action: none;  */
         -webkit-touch-callout:none;
         -webkit-user-select:none;
         -moz-user-select:none;
@@ -50,10 +51,16 @@
       #redTest {
         background-color: red;
       }
+      #pop {
+        touch-action: none;
+      }
     </style>
   </head>
   <body>
-    <div style="background-color: #aaa; width: 80ch; height: 20rem; padding: 2rem;">
+    <div id="brownTest" style="overflow-y: auto; background-color: brown; height: 22rem; width: 90ch; padding: 1rem;">
+      <div id='grayTest' style="
+    background-color: #aaa; width: 100%; height: 100%;
+    ">
       <div id="greenTest" class="slider">{ self }</div>
       <div id="yellowTest" class="slider"><target>{ self { 🎯 } }</target></div>
       <div id="orangeTest" class="slider"><filler>{ self { } }</filler></div>
@@ -64,6 +71,11 @@
         <div id="subchild" style="background-color: cyan; height: 100%; width: 100%;">subchild</div>
       </div>
     </div>
+
+    <div style="height: 30rem">just spacing</div>
+
+
+  </div>
 
     <div id="info" style="overflow-y: auto; margin-top: 1rem; background-color: #333; color: #ccc; width: 100%; height: 10rem; padding:1rem;"></div>
     <h3>
@@ -100,6 +112,7 @@
         <li> For red, this incicates that pointer capture was not delegated up, with the visible slider causing interference. </li>
     </p>
     <script type="module">
+      
       const messageLog = []
       function dlog(message) {
         messageLog.push(message)
@@ -130,17 +143,50 @@
 
       Array.from(document.getElementsByClassName("slider")).forEach(setUpSlider)
 
+      function restoreTouchActions() {
+        // document.documentElement.style.touchAction = undefined
+        grayTest.style.touchAction = 'auto'
+        grayTest.style.backgroundColor = '#aaa'
+      }
+
       function setUpSlider(element) {
         element.addEventListener("pointerdown", capture)
         element.addEventListener("pointermove", hold)
         element.addEventListener("pointerup", release)
+        element.addEventListener('pointercancel', e => {
+          dlog('POINTER CANCEL')
+          console.log('cancel event: ', e)
+
+          // restoreTouchActions()
+        })
 
         element.tx = 0
       }
 
       let lastX
 
+      function lockGrayMove() {
+        grayTest.ontouchmove = e => {
+          dlog('blocking gray touchmove...')
+          e.preventDefault()
+          // e.stopPropagation()
+        }
+      }
+
+      function unlockGrayMove() {
+        grayTest.ontouchmove = undefined
+      }
+
       function capture(event) {
+        event.currentTarget.parentElement.ontouchmove = m => {
+          m.preventDefault()
+        }
+        // lockGrayMove()
+        // document.documentElement.style.touchAction = 'none'
+        // grayTest.style.touchAction = 'none'
+        // grayTest.style.backgroundColor = '#444'
+
+        console.log(grayTest.style.touchAction)
         console.log(
           "Down on:", event.currentTarget
         )
@@ -185,7 +231,8 @@
           //   "Is target:", event.target == event.currentTarget,
           //   "Is correct:", event.currentTarget.id != "redTest" && (event.currentTarget.id == "yellowTest") != (event.target == event.currentTarget)
           // )
-          console.log('currentTarget:', event.currentTarget, 'event target:', event.target)
+
+          // console.log('currentTarget:', event.currentTarget, 'event target:', event.target)
 
           // Handle visual movement of the slider
           event.currentTarget.tx += event.clientX - lastX
@@ -197,6 +244,10 @@
       }
 
       function release(event) {
+        event.currentTarget.parentElement.ontouchmove = undefined
+        // unlockGrayMove()
+        // restoreTouchActions()
+
         console.log('RELEASE / currentTarget:', event.currentTarget, 'event target:', event.target)
         let targetElement
         // Find the target element for the capture
