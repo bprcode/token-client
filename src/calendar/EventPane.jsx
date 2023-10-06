@@ -4,7 +4,7 @@ import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
 import { mockStyles, getAugmentedColor } from './mockCalendar.mjs'
-import { Box, IconButton, Zoom, useTheme } from '@mui/material'
+import { IconButton, Zoom, useTheme } from '@mui/material'
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
 
@@ -239,6 +239,9 @@ export function EventPane({
         setTimeout(() => onDelete(event.id), 350)
         return
       case 'edit':
+        /*
+        DEBUG -- now fixing Safari issue
+         */
         touchTarget.setPointerCapture(e.pointerId)
         touchTarget.onpointermove = move => {
           const distance = Math.sqrt(

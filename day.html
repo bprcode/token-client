@@ -7,14 +7,31 @@
   <!-- <script src="node_modules/dayjs/dayjs.min.js"></script> -->
 </head>
 <body>
-  <p>🦢 experimenting with day.js</p>
+  <p>🦢 experimenting with day.js~</p>
   <p>Test 2</p>
 
-  <div id="box" style="position: absolute; top: 0; left: 200px;">
-  <div style="touch-action: none; background-color: #c22; width: 100px; height: 100px; border-radius: 10%; display: grid; place-items: center;">
-    Drag Me
-  </div>
-  </div>
+  <div id="outer" style="
+  background-color: #222;
+  height: 300px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  max-width: 800px;
+  touch-action: none;
+  ">
+    <div id="box" style="
+    position: relative;
+    top: 0;
+    left: 200px;
+    width: fit-content;
+    ">
+    <div id="inner" style="touch-action: none; background-color: #22c; width: 100px; height: 100px; border-radius: 10%; display: grid; place-items: center;">
+      Drag Me
+    </div>
+    </div>
+</div>
+
+
+  <div id="log" style="background-color: #333; color: #fee; min-height: 5rem; border-radius: 8px; max-width: 80ch;"></div>
 
 </body>
 </html>
@@ -33,22 +50,55 @@
   // console.log(dayjs().utc().format())
   
   window.dayjs = dayjs
+const messageLog = []
+  function dlog(message) {
+    messageLog.push(message)
+    if (messageLog.length > 10) messageLog.shift()
+
+    log.innerHTML = messageLog.join('<br>')
+  }
+
+  
+  let touch = false
   box.addEventListener('pointercancel', e => {
     console.log('pointer cancel')
+    touch = false
+    updateColor()
+    
   })
   
+  function updateColor() {
+    console.log(touch)
+    if (touch) inner.style.backgroundColor = '#ca0'
+    else inner.style.backgroundColor = '#b40'
+  }
+
+  outer.ontouchmove = (e => {
+    dlog('outer touchmove')
+    e.preventDefault()
+    e.stopPropagation()
+  })
+
   box.addEventListener('pointerdown', e => {
+    touch = true
+    updateColor()
+    const oTarget = e.currentTarget
+    dlog('pointer down')
     console.log('pointer down')
     const offsetX = e.clientX - (window.getComputedStyle(box).left.match(/\d*/)[0])
     const offsetY = e.clientY - Number(window.getComputedStyle(box).top.match(/\d*/)[0])
     console.log('offsetX, y:', offsetX,offsetY)
-    e.currentTarget.setPointerCapture(e.pointerId)
-    e.currentTarget.onpointermove = move => {
+    oTarget.setPointerCapture(e.pointerId)
+    oTarget.onpointermove = move => {
+      dlog('pointer moved ' + (move.clientX - offsetX) + ', ' + (move.clientY - offsetY))
       box.style.left = `${move.clientX - offsetX}px`
       box.style.top = `${move.clientY - offsetY}px`
     }
-    e.currentTarget.onpointerup = up => {
-      console.log('pointer released')
+    oTarget.onpointerup = up => {
+      dlog('pointer up')
+      oTarget.onpointermove = null
+      touch = false
+      updateColor()
     }
   })
 

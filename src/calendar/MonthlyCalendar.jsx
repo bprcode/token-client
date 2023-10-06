@@ -11,7 +11,6 @@ import {
   Autocomplete,
   TextField,
   Paper,
-  useMediaQuery,
 } from '@mui/material'
 import { useMemo, useState } from 'react'
 import dayjs from 'dayjs'
