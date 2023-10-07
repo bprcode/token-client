@@ -8,14 +8,16 @@ import {
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
-import { DailyBreakdown } from './DailyBreakdown'
-import { useEffect, useRef, useState } from 'react'
+import { DailyBreakdown, MemoBreakdown } from './DailyBreakdown'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { EventPicker } from './EventPicker'
 import { createSampleEvent, usePalette } from './mockCalendar.mjs'
 import { ViewHeader } from './ViewHeader'
+
+const noop = () => {}
 
 export function DayPage({
   onBack,
@@ -36,8 +38,6 @@ export function DayPage({
 
   const [log, setLog] = useState(['foo'])
 
-  const logEntry = m => setLog(l => [...l, m])
-
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
   const [creation, setCreation] = useState(null)
@@ -45,9 +45,27 @@ export function DayPage({
 
   const [action, setAction] = useState(actionList[0])
 
+  // const logEntry = m => setLog(l => [...l, m])
+  const logEntry = useCallback(
+    m =>
+      setLog(l => {
+        const updated = [...l, m]
+        if (updated.length > 50) {
+          updated.shift()
+        }
+        return updated
+      }),
+    []
+  )
+
+  const handleUpdates = useCallback(updates => {
+    onUpdate(updates)
+    setSelection(null)
+  }, [onUpdate])
+
   return (
     <ActionContext.Provider value={action}>
-        <Logger log={log} />
+      <Logger log={log} />
 
       <Paper
         elevation={1}
@@ -94,18 +112,15 @@ export function DayPage({
           onClick={() => setSelection(null)}
           header={<DayHeader onBack={onBack} day={day} />}
         >
-          <DailyBreakdown
+          <MemoBreakdown
             day={day}
             unfilteredEvents={
               creation ? [...unfilteredEvents, creation] : unfilteredEvents
             }
             selection={selection}
-            onSelect={s => setSelection(s)}
-            onEdit={() => setEditing(true)}
-            onUpdate={updates => {
-              onUpdate(updates)
-              setSelection(null)
-            }}
+            onSelect={setSelection}
+            onEdit={setEditing}
+            onUpdate={handleUpdates}
             onDelete={onDelete}
             onLog={logEntry}
           />
@@ -192,20 +207,28 @@ function Logger({ log }) {
   const ref = useRef(null)
   useEffect(() => {
     ref.current.scrollTo(0, ref.current.scrollHeight)
-  },
-    [log])
+  }, [log])
 
-  return <Box ref={ref} sx={{
-    position: 'sticky',
-    top : 0,
-    width: '100%',
-    height: '8rem',
-    backgroundColor: '#333',
-    color: '#ccc',
-    overflowY: 'auto',
-  }}>
-    {log.map((m,i) => <div key={i}>{i}:&emsp;{m}</div>)}
-  </Box>
+  return (
+    <Box
+      ref={ref}
+      sx={{
+        position: 'sticky',
+        top: 0,
+        width: '100%',
+        height: '8rem',
+        backgroundColor: '#333',
+        color: '#ccc',
+        overflowY: 'auto',
+      }}
+    >
+      {log.map((m, i) => (
+        <div key={i}>
+          {i}:&emsp;{m}
+        </div>
+      ))}
+    </Box>
+  )
 }
 
 function DayHeader({ onBack, day }) {

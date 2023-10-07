@@ -1,6 +1,9 @@
 import { Box } from '@mui/material'
 import { EventPane } from './EventPane'
 import { isOverlap } from './dateLogic.mjs'
+import { memo } from 'react'
+
+export const MemoBreakdown = memo(DailyBreakdown)
 
 export function DailyBreakdown({
   day,
@@ -14,6 +17,9 @@ export function DailyBreakdown({
   onLog,
   labels = 'detailed',
 }) {
+  const logId = (Math.random() * 1e6).toFixed()
+  console.time(logId + ' DailyBreakdown render')
+  
   const startOfDay = day.startOf('day')
   const endOfDay = day.endOf('day')
   const startOfNextDay = day.add(1, 'day').startOf('day')
@@ -104,5 +110,6 @@ export function DailyBreakdown({
     </Box>
   )
 
+  console.timeEnd(logId + ' DailyBreakdown render')
   return rendered
 }

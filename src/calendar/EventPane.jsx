@@ -20,6 +20,8 @@ function snap15Minute(time, steps) {
   return time.minute(floor.minute() + offset * 15)
 }
 
+const noDefault = e => e.preventDefault()
+
 export function EventPane({
   initial,
   final,
@@ -250,9 +252,7 @@ export function EventPane({
         // and prevent touchMove defaults on the parent of the currentTarget.
 
         touchTarget.querySelector('.pane-inner').setPointerCapture(e.pointerId)
-        touchTarget.parentElement.ontouchmove = m => {
-          m.preventDefault()
-        }
+        touchTarget.parentElement.ontouchmove = noDefault
         
         touchTarget.onpointermove = move => {
           onLog('move 1: ' + move.clientX)
@@ -323,7 +323,7 @@ export function EventPane({
 
         if (label !== 'detailed') return
         if (selected && !ghost) {
-          return onEdit()
+          return onEdit(true)
         }
 
         onSelect(event.id)
