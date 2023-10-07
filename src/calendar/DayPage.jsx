@@ -4,20 +4,17 @@ import {
   Typography,
   Collapse,
   useMediaQuery,
-  Box,
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
-import { DailyBreakdown, MemoBreakdown } from './DailyBreakdown'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { DailyBreakdown } from './DailyBreakdown'
+import { useCallback, useState } from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { EventPicker } from './EventPicker'
 import { createSampleEvent, usePalette } from './mockCalendar.mjs'
 import { ViewHeader } from './ViewHeader'
-
-const noop = () => {}
 
 export function DayPage({
   onBack,
@@ -36,8 +33,6 @@ export function DayPage({
     summary: 'New Event',
   }
 
-  const [log, setLog] = useState(['foo'])
-
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
   const [creation, setCreation] = useState(null)
@@ -45,28 +40,16 @@ export function DayPage({
 
   const [action, setAction] = useState(actionList[0])
 
-  // const logEntry = m => setLog(l => [...l, m])
-  const logEntry = useCallback(
-    m =>
-      setLog(l => {
-        const updated = [...l, m]
-        if (updated.length > 50) {
-          updated.shift()
-        }
-        return updated
-      }),
-    []
+  const handleUpdates = useCallback(
+    updates => {
+      onUpdate(updates)
+      setSelection(null)
+    },
+    [onUpdate]
   )
-
-  const handleUpdates = useCallback(updates => {
-    onUpdate(updates)
-    setSelection(null)
-  }, [onUpdate])
 
   return (
     <ActionContext.Provider value={action}>
-      <Logger log={log} />
-
       <Paper
         elevation={1}
         sx={{
@@ -112,7 +95,7 @@ export function DayPage({
           onClick={() => setSelection(null)}
           header={<DayHeader onBack={onBack} day={day} />}
         >
-          <MemoBreakdown
+          <DailyBreakdown
             day={day}
             unfilteredEvents={
               creation ? [...unfilteredEvents, creation] : unfilteredEvents
@@ -122,7 +105,6 @@ export function DayPage({
             onEdit={setEditing}
             onUpdate={handleUpdates}
             onDelete={onDelete}
-            onLog={logEntry}
           />
         </SectionedInterval>
 
@@ -201,34 +183,6 @@ function handleCreationTap({ event, picks, day, setCreation }) {
       )
     }
   }
-}
-
-function Logger({ log }) {
-  const ref = useRef(null)
-  useEffect(() => {
-    ref.current.scrollTo(0, ref.current.scrollHeight)
-  }, [log])
-
-  return (
-    <Box
-      ref={ref}
-      sx={{
-        position: 'sticky',
-        top: 0,
-        width: '100%',
-        height: '8rem',
-        backgroundColor: '#333',
-        color: '#ccc',
-        overflowY: 'auto',
-      }}
-    >
-      {log.map((m, i) => (
-        <div key={i}>
-          {i}:&emsp;{m}
-        </div>
-      ))}
-    </Box>
-  )
 }
 
 function DayHeader({ onBack, day }) {

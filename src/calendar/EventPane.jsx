@@ -7,6 +7,7 @@ import { mockStyles, getAugmentedColor } from './mockCalendar.mjs'
 import { IconButton, Zoom, useTheme } from '@mui/material'
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
+import { useLogger } from './Logger'
 
 const noop = () => {}
 
@@ -34,11 +35,12 @@ export function EventPane({
   onEdit = noop,
   onUpdate = noop,
   onDelete = noop,
-  onLog = noop,
 }) {
   const action = useContext(ActionContext)
   const theme = useTheme()
   const selectable = label === 'detailed'
+
+  const logger = useLogger()
 
   // Remove shadow elements to improve scrolling performance on Firefox Mobile
   const hideShadows =
@@ -216,6 +218,7 @@ export function EventPane({
 
   // Interaction handlers:
   function handlePointerDown(e) {
+    logger('foo??')
     let tickSize = 24
     try {
       const inner = e.currentTarget.closest('.section-inner')
@@ -242,20 +245,13 @@ export function EventPane({
         setTimeout(() => onDelete(event.id), 350)
         return
       case 'edit':
-        /*
-        DEBUG -- now fixing Safari issue
-         */
-        onLog('setting capture')
-        // N.B. to work around this Safari setPointerCapture bug:
+        logger('setting capture')
+        // N.B. working around this Safari setPointerCapture bug:
         // https://bugs.webkit.org/show_bug.cgi?id=220196
-        // it is necessary to set capture on a child element,
-        // and prevent touchMove defaults on the parent of the currentTarget.
-
         touchTarget.querySelector('.pane-inner').setPointerCapture(e.pointerId)
-        touchTarget.parentElement.ontouchmove = noDefault
         
         touchTarget.onpointermove = move => {
-          onLog('move 1: ' + move.clientX)
+          logger('move 1: ' + move.clientX)
 
           const distance = Math.sqrt(
             (move.clientX - touchStart.x) ** 2 +
@@ -263,14 +259,14 @@ export function EventPane({
           )
 
           if (distance / tickSize > 1) {
-            onLog('starting second move...')
+            logger('starting second move...')
             setSliding(true)
             setGhost(true)
             setGhostTop(0)
             setGhostBottom(0)
 
             touchTarget.onpointermove = move => {
-              onLog('move 2: ' + move.clientX)
+              logger('move 2: ' + move.clientX)
 
               const dy = Math.round((move.clientY - touchStart.y) / tickSize)
               setGhostTop(dy)
@@ -283,6 +279,7 @@ export function EventPane({
   }
 
   function handlePointerUp(e) {
+    logger('handling pointer up')
     switch (action) {
       case 'delete':
         return
@@ -341,7 +338,7 @@ export function EventPane({
           onPointerCancel={() => {
               setSliding(false)
               setGhost(false)
-              onLog('interaction cancelled')
+              logger('interaction cancelled')
           }}
           onClick={e => {
             if (label === 'detailed') e.stopPropagation()
@@ -492,7 +489,6 @@ export function EventPane({
       </Zoom>
 
       {/* event outline ghost, displayed during drag-resizing: */}
-      {/* debug -- deactivated; testing safari workaround */}
       {ghost && (
         <div
           style={{
@@ -544,8 +540,25 @@ export function EventPane({
   )
 }
 
-function handleTabDrag(event, onAdjust, intervalSize) {
-  event.currentTarget.setPointerCapture(event.pointerId)
+function handleTabDrag(event, onAdjust, intervalSize, logger) {
+  // debug -- fixing Safari capture glitch
+  event.currentTarget.querySelector('.inner-tab').setPointerCapture(event.pointerId)
+  // event.currentTarget.setPointerCapture(event.pointerId)
+  logger('pid=' + event.pointerId)
+  // console.log('capture? =', event.currentTarget.parentElement.hasPointerCapture(event.pointerId))
+  // event.currentTarget.parentElement.ontouchmove = noDefault
+  // event.currentTarget.parentElement.parentElement.ontouchmove = noDefault
+  // event.currentTarget.parentElement.parentElement.parentElement.ontouchmove = noDefault
+  // event.currentTarget.parentElement.parentElement.parentElement.parentElement.ontouchmove = noDefault
+  // event.currentTarget.parentElement.parentElement.parentElement.parentElement.parentElement.ontouchmove = noDefault
+  // event.currentTarget.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.ontouchmove = noDefault
+  
+  // console.log(event.currentTarget.parentElement)
+  // console.log(event.currentTarget.parentElement.parentElement)
+  // console.log(event.currentTarget.parentElement.parentElement.parentElement)
+  // console.log(event.currentTarget.parentElement.parentElement.parentElement.parentElement)
+  // console.log(event.currentTarget.parentElement.parentElement.parentElement.parentElement.parentElement)
+  // console.log(event.currentTarget.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement)
 
   let tickSize = 24
   try {
@@ -563,6 +576,8 @@ function handleTabDrag(event, onAdjust, intervalSize) {
 
   const moveStart = event.clientY
   event.currentTarget.onpointermove = move => {
+    // event.currentTarget.querySelector('.outer-tab').onpointermove = move => {
+    logger('tab move: ' + move.clientX)
     onAdjust(Math.round((move.clientY - moveStart) / tickSize))
   }
 }
@@ -584,38 +599,66 @@ function PaneControls({
     onAdjustBottom(0)
   }
 
+  const logger = useLogger()
+
   return (
     <>
       {showTop && (
-        <IconButton
-          sx={{
-            zIndex: -1,
-            color: augmentedColors.contrastText,
-            backgroundColor: augmentedColors.main,
+        // <IconButton
+        //   sx={{
+        //     zIndex: -1,
+        //     color: augmentedColors.contrastText,
+        //     backgroundColor: augmentedColors.main,
+        //     position: 'absolute',
+        //     top: '0%',
+        //     left: '50%',
+        //     borderRadius: 0,
+        //     boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+        //     transform: `translate(-50%, -100%) scale(2)`,
+        //     opacity: Number(showTabs),
+        //     padding: '0 0 0.125rem 0',
+        //     '&:hover': {
+        //       backgroundColor: augmentedColors.light,
+        //     },
+        //   }}
+
+          
+        //   >
+          <div className="outer-tab" style={{
+            border: '1px solid #0fa',
+            backgroundColor: 'green',
+            touchAction: 'none',
+
             position: 'absolute',
             top: '0%',
             left: '50%',
-            borderRadius: 0,
-            boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+            width: '2rem',
+            height: '2rem',
             transform: `translate(-50%, -100%) scale(2)`,
-            opacity: Number(showTabs),
-            padding: '0 0 0.125rem 0',
-            '&:hover': {
-              backgroundColor: augmentedColors.light,
-            },
           }}
+          
           onPointerDown={e => {
             beginTabDrag()
-            handleTabDrag(e, onAdjustTop, intervalSize)
+            handleTabDrag(e, onAdjustTop, intervalSize, logger)
             e.stopPropagation()
           }}
           onPointerUp={e => {
             onGhostEnd()
             e.currentTarget.onpointermove = null
           }}
-        >
-          <AlignTopIcon />
-        </IconButton>
+          >
+          <div className="inner-tab" style={{
+            border: '1px solid #0af',
+            backgroundColor: 'blue',
+            width: '100%',
+            height: '100%',
+            // pointerEvents: 'none',
+            // touchAction: 'none',
+          }}>
+          {/* <AlignTopIcon /> */}
+          </div>
+          </div>
+        // </IconButton>
       )}
       {showBottom && (
         <IconButton

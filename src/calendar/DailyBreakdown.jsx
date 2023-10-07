@@ -3,9 +3,9 @@ import { EventPane } from './EventPane'
 import { isOverlap } from './dateLogic.mjs'
 import { memo } from 'react'
 
-export const MemoBreakdown = memo(DailyBreakdown)
+export const DailyBreakdown = memo(Breakdown)
 
-export function DailyBreakdown({
+function Breakdown({
   day,
   unfilteredEvents,
   style,
@@ -14,7 +14,6 @@ export function DailyBreakdown({
   onEdit,
   onUpdate,
   onDelete,
-  onLog,
   labels = 'detailed',
 }) {
   const logId = (Math.random() * 1e6).toFixed()
@@ -104,7 +103,6 @@ export function DailyBreakdown({
           onEdit={onEdit}
           onUpdate={onUpdate}
           onDelete={onDelete}
-          onLog={onLog}
         />
       ))}
     </Box>

@@ -30,12 +30,14 @@ import { ToggleMenuContext, LayoutContext } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@emotion/react'
 import hourglassPng from './assets/hourglass2.png'
+import { LoggerProvider } from './calendar/Logger'
 const currentDate = dayjs()
 
 function RootLayout({ children }) {
   const [expand, setExpand] = useState(false)
   const layoutQuery = useMediaQuery('(max-width: 600px)') ? 'mobile' : 'wide'
 
+  console.log('rendering root')
   return (
     <LayoutContext.Provider value={layoutQuery}>
       <ToggleMenuContext.Provider value={setExpand}>
@@ -164,6 +166,8 @@ function Demo() {
   const [expandedDate, setExpandedDate] = useState(null)
 
   return (
+    <LoggerProvider>
+
     <RootLayout>
       <Paper
         elevation={1}
@@ -274,6 +278,7 @@ function Demo() {
         </TransitionGroup>
       </Paper>
     </RootLayout>
+    </LoggerProvider>
   )
 }
 
