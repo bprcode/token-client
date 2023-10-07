@@ -359,13 +359,12 @@ export function EventPane({
             userSelect: 'none',
           }}
         >
-          {/* {overflowArrows} */}
+          {overflowArrows}
 
           {/* Inner container -- overflow hidden */}
           <div
             className="pane-inner"
             style={{
-              touchAction: 'none',
               boxShadow:
                 label === 'none' && `0px 0px 0.75rem ${shadeColor} inset`,
               ...borderStyles,
@@ -382,8 +381,10 @@ export function EventPane({
             }}
           >
             {/* pane header */}
-            {/* <div
+            <div
               style={{
+                touchAction: 'none',
+                pointerEvents: 'none',
                 backgroundColor: selected ? augmentedColors.light : accentColor,
                 color: augmentedColors.contrastText,
                 paddingLeft: '0.25rem',
@@ -393,9 +394,9 @@ export function EventPane({
               }}
             >
               {header}
-            </div> */}
+            </div>
             {/* pane body */}
-            {/* {selected && (
+            {selected && (
               <PaneControls
                 augmentedColors={augmentedColors}
                 intervalSize={intervalSize}
@@ -425,11 +426,13 @@ export function EventPane({
                   setGhostTop(offset)
                 }}
               />
-            )} */}
+            )}
 
-            {/* {details && (
+            {details && (
               <div
                 style={{
+                  touchAction: 'none',
+                pointerEvents: 'none',
                   display: 'flex',
                   flexGrow: 1,
                   overflow: 'hidden',
@@ -483,7 +486,7 @@ export function EventPane({
                   />
                 )}
               </div>
-            )} */}
+            )}
           </div>
         </div>
       </Zoom>
