@@ -402,7 +402,7 @@ export function EventPane({
                 showTabs={!ghost}
                 onGhostStart={() => setGhost(true)}
                 onGhostEnd={() => {
-                  logger('ghost-end triggered') // DEBUG -- probably setSliding false?
+                  setSliding(false)
                   const updates = {
                     id: event.id,
                     start: ghostTop !== 0 && {
@@ -588,6 +588,7 @@ function PaneControls({
   const iconColor = augmentedColors.contrastText
 
   const IconButtonStyles = {
+    padding: 0,
     width: '3rem',
     height: '3rem',
     zIndex: -1,
@@ -608,13 +609,14 @@ function PaneControls({
     <>
       {showTop && (
         <IconButton
+          className="top-button"
           sx={{
             ...IconButtonStyles,
             top: '6px',
             transform: `translate(-50%, -100%)`,
           }}
           onPointerDown={e => {
-            logger('top tab down')
+            logger('top tab down, t=' + e.target.classList[0])
             beginTabDrag()
             handleTabDrag(e, onAdjustTop, intervalSize, logger)
             e.stopPropagation()
@@ -640,6 +642,7 @@ function PaneControls({
             }}
           >
             <AlignTopIcon
+              className="arrow-icon"
               sx={{
                 pointerEvents: 'none',
                 touchAction: 'none',
