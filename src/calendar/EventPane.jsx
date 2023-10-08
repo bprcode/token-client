@@ -21,8 +21,6 @@ function snap15Minute(time, steps) {
   return time.minute(floor.minute() + offset * 15)
 }
 
-const noDefault = e => e.preventDefault()
-
 export function EventPane({
   initial,
   final,
@@ -115,7 +113,7 @@ export function EventPane({
   const verboseBackground = selected && selectable ? '#6e2a08' : '#223'
 
   let borderColor = accentColor
-  if (selected) borderColor = theme.palette.secondary.main
+  if (selected) borderColor = theme.palette.secondary.light
   if (ghost) borderColor = augmentedColors.main
 
   const roomForIcon = fragmentEnd.diff(fragmentStart) / (60 * 1000) > 45
@@ -249,7 +247,7 @@ export function EventPane({
         // N.B. working around this Safari setPointerCapture bug:
         // https://bugs.webkit.org/show_bug.cgi?id=220196
         touchTarget.querySelector('.pane-inner').setPointerCapture(e.pointerId)
-        
+
         touchTarget.onpointermove = move => {
           logger('move 1: ' + move.clientX)
 
@@ -336,9 +334,9 @@ export function EventPane({
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerCancel={() => {
-              setSliding(false)
-              setGhost(false)
-              logger('interaction cancelled')
+            setSliding(false)
+            setGhost(false)
+            logger('interaction cancelled')
           }}
           onClick={e => {
             if (label === 'detailed') e.stopPropagation()
@@ -351,7 +349,8 @@ export function EventPane({
             height: (windowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
             zIndex: selected ? 3 : 2,
-            transition: 'top 0.35s ease-out, height 0.35s ease-out',
+            transition:
+              'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out',
             opacity: ghost && 0.5,
             userSelect: 'none',
           }}
@@ -429,7 +428,7 @@ export function EventPane({
               <div
                 style={{
                   touchAction: 'none',
-                pointerEvents: 'none',
+                  pointerEvents: 'none',
                   display: 'flex',
                   flexGrow: 1,
                   overflow: 'hidden',
@@ -454,8 +453,7 @@ export function EventPane({
                     <EditIcon
                       fontSize="large"
                       sx={{
-                        color: augmentedColors.light,
-
+                        color: theme.palette.secondary.light,
                         borderRadius: '50%',
                         padding: '0.625rem',
                         scale: '2.5',
@@ -530,8 +528,8 @@ export function EventPane({
             height: (windowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
             boxShadow: !selected && '0.25rem 0.5rem 1.5rem #0008',
-            transition: 'top 0.35s ease-out, height 0.35s ease-out',
-
+            transition:
+              'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out',
             zIndex: 1,
           }}
         />
@@ -541,24 +539,10 @@ export function EventPane({
 }
 
 function handleTabDrag(event, onAdjust, intervalSize, logger) {
-  // debug -- fixing Safari capture glitch
-  event.currentTarget.querySelector('.inner-tab').setPointerCapture(event.pointerId)
-  // event.currentTarget.setPointerCapture(event.pointerId)
-  logger('pid=' + event.pointerId)
-  // console.log('capture? =', event.currentTarget.parentElement.hasPointerCapture(event.pointerId))
-  // event.currentTarget.parentElement.ontouchmove = noDefault
-  // event.currentTarget.parentElement.parentElement.ontouchmove = noDefault
-  // event.currentTarget.parentElement.parentElement.parentElement.ontouchmove = noDefault
-  // event.currentTarget.parentElement.parentElement.parentElement.parentElement.ontouchmove = noDefault
-  // event.currentTarget.parentElement.parentElement.parentElement.parentElement.parentElement.ontouchmove = noDefault
-  // event.currentTarget.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement.ontouchmove = noDefault
-  
-  // console.log(event.currentTarget.parentElement)
-  // console.log(event.currentTarget.parentElement.parentElement)
-  // console.log(event.currentTarget.parentElement.parentElement.parentElement)
-  // console.log(event.currentTarget.parentElement.parentElement.parentElement.parentElement)
-  // console.log(event.currentTarget.parentElement.parentElement.parentElement.parentElement.parentElement)
-  // console.log(event.currentTarget.parentElement.parentElement.parentElement.parentElement.parentElement.parentElement)
+  // Set capture to inner div for Safari workaround
+  event.currentTarget
+    .querySelector('.inner-tab')
+    .setPointerCapture(event.pointerId)
 
   let tickSize = 24
   try {
@@ -576,7 +560,6 @@ function handleTabDrag(event, onAdjust, intervalSize, logger) {
 
   const moveStart = event.clientY
   event.currentTarget.onpointermove = move => {
-    // event.currentTarget.querySelector('.outer-tab').onpointermove = move => {
     logger('tab move: ' + move.clientX)
     onAdjust(Math.round((move.clientY - moveStart) / tickSize))
   }
@@ -600,43 +583,34 @@ function PaneControls({
   }
 
   const logger = useLogger()
+  const iconColor = augmentedColors.contrastText
+
+  const IconButtonStyles = {
+    width: '3rem',
+    height: '3rem',
+    zIndex: -1,
+    backgroundColor: augmentedColors.main,
+    position: 'absolute',
+
+    left: '50%',
+    borderRadius: 0,
+    boxShadow: '0.25rem 0.25rem 0.5rem #0008',
+
+    opacity: Number(showTabs),
+    '&:hover': {
+      backgroundColor: augmentedColors.light,
+    },
+  }
 
   return (
     <>
       {showTop && (
-        // <IconButton
-        //   sx={{
-        //     zIndex: -1,
-        //     color: augmentedColors.contrastText,
-        //     backgroundColor: augmentedColors.main,
-        //     position: 'absolute',
-        //     top: '0%',
-        //     left: '50%',
-        //     borderRadius: 0,
-        //     boxShadow: '0.25rem 0.25rem 0.5rem #0008',
-        //     transform: `translate(-50%, -100%) scale(2)`,
-        //     opacity: Number(showTabs),
-        //     padding: '0 0 0.125rem 0',
-        //     '&:hover': {
-        //       backgroundColor: augmentedColors.light,
-        //     },
-        //   }}
-
-          
-        //   >
-          <div className="outer-tab" style={{
-            border: '1px solid #0fa',
-            backgroundColor: 'green',
-            touchAction: 'none',
-
-            position: 'absolute',
-            top: '0%',
-            left: '50%',
-            width: '2rem',
-            height: '2rem',
-            transform: `translate(-50%, -100%) scale(2)`,
+        <IconButton
+          sx={{
+            ...IconButtonStyles,
+            top: '6px',
+            transform: `translate(-50%, -100%)`,
           }}
-          
           onPointerDown={e => {
             beginTabDrag()
             handleTabDrag(e, onAdjustTop, intervalSize, logger)
@@ -646,42 +620,40 @@ function PaneControls({
             onGhostEnd()
             e.currentTarget.onpointermove = null
           }}
+        >
+          <div
+            className="inner-tab"
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingTop: '3px',
+            }}
           >
-          <div className="inner-tab" style={{
-            border: '1px solid #0af',
-            backgroundColor: 'blue',
-            width: '100%',
-            height: '100%',
-            // pointerEvents: 'none',
-            // touchAction: 'none',
-          }}>
-          {/* <AlignTopIcon /> */}
+            <AlignTopIcon
+              sx={{
+                pointerEvents: 'none',
+                touchAction: 'none',
+                transform: 'scale(2)',
+                color: iconColor,
+              }}
+            />
           </div>
-          </div>
-        // </IconButton>
+        </IconButton>
       )}
       {showBottom && (
         <IconButton
-          className="drag-handle"
           sx={{
-            zIndex: -1,
-            color: augmentedColors.contrastText,
-            backgroundColor: augmentedColors.main,
-            position: 'absolute',
-            top: '100%',
-            left: '50%',
-            borderRadius: 0,
-            boxShadow: '0.25rem 0.25rem 0.5rem #0008',
-            transform: `translate(-50%, 0%) scale(2)`,
-            opacity: Number(showTabs),
-            padding: '0 0 0.125rem 0',
-            '&:hover': {
-              backgroundColor: augmentedColors.light,
-            },
+            ...IconButtonStyles,
+
+            top: 'calc(100% - 6px)',
+            transform: `translate(-50%, 0%)`,
           }}
           onPointerDown={e => {
             beginTabDrag()
-            handleTabDrag(e, onAdjustBottom, intervalSize)
+            handleTabDrag(e, onAdjustBottom, intervalSize, logger)
             e.stopPropagation()
           }}
           onPointerUp={e => {
@@ -689,7 +661,26 @@ function PaneControls({
             e.currentTarget.onpointermove = null
           }}
         >
-          <AlignBottomIcon />
+          <div
+            className="inner-tab"
+            style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              paddingBottom: '3px',
+            }}
+          >
+            <AlignBottomIcon
+              sx={{
+                pointerEvents: 'none',
+                touchAction: 'none',
+                transform: 'scale(2)',
+                color: iconColor,
+              }}
+            />
+          </div>
         </IconButton>
       )}
     </>
