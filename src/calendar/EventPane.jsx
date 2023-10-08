@@ -110,7 +110,7 @@ export function EventPane({
 
   const accentColor = augmentedColors.main
   const shadeColor = augmentedColors.dark
-  const verboseBackground = selected && selectable ? '#6e2a08' : '#223'
+  const verboseBackground = selected && selectable ? '#6e2a08' : '#222233'
 
   let borderColor = accentColor
   if (selected) borderColor = theme.palette.secondary.light
@@ -459,7 +459,7 @@ export function EventPane({
                         scale: '2.5',
                         backgroundImage:
                           'radial-gradient' +
-                          '(closest-side, #7e2f08 5%, transparent)',
+                          '(closest-side, #7e2f08 5%, #7e2f0800)',
                       }}
                     />
                   </IconButton>
@@ -476,7 +476,7 @@ export function EventPane({
                       background:
                         !selected &&
                         `linear-gradient(to top, ` +
-                          `${verboseBackground}, transparent)`,
+                          `${verboseBackground}, ${verboseBackground+'00'})`,
                     }}
                   />
                 )}
@@ -618,7 +618,11 @@ function PaneControls({
           }}
           onPointerUp={e => {
             onGhostEnd()
+            logger('top-up')
             e.currentTarget.onpointermove = null
+          }}
+          onPointerCancel={e => {
+            logger('🙀 pointer tab cancel')
           }}
         >
           <div
@@ -658,7 +662,11 @@ function PaneControls({
           }}
           onPointerUp={e => {
             onGhostEnd()
+            logger('bottom-up')
             e.currentTarget.onpointermove = null
+          }}
+          onPointerCancel={e => {
+            logger('🙀 pointer tab cancel')
           }}
         >
           <div
