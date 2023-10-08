@@ -51,6 +51,9 @@ export function EventPane({
   const [ghostBottom, setGhostBottom] = useState(0)
   const [deleting, setDeleting] = useState(false)
 
+  const duration =
+            event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
+
   const overflowBefore = event.start.dateTime.isBefore(initial)
   const overflowAfter = event.end.dateTime.isAfter(final)
   // Crop the event duration to fit the window
@@ -170,17 +173,16 @@ export function EventPane({
           paddingRight: '0.25rem',
         }}
       >
-        {event.start.dateTime.format('MMM DD HH:mm:ss')} &ndash;{' '}
-        {event.end.dateTime.format('MMM DD HH:mm:ss')}
+        {duration < 60 ? duration + ' minutes' : duration/60 + ' hour' + (duration > 60 ? 's' : '')}<br />
+        {/* {event.start.dateTime.format('MMM DD HH:mm:ss')} &ndash;{' '}
+        {event.end.dateTime.format('MMM DD HH:mm:ss')} */}
         {event.description && (
           <>
-            <br />
-            {event.description}
+            ID:{event.id}
             <br />
             colorId:{event.colorId}
             <br />
-            {accentColor}
-            <br />
+            
           </>
         )}
       </div>
@@ -278,6 +280,8 @@ export function EventPane({
 
   function handlePointerUp(e) {
     logger('handling pointer up')
+    setGhost(false)
+
     switch (action) {
       case 'delete':
         return
@@ -286,15 +290,12 @@ export function EventPane({
         e.currentTarget.onpointermove = null
 
         if (sliding) {
-          setGhost(false)
           setGhostTop(0)
           setGhostBottom(0)
           setSliding(false)
           onSelect(null)
           e.currentTarget.onpointermove = null
 
-          const duration =
-            event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
 
           const newStart = overflowBefore
             ? ghostSnapEnd.subtract(duration, 'minutes')
@@ -401,6 +402,7 @@ export function EventPane({
                 showTabs={!ghost}
                 onGhostStart={() => setGhost(true)}
                 onGhostEnd={() => {
+                  logger('ghost-end triggered') // DEBUG -- probably setSliding false?
                   const updates = {
                     id: event.id,
                     start: ghostTop !== 0 && {
@@ -612,6 +614,7 @@ function PaneControls({
             transform: `translate(-50%, -100%)`,
           }}
           onPointerDown={e => {
+            logger('top tab down')
             beginTabDrag()
             handleTabDrag(e, onAdjustTop, intervalSize, logger)
             e.stopPropagation()
@@ -656,6 +659,7 @@ function PaneControls({
             transform: `translate(-50%, 0%)`,
           }}
           onPointerDown={e => {
+            logger('bottom tab down')
             beginTabDrag()
             handleTabDrag(e, onAdjustBottom, intervalSize, logger)
             e.stopPropagation()

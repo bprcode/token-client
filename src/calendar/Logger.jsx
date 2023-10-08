@@ -1,5 +1,5 @@
 import { Box } from "@mui/material"
-import { createContext, useCallback, useContext, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 
 export const LoggerContext = createContext(null)
 
@@ -13,7 +13,7 @@ export function LoggerProvider({children}) {
   const addEntry = useCallback(entry => {
     setLog(l => {
       const updated = [...l, entry]
-      if (updated.length > 4) {updated.shift()}
+      if (updated.length > 50) {updated.shift()}
       return updated
     })
   }, [])
@@ -26,10 +26,10 @@ export function LoggerProvider({children}) {
 
 export function Logger({ log }) {
   const ref = useRef(null)
-  // useEffect(() => {
-  //   ref.current.scrollTo(0, ref.current.scrollHeight)
-  // }, [log])
-
+  useEffect(() => {
+    ref.current.scrollTo(0, ref.current.scrollHeight)
+  }, [log])
+  
   return (
     <Box
       ref={ref}
@@ -40,7 +40,7 @@ export function Logger({ log }) {
         height: '6rem',
         backgroundColor: '#f33',
         color: '#ccc',
-        overflow: 'hidden',
+        overflowY: 'auto',
         zIndex: 9,
       }}
     >
