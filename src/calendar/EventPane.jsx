@@ -173,9 +173,8 @@ export function EventPane({
           paddingRight: '0.25rem',
         }}
       >
-        {duration < 60 ? duration + ' minutes' : duration/60 + ' hour' + (duration > 60 ? 's' : '')}<br />
-        {/* {event.start.dateTime.format('MMM DD HH:mm:ss')} &ndash;{' '}
-        {event.end.dateTime.format('MMM DD HH:mm:ss')} */}
+        {duration >= 60 && Math.floor(duration / 60) + 'h'}&nbsp;
+        {duration % 60 !== 0 && duration % 60 + 'm'}<br/>
         {event.description && (
           <>
             ID:{event.id}
