@@ -23,6 +23,7 @@ export function SectionedInterval({
   useEffect(() => {
     console.log('useEffect draft~')
 
+    let skipFirst = true
     const target = document.querySelector('.blue-box')
     const viewHeader = document.querySelector('.view-header')
     const observer = new IntersectionObserver(watchEnd, {
@@ -32,6 +33,11 @@ export function SectionedInterval({
 
     observer.observe(document.querySelector('.blue-box'))
     function watchEnd() {
+      if (skipFirst) {
+        logger('skipping first observer callback')
+        skipFirst = false
+        return
+      }
       logger('observer callback' + Math.random())
       viewHeader.scrollIntoView()
     }
@@ -108,7 +114,7 @@ export function SectionedInterval({
             height: insideHeight,
             paddingLeft: ['0.5rem', '5rem'],
             paddingRight: '0.5rem',
-            marginBottom: endMargin,
+            // marginBottom: endMargin,
           }}
         >
           {children}
