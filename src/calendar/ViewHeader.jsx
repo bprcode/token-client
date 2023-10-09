@@ -13,12 +13,13 @@ export function ViewHeader({ children }) {
   return (
     <AppBar
       position="sticky"
+      className="view-header"
       sx={{
         boxShadow: 'none',
         borderBottom: `1px solid #0127`,
         backgroundColor: disableBlur ? '#1f292be1' : '#1f292bc1',
         backgroundImage: 'none',
-        zIndex: 2,
+        zIndex: 3,
       }}
     >
       <Toolbar

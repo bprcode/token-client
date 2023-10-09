@@ -71,7 +71,7 @@ function OverlayBar({ children }) {
         position: 'absolute',
         right: '8px',
         top: '8px',
-        zIndex: 3,
+        zIndex: 4,
       }}
     >
       {children}

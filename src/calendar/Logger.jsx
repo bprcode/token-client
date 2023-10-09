@@ -35,8 +35,8 @@ export function Logger({ log }) {
       ref={ref}
       sx={{
         position: 'fixed',
-        top: 0,
-        width: '60ch',
+        top: '4rem',
+        width: '40ch',
         height: '6rem',
         backgroundColor: '#f33',
         color: '#ccc',
