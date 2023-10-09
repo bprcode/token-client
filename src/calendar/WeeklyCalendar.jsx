@@ -12,12 +12,20 @@ import { useMemo, useState } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
+import { useLogger } from './Logger'
+import { isOverlap } from './dateLogic.mjs'
 
 function CalendarBody({ date, eventList, onExpand }) {
-  return useMemo(() => {
+  const logger = useLogger()
+  const benchStart = performance.now()
+
+  const rv = useMemo(() => {
     const days = []
     const startOfWeek = date.startOf('week')
     const endOfWeek = date.endOf('week')
+
+    const weekEvents = eventList.filter(e =>
+      isOverlap(startOfWeek, endOfWeek, e.start.dateTime, e.end.dateTime))
 
     let d = startOfWeek
     while (d.isBefore(endOfWeek)) {
@@ -58,7 +66,7 @@ function CalendarBody({ date, eventList, onExpand }) {
 
             <DailyBreakdown
               day={d}
-              unfilteredEvents={eventList}
+              unfilteredEvents={weekEvents}
               style={{ height: '350px' }}
               labels="none"
             />
@@ -67,6 +75,11 @@ function CalendarBody({ date, eventList, onExpand }) {
       </div>
     )
   }, [date, eventList, onExpand])
+
+  const benchEnd = performance.now()
+  setTimeout(() => logger('CalendarBody rendered in ' + (benchEnd - benchStart) + ' ms'), 1000)
+
+  return rv
 }
 
 export function WeeklyCalendar({
@@ -75,6 +88,11 @@ export function WeeklyCalendar({
   onExpand,
   eventList = [],
 }) {
+  const logger = useLogger()
+  const logId = Math.round(Math.random()*1e6)
+  console.time(logId + ' WeeklyCalendar rendered')
+
+  const benchStart = performance.now()
   const isSmall = useMediaQuery('(max-width: 600px)')
   const [date, setDate] = useState(initialDate)
 
@@ -85,8 +103,7 @@ export function WeeklyCalendar({
   ? sunday.format('MMM D') + ' – ' + saturday.format(isRollover ? 'MMM D' : 'D')
     :'Week of ' + sunday.format('MMMM D, YYYY')
 
-  return (
-    <Stack
+  const rv = <Stack
       direction="column"
       sx={{
         mx: 'auto',
@@ -132,5 +149,9 @@ export function WeeklyCalendar({
 
       <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
     </Stack>
-  )
+  
+  console.timeEnd(logId + ' WeeklyCalendar rendered')
+  const benchEnd = performance.now()
+  setTimeout(() => logger(logId + ' WeeklyCalendar rendered in ' + (benchEnd - benchStart) + ' ms'), 1000)
+  return rv
 }

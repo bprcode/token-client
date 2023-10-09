@@ -159,7 +159,7 @@ function Demo() {
   const preferences = useContext(PreferencesContext)
   const [eventListHistory, dispatchEventListHistory] = useEventListHistory()
   const eventList = eventListHistory[eventListHistory.length - 1]
-  const dispatchEventList = dispatchEventListHistory
+  const dispatchAction = dispatchEventListHistory
   const canUndo = eventListHistory.length > 1
 
   const [view, setView] = useState('month')
@@ -249,14 +249,14 @@ function Demo() {
                   day={expandedDate || dayjs()}
                   unfilteredEvents={eventList}
                   onCreate={addition =>
-                    dispatchEventList({
+                    dispatchAction({
                       type: 'create',
                       merge: preferences.merge,
                       addition,
                     })
                   }
                   onUpdate={updates =>
-                    dispatchEventList({
+                    dispatchAction({
                       type: 'update',
                       id: updates.id,
                       merge: preferences.merge,
@@ -264,12 +264,12 @@ function Demo() {
                     })
                   }
                   onDelete={id =>
-                    dispatchEventList({
+                    dispatchAction({
                       type: 'delete',
                       id: id,
                     })
                   }
-                  onUndo={() => dispatchEventList({ type: 'undo' })}
+                  onUndo={() => dispatchAction({ type: 'undo' })}
                   canUndo={canUndo}
                 />
               </div>

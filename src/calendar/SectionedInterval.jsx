@@ -21,8 +21,6 @@ export function SectionedInterval({
   // the following useEffect is solely to fix a Safari bug where scrolling to
   // the end of the page can cause position: sticky elements to disappear.
   useEffect(() => {
-    console.log('useEffect draft~')
-
     let skipFirst = true
     const target = document.querySelector('.blue-box')
     const viewHeader = document.querySelector('.view-header')
