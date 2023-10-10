@@ -21,9 +21,6 @@ function Breakdown({
   const logger = useLogger()
   const benchStart = performance.now()
 
-  const logId = (Math.random() * 1e6).toFixed()
-  console.time(logId + ' DailyBreakdown render')
-
   const startOfDay = day.startOf('day')
   const startOfNextDay = day.add(1, 'day').startOf('day')
 
@@ -123,7 +120,6 @@ function Breakdown({
     </Box>
   )
 
-  console.timeEnd(logId + ' DailyBreakdown render')
   const benchEnd = performance.now()
   setTimeout(
     () =>

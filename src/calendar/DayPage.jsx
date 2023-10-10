@@ -135,7 +135,6 @@ function CreationDrawer({ action, picks, onPick }) {
   return (
     <div style={{ zIndex: 2, position, bottom: 0, width: '100%' }}>
       <Collapse in={action === 'create'}>
-        {position}
         <EventPicker picks={picks} onPick={onPick} />
       </Collapse>
     </div>
@@ -161,6 +160,7 @@ function handleCreationTap({ event, picks, day, setCreation }) {
     })
   )
 
+  console.log('ct=', event.currentTarget)
   event.currentTarget.setPointerCapture(event.pointerId)
   let lastDragDuration = 15
 

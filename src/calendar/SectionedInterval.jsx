@@ -87,6 +87,7 @@ export function SectionedInterval({
         width: '100%',
         height: '100%',
         overflowY: 'auto',
+        // touchAction: 'none',
       }}
     >
       {header}
@@ -94,6 +95,10 @@ export function SectionedInterval({
         className="section-outer"
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
+        onPointerCancel={e => {
+          console.log('😼 pointer cancel')
+          onPointerUp(e)
+        }}
         onClick={onClick}
         style={{
           paddingTop: '1.5rem',
