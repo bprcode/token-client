@@ -94,7 +94,11 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
 
   return useMemo(() => {
     const date = dayjs().date(activeDay).month(activeMonth).year(activeYear)
-    log(`🧮 (${(Math.random() * 1000).toFixed()}) memoizing grid calendar`)
+    log(
+      `🧮 (${(Math.random() * 1000).toFixed()}) memoizing grid calendar (${
+        unfilteredEvents.length
+      })`
+    )
 
     const days = []
     const today = dayjs()
@@ -265,7 +269,7 @@ function MonthHeader({ date, onChange }) {
             '&&& .MuiSelect-select': {
               paddingRight: 0,
               marginRight: [1.25, 1.5],
-              transform: [undefined, 'translateY(4px)']
+              transform: [undefined, 'translateY(4px)'],
             },
           }}
           value={month}

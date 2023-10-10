@@ -10,6 +10,7 @@ function Breakdown({
   day,
   unfilteredEvents,
   filteredEvents,
+  mockEvent,
   style,
   selection,
   onSelect,
@@ -25,7 +26,12 @@ function Breakdown({
   const startOfNextDay = day.add(1, 'day').startOf('day')
 
   const { blocking, columns, relevantEvents } = useMemo(() => {
-    console.log('📦 memoizing blocking, columns, relevantEvents')
+    console.log(
+      `📦 memoizing blocking, columns, relevantEvents (${
+        filteredEvents?.length || unfilteredEvents.length
+      })`
+    )
+    setTimeout(() => logger('📦 memoizing blocking'), 1000)
 
     const startOfDay = day.startOf('day')
     const endOfDay = day.endOf('day')
@@ -85,7 +91,37 @@ function Breakdown({
     }
 
     return { blocking, columns, relevantEvents }
-  }, [unfilteredEvents, filteredEvents, day])
+  }, [unfilteredEvents, filteredEvents, day, logger])
+
+  // If an additional mock event should be rendered, calculate its position
+  let mockPosition = 0
+  if (mockEvent) {
+    for (const column of columns) {
+      let available = true
+      for (const entry of column) {
+        if (
+          isOverlap(
+            entry.start.dateTime,
+            entry.end.dateTime,
+            mockEvent.start.dateTime,
+            mockEvent.end.dateTime
+          )
+        ) {
+          available = false
+          break
+        }
+      }
+      if (available) {
+        break
+      }
+      mockPosition++
+    }
+    // handle edge case: no room to place event
+    // just draw it in the first column to avoid recalculating the blocking
+    if (mockPosition >= columns.length) {
+      mockPosition = 0
+    }
+  }
 
   const margin =
     columns.length <= 2 && labels === 'detailed' ? '4.5rem' : undefined
@@ -115,8 +151,20 @@ function Breakdown({
           onEdit={onEdit}
           onUpdate={onUpdate}
           onDelete={onDelete}
+          transitions={true}
         />
       ))}
+      {mockEvent && (
+        <EventPane
+          initial={startOfDay}
+          final={startOfNextDay}
+          event={mockEvent}
+          indent={mockPosition}
+          label={labels}
+          columns={columns.length}
+          transitions={false}
+        />
+      )}
     </Box>
   )
 

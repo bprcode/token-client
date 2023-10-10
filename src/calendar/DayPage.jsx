@@ -8,7 +8,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
@@ -16,6 +16,8 @@ import { EventPicker } from './EventPicker'
 import { createSampleEvent, usePalette } from './mockCalendar.mjs'
 import { ViewHeader } from './ViewHeader'
 import { useNarrowCheck } from './LayoutContext.mjs'
+
+const sectionStep = [1, 'hour']
 
 export function DayPage({
   onBack,
@@ -28,6 +30,9 @@ export function DayPage({
   unfilteredEvents,
   filteredEvents,
 }) {
+  const startOfDay = useMemo(() => day.startOf('day'), [day])
+  const endOfDay = useMemo(() => day.endOf('day'), [day])
+
   const palette = usePalette()
   const defaultEventPicks = {
     type: 'Custom',
@@ -73,9 +78,9 @@ export function DayPage({
           }}
         />
         <SectionedInterval
-          initial={day.startOf('day')}
-          final={day.endOf('day')}
-          step={[1, 'hour']}
+          initial={startOfDay}
+          final={endOfDay}
+          step={sectionStep}
           outsideHeight="100%"
           insideHeight="1800px"
           endMargin={'16.25rem'}
@@ -100,13 +105,9 @@ export function DayPage({
         >
           <DailyBreakdown
             day={day}
-            unfilteredEvents={
-              creation ? [...unfilteredEvents, creation] : unfilteredEvents
-            }
-            filteredEvents={
-              filteredEvents &&
-              (creation ? [...filteredEvents, creation] : filteredEvents)
-            }
+            unfilteredEvents={unfilteredEvents}
+            filteredEvents={filteredEvents}
+            mockEvent={creation}
             selection={selection}
             onSelect={setSelection}
             onEdit={setEditing}

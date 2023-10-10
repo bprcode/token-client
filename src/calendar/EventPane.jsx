@@ -29,6 +29,7 @@ export function EventPane({
   columns = 1,
   label = 'detailed',
   selected,
+  transitions,
   onSelect = noop,
   onEdit = noop,
   onUpdate = noop,
@@ -51,8 +52,7 @@ export function EventPane({
   const [ghostBottom, setGhostBottom] = useState(0)
   const [deleting, setDeleting] = useState(false)
 
-  const duration =
-            event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
+  const duration = event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
 
   const overflowBefore = event.start.dateTime.isBefore(initial)
   const overflowAfter = event.end.dateTime.isAfter(final)
@@ -174,14 +174,14 @@ export function EventPane({
         }}
       >
         {duration >= 60 && Math.floor(duration / 60) + 'h'}&nbsp;
-        {duration % 60 !== 0 && duration % 60 + 'm'}<br/>
+        {duration % 60 !== 0 && (duration % 60) + 'm'}
+        <br />
         {event.description && (
           <>
             ID:{event.id}
             <br />
             colorId:{event.colorId}
             <br />
-            
           </>
         )}
       </div>
@@ -295,7 +295,6 @@ export function EventPane({
           onSelect(null)
           e.currentTarget.onpointermove = null
 
-
           const newStart = overflowBefore
             ? ghostSnapEnd.subtract(duration, 'minutes')
             : ghostSnapStart
@@ -349,8 +348,9 @@ export function EventPane({
             height: (windowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
             zIndex: selected ? 3 : 2,
-            transition:
-              'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out',
+            transition: transitions
+              ? 'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out'
+              : undefined,
             opacity: ghost && 0.5,
             userSelect: 'none',
           }}
@@ -477,7 +477,7 @@ export function EventPane({
                       background:
                         !selected &&
                         `linear-gradient(to top, ` +
-                          `${verboseBackground}, ${verboseBackground+'00'})`,
+                          `${verboseBackground}, ${verboseBackground + '00'})`,
                     }}
                   />
                 )}
@@ -529,8 +529,9 @@ export function EventPane({
             height: (windowLength / intervalSize) * 100 + '%',
             width: 100 / columns + '%',
             boxShadow: !selected && '0.25rem 0.5rem 1.5rem #0008',
-            transition:
-              'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out',
+            transition: transitions
+              ? 'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out'
+              : undefined,
             zIndex: 1,
           }}
         />
@@ -625,7 +626,7 @@ function PaneControls({
             logger('top-up')
             e.currentTarget.onpointermove = null
           }}
-          onPointerCancel={e => {
+          onPointerCancel={() => {
             logger('🙀 pointer tab cancel')
           }}
         >
@@ -671,7 +672,7 @@ function PaneControls({
             logger('bottom-up')
             e.currentTarget.onpointermove = null
           }}
-          onPointerCancel={e => {
+          onPointerCancel={() => {
             logger('🙀 pointer tab cancel')
           }}
         >

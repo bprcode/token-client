@@ -1,7 +1,7 @@
 import { Box } from '@mui/material'
 import { gradualShades } from '../blueDigitalTheme'
 import { useLogger } from './Logger'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 
 export function SectionedInterval({
   initial,
@@ -18,7 +18,6 @@ export function SectionedInterval({
   header,
 }) {
   const logger = useLogger()
-  const benchStart = performance.now()
 
   // the following useEffect is solely to fix a Safari bug where scrolling to
   // the end of the page can cause position: sticky elements to disappear.
@@ -48,42 +47,45 @@ export function SectionedInterval({
     }
   }, [logger])
 
-  const sections = []
-  let t = initial
-  const t1 = initial.add(...step)
-  const stepPercentage = (100 * t1.diff(initial)) / final.diff(initial)
-  let n = 0
-  let j = -1
-  while (t.isBefore(final)) {
-    j++
-    sections.push(
-      <div
-        key={sections.length}
-        style={{
-          position: 'absolute',
-          top: `${n * stepPercentage}%`,
-          left: 0,
-          height: stepPercentage + '%',
-          width: '100%',
-          color: '#fff4',
-          backgroundColor: gradualShades(j),
-        }}
-      >
-        <span
+  const sections = useMemo(() => {
+    const sections = []
+    let t = initial
+    const t1 = initial.add(...step)
+    const stepPercentage = (100 * t1.diff(initial)) / final.diff(initial)
+    let n = 0
+    let j = -1
+    while (t.isBefore(final)) {
+      j++
+      sections.push(
+        <div
+          key={sections.length}
           style={{
-            paddingLeft: '0.5rem',
-            fontSize: '0.875em',
+            position: 'absolute',
+            top: `${n * stepPercentage}%`,
+            left: 0,
+            height: stepPercentage + '%',
+            width: '100%',
+            color: '#fff4',
+            backgroundColor: gradualShades(j),
           }}
         >
-          {t.format('h:mm A')}
-        </span>
-      </div>
-    )
-    t = t.add(...step)
-    n++
-  }
+          <span
+            style={{
+              paddingLeft: '0.5rem',
+              fontSize: '0.875em',
+            }}
+          >
+            {t.format('h:mm A')}
+          </span>
+        </div>
+      )
+      t = t.add(...step)
+      n++
+    }
+    return sections
+  }, [initial, final, step])
 
-  const rv = (
+  return (
     <div
       style={{
         width: '100%',
@@ -135,8 +137,4 @@ export function SectionedInterval({
       </div>
     </div>
   )
-
-  const benchEnd = performance.now()
-  setTimeout(() => logger('SectionedInterval rendered in ' + (benchEnd - benchStart) + 'ms'), 1000)
-  return rv
 }
