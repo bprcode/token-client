@@ -15,6 +15,7 @@ import { ActionContext, actionList } from './ActionContext.mjs'
 import { EventPicker } from './EventPicker'
 import { createSampleEvent, usePalette } from './mockCalendar.mjs'
 import { ViewHeader } from './ViewHeader'
+import { useNarrowCheck } from './LayoutContext.mjs'
 
 export function DayPage({
   onBack,
@@ -76,7 +77,7 @@ export function DayPage({
           step={[1, 'hour']}
           outsideHeight="100%"
           insideHeight="1800px"
-          endMargin={action === 'create' ? '14rem' : '14rem'}
+          endMargin={'16.25rem'}
           onPointerDown={e => {
             if (action === 'create') {
               handleCreationTap({ event: e, day, setCreation, picks })
@@ -122,15 +123,22 @@ export function DayPage({
             event={unfilteredEvents.find(e => e.id === selection)}
           />
         )}
-        <div
-          style={{ zIndex: 2, position: 'sticky', bottom: 0, width: '100%' }}
-        >
-          <Collapse in={action === 'create'}>
-            <EventPicker picks={picks} onPick={setPicks} />
-          </Collapse>
-        </div>
+        <CreationDrawer action={action} picks={picks} onPick={setPicks} />
       </Paper>
     </ActionContext.Provider>
+  )
+}
+
+function CreationDrawer({ action, picks, onPick }) {
+  const position = useNarrowCheck() ? 'fixed' : 'sticky'
+
+  return (
+    <div style={{ zIndex: 2, position, bottom: 0, width: '100%' }}>
+      <Collapse in={action === 'create'}>
+        {position}
+        <EventPicker picks={picks} onPick={onPick} />
+      </Collapse>
+    </div>
   )
 }
 
