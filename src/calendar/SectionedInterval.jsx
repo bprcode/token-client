@@ -14,6 +14,7 @@ export function SectionedInterval({
   onPointerDown,
   onPointerUp,
   endMargin = '8rem',
+  action,
   header,
 }) {
   const logger = useLogger()
@@ -88,7 +89,7 @@ export function SectionedInterval({
         width: '100%',
         height: '100%',
         overflowY: 'auto',
-        // touchAction: 'none',
+        touchAction: action === 'create' ? 'none' : undefined,
       }}
     >
       {header}

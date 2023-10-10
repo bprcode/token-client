@@ -79,6 +79,7 @@ export function DayPage({
           outsideHeight="100%"
           insideHeight="1800px"
           endMargin={'16.25rem'}
+          action={action}
           onPointerDown={e => {
             if (action === 'create') {
               handleCreationTap({ event: e, day, setCreation, picks })
@@ -102,7 +103,10 @@ export function DayPage({
             unfilteredEvents={
               creation ? [...unfilteredEvents, creation] : unfilteredEvents
             }
-            filteredEvents={filteredEvents}
+            filteredEvents={
+              filteredEvents &&
+              (creation ? [...filteredEvents, creation] : filteredEvents)
+            }
             selection={selection}
             onSelect={setSelection}
             onEdit={setEditing}
