@@ -26,6 +26,7 @@ export function DayPage({
   canUndo,
   day,
   unfilteredEvents,
+  filteredEvents,
 }) {
   const palette = usePalette()
   const defaultEventPicks = {
@@ -101,6 +102,7 @@ export function DayPage({
             unfilteredEvents={
               creation ? [...unfilteredEvents, creation] : unfilteredEvents
             }
+            filteredEvents={filteredEvents}
             selection={selection}
             onSelect={setSelection}
             onEdit={setEditing}

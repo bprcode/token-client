@@ -19,7 +19,7 @@ import {
   Slide,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
-import { useContext, useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
 import { useEventListHistory } from './calendar/mockCalendar.mjs'
@@ -31,6 +31,7 @@ import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@emotion/react'
 import hourglassPng from './assets/hourglass2.png'
 import { LoggerProvider } from './calendar/Logger'
+import { isOverlap } from './calendar/dateLogic.mjs'
 const currentDate = dayjs()
 
 function RootLayout({ children }) {
@@ -166,6 +167,17 @@ function Demo() {
   const [view, setView] = useState('month')
   const [expandedDate, setExpandedDate] = useState(null)
 
+  const dayEvents = useMemo(() => {
+    if (view !== 'day') {return null}
+
+    const startOfDay = expandedDate.startOf('day')
+    const endOfDay = expandedDate.endOf('day')
+    return eventList.filter(e =>
+        isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
+      )
+
+  }, [view, eventList, expandedDate])
+
   return (
     <LoggerProvider>
       <RootLayout>
@@ -239,6 +251,7 @@ function Demo() {
                     onBack={() => setView('week')}
                     day={expandedDate || dayjs()}
                     unfilteredEvents={eventList}
+                    filteredEvents={dayEvents}
                     onCreate={addition =>
                       dispatchAction({
                         type: 'create',

@@ -17,6 +17,7 @@ export function SectionedInterval({
   header,
 }) {
   const logger = useLogger()
+  const benchStart = performance.now()
 
   // the following useEffect is solely to fix a Safari bug where scrolling to
   // the end of the page can cause position: sticky elements to disappear.
@@ -81,7 +82,7 @@ export function SectionedInterval({
     n++
   }
 
-  return (
+  const rv = (
     <div
       style={{
         width: '100%',
@@ -133,4 +134,8 @@ export function SectionedInterval({
       </div>
     </div>
   )
+
+  const benchEnd = performance.now()
+  setTimeout(() => logger('SectionedInterval rendered in ' + (benchEnd - benchStart) + 'ms'), 1000)
+  return rv
 }
