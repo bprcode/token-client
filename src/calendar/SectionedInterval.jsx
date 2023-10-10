@@ -22,14 +22,14 @@ export function SectionedInterval({
   // the end of the page can cause position: sticky elements to disappear.
   useEffect(() => {
     let skipFirst = true
-    const target = document.querySelector('.blue-box')
+    const target = document.querySelector('.ending-box')
     const viewHeader = document.querySelector('.view-header')
     const observer = new IntersectionObserver(watchEnd, {
       root: null,
       treshold: 1.0,
     })
 
-    observer.observe(document.querySelector('.blue-box'))
+    observer.observe(document.querySelector('.ending-box'))
     function watchEnd() {
       if (skipFirst) {
         logger('skipping first observer callback')
@@ -119,10 +119,10 @@ export function SectionedInterval({
           {sections}
         </Box>
         <div
-          className="blue-box"
+          className="ending-box"
           style={{
             zIndex: 0,
-            backgroundColor: 'blue',
+            backgroundColor: 'hsl(300deg 7% 9%)',
             // backgroundImage:
             //   'radial-gradient(60% 120% at bottom right, '
             //   +'hsl(190deg 8% 12%) 30%, transparent 150%)',
