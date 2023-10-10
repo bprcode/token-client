@@ -2,14 +2,13 @@ import UndoIcon from '@mui/icons-material/Undo'
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
-import { AppBar, Box, IconButton, Toolbar, useTheme } from '@mui/material'
+import { AppBar, Box, IconButton, Toolbar, useMediaQuery, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { useContext } from 'react'
 import { ActionContext } from './ActionContext.mjs'
-import { LayoutContext } from './LayoutContext.mjs'
 
 export function ActionBar({ onBehavior, canUndo }) {
-  const layout = useContext(LayoutContext)
+  const layout = useMediaQuery('(max-width: 600px)') ? 'mobile' : 'wide'
   const action = useContext(ActionContext)
   const theme = useTheme()
   const faintPrimary = alpha(theme.palette.primary.main, 0.2)

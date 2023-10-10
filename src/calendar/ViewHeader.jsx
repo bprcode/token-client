@@ -1,11 +1,11 @@
 import MenuIcon from '@mui/icons-material/Menu'
-import { AppBar, IconButton, Toolbar, useMediaQuery } from '@mui/material'
+import { AppBar, IconButton, Toolbar } from '@mui/material'
 import { useContext } from 'react'
-import { ToggleMenuContext } from './LayoutContext.mjs'
+import { ToggleMenuContext, useNarrowCheck } from './LayoutContext.mjs'
 
 export function ViewHeader({ children }) {
   const toggleMenu = useContext(ToggleMenuContext)
-  const isNarrow = useMediaQuery('(max-width: 800px)')
+  const isNarrow = useNarrowCheck()
   const disableBlur =
     navigator.userAgent.includes('Mobile') &&
     navigator.userAgent.includes('Firefox')

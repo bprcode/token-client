@@ -26,7 +26,7 @@ import { useEventListHistory } from './calendar/mockCalendar.mjs'
 import { WeeklyCalendar } from './calendar/WeeklyCalendar'
 import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
-import { ToggleMenuContext, LayoutContext } from './calendar/LayoutContext.mjs'
+import { ToggleMenuContext } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@emotion/react'
 import hourglassPng from './assets/hourglass2.png'
@@ -35,36 +35,33 @@ const currentDate = dayjs()
 
 function RootLayout({ children }) {
   const [expand, setExpand] = useState(false)
-  const layoutQuery = useMediaQuery('(max-width: 600px)') ? 'mobile' : 'wide'
 
   console.log('rendering root')
   return (
-    <LayoutContext.Provider value={layoutQuery}>
-      <ToggleMenuContext.Provider value={setExpand}>
-        <Container
-          maxWidth="md"
-          disableGutters
-          sx={{ height: '100vh', overflow: 'hidden' }}
+    <ToggleMenuContext.Provider value={setExpand}>
+      <Container
+        maxWidth="md"
+        disableGutters
+        sx={{ height: '100vh', overflow: 'hidden' }}
+      >
+        <Box
+          sx={{
+            height: '100%',
+            display: 'flex',
+          }}
         >
-          <Box
-            sx={{
-              height: '100%',
-              display: 'flex',
+          <Sidebar expand={expand} />
+
+          <div
+            style={{
+              flexGrow: 1,
             }}
           >
-            <Sidebar expand={expand} />
-
-            <div
-              style={{
-                flexGrow: 1,
-              }}
-            >
-              {children}
-            </div>
-          </Box>
-        </Container>
-      </ToggleMenuContext.Provider>
-    </LayoutContext.Provider>
+            {children}
+          </div>
+        </Box>
+      </Container>
+    </ToggleMenuContext.Provider>
   )
 }
 
@@ -97,7 +94,11 @@ function Sidebar({ width = '240px', expand }) {
         <Typography
           variant="h6"
           component="span"
-          sx={{ fontWeight: 300, opacity: 0.9, textShadow: '1px -1px 4px #000' }}
+          sx={{
+            fontWeight: 300,
+            opacity: 0.9,
+            textShadow: '1px -1px 4px #000',
+          }}
         >
           Time
         </Typography>
@@ -167,117 +168,107 @@ function Demo() {
 
   return (
     <LoggerProvider>
-
-    <RootLayout>
-      <Paper
-        elevation={1}
-        sx={{
-          height: '100%',
-          width: '100%',
-          position: 'relative',
-        }}
-      >
-        <TransitionGroup>
-          {view === 'month' && (
-            <Slide
-              direction="left"
-              timeout={350}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  width: '100%',
-                  height: '100%',
-                }}
-              >
-                <MonthlyCalendar
-                  initialDate={currentDate}
-                  unfilteredEvents={eventList}
-                  onExpand={date => {
-                    setExpandedDate(date)
-                    setView('week')
+      <RootLayout>
+        <Paper
+          elevation={1}
+          sx={{
+            height: '100%',
+            width: '100%',
+            position: 'relative',
+          }}
+        >
+          <TransitionGroup>
+            {view === 'month' && (
+              <Slide direction="left" timeout={350}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
                   }}
-                />
-              </div>
-            </Slide>
-          )}
-          {view === 'week' && (
-            <Slide
-              direction="left"
-              timeout={350}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  width: '100%',
-                  height: '100%',
-                }}
-              >
-                <WeeklyCalendar
-                  onBack={() => {
-                    setExpandedDate(null)
-                    setView('month')
+                >
+                  <MonthlyCalendar
+                    initialDate={currentDate}
+                    unfilteredEvents={eventList}
+                    onExpand={date => {
+                      setExpandedDate(date)
+                      setView('week')
+                    }}
+                  />
+                </div>
+              </Slide>
+            )}
+            {view === 'week' && (
+              <Slide direction="left" timeout={350}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
                   }}
-                  key={(expandedDate || currentDate).format('MM D')}
-                  initialDate={expandedDate || currentDate}
-                  eventList={eventList}
-                  onExpand={date => {
-                    setExpandedDate(date)
-                    setView('day')
+                >
+                  <WeeklyCalendar
+                    onBack={() => {
+                      setExpandedDate(null)
+                      setView('month')
+                    }}
+                    key={(expandedDate || currentDate).format('MM D')}
+                    initialDate={expandedDate || currentDate}
+                    eventList={eventList}
+                    onExpand={date => {
+                      setExpandedDate(date)
+                      setView('day')
+                    }}
+                  />
+                </div>
+              </Slide>
+            )}
+            {view === 'day' && (
+              <Slide direction="left" timeout={350}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
                   }}
-                />
-              </div>
-            </Slide>
-          )}
-          {view === 'day' && (
-            <Slide
-              direction="left"
-              timeout={350}
-            >
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  width: '100%',
-                  height: '100%',
-                }}
-              >
-                <DayPage
-                  onBack={() => setView('week')}
-                  day={expandedDate || dayjs()}
-                  unfilteredEvents={eventList}
-                  onCreate={addition =>
-                    dispatchAction({
-                      type: 'create',
-                      merge: preferences.merge,
-                      addition,
-                    })
-                  }
-                  onUpdate={updates =>
-                    dispatchAction({
-                      type: 'update',
-                      id: updates.id,
-                      merge: preferences.merge,
-                      updates,
-                    })
-                  }
-                  onDelete={id =>
-                    dispatchAction({
-                      type: 'delete',
-                      id: id,
-                    })
-                  }
-                  onUndo={() => dispatchAction({ type: 'undo' })}
-                  canUndo={canUndo}
-                />
-              </div>
-            </Slide>
-          )}
-        </TransitionGroup>
-      </Paper>
-    </RootLayout>
+                >
+                  <DayPage
+                    onBack={() => setView('week')}
+                    day={expandedDate || dayjs()}
+                    unfilteredEvents={eventList}
+                    onCreate={addition =>
+                      dispatchAction({
+                        type: 'create',
+                        merge: preferences.merge,
+                        addition,
+                      })
+                    }
+                    onUpdate={updates =>
+                      dispatchAction({
+                        type: 'update',
+                        id: updates.id,
+                        merge: preferences.merge,
+                        updates,
+                      })
+                    }
+                    onDelete={id =>
+                      dispatchAction({
+                        type: 'delete',
+                        id: id,
+                      })
+                    }
+                    onUndo={() => dispatchAction({ type: 'undo' })}
+                    canUndo={canUndo}
+                  />
+                </div>
+              </Slide>
+            )}
+          </TransitionGroup>
+        </Paper>
+      </RootLayout>
     </LoggerProvider>
   )
 }

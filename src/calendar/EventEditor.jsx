@@ -189,7 +189,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
           onChange={e => setDescription(e.target.value)}
         />
       </DialogContent>
-      <DialogActions sx={{ px: 3, pt: 0, pb: 2 }}>
+      <DialogActions sx={{ px: 3, pt: 1, pb: 2 }}>
         <Button
           variant="outlined"
           sx={{ mr: 2 }}

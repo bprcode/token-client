@@ -1,9 +1,8 @@
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material'
-import { useContext } from 'react'
-import { LayoutContext } from './LayoutContext.mjs'
+import { useNarrowCheck } from './LayoutContext.mjs'
 
 export function PaletteSelect({ color, onSelect, palette, smaller }) {
-  const isMobile = useContext(LayoutContext) === 'mobile'
+  const isNarrow = useNarrowCheck()
 
   return (
     <FormControl sx={{ mb: 2, flexShrink: 0 }}>
@@ -20,7 +19,7 @@ export function PaletteSelect({ color, onSelect, palette, smaller }) {
         sx={{ pl: '0.25rem' }}
       >
         {palette.map(c => (
-          <MenuItem key={c} value={c} dense={isMobile}
+          <MenuItem key={c} value={c} dense={isNarrow}
           >
             <Box
               sx={{

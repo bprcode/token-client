@@ -112,7 +112,6 @@ export function SectionedInterval({
             height: insideHeight,
             paddingLeft: ['0.5rem', '5rem'],
             paddingRight: '0.5rem',
-            // marginBottom: endMargin,
           }}
         >
           {children}
@@ -121,13 +120,7 @@ export function SectionedInterval({
         <div
           className="ending-box"
           style={{
-            zIndex: 0,
-            backgroundColor: 'hsl(300deg 7% 9%)',
-            // backgroundImage:
-            //   'radial-gradient(60% 120% at bottom right, '
-            //   +'hsl(190deg 8% 12%) 30%, transparent 150%)',
-            // position: 'absolute',
-            // bottom: 0,
+            backgroundColor: 'hsl(300deg 7% 8.5%)',
             height: endMargin,
             width: '100%',
           }}
