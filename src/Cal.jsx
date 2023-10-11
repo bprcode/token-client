@@ -45,8 +45,11 @@ function RootLayout({ children }) {
         disableGutters
         sx={{
           height: '100vh',
+          // N.B. overflowX: hidden causes a persistent address bar
+          // on mobile Y-scrolling in the DayPage component.
+          // This is intentional, to prevent a "jumpy" interface while
+          // scrolling, and also clips the TransitionGroup animations.
           overflowX: 'hidden',
-          // overflow: 'hidden'
         }}
       >
         <Box

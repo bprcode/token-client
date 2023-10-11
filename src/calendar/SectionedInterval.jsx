@@ -2,6 +2,7 @@ import { Box } from '@mui/material'
 import { gradualShades } from '../blueDigitalTheme'
 import { useLogger } from './Logger'
 import { useEffect, useMemo } from 'react'
+import { useNarrowCheck } from './LayoutContext.mjs'
 
 export function SectionedInterval({
   initial,
@@ -17,6 +18,7 @@ export function SectionedInterval({
   action,
   header,
 }) {
+  const isNarrow = useNarrowCheck()
   const logger = useLogger()
 
   // the following useEffect is solely to fix a Safari bug where scrolling to
@@ -90,8 +92,7 @@ export function SectionedInterval({
       className="section-scroll"
       style={{
         width: '100%',
-        // height: '100%',
-        // overflowY: 'auto',
+        overflowY: isNarrow ? undefined : 'auto',
         touchAction: action === 'create' ? 'none' : undefined,
       }}
     >
