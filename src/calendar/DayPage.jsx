@@ -16,6 +16,7 @@ import { EventPicker } from './EventPicker'
 import { createSampleEvent, usePalette } from './mockCalendar.mjs'
 import { ViewHeader } from './ViewHeader'
 import { useNarrowCheck } from './LayoutContext.mjs'
+import { useLogger } from './Logger'
 
 const sectionStep = [1, 'hour']
 
@@ -30,8 +31,11 @@ export function DayPage({
   unfilteredEvents,
   filteredEvents,
 }) {
+  const logger = useLogger()
+
   const startOfDay = useMemo(() => day.startOf('day'), [day])
   const endOfDay = useMemo(() => day.endOf('day'), [day])
+  const [debugBox, setDebugBox] = useState([50,50,200,300])
 
   const palette = usePalette()
   const defaultEventPicks = {
@@ -47,7 +51,7 @@ export function DayPage({
 
   const [action, setAction] = useState(actionList[0])
 
-  const handleUpdates = useCallback(
+  const applyUpdates = useCallback(
     updates => {
       onUpdate(updates)
       setSelection(null)
@@ -87,8 +91,11 @@ export function DayPage({
           action={action}
           onPointerDown={e => {
             if (action === 'create') {
-              handleCreationTap({ event: e, day, setCreation, picks })
+            testCreationTap({ event: e, setBox: setDebugBox, logger })
             }
+            // if (action === 'create') {
+            //   handleCreationTap({ event: e, day, setCreation, picks })
+            // }
           }}
           onPointerUp={e => {
             e.currentTarget.onpointermove = null
@@ -111,9 +118,19 @@ export function DayPage({
             selection={selection}
             onSelect={setSelection}
             onEdit={setEditing}
-            onUpdate={handleUpdates}
+            onUpdate={applyUpdates}
             onDelete={onDelete}
           />
+          <div style={{
+            position: 'absolute',
+            border: '1px solid #0af',
+            top: `${debugBox[1]}px`,
+            left: `${debugBox[0]}px`,
+            width: `${debugBox[2] - debugBox[0]}px`,
+            height: `${debugBox[3] - debugBox[1]}px`,
+            zIndex: 999,
+            backgroundColor: '#0af4',
+          }}/>
         </SectionedInterval>
 
         {editing && selection && (
@@ -146,6 +163,42 @@ function CreationDrawer({ action, picks, onPick }) {
       </Collapse>
     </div>
   )
+}
+
+function overwriteRAF(callback) {
+  if (!overwriteRAF.callback) {
+    requestAnimationFrame(() => {
+      overwriteRAF.callback()
+      overwriteRAF.callback = null
+    })
+  }
+  overwriteRAF.callack = callback
+}
+
+function testCreationTap({ event, setBox, logger }) {
+  const innerBounds = document.querySelector('.section-inner')
+    .getBoundingClientRect()
+
+  const top = innerBounds.top
+  const initialScroll = document.querySelector('.section-scroll').scrollTop
+  const initialX = event.clientX
+  const initialY = event.clientY + initialScroll
+  console.log('initial y: ', initialY)
+  let lastPoll = performance.now()
+  event.currentTarget.setPointerCapture(event.pointerId)
+  event.currentTarget.onpointermove = move => {
+    const prevPoll = lastPoll
+    const latestPoll = performance.now()
+    setTimeout(() => logger('Poll delta: ' + (latestPoll - prevPoll) + ' ms'), 1000)
+    lastPoll = latestPoll
+    console.log('delta y: ', move.clientY - initialY)
+    const x1 = initialX
+    const x2 = move.clientX
+    const y1 = initialY + initialScroll - top
+    const y2 = move.clientY + initialScroll - top
+    setBox([Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2)])
+  }
+
 }
 
 function handleCreationTap({ event, picks, day, setCreation }) {

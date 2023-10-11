@@ -87,6 +87,7 @@ export function SectionedInterval({
 
   return (
     <div
+      className="section-scroll"
       style={{
         width: '100%',
         height: '100%',
