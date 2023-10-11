@@ -41,6 +41,7 @@ function RootLayout({ children }) {
   return (
     <ToggleMenuContext.Provider value={setExpand}>
       <Container
+        className="root-container"
         maxWidth="md"
         disableGutters
         sx={{

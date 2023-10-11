@@ -90,7 +90,7 @@ export function DayPage({
           action={action}
           onPointerDown={e => {
             if (action === 'create') {
-            testCreationTap({ event: e, logger })
+              testCreationTap({ event: e, logger, day })
             }
             // if (action === 'create') {
             //   handleCreationTap({ event: e, day, setCreation, picks })
@@ -120,14 +120,17 @@ export function DayPage({
             onUpdate={applyUpdates}
             onDelete={onDelete}
           />
-          <div 
-          className="test-box"
-          style={{
-            position: 'absolute',
-            border: '1px solid #0af',
-            zIndex: 999,
-            backgroundColor: '#0af4',
-          }}/>
+          <div
+            className="test-box"
+            style={{
+              position: 'absolute',
+              border: '1px solid #0af',
+              zIndex: 999,
+              backgroundColor: '#0af4',
+              overflow: 'hidden',
+              fontSize: '0.75rem',
+            }}
+          />
         </SectionedInterval>
 
         {editing && selection && (
@@ -163,7 +166,9 @@ function CreationDrawer({ action, picks, onPick }) {
 }
 
 function overwriteRAF(callback) {
-  if (!overwriteRAF.skipCount) { overwriteRAF.skipCount = 0 }
+  if (!overwriteRAF.skipCount) {
+    overwriteRAF.skipCount = 0
+  }
   if (!overwriteRAF.callback) {
     requestAnimationFrame(() => {
       overwriteRAF.callback()
@@ -175,57 +180,29 @@ function overwriteRAF(callback) {
   overwriteRAF.callback = callback
 }
 
-function throttleRAF () {
-  let queuedCallback
-  throttleRAF.skipCount = 0
-  return callback => {
-    if (!queuedCallback) {
-      requestAnimationFrame(() => {
-        const cb = queuedCallback
-        queuedCallback = null
-        cb()
-      })
-    } else {
-      throttleRAF.skipCount++
-    }
-    queuedCallback = callback
-  }
-}
-
-function throttleFixed (callback) {
-  if (!throttleFixed.skipCount) { throttleFixed.skipCount = 0}
-  if (!throttleFixed.callback) {
-    setTimeout(() => {
-      const draw = throttleFixed.callback
-      // requestIdleCallback(draw)
-      requestAnimationFrame(draw)
-      // draw()
-      throttleFixed.callback = null
-  }, 50)
-  } else {
-    throttleFixed.skipCount++
-  }
-
-  throttleFixed.callback = callback
-}
-
-
-function testCreationTap({ event, logger }) {
+function testCreationTap({ event, day, logger }) {
   console.log('testCreationTap')
+  const startOfDay = day.startOf('day')
+
   const ct = event.currentTarget
-  const innerBounds = document.querySelector('.section-inner')
+  const outputBounds = document
+    .querySelector('.section-inner')
     .getBoundingClientRect()
+
   const testBox = document.querySelector('.test-box')
-  console.log(testBox)
 
-  const throttle = throttleRAF()
+  console.log('output bounds: ', outputBounds)
+  console.log('client x, y: ', event.clientX, event.clientY)
 
-  const top = innerBounds.top
-  const initialScroll = document.querySelector('.section-scroll').scrollTop
-  const initialX = event.clientX
-  const initialY = event.clientY + initialScroll
+  // Scrolling element depends on layout:
+  const initialScroll =
+    document.querySelector('.section-scroll').scrollTop ||
+    document.querySelector('.root-container').scrollTop
+  console.log('initialScroll=', initialScroll)
+
+  const initialX = event.clientX - outputBounds.left
+  const initialY = event.clientY - outputBounds.top
   console.log('initial y: ', initialY)
-  let lastPoll = performance.now()
   ct.setPointerCapture(event.pointerId)
 
   ct.onpointermove = handleMove
@@ -240,30 +217,37 @@ function testCreationTap({ event, logger }) {
     move.preventDefault()
     move.stopPropagation()
     console.log('meep')
-    
-    const x1 = initialX
-    const x2 = move.clientX
-    const y1 = initialY + initialScroll - top
-    const y2 = move.clientY + initialScroll - top
-    // throttleFixed(() => {
-    //   setBox([Math.min(x1, x2), Math.min(y1, y2), Math.max(x1, x2), Math.max(y1, y2)])
-    //   setTimeout(() => logger('skip: ' + throttleFixed.skipCount), 100)
-    // })
 
-    setBoxNoReact(x1, y1, x2, y2)
+    const x2 = move.clientX - outputBounds.left
+    const y2 = move.clientY - outputBounds.top
+
+    setBoxNoReact(initialX, initialY, x2, y2)
   }
 
-  function setBoxNoReact(x1,y1,x2,y2) {
+  function setBoxNoReact(x1, y1, x2, y2) {
     overwriteRAF(() => {
-      testBox.style.left = Math.min(x1,x2) + 'px'
-      testBox.style.top = Math.min(y1,y2) + 'px'
-      testBox.style.width = Math.abs(x1 - x2) + 'px'
-      testBox.style.height = Math.abs(y1 - y2) + 'px'
+      const lowY = Math.min(y1, y2)
+      const hiY = Math.max(y1, y2)
+
       setTimeout(() => logger('overwrite skip: ' + overwriteRAF.skipCount), 100)
+
+
+      const initialMinute = Math.floor((24 * 60 * lowY / outputBounds.height) / 15) * 15
+      const finalMinute = Math.ceil((24 * 60 * hiY / outputBounds.height) / 15) * 15
+
+      testBox.textContent = startOfDay.add(initialMinute, 'minutes').format('h:mm')
+      + ' – '
+      + startOfDay.add(finalMinute, 'minutes').format('h:mm')
+
+      const snappedStartY = initialMinute / (24 * 60) * outputBounds.height
+      const snappedEndY = finalMinute / (24 * 60) * outputBounds.height
+
+      testBox.style.left = Math.min(x1, x2) + 'px'
+      testBox.style.top = snappedStartY + 'px'
+      testBox.style.width = Math.abs(x1 - x2) + 'px'
+      testBox.style.height = snappedEndY - snappedStartY + 'px'
     })
   }
-
-
 }
 
 function handleCreationTap({ event, picks, day, setCreation }) {
