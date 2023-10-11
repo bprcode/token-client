@@ -43,7 +43,11 @@ function RootLayout({ children }) {
       <Container
         maxWidth="md"
         disableGutters
-        sx={{ height: '100vh', overflow: 'hidden' }}
+        sx={{
+          height: '100vh',
+          overflowX: 'hidden',
+          // overflow: 'hidden'
+        }}
       >
         <Box
           sx={{
@@ -168,15 +172,52 @@ function Demo() {
   const [expandedDate, setExpandedDate] = useState(null)
 
   const dayEvents = useMemo(() => {
-    if (view !== 'day') {return null}
+    if (view !== 'day') {
+      return null
+    }
 
     const startOfDay = expandedDate.startOf('day')
     const endOfDay = expandedDate.endOf('day')
     return eventList.filter(e =>
-        isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
-      )
-
+      isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
+    )
   }, [view, eventList, expandedDate])
+
+  // return (
+  //   <RootLayout>
+  //     <Paper
+  //       elevation={1}
+  //       sx={{
+  //         width: '100%',
+  //         flexShrink: 0,
+  //         position: 'relative',
+  //       }}
+  //     >
+  //       <div style={{
+  //         position: 'sticky',
+  //         top: 0,
+  //         backgroundColor: '#222',
+  //         width: '100%',
+  //         height: '3.5rem',
+  //       }}>Header mockup</div>
+  //       <div
+  //         style={{
+  //           backgroundColor: '#533',
+  //           height: '4000px',
+  //           flexShrink: 0,
+  //         }}
+  //       >
+  //         Lorem ipsum, dolor sit amet consectetur adipisicing elit. Alias culpa
+  //         repellat, eaque natus voluptas fugit perspiciatis sapiente labore
+  //         distinctio optio minus! Reiciendis rerum veritatis dolores vel! Omnis
+  //         fuga quia dolores numquam consequatur quaerat labore fugit, suscipit
+  //         consectetur est, illum dolor obcaecati porro animi assumenda earum
+  //         veniam! Commodi dolore sunt, ipsa pariatur, eos corporis quo, nisi
+  //         mollitia odit aut deserunt voluptatem.
+  //       </div>
+  //     </Paper>
+  //   </RootLayout>
+  // )
 
   return (
     <LoggerProvider>

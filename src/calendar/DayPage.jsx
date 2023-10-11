@@ -35,7 +35,6 @@ export function DayPage({
 
   const startOfDay = useMemo(() => day.startOf('day'), [day])
   const endOfDay = useMemo(() => day.endOf('day'), [day])
-  const [debugBox, setDebugBox] = useState([50,50,200,300])
 
   const palette = usePalette()
   const defaultEventPicks = {
@@ -91,7 +90,7 @@ export function DayPage({
           action={action}
           onPointerDown={e => {
             if (action === 'create') {
-            testCreationTap({ event: e, setBox: setDebugBox, logger })
+            testCreationTap({ event: e, logger })
             }
             // if (action === 'create') {
             //   handleCreationTap({ event: e, day, setCreation, picks })
@@ -110,7 +109,7 @@ export function DayPage({
           onClick={() => setSelection(null)}
           header={<DayHeader onBack={onBack} day={day} />}
         >
-          {/* <DailyBreakdown
+          <DailyBreakdown
             day={day}
             unfilteredEvents={unfilteredEvents}
             filteredEvents={filteredEvents}
@@ -120,16 +119,12 @@ export function DayPage({
             onEdit={setEditing}
             onUpdate={applyUpdates}
             onDelete={onDelete}
-          /> */}
+          />
           <div 
           className="test-box"
           style={{
             position: 'absolute',
             border: '1px solid #0af',
-            // top: `${debugBox[1]}px`,
-            // left: `${debugBox[0]}px`,
-            // width: `${debugBox[2] - debugBox[0]}px`,
-            // height: `${debugBox[3] - debugBox[1]}px`,
             zIndex: 999,
             backgroundColor: '#0af4',
           }}/>
@@ -215,7 +210,7 @@ function throttleFixed (callback) {
 }
 
 
-function testCreationTap({ event, setBox, logger }) {
+function testCreationTap({ event, logger }) {
   console.log('testCreationTap')
   const ct = event.currentTarget
   const innerBounds = document.querySelector('.section-inner')

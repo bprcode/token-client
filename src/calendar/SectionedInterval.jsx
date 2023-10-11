@@ -90,8 +90,8 @@ export function SectionedInterval({
       className="section-scroll"
       style={{
         width: '100%',
-        height: '100%',
-        overflowY: 'auto',
+        // height: '100%',
+        // overflowY: 'auto',
         touchAction: action === 'create' ? 'none' : undefined,
       }}
     >
