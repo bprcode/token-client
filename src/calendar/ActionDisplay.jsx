@@ -2,13 +2,12 @@ import UndoIcon from '@mui/icons-material/Undo'
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
-import { AppBar, Box, IconButton, Toolbar, useMediaQuery, useTheme } from '@mui/material'
+import { AppBar, Box, IconButton, Toolbar, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { useContext } from 'react'
 import { ActionContext } from './ActionContext.mjs'
 
-export function ActionBar({ onBehavior, canUndo }) {
-  const layout = useMediaQuery('(max-width: 600px)') ? 'mobile' : 'wide'
+export function ActionButtons({ onBehavior, canUndo }) {
   const action = useContext(ActionContext)
   const theme = useTheme()
   const faintPrimary = alpha(theme.palette.primary.main, 0.2)
@@ -47,38 +46,15 @@ export function ActionBar({ onBehavior, canUndo }) {
     </IconButton>
   ))
 
-  return layout === 'mobile' ? (
-    <MobileBar>
-      {undo}
-      {buttons}
-    </MobileBar>
-  ) : (
-    <OverlayBar>
-      {undo}
-      {buttons}
-    </OverlayBar>
-  )
-}
-
-function OverlayBar({ children }) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        rowGap: '1rem',
-        position: 'absolute',
-        right: '8px',
-        top: '8px',
-        zIndex: 4,
-      }}
-    >
-      {children}
-    </Box>
+    <>
+      {undo}
+      {buttons}
+    </>
   )
 }
 
-function MobileBar({ children }) {
+export function MobileBar({ children }) {
   const disableBlur =
     navigator.userAgent.includes('Mobile') &&
     navigator.userAgent.includes('Firefox')

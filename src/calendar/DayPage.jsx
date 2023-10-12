@@ -5,13 +5,14 @@ import {
   Collapse,
   useMediaQuery,
   useTheme,
+  Box,
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
 import { forwardRef, useCallback, useMemo, useRef, useState } from 'react'
 import { EventEditor } from './EventEditor'
-import { ActionBar } from './ActionBar'
+import { ActionButtons, MobileBar } from './ActionDisplay'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { EventPicker } from './EventPicker'
 import {
@@ -37,6 +38,7 @@ export function DayPage({
   unfilteredEvents,
   filteredEvents,
 }) {
+  const isWide = useMediaQuery('(min-width: 600px)')
   const headerRef = useRef(null)
   const logger = useLogger()
   const theme = useTheme()
@@ -78,6 +80,17 @@ export function DayPage({
     [onCreate]
   )
 
+  const actionButtons = (
+    <ActionButtons
+      canUndo={canUndo}
+      onBehavior={b => {
+        setSelection(null)
+        if (b === 'undo') return onUndo()
+        setAction(b)
+      }}
+    />
+  )
+
   return (
     <ActionContext.Provider value={action}>
       <Paper
@@ -92,14 +105,7 @@ export function DayPage({
           position: 'relative',
         }}
       >
-        <ActionBar
-          canUndo={canUndo}
-          onBehavior={b => {
-            setSelection(null)
-            if (b === 'undo') return onUndo()
-            setAction(b)
-          }}
-        />
+        {!isWide && <MobileBar>{actionButtons}</MobileBar>}
         <SectionedInterval
           initial={startOfDay}
           final={endOfDay}
@@ -124,7 +130,14 @@ export function DayPage({
           }}
           // deselect if the click was not intercepted by an EventPane
           onClick={() => setSelection(null)}
-          header={<DayHeader onBack={onBack} day={day} ref={headerRef} />}
+          header={
+            <DayHeader
+              onBack={onBack}
+              day={day}
+              ref={headerRef}
+              actionButtons={isWide && actionButtons}
+            />
+          }
         >
           <DailyBreakdown
             day={day}
@@ -311,10 +324,12 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
   }
 }
 
-const DayHeader = forwardRef(
-function DayHeader({ onBack, day }, ref) {
-  const isNarrow = useMediaQuery('(max-width: 350px)')
-  const formatted = isNarrow
+const DayHeader = forwardRef(function DayHeader(
+  { onBack, day, actionButtons },
+  ref
+) {
+  const isTiny = useMediaQuery('(max-width: 350px)')
+  const formatted = isTiny
     ? day.format('ddd, MMM D')
     : day.format('dddd, MMMM D')
 
@@ -330,6 +345,18 @@ function DayHeader({ onBack, day }, ref) {
       <Typography variant="h6" component="div" mb={2} mt={2}>
         {formatted}
       </Typography>
+
+      {actionButtons && <Box sx={{
+        display: 'flex',
+        flexDirection: 'row',
+        rowGap: '1rem',
+        position: 'absolute',
+        right: '8px',
+        top: '8px',
+        zIndex: 4,
+      }}>
+        {actionButtons}
+        </Box>}
     </ViewHeader>
   )
 })
