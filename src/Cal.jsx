@@ -50,7 +50,7 @@ function RootLayout({ children }) {
           // on mobile Y-scrolling in the DayPage component.
           // This is intentional, to prevent a "jumpy" interface while
           // scrolling, and also clips the TransitionGroup animations.
-          overflowX: 'hidden',
+          // overflowX: 'hidden',
         }}
       >
         <Box
