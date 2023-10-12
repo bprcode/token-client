@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 export const LoggerContext = createContext(null)
 
 export function useLogger() {
-  return () => {}
+  // return () => {}
   const logger = useContext(LoggerContext)
   return logger
 }
@@ -26,7 +26,7 @@ export function LoggerProvider({children}) {
 }
 
 export function Logger({ log }) {
-  return
+  // return
   const ref = useRef(null)
   useEffect(() => {
     ref.current.scrollTo(0, ref.current.scrollHeight)

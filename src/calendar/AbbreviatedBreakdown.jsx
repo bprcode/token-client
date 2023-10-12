@@ -1,4 +1,4 @@
-import { getAugmentedColor } from './mockCalendar.mjs'
+import { getAugmentedColor } from './calendarLogic.mjs'
 import { isOverlap } from './dateLogic.mjs'
 
 export function AbbreviatedBreakdown({ day, unfilteredEvents }) {

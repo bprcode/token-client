@@ -1,5 +1,11 @@
-import { FormControl, Paper, TextField, Typography, useTheme } from '@mui/material'
-import { useEventStyles, usePalette, isDefaultStyle } from './mockCalendar.mjs'
+import {
+  FormControl,
+  Paper,
+  TextField,
+  Typography,
+  useTheme,
+} from '@mui/material'
+import { useEventStyles, usePalette, isDefaultStyle } from './calendarLogic.mjs'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
 
@@ -67,7 +73,7 @@ export function EventPicker({ picks, onPick, variant = 'subtitle2' }) {
                 },
                 '& .MuiInputLabel-root': {
                   marginTop: '-1px',
-                }
+                },
               }}
               value={summary}
               onChange={e => onPick({ ...picks, summary: e.target.value })}

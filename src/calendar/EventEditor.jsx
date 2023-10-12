@@ -20,7 +20,7 @@ import {
   isDefaultStyle,
   usePalette,
   useEventStyles,
-} from './mockCalendar.mjs'
+} from './calendarLogic.mjs'
 import { ClockPicker } from './ClockPicker'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'

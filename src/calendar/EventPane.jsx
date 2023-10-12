@@ -3,11 +3,12 @@ import DoubleDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
-import { mockStyles, getAugmentedColor } from './mockCalendar.mjs'
+import { mockStyles, getAugmentedColor } from './calendarLogic.mjs'
 import { IconButton, Zoom, useTheme } from '@mui/material'
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
 import { useLogger } from './Logger'
+import { shorthandInterval as calculateShorthand } from './dateLogic.mjs'
 
 const noop = () => {}
 
@@ -90,18 +91,10 @@ export function EventPane({
   const ghostWindowLength = ghostSnapEnd.diff(ghostSnapStart)
 
   // Build shorthand time string:
-  const crossesMeridian =
-    event.start.dateTime.format('A') !== event.end.dateTime.format('A')
-  const startShorthand = event.start.dateTime.minute() === 0 ? 'h' : 'h:mm'
-  const endShorthand = event.end.dateTime.minute() === 0 ? 'h' : 'h:mm'
-  const startAP = crossesMeridian ? event.start.dateTime.format('a')[0] : ''
-  const endAP = crossesMeridian ? event.end.dateTime.format('a')[0] : ''
-  const shorthandInterval =
-    event.start.dateTime.format(startShorthand) +
-    startAP +
-    '–' +
-    event.end.dateTime.format(endShorthand) +
-    endAP
+  const shorthandInterval = calculateShorthand(
+    event.start.dateTime,
+    event.end.dateTime
+  )
 
   // Styling constants
   const referenceStyle =

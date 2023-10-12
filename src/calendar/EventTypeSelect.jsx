@@ -1,8 +1,19 @@
 import EventIcon from '@mui/icons-material/Event'
-import { FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material'
-import { resolveColor } from './mockCalendar.mjs'
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material'
+import { resolveColor } from './calendarLogic.mjs'
 
-export function EventTypeSelect({ type, typeList, onSelect, variant = "subtitle2" }) {
+export function EventTypeSelect({
+  type,
+  typeList,
+  onSelect,
+  variant = 'subtitle2',
+}) {
   return (
     <FormControl sx={{ mr: 2, mb: 2, flexShrink: 0 }}>
       <InputLabel id="type-select-label" sx={{ pt: 1, ml: -1.5 }}>
@@ -25,7 +36,9 @@ export function EventTypeSelect({ type, typeList, onSelect, variant = "subtitle2
                 color: resolveColor(t),
               }}
             />
-            <Typography variant={variant} component="span" pl='2rem'>{t}</Typography>
+            <Typography variant={variant} component="span" pl="2rem">
+              {t}
+            </Typography>
           </MenuItem>
         ))}
       </Select>

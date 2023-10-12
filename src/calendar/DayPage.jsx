@@ -13,10 +13,16 @@ import { EventEditor } from './EventEditor'
 import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { EventPicker } from './EventPicker'
-import { createSampleEvent, usePalette } from './mockCalendar.mjs'
+import {
+  createSampleEvent,
+  getAugmentedColor,
+  usePalette,
+} from './calendarLogic.mjs'
 import { ViewHeader } from './ViewHeader'
 import { useNarrowCheck } from './LayoutContext.mjs'
 import { useLogger } from './Logger'
+import { shorthandInterval } from './dateLogic.mjs'
+import { useTheme } from '@emotion/react'
 
 const sectionStep = [1, 'hour']
 
@@ -32,6 +38,8 @@ export function DayPage({
   filteredEvents,
 }) {
   const logger = useLogger()
+  const theme = useTheme()
+  const secondaryColor = theme.palette.secondary.light
 
   const startOfDay = useMemo(() => day.startOf('day'), [day])
   const endOfDay = useMemo(() => day.endOf('day'), [day])
@@ -90,7 +98,7 @@ export function DayPage({
           action={action}
           onPointerDown={e => {
             if (action === 'create') {
-              testCreationTap({ event: e, logger, day })
+              testCreationTap({ event: e, logger, day, picks })
             }
             // if (action === 'create') {
             //   handleCreationTap({ event: e, day, setCreation, picks })
@@ -121,16 +129,27 @@ export function DayPage({
             onDelete={onDelete}
           />
           <div
-            className="test-box"
+            className="creation-ui-box"
             style={{
               position: 'absolute',
-              border: '1px solid #0af',
-              zIndex: 999,
-              backgroundColor: '#0af4',
+              border: `1px solid ${secondaryColor}`,
+              zIndex: 2,
+              backgroundColor: '#6e2a08bb',
               overflow: 'hidden',
               fontSize: '0.75rem',
             }}
-          />
+          >
+            <div
+              className="creation-ui-header"
+              style={{
+                backgroundColor: '#0af',
+                height: '1.25rem',
+                paddingRight: '0.25rem',
+                paddingLeft: '0.25rem',
+                overflow: 'hidden',
+              }}
+            ></div>
+          </div>
         </SectionedInterval>
 
         {editing && selection && (
@@ -180,8 +199,10 @@ function overwriteRAF(callback) {
   overwriteRAF.callback = callback
 }
 
-function testCreationTap({ event, day, logger }) {
-  console.log('testCreationTap')
+function testCreationTap({ event, day, logger, picks }) {
+  const augmentedColor = getAugmentedColor(picks.colorId)
+  console.log('acquired color: ', augmentedColor)
+  const minimumWidth = 90
   const startOfDay = day.startOf('day')
 
   const ct = event.currentTarget
@@ -189,19 +210,20 @@ function testCreationTap({ event, day, logger }) {
     .querySelector('.section-inner')
     .getBoundingClientRect()
 
-  const testBox = document.querySelector('.test-box')
+  const uiBox = document.querySelector('.creation-ui-box')
+  const uiBoxHeader = document.querySelector('.creation-ui-header')
 
-  console.log('output bounds: ', outputBounds)
-  console.log('client x, y: ', event.clientX, event.clientY)
-
-  // Scrolling element depends on layout:
-  const initialScroll =
-    document.querySelector('.section-scroll').scrollTop ||
-    document.querySelector('.root-container').scrollTop
-  console.log('initialScroll=', initialScroll)
-
-  const initialX = event.clientX - outputBounds.left
+  const initialX = Math.min(
+    event.clientX - outputBounds.left,
+    outputBounds.width - minimumWidth
+  )
   const initialY = event.clientY - outputBounds.top
+
+  // uiBox.style.backgroundColor = augmentedColor.dark
+  uiBox.style.backgroundImage = `radial-gradient(closest-side, #6e2a0844 5%, #6e2a0888 150%)`
+  uiBoxHeader.style.color = augmentedColor.contrastText
+  uiBoxHeader.style.backgroundColor = augmentedColor.main
+
   console.log('initial y: ', initialY)
   ct.setPointerCapture(event.pointerId)
 
@@ -216,36 +238,45 @@ function testCreationTap({ event, day, logger }) {
   function handleMove(move) {
     move.preventDefault()
     move.stopPropagation()
-    console.log('meep')
-
     const x2 = move.clientX - outputBounds.left
     const y2 = move.clientY - outputBounds.top
 
-    setBoxNoReact(initialX, initialY, x2, y2)
+    setBoxNoReact(x2, y2)
   }
 
-  function setBoxNoReact(x1, y1, x2, y2) {
+  function setBoxNoReact(x2, y2) {
     overwriteRAF(() => {
-      const lowY = Math.min(y1, y2)
-      const hiY = Math.max(y1, y2)
+      x2 = Math.max(0, Math.min(x2, outputBounds.width))
+      y2 = Math.max(0, Math.min(y2, outputBounds.height))
+      const left = Math.min(initialX, x2)
+      const width =
+        x2 > initialX
+          ? Math.max(x2 - initialX, minimumWidth)
+          : initialX + minimumWidth - x2
+
+      const lowY = Math.min(initialY, y2)
+      const hiY = Math.max(initialY, y2)
 
       setTimeout(() => logger('overwrite skip: ' + overwriteRAF.skipCount), 100)
 
+      const initialMinute =
+        Math.floor((24 * 60 * lowY) / outputBounds.height / 15) * 15
+      const finalMinute =
+        Math.ceil((24 * 60 * hiY) / outputBounds.height / 15) * 15
 
-      const initialMinute = Math.floor((24 * 60 * lowY / outputBounds.height) / 15) * 15
-      const finalMinute = Math.ceil((24 * 60 * hiY / outputBounds.height) / 15) * 15
+      const initialTime = startOfDay.add(initialMinute, 'minutes')
+      const finalTime = startOfDay.add(finalMinute, 'minutes')
+      uiBoxHeader.textContent = shorthandInterval(initialTime, finalTime)
 
-      testBox.textContent = startOfDay.add(initialMinute, 'minutes').format('h:mm')
-      + ' – '
-      + startOfDay.add(finalMinute, 'minutes').format('h:mm')
+      const snappedStartY = (initialMinute / (24 * 60)) * outputBounds.height
+      const snappedEndY = (finalMinute / (24 * 60)) * outputBounds.height
 
-      const snappedStartY = initialMinute / (24 * 60) * outputBounds.height
-      const snappedEndY = finalMinute / (24 * 60) * outputBounds.height
+      uiBox.style.left = left + 'px'
+      uiBox.style.top = snappedStartY + 'px'
+      uiBox.style.width = width + 'px'
+      uiBox.style.height = snappedEndY - snappedStartY + 'px'
 
-      testBox.style.left = Math.min(x1, x2) + 'px'
-      testBox.style.top = snappedStartY + 'px'
-      testBox.style.width = Math.abs(x1 - x2) + 'px'
-      testBox.style.height = snappedEndY - snappedStartY + 'px'
+      uiBoxHeader.style.textAlign = x2 > initialX ? 'left' : 'right'
     })
   }
 }
