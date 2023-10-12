@@ -1,7 +1,7 @@
 import { Box } from '@mui/material'
 import { gradualShades } from '../blueDigitalTheme'
 import { useLogger } from './Logger'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useNarrowCheck } from './LayoutContext.mjs'
 
 export function SectionedInterval({
@@ -23,16 +23,20 @@ export function SectionedInterval({
 
   // the following useEffect is solely to fix a Safari bug where scrolling to
   // the end of the page can cause position: sticky elements to disappear.
+  const outerRef = useRef(null)
   useEffect(() => {
+    console.log('outerRef.current=',outerRef.current)
     let skipFirst = true
-    const target = document.querySelector('.ending-box')
-    const viewHeader = document.querySelector('.view-header')
+    const target = outerRef.current.querySelector('.ending-box')
+    const viewHeader = outerRef.current.querySelector('.view-header')
+    console.log('t=',target)
+    console.log('vh=',viewHeader)
     const observer = new IntersectionObserver(watchEnd, {
       root: null,
       treshold: 1.0,
     })
 
-    observer.observe(document.querySelector('.ending-box'))
+    observer.observe(outerRef.current.querySelector('.ending-box'))
     function watchEnd() {
       if (skipFirst) {
         logger('skipping first observer callback')
@@ -89,6 +93,7 @@ export function SectionedInterval({
 
   return (
     <div
+    ref={outerRef}
       className="section-scroll"
       style={{
         width: '100%',

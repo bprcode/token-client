@@ -8,7 +8,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
-import { useCallback, useMemo, useState } from 'react'
+import { forwardRef, useCallback, useMemo, useRef, useState } from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionBar } from './ActionBar'
 import { ActionContext, actionList } from './ActionContext.mjs'
@@ -37,6 +37,7 @@ export function DayPage({
   unfilteredEvents,
   filteredEvents,
 }) {
+  const headerRef = useRef(null)
   const logger = useLogger()
   const theme = useTheme()
   const secondaryColor = theme.palette.secondary.light
@@ -71,6 +72,8 @@ export function DayPage({
       onCreate(creation)
       setCreation(null)
       setAction('edit')
+      // Workaround for Safari disappearing sticky element bug:
+      headerRef.current.scrollIntoView()
     },
     [onCreate]
   )
@@ -121,7 +124,7 @@ export function DayPage({
           }}
           // deselect if the click was not intercepted by an EventPane
           onClick={() => setSelection(null)}
-          header={<DayHeader onBack={onBack} day={day} />}
+          header={<DayHeader onBack={onBack} day={day} ref={headerRef} />}
         >
           <DailyBreakdown
             day={day}
@@ -303,14 +306,15 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
   }
 }
 
-function DayHeader({ onBack, day }) {
+const DayHeader = forwardRef(
+function DayHeader({ onBack, day }, ref) {
   const isNarrow = useMediaQuery('(max-width: 350px)')
   const formatted = isNarrow
     ? day.format('ddd, MMM D')
     : day.format('dddd, MMMM D')
 
   return (
-    <ViewHeader>
+    <ViewHeader ref={ref}>
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"
@@ -323,4 +327,4 @@ function DayHeader({ onBack, day }) {
       </Typography>
     </ViewHeader>
   )
-}
+})

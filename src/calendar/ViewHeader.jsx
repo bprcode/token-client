@@ -1,9 +1,9 @@
 import MenuIcon from '@mui/icons-material/Menu'
 import { AppBar, IconButton, Toolbar } from '@mui/material'
-import { useContext } from 'react'
+import { useContext, forwardRef } from 'react'
 import { ToggleMenuContext, useNarrowCheck } from './LayoutContext.mjs'
 
-export function ViewHeader({ children }) {
+export const ViewHeader = forwardRef(function ViewHeader({ children }, ref) {
   const toggleMenu = useContext(ToggleMenuContext)
   const isNarrow = useNarrowCheck()
   const disableBlur =
@@ -12,6 +12,7 @@ export function ViewHeader({ children }) {
 
   return (
     <AppBar
+      ref={ref}
       position="sticky"
       className="view-header"
       sx={{
@@ -43,4 +44,4 @@ export function ViewHeader({ children }) {
       </Toolbar>
     </AppBar>
   )
-}
+})
