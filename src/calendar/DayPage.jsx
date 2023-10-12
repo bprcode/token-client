@@ -66,6 +66,15 @@ export function DayPage({
     [onUpdate]
   )
 
+  const applyCreation = useCallback(
+    creation => {
+      onCreate(creation)
+      setCreation(null)
+      setAction('edit')
+    },
+    [onCreate]
+  )
+
   return (
     <ActionContext.Provider value={action}>
       <Paper
@@ -98,11 +107,8 @@ export function DayPage({
           action={action}
           onPointerDown={e => {
             if (action === 'create') {
-              testCreationTap({ event: e, logger, day, picks })
+              handleCreationTap({ event: e, logger, day, picks, applyCreation })
             }
-            // if (action === 'create') {
-            //   handleCreationTap({ event: e, day, setCreation, picks })
-            // }
           }}
           onPointerUp={e => {
             e.currentTarget.onpointermove = null
@@ -137,6 +143,7 @@ export function DayPage({
               backgroundColor: '#6e2a08bb',
               overflow: 'hidden',
               fontSize: '0.75rem',
+              visibility: 'hidden',
             }}
           >
             <div
@@ -199,7 +206,10 @@ function overwriteRAF(callback) {
   overwriteRAF.callback = callback
 }
 
-function testCreationTap({ event, day, logger, picks }) {
+function handleCreationTap({ event, day, logger, picks, applyCreation }) {
+  let initialTime
+  let finalTime
+
   const augmentedColor = getAugmentedColor(picks.colorId)
   console.log('acquired color: ', augmentedColor)
   const minimumWidth = 90
@@ -219,20 +229,32 @@ function testCreationTap({ event, day, logger, picks }) {
   )
   const initialY = event.clientY - outputBounds.top
 
-  // uiBox.style.backgroundColor = augmentedColor.dark
-  uiBox.style.backgroundImage = `radial-gradient(closest-side, #6e2a0844 5%, #6e2a0888 150%)`
+  uiBox.style.visibility = 'visible'
   uiBoxHeader.style.color = augmentedColor.contrastText
   uiBoxHeader.style.backgroundColor = augmentedColor.main
 
-  console.log('initial y: ', initialY)
+  // reinitialize
+  uiBox.style.left = event.clientX - outputBounds.left + 'px'
+  uiBox.style.top = event.clientY - outputBounds.top + 'px'
+  uiBox.style.width = 0 + 'px'
+  uiBox.style.height = 0 + 'px'
+
   ct.setPointerCapture(event.pointerId)
 
   ct.onpointermove = handleMove
   ct.onpointerup = cleanup
 
   function cleanup() {
-    console.log('pointer up')
-    // ct.removeEventListener('pointermove', handleMove)
+    applyCreation(
+      createSampleEvent({
+        startTime: initialTime,
+        endTime: finalTime,
+        summary: picks.summary,
+        colorId: picks.colorId,
+      })
+    )
+    ct.onpointerup = null
+    uiBox.style.visibility = 'hidden'
   }
 
   function handleMove(move) {
@@ -264,8 +286,8 @@ function testCreationTap({ event, day, logger, picks }) {
       const finalMinute =
         Math.ceil((24 * 60 * hiY) / outputBounds.height / 15) * 15
 
-      const initialTime = startOfDay.add(initialMinute, 'minutes')
-      const finalTime = startOfDay.add(finalMinute, 'minutes')
+      initialTime = startOfDay.add(initialMinute, 'minutes')
+      finalTime = startOfDay.add(finalMinute, 'minutes')
       uiBoxHeader.textContent = shorthandInterval(initialTime, finalTime)
 
       const snappedStartY = (initialMinute / (24 * 60)) * outputBounds.height
@@ -278,58 +300,6 @@ function testCreationTap({ event, day, logger, picks }) {
 
       uiBoxHeader.style.textAlign = x2 > initialX ? 'left' : 'right'
     })
-  }
-}
-
-function handleCreationTap({ event, picks, day, setCreation }) {
-  const innerBounds = document.body
-    .querySelector('.section-inner')
-    .getBoundingClientRect()
-
-  const minutes =
-    (24 * 60 * (event.clientY - innerBounds.top)) / innerBounds.height
-
-  const initialCreationTime = day.minute(minutes - (minutes % 15))
-
-  setCreation(
-    createSampleEvent({
-      startTime: initialCreationTime,
-      endTime: day.minute(minutes - (minutes % 15) + 15),
-      summary: picks.summary,
-      colorId: picks.colorId,
-    })
-  )
-
-  console.log('ct=', event.currentTarget)
-  event.currentTarget.setPointerCapture(event.pointerId)
-  let lastDragDuration = 15
-
-  const moveStart = event.clientY
-  event.currentTarget.onpointermove = move => {
-    const cursorMinutes =
-      (24 * 60 * (move.clientY - moveStart)) / innerBounds.height
-    const tick = cursorMinutes - (cursorMinutes % 15) + 15
-    const term = initialCreationTime.add(tick, 'minutes')
-    const updatedDragDuration = term.diff(initialCreationTime) / 1000 / 60
-
-    if (updatedDragDuration !== lastDragDuration && tick !== 0) {
-      lastDragDuration = updatedDragDuration
-
-      const start = initialCreationTime.isBefore(term)
-        ? initialCreationTime
-        : term
-      const end = term.isAfter(initialCreationTime)
-        ? term
-        : initialCreationTime.add(15, 'minutes')
-      setCreation(
-        createSampleEvent({
-          startTime: start,
-          endTime: end,
-          summary: picks.summary,
-          colorId: picks.colorId,
-        })
-      )
-    }
   }
 }
 
