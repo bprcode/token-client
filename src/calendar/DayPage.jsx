@@ -4,6 +4,7 @@ import {
   Typography,
   Collapse,
   useMediaQuery,
+  useTheme,
 } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
@@ -22,7 +23,6 @@ import { ViewHeader } from './ViewHeader'
 import { useNarrowCheck } from './LayoutContext.mjs'
 import { useLogger } from './Logger'
 import { shorthandInterval } from './dateLogic.mjs'
-import { useTheme } from '@emotion/react'
 
 const sectionStep = [1, 'hour']
 
@@ -210,6 +210,9 @@ function overwriteRAF(callback) {
 }
 
 function handleCreationTap({ event, day, logger, picks, applyCreation }) {
+  event.stopPropagation()
+  event.preventDefault()
+
   let initialTime
   let finalTime
 
@@ -269,6 +272,8 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
     setBoxNoReact(x2, y2)
   }
 
+  // Bypass re-renders for this interaction, as they result in sluggish
+  // performance on low-end devices.
   function setBoxNoReact(x2, y2) {
     overwriteRAF(() => {
       x2 = Math.max(0, Math.min(x2, outputBounds.width))
