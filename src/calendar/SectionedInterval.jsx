@@ -25,12 +25,10 @@ export function SectionedInterval({
   // the end of the page can cause position: sticky elements to disappear.
   const outerRef = useRef(null)
   useEffect(() => {
-    console.log('outerRef.current=',outerRef.current)
     let skipFirst = true
     const target = outerRef.current.querySelector('.ending-box')
     const viewHeader = outerRef.current.querySelector('.view-header')
-    console.log('t=',target)
-    console.log('vh=',viewHeader)
+
     const observer = new IntersectionObserver(watchEnd, {
       root: null,
       treshold: 1.0,

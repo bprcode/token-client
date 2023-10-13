@@ -54,6 +54,8 @@ export function DayPage({
     summary: 'New Event',
   }
 
+  const [shutDrawer, setShutDrawer] = useState(false)
+
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
   const [creation, setCreation] = useState(null)
@@ -189,7 +191,7 @@ export function DayPage({
             event={unfilteredEvents.find(e => e.id === selection)}
           />
         )}
-        <CreationDrawer action={action} picks={picks} onPick={setPicks} />
+        <CreationDrawer action={shutDrawer ? 'none' : action} picks={picks} onPick={setPicks} />
       </Paper>
     </ActionContext.Provider>
   )
@@ -259,11 +261,14 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
   uiBox.style.height = 0 + 'px'
 
   ct.setPointerCapture(event.pointerId)
+  // ct.querySelector('.section-inner').setPointerCapture(event.pointerId)
 
   ct.onpointermove = handleMove
   ct.onpointerup = cleanup
+  ct.onpointercancel = () => console.log('cancel')
 
   function cleanup() {
+    if (initialTime) {
     applyCreation(
       createSampleEvent({
         startTime: initialTime,
@@ -272,6 +277,7 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
         colorId: picks.colorId,
       })
     )
+    }
     ct.onpointerup = null
     uiBox.style.visibility = 'hidden'
   }
