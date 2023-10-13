@@ -227,9 +227,6 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
   event.stopPropagation()
   event.preventDefault()
 
-  let initialTime
-  let finalTime
-
   const augmentedColor = getAugmentedColor(picks.colorId)
   console.log('acquired color: ', augmentedColor)
   const minimumWidth = 90
@@ -249,11 +246,14 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
   )
   const initialY = event.clientY - outputBounds.top
 
+  // initialize
+  let initialTime = startOfDay.add(24*60*(event.clientY - outputBounds.top)/outputBounds.height, 'minutes').startOf('hour')
+  let finalTime = initialTime.add(60, 'minutes')
+
   uiBox.style.visibility = 'visible'
   uiBoxHeader.style.color = augmentedColor.contrastText
   uiBoxHeader.style.backgroundColor = augmentedColor.main
 
-  // reinitialize
   uiBox.style.left = event.clientX - outputBounds.left + 'px'
   uiBox.style.top = event.clientY - outputBounds.top + 'px'
   uiBox.style.width = 0 + 'px'
@@ -292,6 +292,10 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
     setBoxNoReact(x2, y2)
   }
 
+  function lowMinuteFromPosition (y) {
+    return Math.floor((24 * 60 * y) / outputBounds.height / 15) * 15
+  }
+
   // Bypass re-renders for this interaction, as they result in sluggish
   // performance on low-end devices.
   function setBoxNoReact(x2, y2) {
@@ -309,8 +313,7 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
 
       setTimeout(() => logger('overwrite skip: ' + overwriteRAF.skipCount), 100)
 
-      const initialMinute =
-        Math.floor((24 * 60 * lowY) / outputBounds.height / 15) * 15
+      const initialMinute = lowMinuteFromPosition(lowY)
       const finalMinute =
         Math.ceil((24 * 60 * hiY) / outputBounds.height / 15) * 15
 
