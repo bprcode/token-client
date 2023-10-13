@@ -58,7 +58,6 @@ export function DayPage({
 
   const [selection, setSelection] = useState(null)
   const [editing, setEditing] = useState(false)
-  const [creation, setCreation] = useState(null)
   const [picks, setPicks] = useState(defaultEventPicks)
 
   const [action, setAction] = useState(actionList[0])
@@ -74,7 +73,6 @@ export function DayPage({
   const applyCreation = useCallback(
     creation => {
       onCreate(creation)
-      setCreation(null)
       setAction('edit')
       // Workaround for Safari disappearing sticky element bug:
       headerRef.current.scrollIntoView()
@@ -118,17 +116,15 @@ export function DayPage({
           action={action}
           onPointerDown={e => {
             if (action === 'create') {
+              setShutDrawer(true)
               handleCreationTap({ event: e, logger, day, picks, applyCreation })
             }
           }}
-          onPointerUp={e => {
-            e.currentTarget.onpointermove = null
-            if (action !== 'create' || !creation) {
-              return
+          onPointerUp={() => {
+            setShutDrawer(false)
+            if (action === 'create') {
+              setAction('edit')
             }
-            onCreate(creation)
-            setCreation(null)
-            setAction('edit')
           }}
           // deselect if the click was not intercepted by an EventPane
           onClick={() => setSelection(null)}
@@ -145,7 +141,6 @@ export function DayPage({
             day={day}
             unfilteredEvents={unfilteredEvents}
             filteredEvents={filteredEvents}
-            mockEvent={creation}
             selection={selection}
             onSelect={setSelection}
             onEdit={setEditing}
@@ -191,7 +186,11 @@ export function DayPage({
             event={unfilteredEvents.find(e => e.id === selection)}
           />
         )}
-        <CreationDrawer action={shutDrawer ? 'none' : action} picks={picks} onPick={setPicks} />
+        <CreationDrawer
+          action={shutDrawer ? 'none' : action}
+          picks={picks}
+          onPick={setPicks}
+        />
       </Paper>
     </ActionContext.Provider>
   )
@@ -261,7 +260,6 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
   uiBox.style.height = 0 + 'px'
 
   ct.setPointerCapture(event.pointerId)
-  // ct.querySelector('.section-inner').setPointerCapture(event.pointerId)
 
   ct.onpointermove = handleMove
   ct.onpointerup = cleanup
@@ -269,20 +267,23 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
 
   function cleanup() {
     if (initialTime) {
-    applyCreation(
-      createSampleEvent({
-        startTime: initialTime,
-        endTime: finalTime,
-        summary: picks.summary,
-        colorId: picks.colorId,
-      })
-    )
+      applyCreation(
+        createSampleEvent({
+          startTime: initialTime,
+          endTime: finalTime,
+          summary: picks.summary,
+          colorId: picks.colorId,
+        })
+      )
     }
     ct.onpointerup = null
+    ct.onpointermove = null
+    ct.onpointercancel = null
     uiBox.style.visibility = 'hidden'
   }
 
   function handleMove(move) {
+    console.log('meep')
     move.preventDefault()
     move.stopPropagation()
     const x2 = move.clientX - outputBounds.left
@@ -352,17 +353,21 @@ const DayHeader = forwardRef(function DayHeader(
         {formatted}
       </Typography>
 
-      {actionButtons && <Box sx={{
-        display: 'flex',
-        flexDirection: 'row',
-        rowGap: '1rem',
-        position: 'absolute',
-        right: '8px',
-        top: '8px',
-        zIndex: 4,
-      }}>
-        {actionButtons}
-        </Box>}
+      {actionButtons && (
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'row',
+            rowGap: '1rem',
+            position: 'absolute',
+            right: '8px',
+            top: '8px',
+            zIndex: 4,
+          }}
+        >
+          {actionButtons}
+        </Box>
+      )}
     </ViewHeader>
   )
 })
