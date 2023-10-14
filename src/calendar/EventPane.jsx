@@ -346,6 +346,7 @@ export function EventPane({
               : undefined,
             opacity: ghost && 0.5,
             userSelect: 'none',
+            WebkitUserSelect: 'none',
           }}
         >
           {overflowArrows}

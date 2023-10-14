@@ -1,7 +1,10 @@
-import { Button, Typography, useTheme } from '@mui/material'
-import { useState } from 'react'
+import { Box, Button, Typography, useTheme } from '@mui/material'
+import { useEffect, useRef, useState } from 'react'
+import { useLogger } from './Logger'
 
 export function ClockPicker({ size = '240px', time, onPick }) {
+  const logger = useLogger()
+
   const theme = useTheme()
   const [mode, setMode] = useState('hours')
   const pi = Math.PI
@@ -44,9 +47,13 @@ export function ClockPicker({ size = '240px', time, onPick }) {
       )
     })
 
+  const faceRef = useRef(null)
+
   return (
     <div
       style={{
+        userSelect: 'none',
+        WebkitUserSelect: 'none',
         borderBottomLeftRadius: '4px',
         borderBottomRightRadius: '4px',
         width: size,
@@ -122,82 +129,131 @@ export function ClockPicker({ size = '240px', time, onPick }) {
         </Button>
       </Typography>
 
-      {/* clock face */}
       <div
+        className="clock-outer"
         style={{
-          backgroundColor: '#363c87',
+          touchAction: 'none',
+          backgroundColor: 'orange',
           width: '100%',
-          paddingBottom: '100%', // alternative to aspect-ratio
           position: 'relative',
           borderRadius: '50%',
-          userSelect: 'none',
-          filter: 'drop-shadow(8px 5px 4px #281000c0)',
         }}
-        onClick={e => {
-          const bounds = e.currentTarget.getBoundingClientRect()
-          const x = (e.clientX - bounds.left) / bounds.width - 0.5
-          const y = -(e.clientY - bounds.top) / bounds.height + 0.5
-          const angle = Math.atan2(y, x)
-          // for 12-hour:
-          const section = 1 + ((11 + Math.round(3 - angle / (pi / 6))) % 12)
+        onPointerDown={e => {
+          console.log('blue down')
+          logger('clock-outer: down 👇')
+          e.preventDefault()
 
-          if (mode === 'hours') {
-            onPick(time.hour((section % 12) + (isPM ? 12 : 0)))
-            setMode('minutes')
+          const current = e.currentTarget
+          const bounds = current.getBoundingClientRect()
+          const hourHand = current.querySelector('.hour-hand')
+          const minuteHand = current.querySelector('.minute-hand')
+
+          current.querySelector('.clock-inner').setPointerCapture(e.pointerId)
+
+          let lastX = 0
+          let lastY = 0
+          let lastAngle = 0
+          readPosition(e)
+
+          current.onpointermove = move => {
+            readPosition(move)
           }
-          if (mode === 'minutes') {
-            onPick(time.minute((section % 12) * 5))
+
+          current.onlostpointercapture = e => {
+            logger('clock-outer: lost ❔')
+            current.onpointermove = null
+
+            // Apply selection
+            const section =
+              1 + ((11 + Math.round(3 + lastAngle / (pi / 6))) % 12)
+
+            if (mode === 'hours') {
+              onPick(time.hour((section % 12) + (isPM ? 12 : 0)))
+              setMode('minutes')
+            }
+            if (mode === 'minutes') {
+              onPick(time.minute((section % 12) * 5))
+            }
+          }
+
+          function readPosition(move) {
+            lastX = (move.clientX - bounds.left) / bounds.width - 0.5
+            lastY = -(move.clientY - bounds.top) / bounds.height + 0.5
+            lastAngle = -Math.atan2(lastY, lastX)
+
+            if (mode === 'hours') {
+              hourHand.style.transform = `translateY(-50%) rotate(${
+                (lastAngle * 180) / Math.PI
+              }deg)`
+            } else {
+              minuteHand.style.transform = `translateY(-50%) rotate(${
+                (lastAngle * 180) / Math.PI
+              }deg)`
+            }
           }
         }}
       >
-        {numbering}
-
-        {/* hour hand */}
         <div
+          ref={faceRef}
+          className="clock-inner"
           style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            width: '25%',
-            height: '5px',
-            backgroundColor:
-              mode === 'hours' ? theme.palette.secondary.main : '#fffa',
-            transformOrigin: 'left',
-            transform: `translateY(-50%) rotate(${hourDegrees}deg)`,
-            transition: 'transform 0.25s ease-out',
-            borderRadius: '4px',
-          }}
-        />
-
-        {/* minute hand */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            width: '30%',
-            height: '2px',
-            backgroundColor:
-              mode === 'minutes' ? theme.palette.secondary.main : '#fffa',
-            transformOrigin: 'left',
-            transform: `translateY(-50%) rotate(${minuteDegrees}deg)`,
-            transition: 'transform 0.25s ease-out',
-          }}
-        />
-
-        {/* pivot */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            width: '0.5rem',
-            height: '0.5rem',
-            backgroundColor: '#ccc',
+            backgroundColor: '#363c87',
+            width: '100%',
+            paddingBottom: '100%', // alternative to aspect-ratio
+            position: 'relative',
             borderRadius: '50%',
-            transform: 'translate(-50%,-50%)',
+            filter: 'drop-shadow(8px 5px 4px #281000c0)',
           }}
-        />
+        >
+          {numbering}
+
+          <div
+            className="hour-hand"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '25%',
+              height: '5px',
+              backgroundColor:
+                mode === 'hours' ? theme.palette.secondary.main : '#fffa',
+              transformOrigin: 'left',
+              transform: `translateY(-50%) rotate(${hourDegrees}deg)`,
+              // transition: 'transform 0.25s ease-out',
+              borderRadius: '4px',
+            }}
+          />
+
+          <div
+            className="minute-hand"
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '30%',
+              height: '2px',
+              backgroundColor:
+                mode === 'minutes' ? theme.palette.secondary.main : '#fffa',
+              transformOrigin: 'left',
+              transform: `translateY(-50%) rotate(${minuteDegrees}deg)`,
+              // transition: 'transform 0.25s ease-out',
+            }}
+          />
+
+          {/* pivot */}
+          <div
+            style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              width: '0.5rem',
+              height: '0.5rem',
+              backgroundColor: '#ccc',
+              borderRadius: '50%',
+              transform: 'translate(-50%,-50%)',
+            }}
+          />
+        </div>
       </div>
     </div>
   )

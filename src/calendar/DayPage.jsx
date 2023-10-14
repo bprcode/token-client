@@ -247,7 +247,12 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
   const initialY = event.clientY - outputBounds.top
 
   // initialize
-  let initialTime = startOfDay.add(24*60*(event.clientY - outputBounds.top)/outputBounds.height, 'minutes').startOf('hour')
+  let initialTime = startOfDay
+    .add(
+      (24 * 60 * (event.clientY - outputBounds.top)) / outputBounds.height,
+      'minutes'
+    )
+    .startOf('hour')
   let finalTime = initialTime.add(60, 'minutes')
 
   uiBox.style.visibility = 'visible'
@@ -292,7 +297,7 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
     setBoxNoReact(x2, y2)
   }
 
-  function lowMinuteFromPosition (y) {
+  function lowMinuteFromPosition(y) {
     return Math.floor((24 * 60 * y) / outputBounds.height / 15) * 15
   }
 
