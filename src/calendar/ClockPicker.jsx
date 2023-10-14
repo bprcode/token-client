@@ -1,5 +1,5 @@
-import { Box, Button, Typography, useTheme } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { Button, Typography, useTheme } from '@mui/material'
+import { useRef, useState } from 'react'
 import { useLogger } from './Logger'
 
 export function ClockPicker({ size = '240px', time, onPick }) {
@@ -12,8 +12,8 @@ export function ClockPicker({ size = '240px', time, onPick }) {
   const twelveHour = time.format('h')
   const isPM = time.format('A') === 'PM'
   const currentMinute = String((time.minute() < 10 && '0') + time.minute())
-  const hourDegrees = 270 + (twelveHour % 12) * 30
-  const minuteDegrees = 270 + 6 * time.minute() //+ (twelveHour % 12) * 30
+  const hourDegrees = (270 + (twelveHour % 12) * 30) % 360
+  const minuteDegrees = (270 + 6 * time.minute()) % 360
 
   const numbering = Array(12)
     .fill(0)
@@ -150,38 +150,77 @@ export function ClockPicker({ size = '240px', time, onPick }) {
 
           current.querySelector('.clock-inner').setPointerCapture(e.pointerId)
 
+          let nonreactMode = mode
           let lastX = 0
           let lastY = 0
           let lastAngle = 0
+          let lastRadiusSquared = 0
           readPosition(e)
+          checkHandSelection()
+          applyRotations()
 
           current.onpointermove = move => {
             readPosition(move)
+            applyRotations()
           }
 
           current.onlostpointercapture = e => {
             logger('clock-outer: lost ❔')
             current.onpointermove = null
+            current.onlostpointercapture = null
 
             // Apply selection
             const section =
               1 + ((11 + Math.round(3 + lastAngle / (pi / 6))) % 12)
 
-            if (mode === 'hours') {
+            if (nonreactMode === 'hours') {
               onPick(time.hour((section % 12) + (isPM ? 12 : 0)))
               setMode('minutes')
             }
-            if (mode === 'minutes') {
+            if (nonreactMode === 'minutes') {
               onPick(time.minute((section % 12) * 5))
             }
+          }
+
+          function checkHandSelection() {
+            const pointerDegrees = lastAngle * 180 / Math.PI
+            console.log('lastRadiusSquared=', lastRadiusSquared)
+
+            const hourDistance = Math.min(Math.abs(hourDegrees - pointerDegrees), Math.abs(360 + pointerDegrees - hourDegrees))
+            const minuteDistance = Math.min(Math.abs(minuteDegrees - pointerDegrees), Math.abs(360 + pointerDegrees - minuteDegrees))
+            console.log('hourDistance =', hourDistance)
+
+            console.log('1. mode was: ', mode)
+
+            if (lastRadiusSquared < 0.09) {
+              if (mode === 'minutes'  && hourDistance < minuteDistance && hourDistance < 15) {
+                setMode('hours')
+                nonreactMode = 'hours'
+
+              }
+              if (mode === 'hours'  && minuteDistance < hourDistance && minuteDistance < 15) {
+                setMode('minutes')
+                nonreactMode = 'minutes'
+              }
+            }
+
+
+
+
           }
 
           function readPosition(move) {
             lastX = (move.clientX - bounds.left) / bounds.width - 0.5
             lastY = -(move.clientY - bounds.top) / bounds.height + 0.5
             lastAngle = -Math.atan2(lastY, lastX)
+            lastRadiusSquared = lastX ** 2 + lastY ** 2
 
-            if (mode === 'hours') {
+            
+          }
+
+          function applyRotations() {
+            console.log('2. mode was: ', mode)
+            if (nonreactMode === 'hours') {
               hourHand.style.transform = `translateY(-50%) rotate(${
                 (lastAngle * 180) / Math.PI
               }deg)`
