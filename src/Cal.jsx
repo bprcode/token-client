@@ -7,7 +7,6 @@ import {
   Typography,
   CssBaseline,
   Divider,
-  useMediaQuery,
   Drawer,
   List,
   ListItemButton,
@@ -16,17 +15,18 @@ import {
   ListItemText,
   Box,
   Paper,
+  Fade,
   Slide,
 } from '@mui/material'
 import digitalTheme from './blueDigitalTheme'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 import dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
 import { useEventListHistory } from './calendar/calendarLogic.mjs'
 import { WeeklyCalendar } from './calendar/WeeklyCalendar'
 import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
-import { ToggleMenuContext } from './calendar/LayoutContext.mjs'
+import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@emotion/react'
 import hourglassPng from './assets/hourglass2.png'
@@ -35,6 +35,7 @@ import { isOverlap } from './calendar/dateLogic.mjs'
 const currentDate = dayjs()
 
 function RootLayout({ children }) {
+  const isNarrow = useNarrowCheck()
   const [expand, setExpand] = useState(false)
 
   console.log('rendering root')
@@ -48,9 +49,7 @@ function RootLayout({ children }) {
           height: '100vh',
           // N.B. overflowX: hidden causes a persistent address bar
           // on mobile Y-scrolling in the DayPage component.
-          // This is intentional, to prevent a "jumpy" interface while
-          // scrolling, and also clips the TransitionGroup animations.
-          // overflowX: 'hidden',
+          overflowX: isNarrow ? undefined : 'hidden',
         }}
       >
         <Box
@@ -76,7 +75,7 @@ function RootLayout({ children }) {
 
 function Sidebar({ width = '240px', expand }) {
   const theme = useTheme()
-  const isNarrow = useMediaQuery('(max-width: 800px)')
+  const isNarrow = useNarrowCheck()
   const toggleMenu = useContext(ToggleMenuContext)
 
   const content = (
@@ -165,6 +164,23 @@ function Sidebar({ width = '240px', expand }) {
   )
 }
 
+function ResponsiveTransition(props) {
+  const isNarrow = useNarrowCheck()
+  if (isNarrow) {
+    return <Fade timeout={350} {...props} />
+  }
+
+  return (
+    <Slide
+      timeout={350}
+      direction="left"
+      mountOnEnter
+      unmountOnExit
+      {...props}
+    />
+  )
+}
+
 function Demo() {
   const preferences = useContext(PreferencesContext)
   const [eventListHistory, dispatchEventListHistory] = useEventListHistory()
@@ -187,41 +203,7 @@ function Demo() {
     )
   }, [view, eventList, expandedDate])
 
-  // return (
-  //   <RootLayout>
-  //     <Paper
-  //       elevation={1}
-  //       sx={{
-  //         width: '100%',
-  //         flexShrink: 0,
-  //         position: 'relative',
-  //       }}
-  //     >
-  //       <div style={{
-  //         position: 'sticky',
-  //         top: 0,
-  //         backgroundColor: '#222',
-  //         width: '100%',
-  //         height: '3.5rem',
-  //       }}>Header mockup</div>
-  //       <div
-  //         style={{
-  //           backgroundColor: '#533',
-  //           height: '4000px',
-  //           flexShrink: 0,
-  //         }}
-  //       >
-  //         Lorem ipsum, dolor sit amet consectetur adipisicing elit. Alias culpa
-  //         repellat, eaque natus voluptas fugit perspiciatis sapiente labore
-  //         distinctio optio minus! Reiciendis rerum veritatis dolores vel! Omnis
-  //         fuga quia dolores numquam consequatur quaerat labore fugit, suscipit
-  //         consectetur est, illum dolor obcaecati porro animi assumenda earum
-  //         veniam! Commodi dolore sunt, ipsa pariatur, eos corporis quo, nisi
-  //         mollitia odit aut deserunt voluptatem.
-  //       </div>
-  //     </Paper>
-  //   </RootLayout>
-  // )
+  const boxRef = useRef(null)
 
   return (
     <LoggerProvider>
@@ -234,97 +216,105 @@ function Demo() {
             position: 'relative',
           }}
         >
-          <TransitionGroup>
-            {view === 'month' && (
-              <Slide direction="left" timeout={350}>
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    width: '100%',
-                    height: '100%',
-                  }}
-                >
-                  <MonthlyCalendar
-                    initialDate={currentDate}
-                    unfilteredEvents={eventList}
-                    onExpand={date => {
-                      setExpandedDate(date)
-                      setView('week')
+          <Box
+            ref={boxRef}
+            sx={{
+              width: '100%',
+              height: '100%',
+            }}
+          >
+            <TransitionGroup>
+              {view === 'month' && (
+                <ResponsiveTransition container={boxRef.current}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      width: '100%',
+                      height: '100%',
                     }}
-                  />
-                </div>
-              </Slide>
-            )}
-            {view === 'week' && (
-              <Slide direction="left" timeout={350}>
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    width: '100%',
-                    height: '100%',
-                  }}
-                >
-                  <WeeklyCalendar
-                    onBack={() => {
-                      setExpandedDate(null)
-                      setView('month')
+                  >
+                    <MonthlyCalendar
+                      initialDate={currentDate}
+                      unfilteredEvents={eventList}
+                      onExpand={date => {
+                        setExpandedDate(date)
+                        setView('week')
+                      }}
+                    />
+                  </div>
+                </ResponsiveTransition>
+              )}
+              {view === 'week' && (
+                <ResponsiveTransition container={boxRef.current}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      width: '100%',
+                      height: '100%',
                     }}
-                    key={(expandedDate || currentDate).format('MM D')}
-                    initialDate={expandedDate || currentDate}
-                    eventList={eventList}
-                    onExpand={date => {
-                      setExpandedDate(date)
-                      setView('day')
+                  >
+                    <WeeklyCalendar
+                      onBack={() => {
+                        setExpandedDate(null)
+                        setView('month')
+                      }}
+                      key={(expandedDate || currentDate).format('MM D')}
+                      initialDate={expandedDate || currentDate}
+                      eventList={eventList}
+                      onExpand={date => {
+                        setExpandedDate(date)
+                        setView('day')
+                      }}
+                    />
+                  </div>
+                </ResponsiveTransition>
+              )}
+              {view === 'day' && (
+                <ResponsiveTransition container={boxRef.current}>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      width: '100%',
+                      height: '100%',
                     }}
-                  />
-                </div>
-              </Slide>
-            )}
-            {view === 'day' && (
-              <Slide direction="left" timeout={350}>
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    width: '100%',
-                    height: '100%',
-                  }}
-                >
-                  <DayPage
-                    onBack={() => setView('week')}
-                    day={expandedDate || dayjs()}
-                    unfilteredEvents={eventList}
-                    filteredEvents={dayEvents}
-                    onCreate={addition =>
-                      dispatchAction({
-                        type: 'create',
-                        merge: preferences.merge,
-                        addition,
-                      })
-                    }
-                    onUpdate={updates =>
-                      dispatchAction({
-                        type: 'update',
-                        id: updates.id,
-                        merge: preferences.merge,
-                        updates,
-                      })
-                    }
-                    onDelete={id =>
-                      dispatchAction({
-                        type: 'delete',
-                        id: id,
-                      })
-                    }
-                    onUndo={() => dispatchAction({ type: 'undo' })}
-                    canUndo={canUndo}
-                  />
-                </div>
-              </Slide>
-            )}
-          </TransitionGroup>
+                  >
+                    <DayPage
+                      onBack={() => setView('week')}
+                      day={expandedDate || dayjs()}
+                      unfilteredEvents={eventList}
+                      filteredEvents={dayEvents}
+                      onCreate={addition =>
+                        dispatchAction({
+                          type: 'create',
+                          merge: preferences.merge,
+                          addition,
+                        })
+                      }
+                      onUpdate={updates =>
+                        dispatchAction({
+                          type: 'update',
+                          id: updates.id,
+                          merge: preferences.merge,
+                          updates,
+                        })
+                      }
+                      onDelete={id =>
+                        dispatchAction({
+                          type: 'delete',
+                          id: id,
+                        })
+                      }
+                      onUndo={() => dispatchAction({ type: 'undo' })}
+                      canUndo={canUndo}
+                    />
+                  </div>
+                </ResponsiveTransition>
+              )}
+            </TransitionGroup>
+          </Box>
         </Paper>
       </RootLayout>
     </LoggerProvider>
