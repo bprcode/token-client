@@ -1,5 +1,5 @@
 import { Button, Typography, useTheme } from '@mui/material'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useLogger } from './Logger'
 
 export function ClockPicker({ size = '240px', time, onPick }) {
@@ -28,17 +28,18 @@ export function ClockPicker({ size = '240px', time, onPick }) {
       return (
         <div
           key={i}
+          className={'numbering num-' + i}
           style={{
             position: 'absolute',
             top: 50 + 40 * Math.cos((-2 * pi * i) / 12 + rotation) + '%',
             left: 50 + 40 * Math.sin((-2 * pi * i) / 12 + rotation) + '%',
             transform: 'translate(-50%,-50%)',
-            backgroundColor: highlight && theme.palette.secondary.main,
             padding: '4px',
             width: '2rem',
             height: '2rem',
             borderRadius: '50%',
             textAlign: 'center',
+            backgroundColor: highlight && theme.palette.secondary.main,
             color: highlight && theme.palette.secondary.contrastText,
           }}
         >
@@ -46,8 +47,6 @@ export function ClockPicker({ size = '240px', time, onPick }) {
         </div>
       )
     })
-
-  const faceRef = useRef(null)
 
   return (
     <div
@@ -133,107 +132,13 @@ export function ClockPicker({ size = '240px', time, onPick }) {
         className="clock-outer"
         style={{
           touchAction: 'none',
-          backgroundColor: 'orange',
           width: '100%',
           position: 'relative',
           borderRadius: '50%',
         }}
-        onPointerDown={e => {
-          console.log('blue down')
-          logger('clock-outer: down 👇')
-          e.preventDefault()
-
-          const current = e.currentTarget
-          const bounds = current.getBoundingClientRect()
-          const hourHand = current.querySelector('.hour-hand')
-          const minuteHand = current.querySelector('.minute-hand')
-
-          current.querySelector('.clock-inner').setPointerCapture(e.pointerId)
-
-          let nonreactMode = mode
-          let lastX = 0
-          let lastY = 0
-          let lastAngle = 0
-          let lastRadiusSquared = 0
-          readPosition(e)
-          checkHandSelection()
-          applyRotations()
-
-          current.onpointermove = move => {
-            readPosition(move)
-            applyRotations()
-          }
-
-          current.onlostpointercapture = e => {
-            logger('clock-outer: lost ❔')
-            current.onpointermove = null
-            current.onlostpointercapture = null
-
-            // Apply selection
-            const section =
-              1 + ((11 + Math.round(3 + lastAngle / (pi / 6))) % 12)
-
-            if (nonreactMode === 'hours') {
-              onPick(time.hour((section % 12) + (isPM ? 12 : 0)))
-              setMode('minutes')
-            }
-            if (nonreactMode === 'minutes') {
-              onPick(time.minute((section % 12) * 5))
-            }
-          }
-
-          function checkHandSelection() {
-            const pointerDegrees = lastAngle * 180 / Math.PI
-            console.log('lastRadiusSquared=', lastRadiusSquared)
-
-            const hourDistance = Math.min(Math.abs(hourDegrees - pointerDegrees), Math.abs(360 + pointerDegrees - hourDegrees))
-            const minuteDistance = Math.min(Math.abs(minuteDegrees - pointerDegrees), Math.abs(360 + pointerDegrees - minuteDegrees))
-            console.log('hourDistance =', hourDistance)
-
-            console.log('1. mode was: ', mode)
-
-            if (lastRadiusSquared < 0.09) {
-              if (mode === 'minutes'  && hourDistance < minuteDistance && hourDistance < 15) {
-                setMode('hours')
-                nonreactMode = 'hours'
-
-              }
-              if (mode === 'hours'  && minuteDistance < hourDistance && minuteDistance < 15) {
-                setMode('minutes')
-                nonreactMode = 'minutes'
-              }
-            }
-
-
-
-
-          }
-
-          function readPosition(move) {
-            lastX = (move.clientX - bounds.left) / bounds.width - 0.5
-            lastY = -(move.clientY - bounds.top) / bounds.height + 0.5
-            lastAngle = -Math.atan2(lastY, lastX)
-            lastRadiusSquared = lastX ** 2 + lastY ** 2
-
-            
-          }
-
-          function applyRotations() {
-            console.log('2. mode was: ', mode)
-            if (nonreactMode === 'hours') {
-              hourHand.style.transform = `translateY(-50%) rotate(${
-                (lastAngle * 180) / Math.PI
-              }deg)`
-            } else {
-              minuteHand.style.transform = `translateY(-50%) rotate(${
-                (lastAngle * 180) / Math.PI
-              }deg)`
-            }
-          }
-        }}
+        onPointerDown={handlePointerDown}
       >
         <div
-          ref={faceRef}
           className="clock-inner"
           style={{
             backgroundColor: '#363c87',
@@ -296,4 +201,132 @@ export function ClockPicker({ size = '240px', time, onPick }) {
       </div>
     </div>
   )
+
+  function handlePointerDown(e) {
+    console.log('blue down')
+    logger('clock-outer: down 👇')
+    e.preventDefault()
+
+    const current = e.currentTarget
+    const bounds = current.getBoundingClientRect()
+    const hourHand = current.querySelector('.hour-hand')
+    const minuteHand = current.querySelector('.minute-hand')
+
+    const numbering = current.querySelectorAll('.numbering')
+
+    current.querySelector('.clock-inner').setPointerCapture(e.pointerId)
+
+    let nonreactMode = mode
+    let lastX = 0
+    let lastY = 0
+    let lastAngle = 0
+    let lastRadiusSquared = 0
+    clearActiveStyles()
+    readPosition(e)
+    checkHandSelection()
+    applyRotations()
+
+    current.onpointermove = move => {
+      readPosition(move)
+      applyRotations()
+    }
+
+    current.onlostpointercapture = () => {
+      logger('clock-outer: lost ❔')
+      current.onpointermove = null
+      current.onlostpointercapture = null
+
+      clearActiveStyles()
+
+      // Apply selection
+      const section = 1 + ((11 + Math.round(3 + lastAngle / (pi / 6))) % 12)
+
+      if (nonreactMode === 'hours') {
+        onPick(time.hour((section % 12) + (isPM ? 12 : 0)))
+        setMode('minutes')
+      }
+      if (nonreactMode === 'minutes') {
+        onPick(time.minute((section % 12) * 5))
+      }
+    }
+
+    function checkHandSelection() {
+      const pointerDegrees = (lastAngle * 180) / Math.PI
+      console.log('lastRadiusSquared=', lastRadiusSquared)
+
+      const hourDistance = Math.min(
+        Math.abs(hourDegrees - pointerDegrees),
+        Math.abs(360 + pointerDegrees - hourDegrees)
+      )
+      const minuteDistance = Math.min(
+        Math.abs(minuteDegrees - pointerDegrees),
+        Math.abs(360 + pointerDegrees - minuteDegrees)
+      )
+      console.log('hourDistance =', hourDistance)
+
+      console.log('1. mode was: ', mode)
+
+      if (lastRadiusSquared < 0.09) {
+        if (
+          mode === 'minutes' &&
+          hourDistance < minuteDistance &&
+          hourDistance < 15
+        ) {
+          setMode('hours')
+          nonreactMode = 'hours'
+        }
+        if (
+          mode === 'hours' &&
+          minuteDistance < hourDistance &&
+          minuteDistance < 15
+        ) {
+          setMode('minutes')
+          nonreactMode = 'minutes'
+        }
+      }
+    }
+
+    function readPosition(move) {
+      lastX = (move.clientX - bounds.left) / bounds.width - 0.5
+      lastY = -(move.clientY - bounds.top) / bounds.height + 0.5
+      lastAngle = -Math.atan2(lastY, lastX)
+      lastRadiusSquared = lastX ** 2 + lastY ** 2
+    }
+
+    function clearActiveStyles() {
+      for (const n of numbering) {
+        n.style.backgroundColor = 'unset'
+        n.style.color = 'unset'
+      }
+    }
+
+    // Correct handling of negative modulus
+    function modulus(a, n) {
+      return ((a % n) + n) % n
+    }
+
+    function applyRotations() {
+      const a = lastAngle
+      const tau = 2 * Math.PI
+      const modAngle = modulus(a + Math.PI / 2, tau)
+      const rounded = Math.round((modAngle * 12) / tau)
+      const selection =
+        nonreactMode === 'minutes' ? rounded % 12 : modulus(rounded - 1, 12)
+
+      clearActiveStyles()
+
+      numbering[selection].style.color = theme.palette.secondary.contrastText
+      numbering[selection].style.backgroundColor = theme.palette.secondary.main
+
+      if (nonreactMode === 'hours') {
+        hourHand.style.transform = `translateY(-50%) rotate(${
+          (lastAngle * 180) / Math.PI
+        }deg)`
+      } else {
+        minuteHand.style.transform = `translateY(-50%) rotate(${
+          (lastAngle * 180) / Math.PI
+        }deg)`
+      }
+    }
+  }
 }

@@ -209,6 +209,7 @@ function Demo() {
     <LoggerProvider>
       <RootLayout>
         <Paper
+          ref={boxRef}
           elevation={1}
           sx={{
             height: '100%',
@@ -216,105 +217,97 @@ function Demo() {
             position: 'relative',
           }}
         >
-          <Box
-            ref={boxRef}
-            sx={{
-              width: '100%',
-              height: '100%',
-            }}
-          >
-            <TransitionGroup>
-              {view === 'month' && (
-                <ResponsiveTransition container={boxRef.current}>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      width: '100%',
-                      height: '100%',
+          <TransitionGroup>
+            {view === 'month' && (
+              <ResponsiveTransition container={boxRef.current}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
+                  }}
+                >
+                  <MonthlyCalendar
+                    initialDate={currentDate}
+                    unfilteredEvents={eventList}
+                    onExpand={date => {
+                      setExpandedDate(date)
+                      setView('week')
                     }}
-                  >
-                    <MonthlyCalendar
-                      initialDate={currentDate}
-                      unfilteredEvents={eventList}
-                      onExpand={date => {
-                        setExpandedDate(date)
-                        setView('week')
-                      }}
-                    />
-                  </div>
-                </ResponsiveTransition>
-              )}
-              {view === 'week' && (
-                <ResponsiveTransition container={boxRef.current}>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      width: '100%',
-                      height: '100%',
+                  />
+                </div>
+              </ResponsiveTransition>
+            )}
+            {view === 'week' && (
+              <ResponsiveTransition container={boxRef.current}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
+                  }}
+                >
+                  <WeeklyCalendar
+                    onBack={() => {
+                      setExpandedDate(null)
+                      setView('month')
                     }}
-                  >
-                    <WeeklyCalendar
-                      onBack={() => {
-                        setExpandedDate(null)
-                        setView('month')
-                      }}
-                      key={(expandedDate || currentDate).format('MM D')}
-                      initialDate={expandedDate || currentDate}
-                      eventList={eventList}
-                      onExpand={date => {
-                        setExpandedDate(date)
-                        setView('day')
-                      }}
-                    />
-                  </div>
-                </ResponsiveTransition>
-              )}
-              {view === 'day' && (
-                <ResponsiveTransition container={boxRef.current}>
-                  <div
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      width: '100%',
-                      height: '100%',
+                    key={(expandedDate || currentDate).format('MM D')}
+                    initialDate={expandedDate || currentDate}
+                    eventList={eventList}
+                    onExpand={date => {
+                      setExpandedDate(date)
+                      setView('day')
                     }}
-                  >
-                    <DayPage
-                      onBack={() => setView('week')}
-                      day={expandedDate || dayjs()}
-                      unfilteredEvents={eventList}
-                      filteredEvents={dayEvents}
-                      onCreate={addition =>
-                        dispatchAction({
-                          type: 'create',
-                          merge: preferences.merge,
-                          addition,
-                        })
-                      }
-                      onUpdate={updates =>
-                        dispatchAction({
-                          type: 'update',
-                          id: updates.id,
-                          merge: preferences.merge,
-                          updates,
-                        })
-                      }
-                      onDelete={id =>
-                        dispatchAction({
-                          type: 'delete',
-                          id: id,
-                        })
-                      }
-                      onUndo={() => dispatchAction({ type: 'undo' })}
-                      canUndo={canUndo}
-                    />
-                  </div>
-                </ResponsiveTransition>
-              )}
-            </TransitionGroup>
-          </Box>
+                  />
+                </div>
+              </ResponsiveTransition>
+            )}
+            {view === 'day' && (
+              <ResponsiveTransition container={boxRef.current}>
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
+                  }}
+                >
+                  <DayPage
+                    onBack={() => setView('week')}
+                    day={expandedDate || dayjs()}
+                    unfilteredEvents={eventList}
+                    filteredEvents={dayEvents}
+                    onCreate={addition =>
+                      dispatchAction({
+                        type: 'create',
+                        merge: preferences.merge,
+                        addition,
+                      })
+                    }
+                    onUpdate={updates =>
+                      dispatchAction({
+                        type: 'update',
+                        id: updates.id,
+                        merge: preferences.merge,
+                        updates,
+                      })
+                    }
+                    onDelete={id =>
+                      dispatchAction({
+                        type: 'delete',
+                        id: id,
+                      })
+                    }
+                    onUndo={() => dispatchAction({ type: 'undo' })}
+                    canUndo={canUndo}
+                  />
+                </div>
+              </ResponsiveTransition>
+            )}
+          </TransitionGroup>
         </Paper>
       </RootLayout>
     </LoggerProvider>
