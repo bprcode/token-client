@@ -273,8 +273,10 @@ function reduceEventListHistory(history, action) {
   }
 }
 
-export function useEventListHistory() {
-  return useReducer(reduceEventListHistory, [createSampleWeek(dayjs())])
+export function useEventListHistory(initialList) {
+  return useReducer(reduceEventListHistory, [
+    initialList || createSampleWeek(dayjs()),
+  ])
 }
 
 export function useEventStyles() {

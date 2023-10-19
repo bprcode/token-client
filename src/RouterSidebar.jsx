@@ -24,22 +24,33 @@ function NavItem({ to, label, children }) {
   const navigate = useNavigate()
   const navigation = useNavigation()
   const isMatch = useMatch(to)
+  const toggleMenu = useContext(ToggleMenuContext)
 
-  const isNavigating = navigation.location && navigation.location.pathname.endsWith(to)
+  const isNavigating =
+    navigation.location && navigation.location.pathname.endsWith(to)
 
-  console.log('isMatch ', to, '? ', isMatch)
-
-  return <ListItem sx={{
-    backgroundColor: isNavigating ? theme.palette.primary.main+'88' : isMatch ? '#0128' : undefined
-
-  }} disablePadding>
-  <ListItemButton onClick={() => navigate(to)}>
-    <ListItemIcon>
-      {children}
-    </ListItemIcon>
-    <ListItemText primary={label} />
-  </ListItemButton>
-</ListItem>
+  return (
+    <ListItem
+      sx={{
+        backgroundColor: isNavigating
+          ? theme.palette.primary.main + '88'
+          : isMatch
+          ? '#0128'
+          : undefined,
+      }}
+      disablePadding
+    >
+      <ListItemButton
+        onClick={() => {
+          navigate(to)
+          toggleMenu(false)
+        }}
+      >
+        <ListItemIcon>{children}</ListItemIcon>
+        <ListItemText primary={label} />
+      </ListItemButton>
+    </ListItem>
+  )
 }
 
 export default function RouterSidebar({ width = '240px', expand }) {
@@ -99,7 +110,11 @@ export default function RouterSidebar({ width = '240px', expand }) {
             </ListItemButton>
           </ListItem>
         ))}
-        {testRoutes.map(r => <NavItem key={r} to={r} label={r}><FlareIcon /></NavItem>)}
+        {testRoutes.map(r => (
+          <NavItem key={r} to={r} label={r}>
+            <FlareIcon />
+          </NavItem>
+        ))}
       </List>
     </>
   )
@@ -130,7 +145,6 @@ export default function RouterSidebar({ width = '240px', expand }) {
         flexShrink: 0,
         borderRight: `1px solid ${theme.palette.divider}`,
         borderLeft: `1px solid ${theme.palette.divider}`,
-
       }}
     >
       {content}
