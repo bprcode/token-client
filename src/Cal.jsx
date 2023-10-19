@@ -1,5 +1,4 @@
 import { ThemeProvider } from '@mui/material/styles'
-
 import HourglassTopIcon from '@mui/icons-material/HourglassTop'
 import FolderIcon from '@mui/icons-material/Folder'
 import {
@@ -32,6 +31,7 @@ import { useTheme } from '@emotion/react'
 import hourglassPng from './assets/hourglass2.png'
 import { LoggerProvider } from './calendar/Logger'
 import { isOverlap } from './calendar/dateLogic.mjs'
+
 const currentDate = dayjs()
 
 function RootLayout({ children }) {
@@ -73,7 +73,7 @@ function RootLayout({ children }) {
   )
 }
 
-function Sidebar({ width = '240px', expand }) {
+export function Sidebar({ width = '240px', expand }) {
   const theme = useTheme()
   const isNarrow = useNarrowCheck()
   const toggleMenu = useContext(ToggleMenuContext)
