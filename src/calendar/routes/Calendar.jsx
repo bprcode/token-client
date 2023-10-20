@@ -4,10 +4,13 @@ import { useLoaderData, useParams, useSearchParams } from 'react-router-dom'
 import { PreferencesContext } from '../PreferencesContext.mjs'
 import { createSampleWeek, useEventListHistory } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { MonthlyCalendar } from '../MonthlyCalendar'
 import { WeeklyCalendar } from '../WeeklyCalendar'
 import { DayPage } from '../DayPage'
 import { isOverlap } from '../dateLogic.mjs'
+
+dayjs.extend(utc)
 
 export function loader({ request, params }) {
   const data = createSampleWeek(dayjs())
@@ -23,9 +26,6 @@ export function Calendar() {
   const loaded = useLoaderData()
   const view = searchParams.get('v') || 'month'
 
-  console.log('calendar using search params=', searchParams)
-  console.log('search param v=', searchParams.get('v'))
-
   const preferences = useContext(PreferencesContext)
   const [eventListHistory, dispatchEventListHistory] =
     useEventListHistory(loaded)
@@ -33,20 +33,26 @@ export function Calendar() {
   const dispatchAction = dispatchEventListHistory
   const canUndo = eventListHistory.length > 1
 
-  const currentDate = dayjs()
-  const [expandedDate, setExpandedDate] = useState(null)
+  const activeDate = searchParams.has('d')
+    ? dayjs(searchParams.get('d').replaceAll('.', ':'))
+    : dayjs()
+
+  if (searchParams.has('d')) {
+    console.log('d specified:', searchParams.get('d'))
+  }
 
   const dayEvents = useMemo(() => {
+    console.log('memoizing day events')
     if (view !== 'day') {
       return null
     }
 
-    const startOfDay = expandedDate.startOf('day')
-    const endOfDay = expandedDate.endOf('day')
+    const startOfDay = activeDate.startOf('day')
+    const endOfDay = activeDate.endOf('day')
     return eventList.filter(e =>
       isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
     )
-  }, [view, eventList, expandedDate])
+  }, [view, eventList, activeDate])
 
   return (
     <Paper
@@ -75,43 +81,32 @@ export function Calendar() {
         >
           {view === 'month' && (
             <MonthlyCalendar
-              initialDate={currentDate}
+              initialDate={activeDate}
               unfilteredEvents={eventList}
               onExpand={date => {
-                setExpandedDate(date)
-                const newParams = new URLSearchParams(searchParams)
-                newParams.set('v', 'week')
-                setSearchParams(newParams)
+                updateParams({ view: 'week', date })
               }}
             />
           )}
           {view === 'week' && (
             <WeeklyCalendar
               onBack={() => {
-                setExpandedDate(null)
-                const newParams = new URLSearchParams(searchParams)
-                newParams.set('v', 'month')
-                setSearchParams(newParams)
+                updateParams({ view: 'month' })
               }}
               // key={(expandedDate || currentDate).format('MM D')}
-              initialDate={expandedDate || currentDate}
+              initialDate={activeDate}
               eventList={eventList}
               onExpand={date => {
-                setExpandedDate(date)
-                const newParams = new URLSearchParams(searchParams)
-                newParams.set('v', 'day')
-                setSearchParams(newParams)
+                updateParams({ view: 'day', date })
               }}
             />
           )}
           {view === 'day' && (
             <DayPage
               onBack={() => {
-                const newParams = new URLSearchParams(searchParams)
-                newParams.set('v', 'week')
-                setSearchParams(newParams)
+                updateParams({ view: 'week' })
               }}
-              day={expandedDate || dayjs()}
+              day={activeDate}
               unfilteredEvents={eventList}
               filteredEvents={dayEvents}
               onCreate={addition =>
@@ -143,4 +138,15 @@ export function Calendar() {
       </Slide>
     </Paper>
   )
+
+  function updateParams({ view, date }) {
+    const newParams = new URLSearchParams(searchParams)
+    if (view) {
+      newParams.set('v', view)
+    }
+    if (date) {
+      newParams.set('d', date.utc().format().replaceAll(':', '.'))
+    }
+    setSearchParams(newParams)
+  }
 }

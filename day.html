@@ -38,6 +38,7 @@
 
 <script type="module">
   import dayjs from 'dayjs'
+  import utc from 'dayjs/plugin/utc'
   // import * as utc from 'dayjs/plugin/utc'
   // import * as timezone from 'dayjs/plugin/timezone'
   // import * as localizedFormat from 'dayjs/plugin/localizedFormat'
@@ -46,10 +47,13 @@
   // dayjs.extend(timezone)
   // dayjs.extend(localizedFormat)
   
+  dayjs.extend(utc)
   console.log(dayjs().format())
+  console.log(dayjs().utc().format())
   // console.log(dayjs().utc().format())
   
   window.dayjs = dayjs
+  window.utc = utc
 const messageLog = []
   function dlog(message) {
     messageLog.push(message)
