@@ -58,7 +58,7 @@ export default function RouterSidebar({ width = '240px', expand }) {
   const isNarrow = useNarrowCheck()
   const toggleMenu = useContext(ToggleMenuContext)
 
-  const testRoutes = ['foo', 'bar', 'calendar/123', 'calendar/456']
+  const testRoutes = ['foo', 'bar', 'calendar/123', 'calendar/456', 'calendar/123?v=month', 'calendar/123?v=week']
 
   const content = (
     <>
@@ -100,16 +100,10 @@ export default function RouterSidebar({ width = '240px', expand }) {
           backgroundColor: '#182629',
         }}
       >
-        {['Item One', 'Item Two', 'Item Three'].map(text => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon sx={{ ml: 1 }}>
-                <FolderIcon />
-              </ListItemIcon>
-              <ListItemText primary={text} />
-            </ListItemButton>
-          </ListItem>
-        ))}
+        <NavItem to='/' label='index'>
+        <FlareIcon />
+
+        </NavItem>
         {testRoutes.map(r => (
           <NavItem key={r} to={r} label={r}>
             <FlareIcon />

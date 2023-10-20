@@ -7,6 +7,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import RouterError from './RouterError'
 import Root from './routes/Root'
 import {Calendar, loader as calendarLoader } from './routes/Calendar'
+import Index from './routes/Index'
 
 const router = createBrowserRouter([
   {
@@ -17,6 +18,10 @@ const router = createBrowserRouter([
       {
       errorElement: <RouterError />,
       children: [
+      {
+        index: true,
+        element: <Index />,
+      },
       {
         path: 'foo',
         element: <div>Foo Element</div>,

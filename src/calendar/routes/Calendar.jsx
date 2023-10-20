@@ -1,12 +1,15 @@
 import { Paper, Slide } from '@mui/material'
-import { useContext } from 'react'
-import { useLoaderData, useParams } from 'react-router-dom'
+import { useContext, useMemo, useState } from 'react'
+import { useLoaderData, useParams, useSearchParams } from 'react-router-dom'
 import { PreferencesContext } from '../PreferencesContext.mjs'
 import { createSampleWeek, useEventListHistory } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyCalendar } from '../MonthlyCalendar'
+import { WeeklyCalendar } from '../WeeklyCalendar'
+import { DayPage } from '../DayPage'
+import { isOverlap } from '../dateLogic.mjs'
 
-export function loader({ params }) {
+export function loader({ request, params }) {
   const data = createSampleWeek(dayjs())
 
   return new Promise(k => {
@@ -15,10 +18,14 @@ export function loader({ params }) {
 }
 
 export function Calendar() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const params = useParams()
   const loaded = useLoaderData()
+  const view = searchParams.get('v') || 'month'
 
-  console.log('loaded=', loaded)
+  console.log('calendar using search params=', searchParams)
+  console.log('search param v=', searchParams.get('v'))
+
   const preferences = useContext(PreferencesContext)
   const [eventListHistory, dispatchEventListHistory] =
     useEventListHistory(loaded)
@@ -27,8 +34,19 @@ export function Calendar() {
   const canUndo = eventListHistory.length > 1
 
   const currentDate = dayjs()
+  const [expandedDate, setExpandedDate] = useState(null)
 
-  console.log('loaded=', loaded)
+  const dayEvents = useMemo(() => {
+    if (view !== 'day') {
+      return null
+    }
+
+    const startOfDay = expandedDate.startOf('day')
+    const endOfDay = expandedDate.endOf('day')
+    return eventList.filter(e =>
+      isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
+    )
+  }, [view, eventList, expandedDate])
 
   return (
     <Paper
@@ -55,17 +73,72 @@ export function Calendar() {
             height: '100%',
           }}
         >
-          <MonthlyCalendar
-            initialDate={currentDate}
-            unfilteredEvents={eventList}
-            onExpand={date =>
-              console.log('placeholder -- expand:', date.format('MMMM DD'))
-            }
-            // onExpand={date => {
-            //   setExpandedDate(date)
-            //   setView('week')
-            // }}
-          />
+          {view === 'month' && (
+            <MonthlyCalendar
+              initialDate={currentDate}
+              unfilteredEvents={eventList}
+              onExpand={date => {
+                setExpandedDate(date)
+                const newParams = new URLSearchParams(searchParams)
+                newParams.set('v', 'week')
+                setSearchParams(newParams)
+              }}
+            />
+          )}
+          {view === 'week' && (
+            <WeeklyCalendar
+              onBack={() => {
+                setExpandedDate(null)
+                const newParams = new URLSearchParams(searchParams)
+                newParams.set('v', 'month')
+                setSearchParams(newParams)
+              }}
+              // key={(expandedDate || currentDate).format('MM D')}
+              initialDate={expandedDate || currentDate}
+              eventList={eventList}
+              onExpand={date => {
+                setExpandedDate(date)
+                const newParams = new URLSearchParams(searchParams)
+                newParams.set('v', 'day')
+                setSearchParams(newParams)
+              }}
+            />
+          )}
+          {view === 'day' && (
+            <DayPage
+              onBack={() => {
+                const newParams = new URLSearchParams(searchParams)
+                newParams.set('v', 'week')
+                setSearchParams(newParams)
+              }}
+              day={expandedDate || dayjs()}
+              unfilteredEvents={eventList}
+              filteredEvents={dayEvents}
+              onCreate={addition =>
+                dispatchAction({
+                  type: 'create',
+                  merge: preferences.merge,
+                  addition,
+                })
+              }
+              onUpdate={updates =>
+                dispatchAction({
+                  type: 'update',
+                  id: updates.id,
+                  merge: preferences.merge,
+                  updates,
+                })
+              }
+              onDelete={id =>
+                dispatchAction({
+                  type: 'delete',
+                  id: id,
+                })
+              }
+              onUndo={() => dispatchAction({ type: 'undo' })}
+              canUndo={canUndo}
+            />
+          )}
         </div>
       </Slide>
     </Paper>

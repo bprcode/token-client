@@ -46,12 +46,12 @@ export default function Root() {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: 'rgba(31, 40, 57, 0.28)',
+                  backgroundColor: 'rgba(21, 28, 50, 0.28)',
                   display: 'grid',
                   placeItems: 'center',
                 }}
               >
-                <CircularProgress />
+                <CircularProgress color="primary" />
               </div>
             )}
             <Outlet />

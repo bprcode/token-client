@@ -102,8 +102,8 @@ function Breakdown({
         height: '100%',
         ...style,
         position: 'relative',
-        marginLeft: [margin, '0.5rem'],
-        marginRight: [0, '0.5rem'],
+        marginLeft: [margin, margin || '0.5rem'],
+        marginRight: [0, margin || '0.5rem'],
       }}
     >
       {relevantEvents.map(r => (
