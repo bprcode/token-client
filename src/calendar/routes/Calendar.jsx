@@ -7,7 +7,7 @@ import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { MonthlyCalendar } from '../MonthlyCalendar'
 import { WeeklyCalendar } from '../WeeklyCalendar'
-import { DayPage } from '../DayPage'
+import { DailyCalendar } from '../DailyCalendar'
 import { isOverlap } from '../dateLogic.mjs'
 
 dayjs.extend(utc)
@@ -81,11 +81,10 @@ export function Calendar() {
         >
           {view === 'month' && (
             <MonthlyCalendar
-              initialDate={activeDate}
+              activeDate={activeDate}
               unfilteredEvents={eventList}
-              onExpand={date => {
-                updateParams({ view: 'week', date })
-              }}
+              onExpand={date => updateParams({ view: 'week', date })}
+              onChange={date => updateParams({ date })}
             />
           )}
           {view === 'week' && (
@@ -93,20 +92,18 @@ export function Calendar() {
               onBack={() => {
                 updateParams({ view: 'month' })
               }}
-              // key={(expandedDate || currentDate).format('MM D')}
-              initialDate={activeDate}
+              activeDate={activeDate}
               eventList={eventList}
-              onExpand={date => {
-                updateParams({ view: 'day', date })
-              }}
+              onExpand={date => updateParams({ view: 'day', date })}
+              onChange={date => updateParams({ date })}
             />
           )}
           {view === 'day' && (
-            <DayPage
+            <DailyCalendar
               onBack={() => {
                 updateParams({ view: 'week' })
               }}
-              day={activeDate}
+              activeDate={activeDate}
               unfilteredEvents={eventList}
               filteredEvents={dayEvents}
               onCreate={addition =>

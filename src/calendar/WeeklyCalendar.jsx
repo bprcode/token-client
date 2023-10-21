@@ -8,7 +8,7 @@ import {
   Stack,
   useMediaQuery,
 } from '@mui/material'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
@@ -25,7 +25,8 @@ function CalendarBody({ date, eventList, onExpand }) {
     const endOfWeek = date.endOf('week')
 
     const weekEvents = eventList.filter(e =>
-      isOverlap(startOfWeek, endOfWeek, e.start.dateTime, e.end.dateTime))
+      isOverlap(startOfWeek, endOfWeek, e.start.dateTime, e.end.dateTime)
+    )
 
     let d = startOfWeek
     while (d.isBefore(endOfWeek)) {
@@ -77,33 +78,39 @@ function CalendarBody({ date, eventList, onExpand }) {
   }, [date, eventList, onExpand])
 
   const benchEnd = performance.now()
-  setTimeout(() => logger('CalendarBody rendered in ' + (benchEnd - benchStart) + ' ms'), 1000)
+  setTimeout(
+    () => logger('CalendarBody rendered in ' + (benchEnd - benchStart) + ' ms'),
+    1000
+  )
 
   return rv
 }
 
 export function WeeklyCalendar({
-  initialDate,
+  activeDate,
   onBack,
   onExpand,
+  onChange,
   eventList = [],
 }) {
   const logger = useLogger()
-  const logId = Math.round(Math.random()*1e6)
+  const logId = Math.round(Math.random() * 1e6)
   console.time(logId + ' WeeklyCalendar rendered')
 
   const benchStart = performance.now()
   const isSmall = useMediaQuery('(max-width: 600px)')
-  const [date, setDate] = useState(initialDate)
 
-  const sunday = date.startOf('week')
+  const sunday = activeDate.startOf('week')
   const saturday = sunday.add(6, 'days')
   const isRollover = sunday.month() !== saturday.month()
-  const weekDescription = isSmall 
-  ? sunday.format('MMM D') + ' – ' + saturday.format(isRollover ? 'MMM D' : 'D')
-    :'Week of ' + sunday.format('MMMM D, YYYY')
+  const weekDescription = isSmall
+    ? sunday.format('MMM D') +
+      ' – ' +
+      saturday.format(isRollover ? 'MMM D' : 'D')
+    : 'Week of ' + sunday.format('MMMM D, YYYY')
 
-  const rv = <Stack
+  const rv = (
+    <Stack
       direction="column"
       sx={{
         mx: 'auto',
@@ -119,7 +126,9 @@ export function WeeklyCalendar({
         <IconButton
           aria-label="previous week"
           disableTouchRipple
-          onClick={() => setDate(date.subtract(1, 'week'))}
+          onClick={() =>
+            onChange(activeDate.subtract(1, 'week').startOf('week'))
+          }
           sx={{
             '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
             borderTopRightRadius: 0,
@@ -136,7 +145,7 @@ export function WeeklyCalendar({
         <IconButton
           aria-label="next week"
           disableTouchRipple
-          onClick={() => setDate(date.add(1, 'week'))}
+          onClick={() => onChange(activeDate.add(1, 'week').startOf('week'))}
           sx={{
             '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
             borderBottomLeftRadius: 0,
@@ -147,11 +156,22 @@ export function WeeklyCalendar({
         </IconButton>
       </ViewHeader>
 
-      <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
+      <CalendarBody
+        date={activeDate}
+        eventList={eventList}
+        onExpand={onExpand}
+      />
     </Stack>
-  
+  )
+
   console.timeEnd(logId + ' WeeklyCalendar rendered')
   const benchEnd = performance.now()
-  setTimeout(() => logger(logId + ' WeeklyCalendar rendered in ' + (benchEnd - benchStart) + ' ms'), 1000)
+  setTimeout(
+    () =>
+      logger(
+        logId + ' WeeklyCalendar rendered in ' + (benchEnd - benchStart) + ' ms'
+      ),
+    1000
+  )
   return rv
 }

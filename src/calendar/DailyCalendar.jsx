@@ -27,14 +27,14 @@ import { shorthandInterval } from './dateLogic.mjs'
 
 const sectionStep = [1, 'hour']
 
-export function DayPage({
+export function DailyCalendar({
   onBack,
   onCreate,
   onUpdate,
   onDelete,
   onUndo,
   canUndo,
-  day,
+  activeDate,
   unfilteredEvents,
   filteredEvents,
 }) {
@@ -44,8 +44,8 @@ export function DayPage({
   const theme = useTheme()
   const secondaryColor = theme.palette.secondary.light
 
-  const startOfDay = useMemo(() => day.startOf('day'), [day])
-  const endOfDay = useMemo(() => day.endOf('day'), [day])
+  const startOfDay = useMemo(() => activeDate.startOf('day'), [activeDate])
+  const endOfDay = useMemo(() => activeDate.endOf('day'), [activeDate])
 
   const palette = usePalette()
   const defaultEventPicks = {
@@ -117,7 +117,13 @@ export function DayPage({
           onPointerDown={e => {
             if (action === 'create') {
               setShutDrawer(true)
-              handleCreationTap({ event: e, logger, day, picks, applyCreation })
+              handleCreationTap({
+                event: e,
+                logger,
+                day: activeDate,
+                picks,
+                applyCreation,
+              })
             }
           }}
           onPointerUp={() => {
@@ -131,14 +137,14 @@ export function DayPage({
           header={
             <DayHeader
               onBack={onBack}
-              day={day}
+              day={activeDate}
               ref={headerRef}
               actionButtons={isWide && actionButtons}
             />
           }
         >
           <DailyBreakdown
-            day={day}
+            day={activeDate}
             unfilteredEvents={unfilteredEvents}
             filteredEvents={filteredEvents}
             selection={selection}

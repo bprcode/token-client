@@ -227,7 +227,7 @@ function MonthHeader({ date, onChange }) {
       <IconButton
         disableTouchRipple
         aria-label="previous month"
-        onClick={() => onChange(date.subtract(1, 'month'))}
+        onClick={() => onChange(date.subtract(1, 'month').startOf('month'))}
         sx={{
           '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
           borderTopRightRadius: 0,
@@ -359,8 +359,7 @@ function MonthHeader({ date, onChange }) {
   )
 }
 
-export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
-  const [active, setActive] = useState(initialDate)
+export function MonthlyCalendar({ activeDate, onChange, onExpand, unfilteredEvents }) {
 
   return (
     <Stack
@@ -372,14 +371,14 @@ export function MonthlyCalendar({ initialDate, onExpand, unfilteredEvents }) {
         overflowY: 'auto',
       }}
     >
-      <MonthHeader date={active} onChange={setActive} />
+      <MonthHeader date={activeDate} onChange={onChange} />
       <Stack
         direction="column"
         sx={{ mt: [0, 1], px: [1, 2], mb: 4, flexGrow: 1 }}
       >
         <GridHeader />
         <MonthGrid
-          date={active}
+          date={activeDate}
           unfilteredEvents={unfilteredEvents}
           onExpand={onExpand}
         />

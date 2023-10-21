@@ -21,15 +21,17 @@ export default function RouterError() {
         </Typography>
         <CardContent>
           <p>An error has occurred: </p>
-          <pre
+          <div
             style={{
               backgroundColor: '#111',
               padding: '0.5rem',
               borderRadius: '4px',
+              wordWrap: 'break-word',
+              fontFamily: 'monospace',
             }}
           >
             {error.statusText || error.message}
-          </pre>
+          </div>
         </CardContent>
         <CardActions>
           <Button onClick={() => navigate(-1)}>Back</Button>
