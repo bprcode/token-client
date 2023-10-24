@@ -7,7 +7,7 @@ import { useLogger } from './Logger'
 export const DailyBreakdown = memo(Breakdown)
 
 function Breakdown({
-  day,
+  date,
   unfilteredEvents,
   filteredEvents,
   style,
@@ -21,8 +21,8 @@ function Breakdown({
   const logger = useLogger()
   const benchStart = performance.now()
 
-  const startOfDay = day.startOf('day')
-  const startOfNextDay = day.add(1, 'day').startOf('day')
+  const startOfDay = date.startOf('day')
+  const startOfNextDay = date.add(1, 'day').startOf('day')
 
   const { blocking, columns, relevantEvents } = useMemo(() => {
     console.log(
@@ -32,8 +32,8 @@ function Breakdown({
     )
     setTimeout(() => logger('📦 memoizing blocking'), 1000)
 
-    const startOfDay = day.startOf('day')
-    const endOfDay = day.endOf('day')
+    const startOfDay = date.startOf('day')
+    const endOfDay = date.endOf('day')
     const relevantEvents =
       filteredEvents ||
       unfilteredEvents.filter(e =>
@@ -90,7 +90,7 @@ function Breakdown({
     }
 
     return { blocking, columns, relevantEvents }
-  }, [unfilteredEvents, filteredEvents, day, logger])
+  }, [unfilteredEvents, filteredEvents, date, logger])
 
   const margin =
     columns.length <= 2 && labels === 'detailed' ? '4.5rem' : undefined

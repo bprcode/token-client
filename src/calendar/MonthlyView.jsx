@@ -359,8 +359,7 @@ function MonthHeader({ date, onChange }) {
   )
 }
 
-export function MonthlyCalendar({ activeDate, onChange, onExpand, unfilteredEvents }) {
-
+export function MonthlyView({ date, onChange, onExpand, unfilteredEvents }) {
   return (
     <Stack
       direction="column"
@@ -371,14 +370,14 @@ export function MonthlyCalendar({ activeDate, onChange, onExpand, unfilteredEven
         overflowY: 'auto',
       }}
     >
-      <MonthHeader date={activeDate} onChange={onChange} />
+      <MonthHeader date={date} onChange={onChange} />
       <Stack
         direction="column"
         sx={{ mt: [0, 1], px: [1, 2], mb: 4, flexGrow: 1 }}
       >
         <GridHeader />
         <MonthGrid
-          date={activeDate}
+          date={date}
           unfilteredEvents={unfilteredEvents}
           onExpand={onExpand}
         />

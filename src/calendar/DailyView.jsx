@@ -27,14 +27,14 @@ import { shorthandInterval } from './dateLogic.mjs'
 
 const sectionStep = [1, 'hour']
 
-export function DailyCalendar({
+export function DailyView({
   onBack,
   onCreate,
   onUpdate,
   onDelete,
   onUndo,
   canUndo,
-  activeDate,
+  date,
   unfilteredEvents,
   filteredEvents,
 }) {
@@ -44,8 +44,8 @@ export function DailyCalendar({
   const theme = useTheme()
   const secondaryColor = theme.palette.secondary.light
 
-  const startOfDay = useMemo(() => activeDate.startOf('day'), [activeDate])
-  const endOfDay = useMemo(() => activeDate.endOf('day'), [activeDate])
+  const startOfDay = useMemo(() => date.startOf('day'), [date])
+  const endOfDay = useMemo(() => date.endOf('day'), [date])
 
   const palette = usePalette()
   const defaultEventPicks = {
@@ -120,7 +120,7 @@ export function DailyCalendar({
               handleCreationTap({
                 event: e,
                 logger,
-                day: activeDate,
+                date,
                 picks,
                 applyCreation,
               })
@@ -137,14 +137,14 @@ export function DailyCalendar({
           header={
             <DayHeader
               onBack={onBack}
-              day={activeDate}
+              date={date}
               ref={headerRef}
               actionButtons={isWide && actionButtons}
             />
           }
         >
           <DailyBreakdown
-            day={activeDate}
+            date={date}
             unfilteredEvents={unfilteredEvents}
             filteredEvents={filteredEvents}
             selection={selection}
@@ -229,14 +229,14 @@ function overwriteRAF(callback) {
   overwriteRAF.callback = callback
 }
 
-function handleCreationTap({ event, day, logger, picks, applyCreation }) {
+function handleCreationTap({ event, date, logger, picks, applyCreation }) {
   event.stopPropagation()
   event.preventDefault()
 
   const augmentedColor = getAugmentedColor(picks.colorId)
   console.log('acquired color: ', augmentedColor)
   const minimumWidth = 90
-  const startOfDay = day.startOf('day')
+  const startOfDay = date.startOf('day')
 
   const ct = event.currentTarget
   const outputBounds = document
@@ -346,13 +346,13 @@ function handleCreationTap({ event, day, logger, picks, applyCreation }) {
 }
 
 const DayHeader = forwardRef(function DayHeader(
-  { onBack, day, actionButtons },
+  { onBack, date, actionButtons },
   ref
 ) {
   const isTiny = useMediaQuery('(max-width: 350px)')
   const formatted = isTiny
-    ? day.format('ddd, MMM D')
-    : day.format('dddd, MMMM D')
+    ? date.format('ddd, MMM D')
+    : date.format('dddd, MMMM D')
 
   return (
     <ViewHeader ref={ref}>

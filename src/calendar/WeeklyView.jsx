@@ -66,7 +66,7 @@ function CalendarBody({ date, eventList, onExpand }) {
             </Box>
 
             <DailyBreakdown
-              day={d}
+              date={d}
               unfilteredEvents={weekEvents}
               style={{ height: '350px' }}
               labels="none"
@@ -86,8 +86,8 @@ function CalendarBody({ date, eventList, onExpand }) {
   return rv
 }
 
-export function WeeklyCalendar({
-  activeDate,
+export function WeeklyView({
+  date,
   onBack,
   onExpand,
   onChange,
@@ -100,7 +100,7 @@ export function WeeklyCalendar({
   const benchStart = performance.now()
   const isSmall = useMediaQuery('(max-width: 600px)')
 
-  const sunday = activeDate.startOf('week')
+  const sunday = date.startOf('week')
   const saturday = sunday.add(6, 'days')
   const isRollover = sunday.month() !== saturday.month()
   const weekDescription = isSmall
@@ -126,9 +126,7 @@ export function WeeklyCalendar({
         <IconButton
           aria-label="previous week"
           disableTouchRipple
-          onClick={() =>
-            onChange(activeDate.subtract(1, 'week').startOf('week'))
-          }
+          onClick={() => onChange(date.subtract(1, 'week').startOf('week'))}
           sx={{
             '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
             borderTopRightRadius: 0,
@@ -145,7 +143,7 @@ export function WeeklyCalendar({
         <IconButton
           aria-label="next week"
           disableTouchRipple
-          onClick={() => onChange(activeDate.add(1, 'week').startOf('week'))}
+          onClick={() => onChange(date.add(1, 'week').startOf('week'))}
           sx={{
             '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
             borderBottomLeftRadius: 0,
@@ -156,11 +154,7 @@ export function WeeklyCalendar({
         </IconButton>
       </ViewHeader>
 
-      <CalendarBody
-        date={activeDate}
-        eventList={eventList}
-        onExpand={onExpand}
-      />
+      <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
     </Stack>
   )
 

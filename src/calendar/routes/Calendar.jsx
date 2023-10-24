@@ -5,9 +5,9 @@ import { PreferencesContext } from '../PreferencesContext.mjs'
 import { createSampleWeek, useEventListHistory } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
-import { MonthlyCalendar } from '../MonthlyCalendar'
-import { WeeklyCalendar } from '../WeeklyCalendar'
-import { DailyCalendar } from '../DailyCalendar'
+import { MonthlyView } from '../MonthlyView'
+import { WeeklyView } from '../WeeklyView'
+import { DailyView } from '../DailyView'
 import { isOverlap } from '../dateLogic.mjs'
 
 dayjs.extend(utc)
@@ -16,7 +16,7 @@ export function loader({ request, params }) {
   const data = createSampleWeek(dayjs())
 
   return new Promise(k => {
-    setTimeout(() => k(data), Math.random() * 1500 + 1000)
+    setTimeout(() => k(data), Math.random() * 1000 + 500)
   })
 }
 
@@ -33,13 +33,9 @@ export function Calendar() {
   const dispatchAction = dispatchEventListHistory
   const canUndo = eventListHistory.length > 1
 
-  const activeDate = searchParams.has('d')
+  const date = searchParams.has('d')
     ? dayjs(searchParams.get('d').replaceAll('.', ':'))
     : dayjs()
-
-  if (searchParams.has('d')) {
-    console.log('d specified:', searchParams.get('d'))
-  }
 
   const dayEvents = useMemo(() => {
     console.log('memoizing day events')
@@ -47,12 +43,12 @@ export function Calendar() {
       return null
     }
 
-    const startOfDay = activeDate.startOf('day')
-    const endOfDay = activeDate.endOf('day')
+    const startOfDay = date.startOf('day')
+    const endOfDay = date.endOf('day')
     return eventList.filter(e =>
       isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
     )
-  }, [view, eventList, activeDate])
+  }, [view, eventList, date])
 
   return (
     <Paper
@@ -80,30 +76,30 @@ export function Calendar() {
           }}
         >
           {view === 'month' && (
-            <MonthlyCalendar
-              activeDate={activeDate}
+            <MonthlyView
+              date={date}
               unfilteredEvents={eventList}
               onExpand={date => updateParams({ view: 'week', date })}
               onChange={date => updateParams({ date })}
             />
           )}
           {view === 'week' && (
-            <WeeklyCalendar
+            <WeeklyView
               onBack={() => {
                 updateParams({ view: 'month' })
               }}
-              activeDate={activeDate}
+              date={date}
               eventList={eventList}
               onExpand={date => updateParams({ view: 'day', date })}
               onChange={date => updateParams({ date })}
             />
           )}
           {view === 'day' && (
-            <DailyCalendar
+            <DailyView
               onBack={() => {
                 updateParams({ view: 'week' })
               }}
-              activeDate={activeDate}
+              date={date}
               unfilteredEvents={eventList}
               filteredEvents={dayEvents}
               onCreate={addition =>
