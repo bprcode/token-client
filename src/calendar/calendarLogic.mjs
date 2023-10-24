@@ -36,7 +36,7 @@ export function createSampleEvent({ startTime, endTime, summary, colorId }) {
 }
 
 export function createSampleWeek(aroundDate) {
-  const labels = ['Work', 'Study', 'Exercise']
+  const labels = ['Work', 'Study', 'Exercise', 'Social']
   const startOfPriorWeek = aroundDate.subtract(1, 'week').startOf('week')
   const sampleEvents = []
 
@@ -143,6 +143,16 @@ export const mockStyles = new Map([
     'Exercise',
     {
       accentColor: '#d0518e',
+      fontSize: '0.75em',
+      augmentedColors: defaultTheme.palette.augmentColor({
+        color: { main: '#d0518e' },
+      }),
+    },
+  ],
+  [
+    'Social',
+    {
+      accentColor: '#635ac9',
       fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#d0518e' },

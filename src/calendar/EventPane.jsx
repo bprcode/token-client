@@ -210,7 +210,6 @@ export function EventPane({
 
   // Interaction handlers:
   function handlePointerDown(e) {
-    logger('foo??')
     let tickSize = 24
     try {
       const inner = e.currentTarget.closest('.section-inner')
@@ -515,7 +514,6 @@ export function EventPane({
       {/* drop shadow mock pseudo-element for correct z-indexing: */}
       {!hideShadows && !deleting && (
         <div
-          className="foo"
           style={{
             position: 'absolute',
             top: (topOffset / intervalSize) * 100 + '%',

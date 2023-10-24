@@ -1,5 +1,5 @@
 import { Paper, Slide } from '@mui/material'
-import { useContext, useMemo, useState } from 'react'
+import { useContext, useMemo } from 'react'
 import { useLoaderData, useParams, useSearchParams } from 'react-router-dom'
 import { PreferencesContext } from '../PreferencesContext.mjs'
 import { createSampleWeek, useEventListHistory } from '../calendarLogic.mjs'
