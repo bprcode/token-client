@@ -1,5 +1,4 @@
-import { getAugmentedColor } from './calendarLogic.mjs'
-import { isOverlap } from './dateLogic.mjs'
+import { isOverlap, getAugmentedColor } from './calendarLogic.mjs'
 
 export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
   const startOfDay = day.startOf('day')

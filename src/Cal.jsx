@@ -21,7 +21,7 @@ import digitalTheme from './blueDigitalTheme'
 import { useContext, useMemo, useRef, useState } from 'react'
 import dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
-import { useEventListHistory } from './calendar/calendarLogic.mjs'
+import { useEventListHistory, isOverlap } from './calendar/calendarLogic.mjs'
 import { WeeklyCalendar } from './calendar/WeeklyCalendar'
 import { MonthlyCalendar } from './calendar/MonthlyCalendar'
 import { DayPage } from './calendar/DayPage'
@@ -30,7 +30,6 @@ import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@emotion/react'
 import hourglassPng from './assets/hourglass2.png'
 import { LoggerProvider } from './calendar/Logger'
-import { isOverlap } from './calendar/dateLogic.mjs'
 
 const currentDate = dayjs()
 

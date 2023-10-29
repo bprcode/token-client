@@ -1,6 +1,6 @@
 import { Box } from '@mui/material'
 import { EventPane } from './EventPane'
-import { isOverlap } from './dateLogic.mjs'
+import { isOverlap } from './calendarLogic.mjs'
 import { memo, useMemo } from 'react'
 import { useLogger } from './Logger'
 

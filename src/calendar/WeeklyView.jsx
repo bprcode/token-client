@@ -13,7 +13,7 @@ import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
-import { isOverlap } from './dateLogic.mjs'
+import { isOverlap } from './calendarLogic.mjs'
 
 function CalendarBody({ date, eventList, onExpand }) {
   const logger = useLogger()

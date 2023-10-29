@@ -3,12 +3,15 @@ import DoubleDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
-import { mockStyles, getAugmentedColor } from './calendarLogic.mjs'
+import {
+  mockStyles,
+  getAugmentedColor,
+  shorthandInterval as calculateShorthand,
+} from './calendarLogic.mjs'
 import { IconButton, Zoom, useTheme } from '@mui/material'
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
 import { useLogger } from './Logger'
-import { shorthandInterval as calculateShorthand } from './dateLogic.mjs'
 
 const noop = () => {}
 

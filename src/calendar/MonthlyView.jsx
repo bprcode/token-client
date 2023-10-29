@@ -18,7 +18,7 @@ import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { AbbreviatedBreakdown } from './AbbreviatedBreakdown'
 import { log } from './log.mjs'
-import { weekdayAbbreviations } from './dateLogic.mjs'
+import { weekdayAbbreviations } from './calendarLogic.mjs'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 

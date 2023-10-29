@@ -16,6 +16,7 @@ import { ActionButtons, MobileBar } from './ActionDisplay'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { EventPicker } from './EventPicker'
 import {
+  shorthandInterval,
   createSampleEvent,
   getAugmentedColor,
   usePalette,
@@ -23,7 +24,6 @@ import {
 import { ViewHeader } from './ViewHeader'
 import { useNarrowCheck } from './LayoutContext.mjs'
 import { useLogger } from './Logger'
-import { shorthandInterval } from './dateLogic.mjs'
 
 const sectionStep = [1, 'hour']
 

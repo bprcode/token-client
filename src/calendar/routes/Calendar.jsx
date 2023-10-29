@@ -2,13 +2,16 @@ import { Paper, Slide } from '@mui/material'
 import { useContext, useMemo } from 'react'
 import { useLoaderData, useParams, useSearchParams } from 'react-router-dom'
 import { PreferencesContext } from '../PreferencesContext.mjs'
-import { createSampleWeek, useEventListHistory } from '../calendarLogic.mjs'
+import {
+  isOverlap,
+  createSampleWeek,
+  useEventListHistory,
+} from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
 import { DailyView } from '../DailyView'
-import { isOverlap } from '../dateLogic.mjs'
 
 dayjs.extend(utc)
 
