@@ -6,6 +6,7 @@ import {
   isOverlap,
   createSampleWeek,
   useEventListHistory,
+  eventListDiff,
 } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
@@ -14,9 +15,11 @@ import { WeeklyView } from '../WeeklyView'
 import { DailyView } from '../DailyView'
 
 dayjs.extend(utc)
+let referenceList = []
 
 export function loader({ request, params }) {
   const data = createSampleWeek(dayjs())
+  referenceList = data
 
   return new Promise(k => {
     setTimeout(() => k(data), Math.random() * 1000 + 500)
@@ -53,6 +56,8 @@ export function Calendar() {
     )
   }, [view, eventList, date])
 
+  const debugDiff = eventListDiff(referenceList, eventList)
+
   return (
     <Paper
       elevation={1}
@@ -62,6 +67,25 @@ export function Calendar() {
         position: 'relative',
       }}
     >
+      <div
+        className="debug-diff"
+        style={{
+          position: 'absolute',
+          right: 0,
+          bottom: 0,
+          height: '8rem',
+          width: '60ch',
+          backgroundColor: '#024',
+          overflowY: 'auto',
+          padding: '0.25rem',
+          zIndex: 3,
+        }}
+      >
+        {debugDiff.map((d,i) => (
+          <div key={i}>{d}</div>
+        ))}
+      </div>
+
       <Slide
         key={params.id}
         timeout={350}

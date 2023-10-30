@@ -74,6 +74,27 @@ export function createSampleEvent({ startTime, endTime, summary, colorId }) {
   }
 }
 
+export function eventListDiff (from, to) {
+  const diff = []
+
+  for (const e of from) {
+    if (!to.find(t => t.id === e.id)) {
+      diff.push('delete:' + e.id)
+    }
+  }
+  for (const e of to) {
+    const match = from.find(f => f.id === e.id)
+    if (!match) {
+      diff.push('add: ' + e.id)
+    } else if (e.etag !== match.etag) {
+      diff.push('modify: ' + e.id)
+    }
+  }
+
+
+  return diff
+}
+
 export function createSampleWeek(aroundDate) {
   const labels = ['Work', 'Study', 'Exercise', 'Social']
   const startOfPriorWeek = aroundDate.subtract(1, 'week').startOf('week')
@@ -276,6 +297,7 @@ function reduceEventList(eventList, action) {
       const updated = {
         ...prior,
         ...action.updates,
+        etag: 'modified-' + prior.etag,
         start: {
           ...prior.start,
           ...action.updates.start,
