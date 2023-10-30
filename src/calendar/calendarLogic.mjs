@@ -39,13 +39,17 @@ export function shorthandInterval(start, end) {
 }
 
 export function createSampleEvent({ startTime, endTime, summary, colorId }) {
+  const etag = Array(32)
+    .fill(0)
+    .map(() => Math.floor(Math.random() * 16).toString(16))
+    .join('')
   return {
     // text
     id: String(btoa((Math.random() * 1e6).toFixed())),
+    // text
+    etag: etag,
     // RFC3339-compatible datetime
     created: dayjs(),
-    // RFC3339-compatible datetime
-    updated: dayjs(),
     // text
     summary: summary || 'Default Title',
     // text
