@@ -38,6 +38,23 @@ export function shorthandInterval(start, end) {
   return shorthandInterval
 }
 
+export function createSampleCalendar({ summary }) {
+  const etag = Array(32)
+    .fill(0)
+    .map(() => Math.floor(Math.random() * 16).toString(16))
+    .join('')
+  return {
+    // text
+    id: String(btoa((Math.random() * 1e6).toFixed())),
+    // text
+    etag: etag,
+    // text
+    summary: summary || 'I am a calendar',
+    // text
+    primaryAuthor: 'Author uid goes here',
+  }
+}
+
 export function createSampleEvent({ startTime, endTime, summary, colorId }) {
   const etag = Array(32)
     .fill(0)
@@ -72,27 +89,6 @@ export function createSampleEvent({ startTime, endTime, summary, colorId }) {
     // array
     //recurrence: ['string'], c.f. RFC 5545 -- not yet implemented
   }
-}
-
-export function eventListDiff (from, to) {
-  const diff = []
-
-  for (const e of from) {
-    if (!to.find(t => t.id === e.id)) {
-      diff.push('delete:' + e.id)
-    }
-  }
-  for (const e of to) {
-    const match = from.find(f => f.id === e.id)
-    if (!match) {
-      diff.push('add: ' + e.id)
-    } else if (e.etag !== match.etag) {
-      diff.push('modify: ' + e.id)
-    }
-  }
-
-
-  return diff
 }
 
 export function createSampleWeek(aroundDate) {
