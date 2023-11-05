@@ -49,7 +49,7 @@ export function Calendar() {
     const startOfDay = date.startOf('day')
     const endOfDay = date.endOf('day')
     return eventList.filter(e =>
-      isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
+      isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
     )
   }, [view, eventList, date])
 

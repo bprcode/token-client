@@ -71,23 +71,12 @@ export function createSampleEvent({ startTime, endTime, summary, colorId }) {
     summary: summary || 'Default Title',
     // text
     description: summary !== 'Exercise' && 'Detailed description',
-    // object: creator: id <string> -- not yet exposed
-    // object
-    start: {
-      // RFC3339-compatible datetime
-      dateTime: startTime,
-      mock: 'start test data',
-    },
-    // object
-    end: {
-      // RFC3339-compatible datetime
-      dateTime: endTime || startTime.add(1, 'hour'),
-      mock: 'end test data',
-    },
+    // RFC3339-compatible datetime
+    startTime,
+    // RFC3339-compatible datetime
+    endTime: endTime || startTime.add(1, 'hour'),
     // string
     colorId: colorId || summary,
-    // array
-    //recurrence: ['string'], c.f. RFC 5545 -- not yet implemented
   }
 }
 
@@ -230,10 +219,10 @@ export const mockStyles = new Map([
 function isSimilarEvent(a, b) {
   return (
     isOverlap(
-      a.start.dateTime,
-      a.end.dateTime,
-      b.start.dateTime,
-      b.end.dateTime
+      a.startTime,
+      a.endTime,
+      b.startTime,
+      b.endTime
     ) &&
     a.colorId === b.colorId &&
     a.summary === b.summary &&
@@ -254,17 +243,17 @@ function mergeEventIntoList(event, list) {
   overlaps.push(event)
 
   const earliest = overlaps.reduce((previous, current) =>
-    previous.start.dateTime.isBefore(current.start.dateTime)
+    previous.startTime.isBefore(current.startTime)
       ? previous
       : current
   )
   const latest = overlaps.reduce((previous, current) =>
-    previous.end.dateTime.isAfter(current.end.dateTime) ? previous : current
+    previous.endTime.isAfter(current.endTime) ? previous : current
   )
   const merged = {
     ...event,
-    start: { ...event.start, dateTime: earliest.start.dateTime },
-    end: { ...event.end, dateTime: latest.end.dateTime },
+    startTime: earliest.startTime,
+    endTime: latest.endTime,
   }
   // Recursively check for further overlaps:
   return mergeEventIntoList(merged, disjoint)
@@ -281,25 +270,10 @@ function reduceEventList(eventList, action) {
     case 'update': {
       const prior = eventList.find(e => e.id === action.id)
 
-      const startTime = (
-        (action.updates.start && action.updates.start.dateTime) ||
-        prior.start.dateTime
-      ).clone()
-      const endTime = (
-        (action.updates.end && action.updates.end.dateTime) ||
-        prior.end.dateTime
-      ).clone()
-
       const updated = {
         ...prior,
         ...action.updates,
         etag: 'modified-' + prior.etag,
-        start: {
-          ...prior.start,
-          ...action.updates.start,
-          dateTime: startTime,
-        },
-        end: { ...prior.end, ...action.updates.end, dateTime: endTime },
       }
 
       const omitted = eventList.filter(e => e.id !== action.id)

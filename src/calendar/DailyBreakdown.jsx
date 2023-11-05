@@ -37,7 +37,7 @@ function Breakdown({
     const relevantEvents =
       filteredEvents ||
       unfilteredEvents.filter(e =>
-        isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
+        isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
       )
 
     const blocking = new WeakMap()
@@ -58,10 +58,10 @@ function Breakdown({
         for (const entry of column) {
           if (
             isOverlap(
-              entry.start.dateTime,
-              entry.end.dateTime,
-              e.start.dateTime,
-              e.end.dateTime
+              entry.startTime,
+              entry.endTime,
+              e.startTime,
+              e.endTime
             )
           ) {
             available = false

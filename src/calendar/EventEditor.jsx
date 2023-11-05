@@ -27,9 +27,9 @@ import { EventTypeSelect } from './EventTypeSelect'
 
 export function EventEditor({ onClose, onSave, onDelete, event }) {
   console.log(
-    `Event ${event.id} spanning ${event.start.dateTime.format(
+    `Event ${event.id} spanning ${event.startTime.format(
       'H:mm:ss'
-    )} - ${event.end.dateTime.format('H:mm:ss')}`
+    )} - ${event.endTime.format('H:mm:ss')}`
   )
   console.log('event has colorId:', event.colorId)
 
@@ -45,8 +45,8 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
   )
   const [colorId, setColorId] = useState(event.colorId)
 
-  const [startTime, setStartTime] = useState(event.start.dateTime)
-  const [endTime, setEndTime] = useState(event.end.dateTime)
+  const [startTime, setStartTime] = useState(event.startTime)
+  const [endTime, setEndTime] = useState(event.endTime)
 
   const typeStyles = []
   const eventStyles = useEventStyles()
@@ -70,8 +70,8 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
       type !== event.summary ||
       colorId !== event.colorId ||
       description != event.description ||
-      !startTime.isSame(event.start.dateTime) ||
-      !endTime.isSame(event.end.dateTime)
+      !startTime.isSame(event.startTime) ||
+      !endTime.isSame(event.endTime)
     )
   }
 
@@ -83,8 +83,8 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
       summary,
       description,
       colorId,
-      start: { dateTime: firstTime },
-      end: { dateTime: secondTime },
+      startTime: firstTime,
+      endTime: secondTime,
     })
     onClose()
   }

@@ -25,7 +25,7 @@ function CalendarBody({ date, eventList, onExpand }) {
     const endOfWeek = date.endOf('week')
 
     const weekEvents = eventList.filter(e =>
-      isOverlap(startOfWeek, endOfWeek, e.start.dateTime, e.end.dateTime)
+      isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
     )
 
     let d = startOfWeek

@@ -56,13 +56,13 @@ export function EventPane({
   const [ghostBottom, setGhostBottom] = useState(0)
   const [deleting, setDeleting] = useState(false)
 
-  const duration = event.end.dateTime.diff(event.start.dateTime) / 1000 / 60
+  const duration = event.endTime.diff(event.startTime) / 1000 / 60
 
-  const overflowBefore = event.start.dateTime.isBefore(initial)
-  const overflowAfter = event.end.dateTime.isAfter(final)
+  const overflowBefore = event.startTime.isBefore(initial)
+  const overflowAfter = event.endTime.isAfter(final)
   // Crop the event duration to fit the window
-  const fragmentStart = overflowBefore ? initial : event.start.dateTime
-  const fragmentEnd = overflowAfter ? final : event.end.dateTime
+  const fragmentStart = overflowBefore ? initial : event.startTime
+  const fragmentEnd = overflowAfter ? final : event.endTime
 
   const topOffset = fragmentStart.diff(initial)
   const windowLength = fragmentEnd.diff(fragmentStart)
@@ -94,10 +94,7 @@ export function EventPane({
   const ghostWindowLength = ghostSnapEnd.diff(ghostSnapStart)
 
   // Build shorthand time string:
-  const shorthandInterval = calculateShorthand(
-    event.start.dateTime,
-    event.end.dateTime
-  )
+  const shorthandInterval = calculateShorthand(event.startTime, event.endTime)
 
   // Styling constants
   const referenceStyle =
@@ -299,12 +296,10 @@ export function EventPane({
 
           const updates = {
             id: event.id,
-            start: (overflowBefore || ghostTop !== 0) && {
-              dateTime: newStart,
-            },
-            end: (overflowAfter || ghostBottom !== 0) && {
-              dateTime: newEnd,
-            },
+            ...(overflowBefore || ghostTop !== 0
+              ? { startTime: newStart }
+              : {}),
+            ...(overflowAfter || ghostBottom !== 0 ? { endTime: newEnd } : {}),
           }
           onUpdate(updates)
           return
@@ -400,12 +395,8 @@ export function EventPane({
                   setSliding(false)
                   const updates = {
                     id: event.id,
-                    start: ghostTop !== 0 && {
-                      dateTime: ghostSnapStart,
-                    },
-                    end: ghostBottom !== 0 && {
-                      dateTime: ghostSnapEnd,
-                    },
+                    ...(ghostTop !== 0 ? { startTime: ghostSnapStart } : {}),
+                    ...(ghostBottom !== 0 ? { endTime: ghostSnapEnd } : {}),
                   }
                   setGhost(false)
                   setGhostTop(0)

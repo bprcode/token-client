@@ -198,7 +198,7 @@ function Demo() {
     const startOfDay = expandedDate.startOf('day')
     const endOfDay = expandedDate.endOf('day')
     return eventList.filter(e =>
-      isOverlap(startOfDay, endOfDay, e.start.dateTime, e.end.dateTime)
+      isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
     )
   }, [view, eventList, expandedDate])
 

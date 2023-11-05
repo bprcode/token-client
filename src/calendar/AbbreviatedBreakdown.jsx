@@ -5,7 +5,7 @@ export function AbbreviatedBreakdown({ day, unfilteredEvents }) {
   const endOfDay = day.endOf('day')
 
   const relevantEvents = unfilteredEvents.filter(e =>
-    isOverlap(e.start.dateTime, e.end.dateTime, startOfDay, endOfDay)
+    isOverlap(e.startTime, e.endTime, startOfDay, endOfDay)
   )
 
   if (relevantEvents.length === 0) return
