@@ -17,27 +17,51 @@ import {
 import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
 import hourglassPng from './assets/hourglass2.png'
-import { useMatch, useNavigate, useNavigation } from 'react-router-dom'
+import { useLocation, useNavigate, useNavigation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
-function NavItem({ to = '', label, children }) {
+/**
+ * List item link with highlighting based on navigation state,
+ * matching the "v=" query parameter, if any.
+ */
+function ViewLink({ to = '', label, children }) {
   const theme = useTheme()
   const navigate = useNavigate()
   const navigation = useNavigation()
-  const isMatch = useMatch(to)
+  const location = useLocation()
   const toggleMenu = useContext(ToggleMenuContext)
 
-  const isNavigating =
-    navigation.location && navigation.location.pathname.endsWith(to)
+  const toPathname = to.split('?')[0]
+  const navPathname = navigation.location && navigation.location.pathname
+  const locPathname = location.pathname
+  const toParams = new URLSearchParams(to.split('?')[1] || 'v=')
 
+  const navParams = new URLSearchParams(
+    (navigation.location && navigation.location.search) || 'v='
+  )
+  const locParams = new URLSearchParams(location.search || 'v=')
+
+  const toView = toParams.get('v')
+  const navView = navParams.get('v')
+  const locView = locParams.get('v')
+
+  const isNavTarget = navPathname === toPathname && toView === navView
+  const isCurrentLocation = toPathname === locPathname && toView === locView
+
+  let backgroundColor = undefined
+
+  if (isNavTarget) {
+    backgroundColor = theme.palette.primary.main + '88'
+  } else if (isCurrentLocation) {
+    backgroundColor = '#0128'
+  }
   return (
     <ListItem
       sx={{
-        backgroundColor: isNavigating
-          ? theme.palette.primary.main + '88'
-          : isMatch
-          ? '#0128'
-          : undefined,
+        boxShadow:
+          isCurrentLocation &&
+          '4px 0 0 inset' + theme.palette.primary.main + '88',
+        backgroundColor,
       }}
       disablePadding
     >
@@ -55,25 +79,61 @@ function NavItem({ to = '', label, children }) {
 }
 
 function LoginPanel() {
-  const {data: loginStatus} = useQuery({
+  const { data: loginStatus } = useQuery({
     queryKey: ['login'],
     queryFn: () => fetch('http://localhost:3000/me').then(x => x.json()),
-    placeholderData: {notice: 'Placeholder value'}
+    placeholderData: { notice: 'Placeholder value' },
   })
 
-  return <NavItem>
-    {loginStatus?.notice || 'No notice yet'}
-  </NavItem>
+  return (
+    <ListItem
+      sx={{
+        backgroundColor: '#008',
+      }}
+      disablePadding
+    >
+      {loginStatus?.notice || 'No notice yet'}
+    </ListItem>
+  )
+}
+
+function NavSection() {
+  const location = useLocation()
+  console.log('location=', location)
+
+  const testRoutes = [
+    // 'foo',
+    // 'bar',
+    ['/calendar/123', '123'],
+    ['/calendar/456', '456'],
+    ['/calendar/123?v=month', '123 monthly'],
+    ['/calendar/123?v=week', '123 weekly'],
+    ['/calendar/123?v=day', '123 daily'],
+  ]
+
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+      }}
+    >
+      <List>
+      {testRoutes.map(r => (
+          <ViewLink to={r[0]} key={r[0]}>
+            {r[1]}
+          </ViewLink>
+      ))}
+      </List>
+    </Box>
+  )
 }
 
 export default function RouterSidebar({ width = '240px', expand }) {
   const theme = useTheme()
   const isNarrow = useNarrowCheck()
   const toggleMenu = useContext(ToggleMenuContext)
-
-  const testRoutes = [
-    'foo', 'bar', 'toto', 'cat', 'dog', 'fish', 'crocodile', 'giraffe', 'fox',
-   'calendar/123', 'calendar/456', 'calendar/123?v=month', 'calendar/123?v=week']
 
   const content = (
     <>
@@ -110,32 +170,8 @@ export default function RouterSidebar({ width = '240px', expand }) {
       </Box>
       <Divider />
 
-{/* Link container: */}
-      <Box sx={{
-        boxShadow: '0 0 0.5rem yellow',
-        flexGrow: 1,
-        overflowY: 'auto',
-        overflowX: 'hidden',
+      <NavSection />
 
-      }}>
-      <List
-        disablePadding
-        sx={{
-          backgroundColor: '#182629',
-        }}
-      >
-        <NavItem to='/' label='index'>
-        <FlareIcon />
-
-        </NavItem>
-        {testRoutes.map(r => (
-          <NavItem key={r} to={r} label={r}>
-            <FlareIcon />
-          </NavItem>
-        ))}
-      </List>
-
-</Box>
       <LoginPanel />
     </>
   )

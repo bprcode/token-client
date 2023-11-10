@@ -19,7 +19,7 @@ const debugQuery = {
 export const loader = queryClient => async () => {
 
   queryClient.fetchQuery(debugQuery)
-  return 'not used'
+  return 'unused'
 
   // const data = queryClient.getQueryData(debugQuery.queryKey)
   //   || await queryClient.fetchQuery(debugQuery)
