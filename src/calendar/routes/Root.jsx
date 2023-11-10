@@ -5,7 +5,29 @@ import { Box, Container } from '@mui/material'
 import { Outlet, useNavigation } from 'react-router-dom'
 import RouterSidebar from '../../RouterSidebar'
 
-export default function Root() {
+const debugQuery = {
+  queryKey: ['abc', 123],
+  queryFn: () => new Promise(ok => {
+    console.log('how long is this gonna take?')
+    setTimeout(() => {
+      console.log('delay done')
+      ok('foo')
+    }, 3000)
+  })
+}
+
+export const loader = queryClient => async () => {
+
+  queryClient.fetchQuery(debugQuery)
+  return 'not used'
+
+  // const data = queryClient.getQueryData(debugQuery.queryKey)
+  //   || await queryClient.fetchQuery(debugQuery)
+  // console.log('debug query data is:', data)
+  // return 6
+}
+
+export function Root() {
   const isNarrow = useNarrowCheck()
   const [expand, setExpand] = useState(false)
   const navigation = useNavigation()

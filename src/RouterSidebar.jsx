@@ -18,8 +18,9 @@ import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
 import hourglassPng from './assets/hourglass2.png'
 import { useMatch, useNavigate, useNavigation } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 
-function NavItem({ to, label, children }) {
+function NavItem({ to = '', label, children }) {
   const theme = useTheme()
   const navigate = useNavigate()
   const navigation = useNavigation()
@@ -53,12 +54,26 @@ function NavItem({ to, label, children }) {
   )
 }
 
+function LoginPanel() {
+  const {data: loginStatus} = useQuery({
+    queryKey: ['login'],
+    queryFn: () => fetch('http://localhost:3000/me').then(x => x.json()),
+    placeholderData: {notice: 'Placeholder value'}
+  })
+
+  return <NavItem>
+    {loginStatus?.notice || 'No notice yet'}
+  </NavItem>
+}
+
 export default function RouterSidebar({ width = '240px', expand }) {
   const theme = useTheme()
   const isNarrow = useNarrowCheck()
   const toggleMenu = useContext(ToggleMenuContext)
 
-  const testRoutes = ['foo', 'bar', 'calendar/123', 'calendar/456', 'calendar/123?v=month', 'calendar/123?v=week']
+  const testRoutes = [
+    'foo', 'bar', 'toto', 'cat', 'dog', 'fish', 'crocodile', 'giraffe', 'fox',
+   'calendar/123', 'calendar/456', 'calendar/123?v=month', 'calendar/123?v=week']
 
   const content = (
     <>
@@ -94,6 +109,15 @@ export default function RouterSidebar({ width = '240px', expand }) {
         </Typography>
       </Box>
       <Divider />
+
+{/* Link container: */}
+      <Box sx={{
+        boxShadow: '0 0 0.5rem yellow',
+        flexGrow: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+
+      }}>
       <List
         disablePadding
         sx={{
@@ -110,6 +134,9 @@ export default function RouterSidebar({ width = '240px', expand }) {
           </NavItem>
         ))}
       </List>
+
+</Box>
+      <LoginPanel />
     </>
   )
 
@@ -135,6 +162,8 @@ export default function RouterSidebar({ width = '240px', expand }) {
       component="nav"
       elevation={0}
       sx={{
+        display: 'flex',
+        flexDirection: 'column',
         width,
         flexShrink: 0,
         borderRight: `1px solid ${theme.palette.divider}`,
