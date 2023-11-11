@@ -2,7 +2,6 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop'
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
 import CalendarViewWeekIcon from '@mui/icons-material/CalendarViewWeek'
 import CalendarViewDayIcon from '@mui/icons-material/CalendarViewDay'
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import {
   Box,
   Collapse,
@@ -12,51 +11,79 @@ import {
   ListItem,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
   Paper,
   Typography,
   useTheme,
 } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
 import hourglassPng from './assets/hourglass2.png'
-import { useLocation, useNavigate, useNavigation } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useNavigation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 
 const openColor = '#0116'
 const activeColor = '#153244cc'
 
+const PlainLink = styled(Link)({
+  color: 'inherit',
+  textDecoration: 'none',
+})
+
 export function CalendarFolder({ route, title }) {
   const location = useLocation()
   const navigation = useNavigation()
   const navigate = useNavigate()
+  const theme = useTheme()
 
   const isOpen =
     (location.pathname === route && !navigation.location) ||
     (navigation.location && navigation.location.pathname === route)
 
+  const navParams = new URLSearchParams(
+    (navigation.location && navigation.location.search) || 'v='
+  )
+  const locParams = new URLSearchParams(location.search || 'v=')
+
+  const navView = navParams.get('v')
+  const locView = locParams.get('v')
+
+  const isBaseView = isOpen && !navView && !locView
+
+  const isNavTarget =
+    navigation.location && navigation.location.pathname === route && !navView
+
+  const isCurrentLocation = location.pathname === route && !locView
+
   return (
     <List
       disablePadding
       sx={{
+        color: theme.palette.text.primary + (isOpen ? '' : 'cc'),
+
         width: '100%',
         maxWidth: 360,
         bgcolor: 'background.paper',
         borderBottom: isOpen ? `1px solid #ffffff28` : `1px solid #0008`,
       }}
-      component="nav"
+      component="section"
       aria-label="Nested folder"
     >
       <ListItemButton
         onClick={() => navigate(route)}
         sx={{
-          backgroundColor: isOpen && openColor,
+          backgroundColor: isCurrentLocation
+            ? activeColor
+            : isOpen
+            ? openColor
+            : false,
+
+          boxShadow:
+            (isNavTarget || isBaseView) &&
+            '4px 0 0 inset' + theme.palette.primary.main + '88',
         }}
       >
-        <ListItemIcon sx={{ minWidth: '40px' }}>
-          <CalendarMonthIcon />
-        </ListItemIcon>
-        <ListItemText primary={title} />
+        <PlainLink to={route}>{title}</PlainLink>
       </ListItemButton>
       <Collapse in={isOpen} timeout={350} unmountOnExit>
         <List component="div" disablePadding>
@@ -103,21 +130,13 @@ function ViewLink({ to = '', label, children }) {
   const isNavTarget = navPathname === toPathname && toView === navView
   const isCurrentLocation = toPathname === locPathname && toView === locView
 
-  let backgroundColor = openColor
-
-  if (isNavTarget) {
-    backgroundColor = theme.palette.primary.main + '88'
-  } else if (isCurrentLocation) {
-    backgroundColor = activeColor
-  }
-  console.log(theme.palette)
   return (
     <ListItem
       sx={{
         boxShadow:
-          isCurrentLocation &&
+          (isNavTarget || (isCurrentLocation && !navigation.location)) &&
           '4px 0 0 inset' + theme.palette.primary.main + '88',
-        backgroundColor,
+        backgroundColor: isCurrentLocation ? activeColor : openColor,
       }}
       disablePadding
     >
@@ -140,7 +159,7 @@ function ViewLink({ to = '', label, children }) {
         >
           {children}
         </ListItemIcon>
-        <ListItemText primary={label} />
+        <PlainLink to={to}>{label}</PlainLink>
       </ListItemButton>
     </ListItem>
   )
@@ -183,12 +202,8 @@ function NavSection() {
   )
 }
 
-export default function RouterSidebar({ width = '240px', expand }) {
-  const theme = useTheme()
-  const isNarrow = useNarrowCheck()
-  const toggleMenu = useContext(ToggleMenuContext)
-
-  const content = (
+function HourglassHeader() {
+  return (
     <>
       <Box
         sx={{
@@ -222,9 +237,19 @@ export default function RouterSidebar({ width = '240px', expand }) {
         </Typography>
       </Box>
       <Divider />
+    </>
+  )
+}
 
+export default function RouterSidebar({ width = '240px', expand }) {
+  const theme = useTheme()
+  const isNarrow = useNarrowCheck()
+  const toggleMenu = useContext(ToggleMenuContext)
+
+  const content = (
+    <>
+      <HourglassHeader />
       <NavSection />
-
       <LoginPanel />
     </>
   )
