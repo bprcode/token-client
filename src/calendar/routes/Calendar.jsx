@@ -62,7 +62,6 @@ export function Calendar() {
         position: 'relative',
       }}
     >
-
       <Slide
         key={params.id}
         timeout={350}

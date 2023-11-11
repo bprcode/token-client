@@ -1,8 +1,11 @@
 import HourglassTopIcon from '@mui/icons-material/HourglassTop'
-import FolderIcon from '@mui/icons-material/Folder'
-import FlareIcon from '@mui/icons-material/Flare'
+import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
+import CalendarViewWeekIcon from '@mui/icons-material/CalendarViewWeek'
+import CalendarViewDayIcon from '@mui/icons-material/CalendarViewDay'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import {
   Box,
+  Collapse,
   Divider,
   Drawer,
   List,
@@ -19,6 +22,58 @@ import { useContext } from 'react'
 import hourglassPng from './assets/hourglass2.png'
 import { useLocation, useNavigate, useNavigation } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+
+const openColor = '#0116'
+const activeColor = '#153244cc'
+
+export function CalendarFolder({ route, title }) {
+  const location = useLocation()
+  const navigation = useNavigation()
+  const navigate = useNavigate()
+
+  const isOpen =
+    (location.pathname === route && !navigation.location) ||
+    (navigation.location && navigation.location.pathname === route)
+
+  return (
+    <List
+      disablePadding
+      sx={{
+        width: '100%',
+        maxWidth: 360,
+        bgcolor: 'background.paper',
+        borderBottom: isOpen ? `1px solid #ffffff28` : `1px solid #0008`,
+      }}
+      component="nav"
+      aria-label="Nested folder"
+    >
+      <ListItemButton
+        onClick={() => navigate(route)}
+        sx={{
+          backgroundColor: isOpen && openColor,
+        }}
+      >
+        <ListItemIcon sx={{ minWidth: '40px' }}>
+          <CalendarMonthIcon />
+        </ListItemIcon>
+        <ListItemText primary={title} />
+      </ListItemButton>
+      <Collapse in={isOpen} timeout={350} unmountOnExit>
+        <List component="div" disablePadding>
+          <ViewLink to={`${route}?v=month`} label="Month">
+            <CalendarViewMonthIcon />
+          </ViewLink>
+          <ViewLink to={`${route}?v=week`} label="Week">
+            <CalendarViewWeekIcon />
+          </ViewLink>
+          <ViewLink to={`${route}?v=day`} label="Day">
+            <CalendarViewDayIcon />
+          </ViewLink>
+        </List>
+      </Collapse>
+    </List>
+  )
+}
 
 /**
  * List item link with highlighting based on navigation state,
@@ -48,13 +103,14 @@ function ViewLink({ to = '', label, children }) {
   const isNavTarget = navPathname === toPathname && toView === navView
   const isCurrentLocation = toPathname === locPathname && toView === locView
 
-  let backgroundColor = undefined
+  let backgroundColor = openColor
 
   if (isNavTarget) {
     backgroundColor = theme.palette.primary.main + '88'
   } else if (isCurrentLocation) {
-    backgroundColor = '#0128'
+    backgroundColor = activeColor
   }
+  console.log(theme.palette)
   return (
     <ListItem
       sx={{
@@ -66,12 +122,24 @@ function ViewLink({ to = '', label, children }) {
       disablePadding
     >
       <ListItemButton
+        sx={{
+          pl: 3,
+          '&:hover': {
+            backgroundColor: '#aef3',
+          },
+        }}
         onClick={() => {
           navigate(to)
           toggleMenu(false)
         }}
       >
-        <ListItemIcon>{children}</ListItemIcon>
+        <ListItemIcon
+          sx={{
+            minWidth: '40px',
+          }}
+        >
+          {children}
+        </ListItemIcon>
         <ListItemText primary={label} />
       </ListItemButton>
     </ListItem>
@@ -98,19 +166,6 @@ function LoginPanel() {
 }
 
 function NavSection() {
-  const location = useLocation()
-  console.log('location=', location)
-
-  const testRoutes = [
-    // 'foo',
-    // 'bar',
-    ['/calendar/123', '123'],
-    ['/calendar/456', '456'],
-    ['/calendar/123?v=month', '123 monthly'],
-    ['/calendar/123?v=week', '123 weekly'],
-    ['/calendar/123?v=day', '123 daily'],
-  ]
-
   return (
     <Box
       sx={{
@@ -119,12 +174,10 @@ function NavSection() {
         overflowX: 'hidden',
       }}
     >
-      <List>
-      {testRoutes.map(r => (
-          <ViewLink to={r[0]} key={r[0]}>
-            {r[1]}
-          </ViewLink>
-      ))}
+      <List disablePadding>
+        <CalendarFolder route={'/calendar/123'} title="Calendar 123" />
+        <CalendarFolder route={'/calendar/456'} title="Calendar 456" />
+        <CalendarFolder route={'/calendar/789'} title="Calendar 789" />
       </List>
     </Box>
   )

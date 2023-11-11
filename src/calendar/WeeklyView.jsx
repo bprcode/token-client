@@ -1,4 +1,4 @@
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import {
@@ -121,7 +121,7 @@ export function WeeklyView({
     >
       <ViewHeader>
         <IconButton aria-label="back to monthly view" onClick={onBack}>
-          <CalendarMonthIcon />
+          <CalendarViewMonthIcon />
         </IconButton>
         <IconButton
           aria-label="previous week"
