@@ -4,11 +4,13 @@ import { ToggleMenuContext, useNarrowCheck } from '../LayoutContext.mjs'
 import { Box, Container } from '@mui/material'
 import { Outlet, useNavigation } from 'react-router-dom'
 import RouterSidebar from '../../RouterSidebar'
+import { FetchDisplay } from '../../go-fetch'
 
 const debugQuery = {
   queryKey: ['abc', 123],
-  queryFn: () => new Promise(ok => {
+  queryFn: ({queryKey}) => new Promise(ok => {
     console.log('how long is this gonna take?')
+    console.log('By the way, my query key was:', queryKey)
     setTimeout(() => {
       console.log('delay done')
       ok('foo')
@@ -34,6 +36,7 @@ export function Root() {
 
   return (
     <ToggleMenuContext.Provider value={setExpand}>
+      <FetchDisplay />
       <Container
         className="root-container"
         maxWidth="md"

@@ -22,9 +22,9 @@ import { useContext, useMemo, useRef, useState } from 'react'
 import dayjs from 'dayjs'
 import { TransitionGroup } from 'react-transition-group'
 import { useEventListHistory, isOverlap } from './calendar/calendarLogic.mjs'
-import { WeeklyCalendar } from './calendar/WeeklyCalendar'
-import { MonthlyCalendar } from './calendar/MonthlyCalendar'
-import { DayPage } from './calendar/DayPage'
+import { WeeklyView } from './calendar/WeeklyView'
+import { MonthlyView } from './calendar/MonthlyView'
+import { DailyView } from './calendar/DailyView'
 import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@emotion/react'
@@ -47,7 +47,7 @@ function RootLayout({ children }) {
         sx={{
           height: '100vh',
           // N.B. overflowX: hidden causes a persistent address bar
-          // on mobile Y-scrolling in the DayPage component.
+          // on mobile Y-scrolling in the DailyView component.
           overflowX: isNarrow ? undefined : 'hidden',
         }}
       >
@@ -227,7 +227,7 @@ function Demo() {
                     height: '100%',
                   }}
                 >
-                  <MonthlyCalendar
+                  <MonthlyView
                     initialDate={currentDate}
                     unfilteredEvents={eventList}
                     onExpand={date => {
@@ -248,7 +248,7 @@ function Demo() {
                     height: '100%',
                   }}
                 >
-                  <WeeklyCalendar
+                  <WeeklyView
                     onBack={() => {
                       setExpandedDate(null)
                       setView('month')
@@ -274,7 +274,7 @@ function Demo() {
                     height: '100%',
                   }}
                 >
-                  <DayPage
+                  <DailyView
                     onBack={() => setView('week')}
                     day={expandedDate || dayjs()}
                     unfilteredEvents={eventList}

@@ -12,6 +12,7 @@ import RouterError from './RouterError'
 import {Root, loader as rootLoader}  from './routes/Root'
 import { Calendar, loader as calendarLoader } from './routes/Calendar'
 import Index from './routes/Index'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
 
@@ -53,6 +54,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <RouterProvider router={router} />
         </CssBaseline>
       </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </React.StrictMode>
 )
