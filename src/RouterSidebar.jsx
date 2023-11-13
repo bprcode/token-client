@@ -14,7 +14,7 @@ import { useContext } from 'react'
 import hourglassPng from './assets/hourglass2.png'
 import { useQuery } from '@tanstack/react-query'
 import { CalendarFolder } from './CalendarFolder'
-import { goFetch } from './go-fetch'
+import { goFetch, goResolve } from './go-fetch'
 
 function LoginPanel() {
   const { data: loginStatus, isPending: mePending, error: meError } = useQuery({
@@ -27,12 +27,14 @@ function LoginPanel() {
   })
 
   const ac = new AbortController()
-  const {isPending: timeoutPending, error: timeoutError, status: timeoutStatus, } = useQuery({
+  const {data: timeoutData, isPending: timeoutPending, error: timeoutError, status: timeoutStatus, } = useQuery({
     queryKey: ['tortoise'],
     queryFn: () =>
-      goFetch('http://localhost:3000/spam', { signal: ac.signal }),
+      goResolve('http://localhost:3000/timeout', { signal: ac.signal }),
   })
   setTimeout(ac.abort.bind(ac), 1000)
+
+  console.log('loginStatus is : ', loginStatus)
 
   return (<List>
     {/* <ListItem sx={{ backgroundColor: '#408',
@@ -42,6 +44,8 @@ function LoginPanel() {
     <ListItem sx={{ backgroundColor: '#408',
     }} disablePadding>
       <div>
+        timeoutData.status: {timeoutData?.status} <br/>
+        timeoutData.ok: {timeoutData?.ok ? 'sure' : 'nope'} <br/>
         timeoutStatus: {timeoutStatus} <br/>
       timeoutPending: {timeoutPending ? 'yeah' : 'no'}<br/>timeoutError: {timeoutError?.message}
       </div>

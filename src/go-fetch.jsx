@@ -138,3 +138,19 @@ export function goFetch(resource, options = {}) {
       clearTimeout(tid)
     })
 }
+
+export async function goResolve(resource, options) {
+  const response = await goFetch(resource, options)
+  let json
+  try {
+    json = await response.json()
+
+  } catch(e) {
+    json = {}
+  }
+  return {
+    ...json,
+    status: response.status,
+    ok: response.ok,
+  }
+}
