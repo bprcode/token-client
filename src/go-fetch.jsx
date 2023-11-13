@@ -94,7 +94,7 @@ function expireFetch(fid) {
   }, 5000)
 }
 
-export function goFetch(resource, options = {}) {
+export function loggedFetch(resource, options = {}) {
   const fid = makeFetchId()
   const method = options.method || 'GET'
   const tag = fid + ') ' + method + ' > ' + resource
@@ -139,8 +139,8 @@ export function goFetch(resource, options = {}) {
     })
 }
 
-export async function goResolve(resource, options) {
-  const response = await goFetch(resource, options)
+export async function goFetch(resource, options) {
+  const response = await loggedFetch(resource, options)
   let json
   try {
     json = await response.json()

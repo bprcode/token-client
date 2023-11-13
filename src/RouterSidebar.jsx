@@ -1,4 +1,5 @@
 import HourglassTopIcon from '@mui/icons-material/HourglassTop'
+import LogoutIcon from '@mui/icons-material/Logout'
 import {
   Box,
   Divider,
@@ -8,58 +9,128 @@ import {
   Paper,
   Typography,
   useTheme,
+  Button,
+  Avatar,
+  IconButton,
+  CircularProgress,
 } from '@mui/material'
 import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
 import hourglassPng from './assets/hourglass2.png'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { CalendarFolder } from './CalendarFolder'
-import { goFetch, goResolve } from './go-fetch'
+import { goFetch } from './go-fetch'
+import { Link } from 'react-router-dom'
 
 function LoginPanel() {
-  const { data: loginStatus, isPending: mePending, error: meError } = useQuery({
+  const queryClient = useQueryClient()
+  const theme = useTheme()
+
+  const loginMutation = useMutation({
+    mutationFn: () =>
+      goFetch(import.meta.env.VITE_BACKEND + 'login', {
+        method: 'POST',
+        body: JSON.stringify({ email: 'Demo Account', password: '123' }),
+        headers: {
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        credentials: 'include',
+      }),
+    retry: 2,
+    onSuccess: data => {
+      console.log('mutation success with data: ', data)
+      queryClient.setQueryData(['login'], data)
+    },
+  })
+
+  const logoutMutation = useMutation({
+    mutationFn: () => goFetch(import.meta.env.VITE_BACKEND + 'login', {
+      method: 'DELETE',
+      credentials: 'include'
+    }),
+    retry: 2,
+    onSuccess: data => {
+      console.log('logout mutation yielded ', data)
+      if(data.ok) { queryClient.setQueryData(['login'], {})}
+    }
+  })
+
+  const {
+    data: loginStatus,
+    isPending: mePending,
+    error: meError,
+  } = useQuery({
     queryKey: ['login'],
     queryFn: ({ queryKey }) => {
       console.log('/me query key was: ', queryKey)
-      return goFetch('http://localhost:3000/me').then(x => x.json())
+      return goFetch(import.meta.env.VITE_BACKEND + 'me', {
+        credentials: 'include',
+      })
     },
     placeholderData: { notice: 'Placeholder value' },
   })
 
-  const ac = new AbortController()
-  const {data: timeoutData, isPending: timeoutPending, error: timeoutError, status: timeoutStatus, } = useQuery({
-    queryKey: ['tortoise'],
-    queryFn: () =>
-      goResolve('http://localhost:3000/timeout', { signal: ac.signal }),
-  })
-  setTimeout(ac.abort.bind(ac), 1000)
+  let interactions = <Box sx={{mx: 'auto' }}><CircularProgress size="1.75rem" /></Box>
+  if(!loginMutation.isPending && !logoutMutation.isPending) {
+    interactions = loginStatus.name ? (
+      <>
+        <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 1 }}>
+          {loginStatus.name[0]}
+        </Avatar>
+        <span
+          style={{
+            overflow: 'hidden',
+            flexGrow: 1,
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            verticalAlign: 'center',
+          }}
+        >
+          {loginStatus.name}
+        </span>
+        <IconButton onClick={logoutMutation.mutate}
+        >
+          <LogoutIcon />
+        </IconButton>
+      </>
+    ) : (
+      <Button variant="contained" onClick={loginMutation.mutate}>
+        Login Sample User
+      </Button>
+    )
+  }
 
-  console.log('loginStatus is : ', loginStatus)
-
-  return (<List>
-    {/* <ListItem sx={{ backgroundColor: '#408',
-    }} disablePadding>
-      mePending: {mePending} meError: {meError?.message}
-  </ListItem>*/}
-    <ListItem sx={{ backgroundColor: '#408',
-    }} disablePadding>
-      <div>
-        timeoutData.status: {timeoutData?.status} <br/>
-        timeoutData.ok: {timeoutData?.ok ? 'sure' : 'nope'} <br/>
-        timeoutStatus: {timeoutStatus} <br/>
-      timeoutPending: {timeoutPending ? 'yeah' : 'no'}<br/>timeoutError: {timeoutError?.message}
-      </div>
-      {/* timeoutPending: {timeoutPending} timeoutError: {timeoutError?.message} */}
-    </ListItem>
-    <ListItem
-      sx={{
-        backgroundColor: '#008',
-      }}
-      disablePadding
-    >
-      {loginStatus?.notice || 'No notice yet'}
-    </ListItem>
-    </ List>
+  return (
+    <List>
+      <ListItem sx={{ backgroundColor: '#480' }} disablePadding>
+        <div>
+          loginMutation.status: {loginMutation.status}
+          <br />
+          loginMutation.error: {loginMutation.error?.message}
+          <br />
+          loginMutation.data.status: {loginMutation.data?.status}
+          <br />
+          loginMutation.data.ok: {loginMutation.data?.ok ? 'Y' : 'N'}
+          <br />
+          loginMutation.data.error: {loginMutation.data?.error}
+          <br />
+        </div>
+      </ListItem>
+      <ListItem
+        sx={{
+          backgroundColor: '#008',
+        }}
+        disablePadding
+      >
+        <Box
+          sx={{ width: '100%', display: 'flex', height: '2.5rem',
+        alignItems: 'center',
+        }}
+        >
+          {interactions}
+        </Box>
+      </ListItem>
+    </List>
   )
 }
 
@@ -76,6 +147,7 @@ function NavSection() {
         <CalendarFolder route={'/calendar/123'} title="Calendar 123" />
         <CalendarFolder route={'/calendar/456'} title="Calendar 456" />
         <CalendarFolder route={'/calendar/789'} title="Calendar 789" />
+        <Link to="/catalog">Catalog</Link>
       </List>
     </Box>
   )

@@ -10,6 +10,7 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import RouterError from './RouterError'
 import {Root, loader as rootLoader}  from './routes/Root'
+import {Catalog} from './routes/Catalog'
 import { Calendar, loader as calendarLoader } from './routes/Calendar'
 import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
           {
             path: 'foo',
             element: <div>Foo Element</div>,
+          },
+          {
+            path: 'catalog',
+            element: <Catalog />,
           },
           {
             path: 'calendar/:id',
