@@ -30,7 +30,10 @@ function LoginPanel() {
     mutationFn: () =>
       goFetch(import.meta.env.VITE_BACKEND + 'login', {
         method: 'POST',
-        body: JSON.stringify({ email: 'Demo Account', password: '123' }),
+        body: JSON.stringify({
+          email: 'shredman1212@slice.dice',
+          password: 'oozy123',
+        }),
         headers: {
           'Content-Type': 'application/json; charset=utf-8',
         },
@@ -39,27 +42,25 @@ function LoginPanel() {
     retry: 2,
     onSuccess: data => {
       console.log('mutation success with data: ', data)
+      queryClient.resetQueries()
       queryClient.setQueryData(['login'], data)
     },
   })
 
   const logoutMutation = useMutation({
-    mutationFn: () => goFetch(import.meta.env.VITE_BACKEND + 'login', {
-      method: 'DELETE',
-      credentials: 'include'
-    }),
+    mutationFn: () =>
+      goFetch(import.meta.env.VITE_BACKEND + 'login', {
+        method: 'DELETE',
+        credentials: 'include',
+      }),
     retry: 2,
     onSuccess: data => {
       console.log('logout mutation yielded ', data)
-      if(data.ok) { queryClient.setQueryData(['login'], {})}
-    }
+      queryClient.setQueriesData({}, {})
+    },
   })
 
-  const {
-    data: loginStatus,
-    isPending: mePending,
-    error: meError,
-  } = useQuery({
+  const loginResult = useQuery({
     queryKey: ['login'],
     queryFn: ({ queryKey }) => {
       console.log('/me query key was: ', queryKey)
@@ -67,15 +68,19 @@ function LoginPanel() {
         credentials: 'include',
       })
     },
-    placeholderData: { notice: 'Placeholder value' },
+    // placeholderData: { notice: 'Placeholder value' },
   })
 
-  let interactions = <Box sx={{mx: 'auto' }}><CircularProgress size="1.75rem" /></Box>
-  if(!loginMutation.isPending && !logoutMutation.isPending) {
-    interactions = loginStatus.name ? (
+  let interactions = (
+    <Box sx={{ mx: 'auto' }}>
+      <CircularProgress size="1.75rem" />
+    </Box>
+  )
+  if (!loginMutation.isPending && !logoutMutation.isPending) {
+    interactions = loginResult.data?.name ? (
       <>
         <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 1 }}>
-          {loginStatus.name[0]}
+          {loginResult.data.name[0]}
         </Avatar>
         <span
           style={{
@@ -86,10 +91,9 @@ function LoginPanel() {
             verticalAlign: 'center',
           }}
         >
-          {loginStatus.name}
+          {loginResult.data.name}
         </span>
-        <IconButton onClick={logoutMutation.mutate}
-        >
+        <IconButton onClick={logoutMutation.mutate}>
           <LogoutIcon />
         </IconButton>
       </>
@@ -102,7 +106,23 @@ function LoginPanel() {
 
   return (
     <List>
-      <ListItem sx={{ backgroundColor: '#480' }} disablePadding>
+      <ListItem sx={{ backgroundColor: '#048' }} disablePadding>
+        <div>
+          loginResult.isPending: {loginResult.isPending ? '1️⃣' : '0️⃣'}
+          <br />
+          loginResult.isFetching: {loginResult.isFetching ? '1️⃣' : '0️⃣'}
+          <br />
+          loginResult.status: {loginResult.status}
+          <br />
+          loginResult.error: {loginResult.error?.message}
+          <br />
+          loginResult.error.status: {loginResult.error?.status}
+          <br />
+          loginResult.data.name: {loginResult.data?.name}
+          <br />
+        </div>
+      </ListItem>
+      {/* <ListItem sx={{ backgroundColor: '#480' }} disablePadding>
         <div>
           loginMutation.status: {loginMutation.status}
           <br />
@@ -115,7 +135,7 @@ function LoginPanel() {
           loginMutation.data.error: {loginMutation.data?.error}
           <br />
         </div>
-      </ListItem>
+      </ListItem> */}
       <ListItem
         sx={{
           backgroundColor: '#008',
@@ -123,9 +143,12 @@ function LoginPanel() {
         disablePadding
       >
         <Box
-          sx={{ width: '100%', display: 'flex', height: '2.5rem',
-        alignItems: 'center',
-        }}
+          sx={{
+            width: '100%',
+            display: 'flex',
+            height: '2.5rem',
+            alignItems: 'center',
+          }}
         >
           {interactions}
         </Box>

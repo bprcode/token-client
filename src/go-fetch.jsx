@@ -11,7 +11,7 @@ function onStatus() {
 }
 
 export function useFetchStatus() {
-  const [status, setStatus] = useState([...fetches])
+  const [status, setStatus] = useState([...fetches.values()])
 
   useEffect(() => {
     listeners.add(setStatus)
@@ -139,18 +139,49 @@ export function loggedFetch(resource, options = {}) {
     })
 }
 
+class StatusError extends Error {
+  constructor(message, status) {
+    super(message)
+    this.status = status
+  }
+}
+
 export async function goFetch(resource, options) {
   const response = await loggedFetch(resource, options)
+  console.log(
+    'response had status: ',
+    response.status,
+    ' and ok: ',
+    response.ok
+  )
+
   let json
   try {
     json = await response.json()
-
-  } catch(e) {
+  } catch (e) {
     json = {}
   }
-  return {
-    ...json,
-    status: response.status,
-    ok: response.ok,
+
+  if (!response.ok) {
+    throw new StatusError(
+      json.error ?? 'Server responded with error.',
+      response.status
+    )
   }
+
+  return json
+}
+
+const noRetryList = [400, 401, 403, 404]
+export function retryCheck(failureCount, error) {
+  console.log('failure #', failureCount, 'with error:', error.message)
+  if (failureCount >= 3) {
+    console.log('too many retry attempts. Cancelling.')
+    return false
+  }
+  if (noRetryList.includes(error.status)) {
+    console.log('skipping retry on status', error.status)
+    return false
+  }
+  return true
 }

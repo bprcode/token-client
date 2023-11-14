@@ -10,12 +10,19 @@ import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import RouterError from './RouterError'
 import {Root, loader as rootLoader}  from './routes/Root'
-import {Catalog} from './routes/Catalog'
+import {Catalog, loader as catalogLoader} from './routes/Catalog'
 import { Calendar, loader as calendarLoader } from './routes/Calendar'
 import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { retryCheck } from '../go-fetch'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: retryCheck
+    }
+  }
+})
 
 const router = createBrowserRouter([
   {
@@ -38,6 +45,7 @@ const router = createBrowserRouter([
           {
             path: 'catalog',
             element: <Catalog />,
+            loader: catalogLoader(queryClient),
           },
           {
             path: 'calendar/:id',
