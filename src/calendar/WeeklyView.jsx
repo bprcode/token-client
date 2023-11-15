@@ -14,6 +14,7 @@ import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
 import { isOverlap } from './calendarLogic.mjs'
+import { ViewContainer } from './ViewContainer'
 
 function CalendarBody({ date, eventList, onExpand }) {
   const logger = useLogger()
@@ -110,15 +111,7 @@ export function WeeklyView({
     : 'Week of ' + sunday.format('MMMM D, YYYY')
 
   const rv = (
-    <Stack
-      direction="column"
-      sx={{
-        mx: 'auto',
-        width: '100%',
-        height: '100%',
-        overflowY: 'auto',
-      }}
-    >
+    <ViewContainer>
       <ViewHeader>
         <IconButton aria-label="back to monthly view" onClick={onBack}>
           <CalendarViewMonthIcon />
@@ -155,7 +148,7 @@ export function WeeklyView({
       </ViewHeader>
 
       <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
-    </Stack>
+    </ViewContainer>
   )
 
   console.timeEnd(logId + ' WeeklyCalendar rendered')

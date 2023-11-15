@@ -21,6 +21,7 @@ import { log } from './log.mjs'
 import { weekdayAbbreviations } from './calendarLogic.mjs'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
+import { ViewContainer } from './ViewContainer'
 
 const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
@@ -361,15 +362,7 @@ function MonthHeader({ date, onChange }) {
 
 export function MonthlyView({ date, onChange, onExpand, unfilteredEvents }) {
   return (
-    <Stack
-      direction="column"
-      sx={{
-        mx: 'auto',
-        width: '100%',
-        height: '100%',
-        overflowY: 'auto',
-      }}
-    >
+    <ViewContainer>
       <MonthHeader date={date} onChange={onChange} />
       <Stack
         direction="column"
@@ -382,6 +375,6 @@ export function MonthlyView({ date, onChange, onExpand, unfilteredEvents }) {
           onExpand={onExpand}
         />
       </Stack>
-    </Stack>
+    </ViewContainer>
   )
 }

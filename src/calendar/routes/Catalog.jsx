@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useLoadingPane } from '../LoadingPane'
+import { ViewContainer } from '../ViewContainer'
+import { ViewHeader } from '../ViewHeader'
 
 const catalogQuery = {
   queryKey: ['catalog'],
@@ -29,10 +31,17 @@ export function Catalog() {
   const catalog = useQuery(catalogQuery)
   const loadingPane = useLoadingPane(catalog)
 
-  if (loadingPane) return loadingPane
+  if (loadingPane)
+    return (
+      <ViewContainer>
+        <ViewHeader />
+        {loadingPane}
+      </ViewContainer>
+    )
 
   return (
-    <div>
+    <ViewContainer>
+      <ViewHeader />
       I am a catalog
       <br />
       <div>isPending: {catalog.isPending ? 'yeah' : 'nah'}</div>
@@ -48,6 +57,6 @@ export function Catalog() {
             </li>
           ))}
       </ul>
-    </div>
+    </ViewContainer>
   )
 }
