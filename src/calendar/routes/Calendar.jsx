@@ -8,12 +8,9 @@ import {
   useEventListHistory,
 } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
-import utc from 'dayjs/plugin/utc'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
 import { DailyView } from '../DailyView'
-
-dayjs.extend(utc)
 
 export function loader({ request, params }) {
   const data = createSampleWeek(dayjs())

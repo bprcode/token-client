@@ -1,6 +1,11 @@
 import { createTheme } from '@mui/material'
-import dayjs from 'dayjs'
 import { useReducer } from 'react'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import relativeTime from 'dayjs/plugin/relativeTime'
+
+dayjs.extend(relativeTime)
+dayjs.extend(utc)
 
 /**
  * Determine if two time intervals overlap.

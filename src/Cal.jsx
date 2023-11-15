@@ -27,7 +27,7 @@ import { MonthlyView } from './calendar/MonthlyView'
 import { DailyView } from './calendar/DailyView'
 import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
-import { useTheme } from '@emotion/react'
+import { useTheme } from '@mui/material'
 import hourglassPng from './assets/hourglass2.png'
 import { LoggerProvider } from './calendar/Logger'
 

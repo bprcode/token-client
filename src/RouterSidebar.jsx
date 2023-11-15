@@ -122,20 +122,6 @@ function LoginPanel() {
           <br />
         </div>
       </ListItem>
-      {/* <ListItem sx={{ backgroundColor: '#480' }} disablePadding>
-        <div>
-          loginMutation.status: {loginMutation.status}
-          <br />
-          loginMutation.error: {loginMutation.error?.message}
-          <br />
-          loginMutation.data.status: {loginMutation.data?.status}
-          <br />
-          loginMutation.data.ok: {loginMutation.data?.ok ? 'Y' : 'N'}
-          <br />
-          loginMutation.data.error: {loginMutation.data?.error}
-          <br />
-        </div>
-      </ListItem> */}
       <ListItem
         sx={{
           backgroundColor: '#008',
@@ -170,7 +156,9 @@ function NavSection() {
         <CalendarFolder route={'/calendar/123'} title="Calendar 123" />
         <CalendarFolder route={'/calendar/456'} title="Calendar 456" />
         <CalendarFolder route={'/calendar/789'} title="Calendar 789" />
-        <Link to="/catalog">Catalog</Link>
+        <ListItem>
+          <Link to="/catalog">Catalog</Link>
+        </ListItem>
       </List>
     </Box>
   )

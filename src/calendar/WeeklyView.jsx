@@ -5,7 +5,6 @@ import {
   IconButton,
   Typography,
   Box,
-  Stack,
   useMediaQuery,
 } from '@mui/material'
 import { useMemo } from 'react'
@@ -129,7 +128,7 @@ export function WeeklyView({
           <NavigateBeforeIcon />
         </IconButton>
 
-        <Typography variant="h6" component="span" sx={{}}>
+        <Typography variant="h6" component="span">
           {weekDescription}
         </Typography>
 

@@ -9,7 +9,7 @@ import {
   ListItemIcon,
   useTheme,
 } from '@mui/material'
-import { styled } from '@mui/material/styles'
+import { styled, alpha } from '@mui/material/styles'
 import { ToggleMenuContext } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
 import { Link, useLocation, useNavigate, useNavigation } from 'react-router-dom'
@@ -71,7 +71,7 @@ export function CalendarFolder({ route, title }) {
 
           boxShadow:
             (isNavTarget || isBaseView) &&
-            '4px 0 0 inset' + theme.palette.primary.main + '88',
+            '4px 0 0 inset' + alpha(theme.palette.primary.main, .53),
         }}
       >
         <PlainLink to={route}>{title}</PlainLink>
@@ -125,7 +125,7 @@ function ViewLink({ to = '', label, children }) {
       sx={{
         boxShadow:
           (isNavTarget || (isCurrentLocation && !navigation.location)) &&
-          '4px 0 0 inset' + theme.palette.primary.main + '88',
+          '4px 0 0 inset' + alpha(theme.palette.primary.main, .53),
         backgroundColor: isCurrentLocation ? activeColor : openColor,
       }}
       disablePadding
