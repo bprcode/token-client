@@ -1,6 +1,7 @@
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import ShareIcon from '@mui/icons-material/Share'
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useLoadingPane } from '../LoadingPane'
@@ -10,8 +11,10 @@ import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardActions,
   CardContent,
+  CircularProgress,
   IconButton,
   Skeleton,
   Typography,
@@ -20,6 +23,7 @@ import {
 import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 
 const catalogQuery = {
   queryKey: ['catalog'],
@@ -82,6 +86,66 @@ function CatalogGrid({ children }) {
   )
 }
 
+function CreationCard() {
+  const theme = useTheme()
+  const queryClient = useQueryClient()
+  const [idemKey, setIdemKey] = useState(randomIdemKey)
+
+  function randomIdemKey() {
+    return String(Math.floor(Math.random() * 1e9))
+  }
+
+  console.log('idemKey=',idemKey)
+  const creationMutation = useMutation({
+    mutationFn: () => goFetch('calendars', {
+      method: 'POST',
+      body: {
+        key: idemKey
+      }
+    }),
+    onSuccess: (data) => {
+      const newKey = randomIdemKey()
+      console.log('setting new idem key to ', newKey)
+      setIdemKey(newKey)
+      console.log('creation returned data: ', data)
+      queryClient.setQueryData(['catalog'], catalog => [...catalog, data])
+
+    }
+  })
+
+  return (
+    <Card
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0.25rem 0.25rem 0.35rem #0006',
+      }}
+    >
+      <CardActionArea
+        disabled={creationMutation.isPending}
+        onClick={() => {
+          console.log('Creation placeholder')
+          creationMutation.mutate()
+        }}
+        sx={{display: 'flex', flexDirection: 'column', flexGrow: 1}}
+      >
+        {creationMutation.isPending ? 
+        <CircularProgress />
+        :
+        <>
+      <AddCircleOutlineIcon sx={{width:'80px', height: '80px'}}/>
+      <Typography variant='subtitle1'>
+      New Calendar
+      </Typography>
+      </>
+        }
+        </CardActionArea>
+      
+    </Card>
+  )
+
+}
+
 function CalendarCard({ title, id, etag, children }) {
   const theme = useTheme()
   const queryClient = useQueryClient()
@@ -120,7 +184,6 @@ function CalendarCard({ title, id, etag, children }) {
     >
         <Box
         component={Link} to={'/calendars/'+id}
-        onClick={() => console.log('title click placeholder')}
           sx={{
             color: 'inherit',
             textDecoration: 'none',
@@ -236,6 +299,7 @@ export function Catalog() {
             </Typography>
           </CalendarCard>
         ))}
+        <CreationCard />
       </CatalogGrid>
       
     </ViewContainer>
