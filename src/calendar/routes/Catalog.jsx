@@ -1,7 +1,7 @@
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import ShareIcon from '@mui/icons-material/Share'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useLoadingPane } from '../LoadingPane'
 import { ViewContainer } from '../ViewContainer'
@@ -10,7 +10,6 @@ import {
   Box,
   Button,
   Card,
-  CardActionArea,
   CardActions,
   CardContent,
   IconButton,
@@ -83,11 +82,31 @@ function CatalogGrid({ children }) {
   )
 }
 
-function CalendarCard({ title, id, children }) {
+function CalendarCard({ title, id, etag, children }) {
   const theme = useTheme()
+  const queryClient = useQueryClient()
 
   const deleteMutation = useMutation({
+    mutationFn: () => goFetch(`calendars/${id}`, {
+      method: 'DELETE',
+      body: {etag}
+    }),
     
+    onSuccess: (data) => {
+      if(data.length) {
+        // Outcome certain: The event was definitely deleted from the server.
+        console.log('deleted ', data)
+        queryClient.setQueryData(['catalog'], data => data.filter(c => c.calendar_id !== id))
+      } else {
+        // Outcome unknown: May already be deleted, may have failed
+        // due to remote update.
+        queryClient.invalidateQueries(['catalog'])
+        console.log('nothing deleted')
+      }
+    },
+    onError: e => {
+      console.log('Delete Error!', e.status, e.message)
+    }
   })
 
   return (
@@ -96,18 +115,22 @@ function CalendarCard({ title, id, children }) {
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0.25rem 0.25rem 0.35rem #0006',
+        opacity: deleteMutation.isPending ? 0.3 : undefined,
       }}
     >
-      <CardActionArea
-        onClick={() => console.log('action area placeholder')}
-        sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
-      >
         <Box
+        component={Link} to={'/calendars/'+id}
+        onClick={() => console.log('title click placeholder')}
           sx={{
+            color: 'inherit',
+            textDecoration: 'none',
             bgcolor: alpha(theme.palette.primary.dark, 0.3),
             px: 2,
             py: 1,
             width: '100%',
+            '&:hover': {
+              bgcolor: alpha(theme.palette.primary.dark, 0.7),
+            }
           }}
         >
           <Typography
@@ -120,15 +143,14 @@ function CalendarCard({ title, id, children }) {
               whiteSpace: 'nowrap',
             }}
           >
-            {title || 'My Calendar'}
+            {title || 'Untitled'}
           </Typography>
         </Box>
         <CardContent sx={{ flexGrow: 1, width: '100%' }}>
           {children}
         </CardContent>
-      </CardActionArea>
       <CardActions>
-        <Button component={Link} to={`/calendar/${id}`}>
+        <Button component={Link} to={`/calendars/${id}`}>
           Open
         </Button>
 
@@ -147,7 +169,8 @@ function CalendarCard({ title, id, children }) {
           </IconButton>
           <IconButton
             aria-label="Delete"
-            onClick={() => console.log('delete placeholder')}
+            disabled={deleteMutation.isPending}
+            onClick={deleteMutation.mutate}
           >
             <DeleteIcon sx={{ opacity: 0.9 }} />
           </IconButton>
@@ -164,7 +187,7 @@ export function Catalog() {
   const header = (
     <ViewHeader>
       <Typography variant="h6" component="span">
-        Calendars
+        My Calendars
       </Typography>
     </ViewHeader>
   )
@@ -201,6 +224,7 @@ export function Catalog() {
           <CalendarCard
             key={c.calendar_id}
             id={c.calendar_id}
+            etag={c.etag}
             title={c.summary}
           >
             <Typography variant="body2" sx={{ opacity: 0.5 }}>
@@ -208,24 +232,12 @@ export function Catalog() {
               <br />
               Updated: {dayjs(c.updated).from(now)}
               <br />
+              etag: {c.etag}<br />
             </Typography>
           </CalendarCard>
         ))}
       </CatalogGrid>
-      <br />
-      <div>isPending: {catalog.isPending ? 'yeah' : 'nah'}</div>
-      <div>catalog query status: {catalog.status}</div>
-      <div>catalog error message: {catalog.error?.message}</div>
-      <div>catalog error status: {catalog.error?.status}</div>
-      <div>records returned: {catalog.data?.length}</div>
-      <ul>
-        {catalog.data?.length &&
-          catalog.data.map((c, i) => (
-            <li key={c.calendar_id}>
-              {c.calendar_id} {c.summary}
-            </li>
-          ))}
-      </ul>
+      
     </ViewContainer>
   )
 }

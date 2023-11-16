@@ -20,6 +20,9 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: retryCheck
+    },
+    mutations: {
+      retry: retryCheck
     }
   }
 })
@@ -48,7 +51,7 @@ const router = createBrowserRouter([
             loader: catalogLoader(queryClient),
           },
           {
-            path: 'calendar/:id',
+            path: 'calendars/:id',
             element: <Calendar />,
             loader: calendarLoader,
           },

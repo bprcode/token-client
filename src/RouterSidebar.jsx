@@ -30,14 +30,10 @@ function LoginPanel() {
     mutationFn: () =>
       goFetch('login', {
         method: 'POST',
-        body: JSON.stringify({
+        body: {
           email: 'shredman1212@slice.dice',
           password: 'oozy123',
-        }),
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
         },
-        credentials: 'include',
       }),
     retry: 2,
     onSuccess: data => {
@@ -51,7 +47,6 @@ function LoginPanel() {
     mutationFn: () =>
       goFetch('login', {
         method: 'DELETE',
-        credentials: 'include',
       }),
     retry: 2,
     onSuccess: data => {
@@ -62,9 +57,7 @@ function LoginPanel() {
 
   const loginResult = useQuery({
     queryKey: ['login'],
-    queryFn: () => goFetch('me', {
-        credentials: 'include',
-      }),
+    queryFn: () => goFetch('me'),
     // placeholderData: { notice: 'Placeholder value' },
   })
 
@@ -76,7 +69,7 @@ function LoginPanel() {
   if (!loginMutation.isPending && !logoutMutation.isPending) {
     interactions = loginResult.data?.name ? (
       <>
-        <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 1 }}>
+        <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 1, ml: 1 }}>
           {loginResult.data.name[0]}
         </Avatar>
         <span
@@ -103,22 +96,6 @@ function LoginPanel() {
 
   return (
     <List>
-      <ListItem sx={{ backgroundColor: '#048' }} disablePadding>
-        <div>
-          loginResult.isPending: {loginResult.isPending ? '1️⃣' : '0️⃣'}
-          <br />
-          loginResult.isFetching: {loginResult.isFetching ? '1️⃣' : '0️⃣'}
-          <br />
-          loginResult.status: {loginResult.status}
-          <br />
-          loginResult.error: {loginResult.error?.message}
-          <br />
-          loginResult.error.status: {loginResult.error?.status}
-          <br />
-          loginResult.data.name: {loginResult.data?.name}
-          <br />
-        </div>
-      </ListItem>
       <ListItem
         sx={{
           backgroundColor: '#008',
@@ -150,9 +127,9 @@ function NavSection() {
       }}
     >
       <List disablePadding>
-        <CalendarFolder route={'/calendar/123'} title="Calendar 123" />
-        <CalendarFolder route={'/calendar/456'} title="Calendar 456" />
-        <CalendarFolder route={'/calendar/789'} title="Calendar 789" />
+        <CalendarFolder route={'/calendars/123'} title="Calendar 123" />
+        <CalendarFolder route={'/calendars/456'} title="Calendar 456" />
+        <CalendarFolder route={'/calendars/789'} title="Calendar 789" />
         <ListItem>
           <Link to="/catalog">Catalog</Link>
         </ListItem>

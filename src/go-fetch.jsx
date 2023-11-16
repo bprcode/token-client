@@ -94,10 +94,33 @@ function expireFetch(fid) {
   }, 5000)
 }
 
+const defaultFetchOptions = {
+  credentials: 'include',
+}
+
 export function loggedFetch(resource, options = {}) {
-  if(!resource.startsWith('http')) { 
+  options = {
+    ...defaultFetchOptions,
+    ...options,
+  }
+
+  if (options.body) {
+    options = {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+      ...options,
+    }
+  }
+
+  if (typeof options.body === 'object') {
+    options.body = JSON.stringify(options.body)
+  }
+
+  if (!resource.startsWith('http')) {
     resource = import.meta.env.VITE_BACKEND + resource
   }
+
   const fid = makeFetchId()
   const method = options.method || 'GET'
   const tag = fid + ') ' + method + ' > ' + resource
@@ -152,6 +175,7 @@ class StatusError extends Error {
 export async function goFetch(resource, options) {
   const response = await loggedFetch(resource, options)
   console.log(
+    resource,
     'response had status: ',
     response.status,
     ' and ok: ',
@@ -177,7 +201,7 @@ export async function goFetch(resource, options) {
 
 const noRetryList = [400, 401, 403, 404]
 export function retryCheck(failureCount, error) {
-  console.log('failure #', failureCount, 'with error:', error.message)
+  console.log('🏳️ Fetch failure #', failureCount, 'with error:', error.message)
   if (failureCount >= 3) {
     console.log('too many retry attempts. Cancelling.')
     return false
