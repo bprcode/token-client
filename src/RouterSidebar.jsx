@@ -28,7 +28,7 @@ function LoginPanel() {
 
   const loginMutation = useMutation({
     mutationFn: () =>
-      goFetch(import.meta.env.VITE_BACKEND + 'login', {
+      goFetch('login', {
         method: 'POST',
         body: JSON.stringify({
           email: 'shredman1212@slice.dice',
@@ -49,7 +49,7 @@ function LoginPanel() {
 
   const logoutMutation = useMutation({
     mutationFn: () =>
-      goFetch(import.meta.env.VITE_BACKEND + 'login', {
+      goFetch('login', {
         method: 'DELETE',
         credentials: 'include',
       }),
@@ -62,12 +62,9 @@ function LoginPanel() {
 
   const loginResult = useQuery({
     queryKey: ['login'],
-    queryFn: ({ queryKey }) => {
-      console.log('/me query key was: ', queryKey)
-      return goFetch(import.meta.env.VITE_BACKEND + 'me', {
+    queryFn: () => goFetch('me', {
         credentials: 'include',
-      })
-    },
+      }),
     // placeholderData: { notice: 'Placeholder value' },
   })
 

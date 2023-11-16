@@ -95,6 +95,9 @@ function expireFetch(fid) {
 }
 
 export function loggedFetch(resource, options = {}) {
+  if(!resource.startsWith('http')) { 
+    resource = import.meta.env.VITE_BACKEND + resource
+  }
   const fid = makeFetchId()
   const method = options.method || 'GET'
   const tag = fid + ') ' + method + ' > ' + resource
@@ -121,7 +124,7 @@ export function loggedFetch(resource, options = {}) {
 
   return fetch(resource, { ...options, signal: controller.signal })
     .then(result => {
-      updateFetch(fid, tag, 'resolved')
+      updateFetch(fid, tag + ` 🡒 ${result.status}`, 'resolved')
       return result
     })
     .catch(e => {

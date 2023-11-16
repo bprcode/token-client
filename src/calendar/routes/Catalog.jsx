@@ -25,7 +25,7 @@ const catalogQuery = {
   queryKey: ['catalog'],
   queryFn: () => {
     console.log('🦕 catalog queryFn called')
-    return goFetch(import.meta.env.VITE_BACKEND + 'calendars', {
+    return goFetch('calendars', {
       credentials: 'include',
     })
   },
@@ -133,11 +133,8 @@ function CalendarCard({ title, id, children }) {
 }
 
 export function Catalog() {
-  const theme = useTheme()
   const catalog = useQuery(catalogQuery)
   const loadingPane = useLoadingPane(catalog)
-
-  console.log('theme=', theme)
 
   const header = (
     <ViewHeader>
@@ -147,7 +144,7 @@ export function Catalog() {
     </ViewHeader>
   )
 
-  if (catalog.isLoading) {
+  if (catalog.isPending || (catalog.isError && catalog.isFetching)) {
     return (
       <ViewContainer>
         {header}
@@ -175,7 +172,7 @@ export function Catalog() {
     <ViewContainer>
       {header}
       <CatalogGrid>
-        {catalog.data.map((c, i) => (
+        {catalog.data?.map?.((c, i) => (
           <CalendarCard
             key={c.calendar_id}
             id={c.calendar_id}
