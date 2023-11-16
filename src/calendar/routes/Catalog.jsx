@@ -1,7 +1,7 @@
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import ShareIcon from '@mui/icons-material/Share'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useLoadingPane } from '../LoadingPane'
 import { ViewContainer } from '../ViewContainer'
@@ -10,6 +10,7 @@ import {
   Box,
   Button,
   Card,
+  CardActionArea,
   CardActions,
   CardContent,
   IconButton,
@@ -17,7 +18,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import { alpha} from '@mui/material/styles'
+import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
 
@@ -85,23 +86,47 @@ function CatalogGrid({ children }) {
 function CalendarCard({ title, id, children }) {
   const theme = useTheme()
 
+  const deleteMutation = useMutation({
+    
+  })
+
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ bgcolor: alpha(theme.palette.primary.dark, 0.3), px: 2, py: 1 }}>
-        <Typography
-          variant="h5"
-          component="div"
+    <Card
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0.25rem 0.25rem 0.35rem #0006',
+      }}
+    >
+      <CardActionArea
+        onClick={() => console.log('action area placeholder')}
+        sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}
+      >
+        <Box
           sx={{
-            position: 'relative',
-            textOverflow: 'ellipsis',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
+            bgcolor: alpha(theme.palette.primary.dark, 0.3),
+            px: 2,
+            py: 1,
+            width: '100%',
           }}
         >
-          {title}
-        </Typography>
-      </Box>
-      <CardContent sx={{ flexGrow: 1 }}>{children}</CardContent>
+          <Typography
+            variant="h5"
+            component="div"
+            sx={{
+              position: 'relative',
+              textOverflow: 'ellipsis',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {title || 'My Calendar'}
+          </Typography>
+        </Box>
+        <CardContent sx={{ flexGrow: 1, width: '100%' }}>
+          {children}
+        </CardContent>
+      </CardActionArea>
       <CardActions>
         <Button component={Link} to={`/calendar/${id}`}>
           Open
@@ -112,19 +137,19 @@ function CalendarCard({ title, id, children }) {
             aria-label="Share"
             onClick={() => console.log('share placeholder')}
           >
-            <ShareIcon sx={{ opacity: 0.8 }} />
+            <ShareIcon sx={{ opacity: 0.9 }} />
           </IconButton>
           <IconButton
             aria-label="Rename"
             onClick={() => console.log('rename placeholder')}
           >
-            <EditIcon sx={{ opacity: 0.8 }} />
+            <EditIcon sx={{ opacity: 0.9 }} />
           </IconButton>
           <IconButton
             aria-label="Delete"
             onClick={() => console.log('delete placeholder')}
           >
-            <DeleteIcon sx={{ opacity: 0.8 }} />
+            <DeleteIcon sx={{ opacity: 0.9 }} />
           </IconButton>
         </Box>
       </CardActions>
