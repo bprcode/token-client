@@ -130,6 +130,7 @@ export function loggedFetch(resource, options = {}) {
   recordFetch(fid, tag)
 
   const tid = setTimeout(() => {
+    console.log('⌚ timed out: ', tag)
     controller.abort(Error('Request timed out.'))
   }, abortTime)
 
@@ -191,7 +192,7 @@ export async function goFetch(resource, options) {
 
   if (!response.ok) {
     throw new StatusError(
-      json.error ?? 'Server responded with error.',
+      json.error ?? json.notice ?? 'Server responded with error.',
       response.status
     )
   }

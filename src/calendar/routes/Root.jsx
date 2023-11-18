@@ -6,21 +6,8 @@ import { Outlet, useNavigation } from 'react-router-dom'
 import RouterSidebar from '../../RouterSidebar'
 import { FetchDisplay } from '../../go-fetch'
 
-const debugQuery = {
-  queryKey: ['abc', 123],
-  queryFn: ({queryKey}) => new Promise(ok => {
-    console.log('how long is this gonna take?')
-    console.log('By the way, my query key was:', queryKey)
-    setTimeout(() => {
-      console.log('delay done')
-      ok('foo')
-    }, 3000)
-  })
-}
-
 export const loader = queryClient => async () => {
 
-  queryClient.fetchQuery(debugQuery)
   return 'unused'
 
   // const data = queryClient.getQueryData(debugQuery.queryKey)
@@ -39,7 +26,7 @@ export function Root() {
       <FetchDisplay />
       <Container
         className="root-container"
-        maxWidth="md"
+        maxWidth="lg"
         disableGutters
         sx={{
           height: '100vh',

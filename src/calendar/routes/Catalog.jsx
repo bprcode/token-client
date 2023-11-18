@@ -17,13 +17,14 @@ import {
   CircularProgress,
   IconButton,
   Skeleton,
+  TextField,
   Typography,
   useTheme,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const catalogQuery = {
   queryKey: ['catalog'],
@@ -41,7 +42,9 @@ export const loader =
   ({ request, params }) => {
     console.log('zoo catalog loader?')
 
-    queryClient.fetchQuery(catalogQuery)
+    queryClient
+      .fetchQuery(catalogQuery)
+      .catch(e => console.log('Catalog loader caught: ', e.message))
     return false
 
     // Don't do this. 👇 Makes direct URL navigation hang 10s+.
@@ -78,11 +81,26 @@ function CatalogGrid({ children }) {
         padding: 2,
         gap: 2,
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gridAutoRows: '200px',
+        gridAutoRows: '240px',
       }}
     >
       {children}
     </Box>
+  )
+}
+
+function CardOuter({ sx, children }) {
+  return (
+    <Card
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0.25rem 0.25rem 0.35rem #0006',
+        ...sx,
+      }}
+    >
+      {children}
+    </Card>
   )
 }
 
@@ -95,72 +113,79 @@ function CreationCard() {
     return String(Math.floor(Math.random() * 1e9))
   }
 
-  console.log('idemKey=',idemKey)
+  console.log('idemKey=', idemKey)
   const creationMutation = useMutation({
-    mutationFn: () => goFetch('calendars', {
-      method: 'POST',
-      body: {
-        key: idemKey
-      }
-    }),
-    onSuccess: (data) => {
+    mutationFn: () =>
+      goFetch('calendars', {
+        method: 'POST',
+        body: {
+          key: idemKey,
+        },
+      }),
+    onSuccess: data => {
       const newKey = randomIdemKey()
       console.log('setting new idem key to ', newKey)
       setIdemKey(newKey)
       console.log('creation returned data: ', data)
       queryClient.setQueryData(['catalog'], catalog => [...catalog, data])
-
-    }
+    },
   })
 
   return (
-    <Card
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0.25rem 0.25rem 0.35rem #0006',
-      }}
-    >
+    <CardOuter>
       <CardActionArea
         disabled={creationMutation.isPending}
         onClick={() => {
           console.log('Creation placeholder')
           creationMutation.mutate()
         }}
-        sx={{display: 'flex', flexDirection: 'column', flexGrow: 1}}
+        sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
       >
-        {creationMutation.isPending ? 
-        <CircularProgress />
-        :
-        <>
-      <AddCircleOutlineIcon sx={{width:'80px', height: '80px'}}/>
-      <Typography variant='subtitle1'>
-      New Calendar
-      </Typography>
-      </>
-        }
-        </CardActionArea>
-      
-    </Card>
+        {creationMutation.isPending ? (
+          <CircularProgress />
+        ) : (
+          <>
+            <AddCircleOutlineIcon sx={{ width: '80px', height: '80px' }} />
+            <Typography variant="subtitle1">New Calendar</Typography>
+          </>
+        )}
+      </CardActionArea>
+    </CardOuter>
   )
-
 }
 
-function CalendarCard({ title, id, etag, children }) {
+function CalendarCard({ calendar, children }) {
   const theme = useTheme()
   const queryClient = useQueryClient()
+  const [isEditing, setIsEditing] = useState(false)
+  const inputRef = useRef(null)
+
+  const updateMutation = useMutation({
+    mutationFn: updates => {
+      goFetch(`calendars/${calendar.calendar_id}`, {
+        method: 'PUT',
+        body: {
+          ...calendar,
+          ...updates,
+        },
+      })
+    },
+  })
 
   const deleteMutation = useMutation({
-    mutationFn: () => goFetch(`calendars/${id}`, {
-      method: 'DELETE',
-      body: {etag}
-    }),
-    
-    onSuccess: (data) => {
-      if(data.length) {
+    mutationFn: () =>
+      goFetch(`calendars/${calendar.calendar_id}`, {
+        method: 'DELETE',
+        body: { etag: calendar.etag },
+      }),
+
+    onSuccess: data => {
+      if (data.length) {
         // Outcome certain: The event was definitely deleted from the server.
         console.log('deleted ', data)
-        queryClient.setQueryData(['catalog'], data => data.filter(c => c.calendar_id !== id))
+        queryClient.setQueryData(['catalog'], data =>
+          data.filter(c => c.calendar_id !== calendar.calendar_id)
+        )
       } else {
         // Outcome unknown: May already be deleted, may have failed
         // due to remote update.
@@ -170,50 +195,69 @@ function CalendarCard({ title, id, etag, children }) {
     },
     onError: e => {
       console.log('Delete Error!', e.status, e.message)
-    }
+    },
   })
 
+  useEffect(() => {
+    if (isEditing) inputRef.current?.focus()
+  }, [isEditing])
+
   return (
-    <Card
+    <CardOuter
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '0.25rem 0.25rem 0.35rem #0006',
         opacity: deleteMutation.isPending ? 0.3 : undefined,
       }}
     >
-        <Box
-        component={Link} to={'/calendars/'+id}
+      <Box
+        component={isEditing ? 'div' : Link}
+        to={'/calendars/' + calendar.calendar_id}
+        sx={{
+          color: 'inherit',
+          textDecoration: 'none',
+          bgcolor: alpha(theme.palette.primary.dark, 0.3),
+          '&:hover': {
+            bgcolor: alpha(theme.palette.primary.dark, 0.7),
+          },
+        }}
+      >
+        {/* <Typography
+          variant="h5"
+          component="div"
           sx={{
-            color: 'inherit',
-            textDecoration: 'none',
-            bgcolor: alpha(theme.palette.primary.dark, 0.3),
-            px: 2,
-            py: 1,
-            width: '100%',
-            '&:hover': {
-              bgcolor: alpha(theme.palette.primary.dark, 0.7),
-            }
+            position: 'relative',
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
           }}
         >
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{
-              position: 'relative',
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {title || 'Untitled'}
-          </Typography>
-        </Box>
-        <CardContent sx={{ flexGrow: 1, width: '100%' }}>
-          {children}
-        </CardContent>
+          {title || 'Untitled'}
+        </Typography> */}
+        <TextField
+          inputRef={inputRef}
+          sx={{
+            width: '100%',
+          }}
+          defaultValue={calendar.summary || 'Untitled'}
+          inputProps={{ readOnly: !isEditing }}
+          onClick={e => {
+            if (isEditing) {
+              e.preventDefault()
+              console.log('TextField preventDefault')
+            }
+          }}
+          onChange={e => {
+            console.log('change: ', e.target.value)
+          }}
+          onBlur={e => {
+            console.log('☁️ text field blur / ', e.target.value)
+            updateMutation.mutate({ summary: e.target.value })
+            setIsEditing(false)
+          }}
+        />
+      </Box>
+      <CardContent sx={{ flexGrow: 1, width: '100%' }}>{children}</CardContent>
       <CardActions>
-        <Button component={Link} to={`/calendars/${id}`}>
+        <Button component={Link} to={`/calendars/${calendar.id}`}>
           Open
         </Button>
 
@@ -226,7 +270,10 @@ function CalendarCard({ title, id, etag, children }) {
           </IconButton>
           <IconButton
             aria-label="Rename"
-            onClick={() => console.log('rename placeholder')}
+            onClick={() => {
+              console.log('renaming...')
+              setIsEditing(true)
+            }}
           >
             <EditIcon sx={{ opacity: 0.9 }} />
           </IconButton>
@@ -239,7 +286,7 @@ function CalendarCard({ title, id, etag, children }) {
           </IconButton>
         </Box>
       </CardActions>
-    </Card>
+    </CardOuter>
   )
 }
 
@@ -284,24 +331,19 @@ export function Catalog() {
       {header}
       <CatalogGrid>
         {catalog.data?.map?.((c, i) => (
-          <CalendarCard
-            key={c.calendar_id}
-            id={c.calendar_id}
-            etag={c.etag}
-            title={c.summary}
-          >
+          <CalendarCard key={c.calendar_id} calendar={c}>
             <Typography variant="body2" sx={{ opacity: 0.5 }}>
               Created: {dayjs(c.created).from(now)}
               <br />
               Updated: {dayjs(c.updated).from(now)}
               <br />
-              etag: {c.etag}<br />
+              etag: {c.etag}
+              <br />
             </Typography>
           </CalendarCard>
         ))}
         <CreationCard />
       </CatalogGrid>
-      
     </ViewContainer>
   )
 }

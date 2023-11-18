@@ -1,5 +1,4 @@
 import HourglassTopIcon from '@mui/icons-material/HourglassTop'
-import LogoutIcon from '@mui/icons-material/Logout'
 import {
   Box,
   Divider,
@@ -9,113 +8,14 @@ import {
   Paper,
   Typography,
   useTheme,
-  Button,
-  Avatar,
-  IconButton,
-  CircularProgress,
 } from '@mui/material'
 import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
 import hourglassPng from './assets/hourglass2.png'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import { CalendarFolder } from './CalendarFolder'
-import { goFetch } from './go-fetch'
 import { Link } from 'react-router-dom'
-
-function LoginPanel() {
-  const queryClient = useQueryClient()
-  const theme = useTheme()
-
-  const loginMutation = useMutation({
-    mutationFn: () =>
-      goFetch('login', {
-        method: 'POST',
-        body: {
-          email: 'shredman1212@slice.dice',
-          password: 'oozy123',
-        },
-      }),
-    retry: 2,
-    onSuccess: data => {
-      console.log('mutation success with data: ', data)
-      queryClient.resetQueries()
-      queryClient.setQueryData(['login'], data)
-    },
-  })
-
-  const logoutMutation = useMutation({
-    mutationFn: () =>
-      goFetch('login', {
-        method: 'DELETE',
-      }),
-    retry: 2,
-    onSuccess: data => {
-      console.log('logout mutation yielded ', data)
-      queryClient.setQueriesData({}, {})
-    },
-  })
-
-  const loginResult = useQuery({
-    queryKey: ['login'],
-    queryFn: () => goFetch('me'),
-    // placeholderData: { notice: 'Placeholder value' },
-  })
-
-  let interactions = (
-    <Box sx={{ mx: 'auto' }}>
-      <CircularProgress size="1.75rem" />
-    </Box>
-  )
-  if (!loginMutation.isPending && !logoutMutation.isPending) {
-    interactions = loginResult.data?.name ? (
-      <>
-        <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 1, ml: 1 }}>
-          {loginResult.data.name[0]}
-        </Avatar>
-        <span
-          style={{
-            overflow: 'hidden',
-            flexGrow: 1,
-            whiteSpace: 'nowrap',
-            textOverflow: 'ellipsis',
-            verticalAlign: 'center',
-          }}
-        >
-          {loginResult.data.name}
-        </span>
-        <IconButton onClick={logoutMutation.mutate}>
-          <LogoutIcon />
-        </IconButton>
-      </>
-    ) : (
-      <Button variant="contained" onClick={loginMutation.mutate}>
-        Login Sample User
-      </Button>
-    )
-  }
-
-  return (
-    <List>
-      <ListItem
-        sx={{
-          backgroundColor: '#008',
-        }}
-        disablePadding
-      >
-        <Box
-          sx={{
-            width: '100%',
-            display: 'flex',
-            height: '2.5rem',
-            alignItems: 'center',
-          }}
-        >
-          {interactions}
-        </Box>
-      </ListItem>
-    </List>
-  )
-}
+import { HeartbeatPanel } from './HeartbeatPanel'
 
 function NavSection() {
   return (
@@ -186,7 +86,7 @@ export default function RouterSidebar({ width = '240px', expand }) {
     <>
       <HourglassHeader />
       <NavSection />
-      <LoginPanel />
+      <HeartbeatPanel />
     </>
   )
 

@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  QueryCache,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query'
@@ -12,6 +13,7 @@ import RouterError from './RouterError'
 import {Root, loader as rootLoader}  from './routes/Root'
 import {Catalog, loader as catalogLoader} from './routes/Catalog'
 import { Calendar, loader as calendarLoader } from './routes/Calendar'
+import { LoginPage } from './routes/Login'
 import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
@@ -24,7 +26,17 @@ const queryClient = new QueryClient({
     mutations: {
       retry: retryCheck
     }
-  }
+  },
+  queryCache: new QueryCache({
+    onError: error => {
+      console.log('🌍 global cache error handler:', error.status, error.message)
+      if(error.message?.includes('No identification')) {
+        console.log('❔ No ID')
+        queryClient.setQueryData(['heartbeat'], null)
+        queryClient.invalidateQueries({ queryKey: ['heartbeat']})
+      }
+    }
+  })
 })
 
 const router = createBrowserRouter([
@@ -44,6 +56,10 @@ const router = createBrowserRouter([
           {
             path: 'foo',
             element: <div>Foo Element</div>,
+          },
+          {
+            path: 'login',
+            element: <LoginPage />,
           },
           {
             path: 'catalog',
