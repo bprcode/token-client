@@ -27,17 +27,78 @@ import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import debounce from '../../debounce.mjs'
 
-const catalogQuery = {
-  queryKey: ['catalog'],
-  queryFn: () => {
-    console.log('🦕 catalog queryFn called')
-    return goFetch('calendars', {
-      credentials: 'include',
-    }).then(x => {
-      console.log('🤷‍♂️ placeholder -- reconcile data here')
-      return x
-    })
-  },
+function makeCatalogQuery(queryClient) {
+  makeCatalogQuery.query ??= {
+    queryKey: ['catalog'],
+    queryFn: () => {
+      console.log('🦕 catalog queryFn called')
+      return goFetch('calendars', {
+        credentials: 'include',
+      }).then(fetched => {
+        const local = queryClient.getQueryData(['catalog']) ?? []
+        return reconcileCatalog({ local: local, server: fetched })
+      })
+    },
+  }
+  return makeCatalogQuery.query
+}
+
+// debug -- WIP, not fully implemented, check delete/create collision logic
+// debug -- still needs ghost delete flag support
+function reconcileCatalog({ local, server }) {
+  const chillTime = 60 * 1000
+  const merged = []
+  const serverMap = new Map(
+    server.map(calendar => [calendar.calendar_id, calendar])
+  )
+  const localMap = new Map(
+    local.map(calendar => [calendar.calendar_id, calendar])
+  )
+
+  console.log('mapified local:', localMap)
+  console.log('mapified server:', serverMap)
+
+  const now = Date.now()
+
+  for (const c of local) {
+    if (c.revised && now - c.revised < chillTime) {
+      console.log('treating', c.calendar_id, 'as hot 🔥')
+
+      const updatedEtag = serverMap.get(c.calendar_id)?.etag || 'missing etag'
+      merged.push({
+        ...c,
+        etag: updatedEtag,
+      })
+    } else {
+      console.log('treating', c.calendar_id, 'as cold 🧊')
+
+      if (!serverMap.has(c.calendar_id)) {
+        console.log(c.calendar_id, 'appears to have been remote-deleted ✖️')
+        continue
+      }
+
+      const s = serverMap.get(c.calendar_id)
+
+      if (c.etag === s.etag) {
+        console.log(`etag matches (${c.etag}). Keeping local copy.`)
+        merged.push(c)
+      } else {
+        console.log(
+          `etag mismatch (${c.etag} / ${s.etag}). ` + `Yielding to server copy.`
+        )
+        merged.push(s)
+      }
+    }
+  }
+
+  for (const s of server) {
+    if (!localMap.has(s.calendar_id)) {
+      console.log('local state was missing ', s.calendar_id, ' -- adding.')
+      merged.push(s)
+    }
+  }
+
+  return merged
 }
 
 // debug -- can probably choose await or not here?
@@ -45,8 +106,9 @@ export const loader =
   queryClient =>
   ({ request, params }) => {
     queryClient
-      .fetchQuery(catalogQuery)
+      .fetchQuery(makeCatalogQuery(queryClient))
       .catch(e => console.log('Catalog loader caught: ', e.message))
+
     return false
 
     // Don't do this. 👇 Makes direct URL navigation hang 10s+.
@@ -180,20 +242,24 @@ function CalendarCard({ calendar, children }) {
       )
       // Request change
       return goFetch(`timeout`, {
-      // return goFetch(`calendars/${calendar.calendar_id}`, {
+        // return goFetch(`calendars/${calendar.calendar_id}`, {
         method: 'PUT',
         body: updated,
       })
     },
-    onError: (_err, variables, _context) =>{
+    onError: (_err, variables, _context) => {
       console.log(
         'updateMutation error handler, responsibility for restoring ' +
           'revision tag goes here'
       )
       queryClient.setQueryData(['catalog'], data =>
-          data.map(x => (x.calendar_id !== calendar.calendar_id ? x : {...x, revised: variables.revised}))
+        data.map(x =>
+          x.calendar_id !== calendar.calendar_id
+            ? x
+            : { ...x, revised: variables.revised }
         )
-    }
+      )
+    },
   })
 
   const deleteMutation = useMutation({
@@ -271,8 +337,9 @@ function CalendarCard({ calendar, children }) {
               console.log('TextField preventDefault')
             }
           }}
-          onChange={
-            debounce('summary update', e => {
+          onChange={debounce(
+            'summary update',
+            e => {
               console.log('change: ', e.target.value)
 
               queryClient.setQueryData(['catalog'], data =>
@@ -282,11 +349,15 @@ function CalendarCard({ calendar, children }) {
                     : { ...c, summary: e.target.value, revised: Date.now() }
                 )
               )
-            })
-          }
+            },
+            350
+          )}
           onBlur={e => {
             console.log('☁️ text field blur / ', e.target.value)
-            updateMutation.mutate({ summary: e.target.value, revised: calendar.revised })
+            updateMutation.mutate({
+              summary: e.target.value,
+              revised: calendar.revised,
+            })
             setIsEditing(false)
           }}
         />
@@ -326,8 +397,13 @@ function CalendarCard({ calendar, children }) {
   )
 }
 
+function useCatalogQuery() {
+  const queryClient = useQueryClient()
+  return useQuery(makeCatalogQuery(queryClient))
+}
+
 export function Catalog() {
-  const catalog = useQuery(catalogQuery)
+  const catalog = useCatalogQuery()
   const loadingPane = useLoadingPane(catalog)
 
   const header = (
