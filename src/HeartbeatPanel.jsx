@@ -21,6 +21,7 @@ export function HeartbeatPanel() {
   const loginMutation = useMutation({
     mutationFn: () =>
       goFetch('login', {
+        timeout: 5000,
         method: 'POST',
         body: {
           email: 'shredman1212@slice.dice',
@@ -38,6 +39,7 @@ export function HeartbeatPanel() {
   const logoutMutation = useMutation({
     mutationFn: () =>
       goFetch('login', {
+        timeout: 5000,
         method: 'DELETE',
       }),
     retry: 2,

@@ -124,7 +124,7 @@ export function loggedFetch(resource, options = {}) {
   const fid = makeFetchId()
   const method = options.method || 'GET'
   const tag = fid + ') ' + method + ' > ' + resource
-  const abortTime = 4000
+  const defaultTimeout = 4000
   const controller = new AbortController()
 
   recordFetch(fid, tag)
@@ -132,7 +132,7 @@ export function loggedFetch(resource, options = {}) {
   const tid = setTimeout(() => {
     console.log('⌚ timed out: ', tag)
     controller.abort(Error('Request timed out.'))
-  }, abortTime)
+  }, options.timeout || defaultTimeout)
 
   if (options.signal) {
     options.signal.addEventListener(
