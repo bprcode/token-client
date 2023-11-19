@@ -57,10 +57,8 @@ export function HeartbeatPanel() {
         }
         throw e
       }),
-    // placeholderData: { notice: 'Placeholder value' },
   })
 
-  console.log('💓 heartbeat panel rendering')
   let interactions = (
     <Box sx={{ mx: 'auto' }}>
       <CircularProgress size="1.75rem" />

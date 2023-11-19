@@ -25,6 +25,7 @@ import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
+import debounce from '../../debounce.mjs'
 
 const catalogQuery = {
   queryKey: ['catalog'],
@@ -32,6 +33,9 @@ const catalogQuery = {
     console.log('🦕 catalog queryFn called')
     return goFetch('calendars', {
       credentials: 'include',
+    }).then(x => {
+      console.log('🤷‍♂️ placeholder -- reconcile data here')
+      return x
     })
   },
 }
@@ -40,8 +44,6 @@ const catalogQuery = {
 export const loader =
   queryClient =>
   ({ request, params }) => {
-    console.log('zoo catalog loader?')
-
     queryClient
       .fetchQuery(catalogQuery)
       .catch(e => console.log('Catalog loader caught: ', e.message))
@@ -162,14 +164,36 @@ function CalendarCard({ calendar, children }) {
 
   const updateMutation = useMutation({
     mutationFn: updates => {
-      goFetch(`calendars/${calendar.calendar_id}`, {
+      const updated = { ...calendar, ...updates }
+
+      // Show optimism
+      const optimism = {
+        ...updated,
+        etag: 'temporary',
+        // Clearing the 'revised' field presumes
+        // that the change will be accepted.
+        // It should be replaced if the fetch fails.
+        revised: undefined,
+      }
+      queryClient.setQueryData(['catalog'], data =>
+        data.map(x => (x.calendar_id !== calendar.calendar_id ? x : optimism))
+      )
+      // Request change
+      return goFetch(`timeout`, {
+      // return goFetch(`calendars/${calendar.calendar_id}`, {
         method: 'PUT',
-        body: {
-          ...calendar,
-          ...updates,
-        },
+        body: updated,
       })
     },
+    onError: (_err, variables, _context) =>{
+      console.log(
+        'updateMutation error handler, responsibility for restoring ' +
+          'revision tag goes here'
+      )
+      queryClient.setQueryData(['catalog'], data =>
+          data.map(x => (x.calendar_id !== calendar.calendar_id ? x : {...x, revised: variables.revised}))
+        )
+    }
   })
 
   const deleteMutation = useMutation({
@@ -233,6 +257,8 @@ function CalendarCard({ calendar, children }) {
           {title || 'Untitled'}
         </Typography> */}
         <TextField
+          // Key is required to prevent browser retention of stale input value
+          key={calendar.etag + (calendar.optimistic ? '-temporary' : '')}
           inputRef={inputRef}
           sx={{
             width: '100%',
@@ -245,12 +271,22 @@ function CalendarCard({ calendar, children }) {
               console.log('TextField preventDefault')
             }
           }}
-          onChange={e => {
-            console.log('change: ', e.target.value)
-          }}
+          onChange={
+            debounce('summary update', e => {
+              console.log('change: ', e.target.value)
+
+              queryClient.setQueryData(['catalog'], data =>
+                data.map(c =>
+                  c.calendar_id !== calendar.calendar_id
+                    ? c
+                    : { ...c, summary: e.target.value, revised: Date.now() }
+                )
+              )
+            })
+          }
           onBlur={e => {
             console.log('☁️ text field blur / ', e.target.value)
-            updateMutation.mutate({ summary: e.target.value })
+            updateMutation.mutate({ summary: e.target.value, revised: calendar.revised })
             setIsEditing(false)
           }}
         />
@@ -339,6 +375,11 @@ export function Catalog() {
               <br />
               etag: {c.etag}
               <br />
+              &ldquo;{c.summary}&rdquo;
+              <br />
+              {c.revised && (
+                <span style={{ color: 'orange' }}>Revised: {c.revised}</span>
+              )}
             </Typography>
           </CalendarCard>
         ))}

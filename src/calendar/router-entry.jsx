@@ -1,5 +1,6 @@
 import React from 'react'
 import {
+  MutationCache,
   QueryCache,
   QueryClient,
   QueryClientProvider,
@@ -18,6 +19,15 @@ import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
 
+const globalExpiryHandler = error => {
+  console.log('🌍 global cache error handler:', error.status, error.message)
+      if(error.message?.includes('No identification')) {
+        console.log('❔ No ID')
+        queryClient.setQueryData(['heartbeat'], null)
+        queryClient.invalidateQueries({ queryKey: ['heartbeat']})
+      }
+    }
+    
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -28,14 +38,10 @@ const queryClient = new QueryClient({
     }
   },
   queryCache: new QueryCache({
-    onError: error => {
-      console.log('🌍 global cache error handler:', error.status, error.message)
-      if(error.message?.includes('No identification')) {
-        console.log('❔ No ID')
-        queryClient.setQueryData(['heartbeat'], null)
-        queryClient.invalidateQueries({ queryKey: ['heartbeat']})
-      }
-    }
+    onError: globalExpiryHandler
+  }),
+  mutationCache: new MutationCache({
+    onError: globalExpiryHandler
   })
 })
 
