@@ -25,7 +25,7 @@ import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import debounce from '../../debounce.mjs'
+import { leadingDebounce } from '../../debounce.mjs'
 
 function makeCatalogQuery(queryClient) {
   makeCatalogQuery.query ??= {
@@ -62,7 +62,7 @@ function reconcileCatalog({ local, server }) {
 
   for (const c of local) {
     if (c.revised && now - c.revised < chillTime) {
-      console.log('treating', c.calendar_id, 'as hot 🔥')
+      console.log('treating', c.calendar_id, 'as hot 🔥. Insisting...')
 
       const updatedEtag = serverMap.get(c.calendar_id)?.etag || 'missing etag'
       merged.push({
@@ -70,21 +70,23 @@ function reconcileCatalog({ local, server }) {
         etag: updatedEtag,
       })
     } else {
-      console.log('treating', c.calendar_id, 'as cold 🧊')
+      const pre = 'treating ' + c.calendar_id + ' as cold 🧊'
 
       if (!serverMap.has(c.calendar_id)) {
-        console.log(c.calendar_id, 'appears to have been remote-deleted ✖️')
+        console.log(pre, '...appears to have been remote-deleted ✖️')
         continue
       }
 
       const s = serverMap.get(c.calendar_id)
 
       if (c.etag === s.etag) {
-        console.log(`etag matches (${c.etag}). Keeping local copy.`)
+        console.log(pre, `...etag matches (${c.etag}). Keeping local copy.`)
         merged.push(c)
       } else {
         console.log(
-          `etag mismatch (${c.etag} / ${s.etag}). ` + `Yielding to server copy.`
+          pre,
+          `...etag mismatch (${c.etag} / ${s.etag}). ` +
+            `Yielding to server copy.`
         )
         merged.push(s)
       }
@@ -238,10 +240,11 @@ function CalendarCard({ calendar, children }) {
         revised: undefined,
       }
       queryClient.setQueryData(['catalog'], data =>
-        data.map(x => (x.calendar_id !== calendar.calendar_id ? x : optimism))
+        data.map(x => (x.calendar_id === calendar.calendar_id ? optimism : x))
       )
       // Request change
       return goFetch(`timeout`, {
+        timeout: 250,
         // return goFetch(`calendars/${calendar.calendar_id}`, {
         method: 'PUT',
         body: updated,
@@ -337,16 +340,16 @@ function CalendarCard({ calendar, children }) {
               console.log('TextField preventDefault')
             }
           }}
-          onChange={debounce(
+          onChange={leadingDebounce(
             'summary update',
             e => {
               console.log('change: ', e.target.value)
 
               queryClient.setQueryData(['catalog'], data =>
                 data.map(c =>
-                  c.calendar_id !== calendar.calendar_id
-                    ? c
-                    : { ...c, summary: e.target.value, revised: Date.now() }
+                  c.calendar_id === calendar.calendar_id
+                    ? { ...c, summary: e.target.value, revised: Date.now() }
+                    : c
                 )
               )
             },
