@@ -36,7 +36,11 @@ function makeCatalogQuery(queryClient) {
         credentials: 'include',
       }).then(fetched => {
         const local = queryClient.getQueryData(['catalog']) ?? []
-        return reconcileCatalog({ local: local, server: fetched })
+        return reconcile({
+          localData: local,
+          serverData: fetched,
+          key: 'calendar_id',
+        })
       })
     },
   }
@@ -45,58 +49,55 @@ function makeCatalogQuery(queryClient) {
 
 // debug -- WIP, not fully implemented, check delete/create collision logic
 // debug -- still needs ghost delete flag support
-function reconcileCatalog({ local, server }) {
+function reconcile({ localData, serverData, key }) {
   const chillTime = 60 * 1000
   const merged = []
-  const serverMap = new Map(
-    server.map(calendar => [calendar.calendar_id, calendar])
-  )
-  const localMap = new Map(
-    local.map(calendar => [calendar.calendar_id, calendar])
-  )
+  const serverMap = new Map(serverData.map(data => [data[key], data]))
+  const localMap = new Map(localData.map(data => [data[key], data]))
 
   console.log('mapified local:', localMap)
   console.log('mapified server:', serverMap)
 
   const now = Date.now()
 
-  for (const c of local) {
-    if (c.revised && now - c.revised < chillTime) {
-      console.log('treating', c.calendar_id, 'as hot 🔥. Insisting...')
+  for (const local of localData) {
+    if (local.revised && now - local.revised < chillTime) {
+      console.log('treating', local[key], 'as hot 🔥. Insisting...')
 
-      const updatedEtag = serverMap.get(c.calendar_id)?.etag || 'missing etag'
+      // Could be missing if it has been deleted remotely during local update:
+      const updatedEtag = serverMap.get(local[key])?.etag || 'missing etag'
       merged.push({
-        ...c,
+        ...local,
         etag: updatedEtag,
       })
     } else {
-      const pre = 'treating ' + c.calendar_id + ' as cold 🧊'
+      const pre = 'treating ' + local[key] + ' as cold 🧊'
 
-      if (!serverMap.has(c.calendar_id)) {
+      if (!serverMap.has(local[key])) {
         console.log(pre, '...appears to have been remote-deleted ✖️')
         continue
       }
 
-      const s = serverMap.get(c.calendar_id)
+      const remote = serverMap.get(local[key])
 
-      if (c.etag === s.etag) {
-        console.log(pre, `...etag matches (${c.etag}). Keeping local copy.`)
-        merged.push(c)
+      if (local.etag === remote.etag) {
+        console.log(pre, `...etag matches (${local.etag}). Keeping local copy.`)
+        merged.push(local)
       } else {
         console.log(
           pre,
-          `...etag mismatch (${c.etag} / ${s.etag}). ` +
+          `...etag mismatch (${local.etag} / ${remote.etag}). ` +
             `Yielding to server copy.`
         )
-        merged.push(s)
+        merged.push(remote)
       }
     }
   }
 
-  for (const s of server) {
-    if (!localMap.has(s.calendar_id)) {
-      console.log('local state was missing ', s.calendar_id, ' -- adding.')
-      merged.push(s)
+  for (const remote of serverData) {
+    if (!localMap.has(remote[key])) {
+      console.log('local state was missing ', remote[key], ' -- adding.')
+      merged.push(remote)
     }
   }
 
