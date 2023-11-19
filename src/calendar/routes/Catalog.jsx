@@ -50,7 +50,7 @@ function makeCatalogQuery(queryClient) {
 // debug -- WIP, not fully implemented, check delete/create collision logic
 // debug -- still needs ghost delete flag support
 function reconcile({ localData, serverData, key }) {
-  const chillTime = 60 * 1000
+  const chillTime = 5 * 1000
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
   const localMap = new Map(localData.map(data => [data[key], data]))
@@ -252,6 +252,8 @@ function CalendarCard({ calendar, children }) {
       })
     },
     onError: (_err, variables, _context) => {
+      // Should restore to a state exactly like it was never transmitted
+      // Need to cancel outgoing requests to avoid clobbering this?
       console.log(
         'updateMutation error handler, responsibility for restoring ' +
           'revision tag goes here'
@@ -260,7 +262,7 @@ function CalendarCard({ calendar, children }) {
         data.map(x =>
           x.calendar_id !== calendar.calendar_id
             ? x
-            : { ...x, revised: variables.revised }
+            : { ...x, revised: variables.revised, etag: variables.etag }
         )
       )
     },
@@ -361,6 +363,7 @@ function CalendarCard({ calendar, children }) {
             updateMutation.mutate({
               summary: e.target.value,
               revised: calendar.revised,
+              etag: calendar.etag,
             })
             setIsEditing(false)
           }}
