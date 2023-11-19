@@ -129,6 +129,12 @@ export function loggedFetch(resource, options = {}) {
 
   recordFetch(fid, tag)
 
+  if (options.signal?.aborted) {
+    updateFetch(fid, tag + ' already cancelled', 'aborted')
+    expireFetch(fid, tag)
+    throw new StatusError('Signal already cancelled', 'aborted')
+  }
+
   const tid = setTimeout(() => {
     console.log('⌚ timed out: ', tag)
     controller.abort(Error('Request timed out.'))
@@ -153,12 +159,13 @@ export function loggedFetch(resource, options = {}) {
     })
     .catch(e => {
       const isTimeout = e.message.endsWith('timed out.')
+      const statusString = isTimeout ? 'timed out' : 'failed'
       updateFetch(
         fid,
         tag + ' ' + e.message,
-        isTimeout ? 'timed out' : 'failed'
+        statusString
       )
-      throw e
+      throw new StatusError(e.message, statusString)
     })
     .finally(() => {
       expireFetch(fid, tag)
@@ -202,7 +209,18 @@ export async function goFetch(resource, options) {
 
 const noRetryList = [400, 401, 403, 404]
 export function retryCheck(failureCount, error) {
-  console.log('🏳️ Fetch failure #', failureCount, 'with error:', error.message)
+  console.log(
+    '🏳️ Fetch failure #',
+    failureCount,
+    'with error:',
+    error.message,
+    'and status: ',
+    error.status
+  )
+  if(error.status === 'aborted') {
+    console.log('🟨 Fetch aborted. Will not retry.')
+    return false
+  }
   if (failureCount >= 3) {
     console.log('too many retry attempts. Cancelling.')
     return false

@@ -227,42 +227,75 @@ function CalendarCard({ calendar, children }) {
   const [isEditing, setIsEditing] = useState(false)
   const inputRef = useRef(null)
 
+  const updateRef = useRef(null)
+
   const updateMutation = useMutation({
-    mutationFn: updates => {
-      const updated = { ...calendar, ...updates }
+    onMutate: variables => {
+      
+      // Priming:
+      const updated = { ...calendar, ...variables }
 
       // Show optimism
       const optimism = {
         ...updated,
-        etag: 'temporary',
         // Clearing the 'revised' field presumes
         // that the change will be accepted.
         // It should be replaced if the fetch fails.
         revised: undefined,
       }
+
       queryClient.setQueryData(['catalog'], data =>
         data.map(x => (x.calendar_id === calendar.calendar_id ? optimism : x))
       )
+
+      variables.controller = new AbortController()
+      
+      // updateRef.current = 'old'
+      updateRef.current?.abort()
+      updateRef.current = variables.controller
+
+      return {
+        revised: calendar.revised,
+      }
+    },
+    mutationFn: variables => {
+      console.log('mutationFn variables were:', variables)
+      const updated = { ...calendar, ...variables, controller: undefined }
+      
+      if (variables.signal) {
+        console.log(`🛑 Shouldn't be using aborted signal`)
+      }
       // Request change
       return goFetch(`timeout`, {
-        timeout: 250,
+        signal: variables.controller.signal,
+        timeout: 2000,
         // return goFetch(`calendars/${calendar.calendar_id}`, {
         method: 'PUT',
         body: updated,
       })
     },
-    onError: (_err, variables, _context) => {
+    onError: (_err, variables, context) => {
+      console.log(`here's what I got for context: `, context)
+      console.log(`here's what I got for variables: `, variables)
       // Should restore to a state exactly like it was never transmitted
       // Need to cancel outgoing requests to avoid clobbering this?
-      console.log(
-        'updateMutation error handler, responsibility for restoring ' +
-          'revision tag goes here'
-      )
+      
+      if(variables.controller.signal.aborted) {
+        console.log('🪭 signal was aborted; skipping reheat.')
+        return
+      }
+
       queryClient.setQueryData(['catalog'], data =>
-        data.map(x =>
-          x.calendar_id !== calendar.calendar_id
-            ? x
-            : { ...x, revised: variables.revised, etag: variables.etag }
+        data.map(c =>
+          c.calendar_id !== calendar.calendar_id
+            ? c
+            : {
+                ...c,
+                etag: context.etag,
+                // In case of in-flight revision,
+                // take the more recent timestamp.
+                revised: Math.max(c.revised || 0, context.revised || 0),
+              }
         )
       )
     },
@@ -330,7 +363,7 @@ function CalendarCard({ calendar, children }) {
         </Typography> */}
         <TextField
           // Key is required to prevent browser retention of stale input value
-          key={calendar.etag + (calendar.optimistic ? '-temporary' : '')}
+          key={calendar.etag}
           inputRef={inputRef}
           sx={{
             width: '100%',
@@ -362,8 +395,6 @@ function CalendarCard({ calendar, children }) {
             console.log('☁️ text field blur / ', e.target.value)
             updateMutation.mutate({
               summary: e.target.value,
-              revised: calendar.revised,
-              etag: calendar.etag,
             })
             setIsEditing(false)
           }}
