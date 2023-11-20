@@ -231,13 +231,13 @@ function CalendarCard({ calendar, children }) {
 
   const updateMutation = useMutation({
     onMutate: variables => {
-      
-      // Priming:
-      const updated = { ...calendar, ...variables }
+      // Compose the PUT request. Mutate the variables object,
+      // so these changes are available to mutationFn:
+      Object.assign(variables, { ...calendar, ...variables })
 
       // Show optimism
       const optimism = {
-        ...updated,
+        ...variables,
         // Clearing the 'revised' field presumes
         // that the change will be accepted.
         // It should be replaced if the fetch fails.
@@ -249,8 +249,8 @@ function CalendarCard({ calendar, children }) {
       )
 
       variables.controller = new AbortController()
-      
-      // updateRef.current = 'old'
+
+      // updateRef.current = "old" controller
       updateRef.current?.abort()
       updateRef.current = variables.controller
 
@@ -259,28 +259,19 @@ function CalendarCard({ calendar, children }) {
       }
     },
     mutationFn: variables => {
-      console.log('mutationFn variables were:', variables)
-      const updated = { ...calendar, ...variables, controller: undefined }
-      
-      if (variables.signal) {
-        console.log(`🛑 Shouldn't be using aborted signal`)
-      }
-      // Request change
       return goFetch(`timeout`, {
         signal: variables.controller.signal,
         timeout: 2000,
         // return goFetch(`calendars/${calendar.calendar_id}`, {
         method: 'PUT',
-        body: updated,
+        body: { ...variables, controller: undefined },
       })
     },
     onError: (_err, variables, context) => {
-      console.log(`here's what I got for context: `, context)
-      console.log(`here's what I got for variables: `, variables)
       // Should restore to a state exactly like it was never transmitted
       // Need to cancel outgoing requests to avoid clobbering this?
-      
-      if(variables.controller.signal.aborted) {
+
+      if (variables.controller.signal.aborted) {
         console.log('🪭 signal was aborted; skipping reheat.')
         return
       }
@@ -291,7 +282,6 @@ function CalendarCard({ calendar, children }) {
             ? c
             : {
                 ...c,
-                etag: context.etag,
                 // In case of in-flight revision,
                 // take the more recent timestamp.
                 revised: Math.max(c.revised || 0, context.revised || 0),
@@ -361,44 +351,56 @@ function CalendarCard({ calendar, children }) {
         >
           {title || 'Untitled'}
         </Typography> */}
-        <TextField
-          // Key is required to prevent browser retention of stale input value
-          key={calendar.etag}
-          inputRef={inputRef}
-          sx={{
-            width: '100%',
-          }}
-          defaultValue={calendar.summary || 'Untitled'}
-          inputProps={{ readOnly: !isEditing }}
-          onClick={e => {
-            if (isEditing) {
-              e.preventDefault()
-              console.log('TextField preventDefault')
-            }
-          }}
-          onChange={leadingDebounce(
-            'summary update',
-            e => {
-              console.log('change: ', e.target.value)
+        {/* {!isEditing ? ( */}
 
-              queryClient.setQueryData(['catalog'], data =>
-                data.map(c =>
-                  c.calendar_id === calendar.calendar_id
-                    ? { ...c, summary: e.target.value, revised: Date.now() }
-                    : c
-                )
-              )
-            },
-            350
-          )}
-          onBlur={e => {
-            console.log('☁️ text field blur / ', e.target.value)
-            updateMutation.mutate({
-              summary: e.target.value,
-            })
-            setIsEditing(false)
+        <Box
+          sx={{
+            height: '4rem',
+            textOverflow: 'ellipsis',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+
+            px: isEditing ? 0 : '12px',
+            pt: isEditing ? 0 : '25px',
           }}
-        />
+        >
+          {true && !isEditing ? (
+            <Box sx={{}}>{calendar.summary}</Box>
+          ) : (
+            <TextField
+              variant="filled"
+              key={calendar.calendar_id + isEditing}
+              inputRef={inputRef}
+              defaultValue={calendar.summary || 'Untitled'}
+              onClick={e => {
+                if (isEditing) {
+                  e.preventDefault()
+                  console.log('TextField preventDefault')
+                }
+              }}
+              onChange={leadingDebounce(
+                'summary update',
+                e => {
+                  console.log('⚽ debounce landed')
+                  queryClient.setQueryData(['catalog'], data =>
+                    data.map(c =>
+                      c.calendar_id === calendar.calendar_id
+                        ? { ...c, summary: e.target.value, revised: Date.now() }
+                        : c
+                    )
+                  )
+                },
+                350
+              )}
+              onBlur={e => {
+                updateMutation.mutate({
+                  summary: e.target.value,
+                })
+                setIsEditing(false)
+              }}
+            />
+          )}
+        </Box>
       </Box>
       <CardContent sx={{ flexGrow: 1, width: '100%' }}>{children}</CardContent>
       <CardActions>
