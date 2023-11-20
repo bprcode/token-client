@@ -148,7 +148,7 @@ function CatalogGrid({ children }) {
         padding: 2,
         gap: 2,
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gridAutoRows: '240px',
+        gridAutoRows: '280px',
       }}
     >
       {children}
@@ -355,17 +355,23 @@ function CalendarCard({ calendar, children }) {
 
         <Box
           sx={{
+            // width: '100%',
             height: '4rem',
-            textOverflow: 'ellipsis',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
 
             px: isEditing ? 0 : '12px',
             pt: isEditing ? 0 : '25px',
           }}
         >
           {true && !isEditing ? (
-            <Box sx={{}}>{calendar.summary}</Box>
+            <Box
+              sx={{
+                textOverflow: 'ellipsis',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {calendar.summary}
+            </Box>
           ) : (
             <TextField
               variant="filled"

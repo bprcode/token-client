@@ -24,11 +24,10 @@ export function HeartbeatPanel() {
         timeout: 5000,
         method: 'POST',
         body: {
-          email: 'shredman1212@slice.dice',
-          password: 'oozy123',
+          email: 'Demo Account',
+          password: '123',
         },
       }),
-    retry: 2,
     onSuccess: data => {
       console.log('mutation success with data: ', data)
       queryClient.resetQueries()
@@ -42,7 +41,6 @@ export function HeartbeatPanel() {
         timeout: 5000,
         method: 'DELETE',
       }),
-    retry: 2,
     onSuccess: data => {
       console.log('logout mutation yielded ', data)
       queryClient.setQueriesData({}, {})
