@@ -16,6 +16,7 @@ import hourglassPng from './assets/hourglass2.png'
 import { CalendarFolder } from './CalendarFolder'
 import { Link } from 'react-router-dom'
 import { HeartbeatPanel } from './HeartbeatPanel'
+import { CatalogSync } from './CatalogSync'
 
 function NavSection() {
   return (
@@ -86,6 +87,7 @@ export default function RouterSidebar({ width = '240px', expand }) {
     <>
       <HourglassHeader />
       <NavSection />
+      <CatalogSync />
       <HeartbeatPanel />
     </>
   )

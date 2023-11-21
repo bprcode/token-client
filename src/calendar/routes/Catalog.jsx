@@ -1,3 +1,5 @@
+import SyncIcon from '@mui/icons-material/Sync'
+import SyncDisabledIcon from '@mui/icons-material/SyncDisabled'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import ShareIcon from '@mui/icons-material/Share'
@@ -148,7 +150,7 @@ function CatalogGrid({ children }) {
         padding: 2,
         gap: 2,
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gridAutoRows: '280px',
+        gridAutoRows: '300px',
       }}
     >
       {children}
@@ -235,18 +237,7 @@ function CalendarCard({ calendar, children }) {
       // so these changes are available to mutationFn:
       Object.assign(variables, { ...calendar, ...variables })
 
-      // Show optimism
-      const optimism = {
-        ...variables,
-        // Clearing the 'revised' field presumes
-        // that the change will be accepted.
-        // It should be replaced if the fetch fails.
-        revised: undefined,
-      }
-
-      queryClient.setQueryData(['catalog'], data =>
-        data.map(x => (x.calendar_id === calendar.calendar_id ? optimism : x))
-      )
+      console.log('Composed mutation variables: ', variables)
 
       variables.controller = new AbortController()
 
@@ -255,39 +246,57 @@ function CalendarCard({ calendar, children }) {
       updateRef.current = variables.controller
 
       return {
-        revised: calendar.revised,
+        unsaved: calendar.unsaved,
+        etag: calendar.etag,
       }
     },
     mutationFn: variables => {
-      return goFetch(`timeout`, {
+      return goFetch(variables._endpoint ?? `timeout`, {
         signal: variables.controller.signal,
-        timeout: 2000,
-        // return goFetch(`calendars/${calendar.calendar_id}`, {
+        timeout: 4000,
         method: 'PUT',
-        body: { ...variables, controller: undefined },
+        body: {
+          ...variables,
+          controller: undefined,
+          _endpoint: undefined,
+          unsaved: undefined,
+        },
       })
     },
-    onError: (_err, variables, context) => {
-      // Should restore to a state exactly like it was never transmitted
-      // Need to cancel outgoing requests to avoid clobbering this?
-
+    onSuccess: (data, variables, context) => {
       if (variables.controller.signal.aborted) {
-        console.log('🪭 signal was aborted; skipping reheat.')
+        console.log('🪭 success. Signal was aborted.')
+        return
+      }
+      console.log(`🥂 update success (${variables.calendar_id}) - `+
+      `context etag was ${context.etag}, timestamp = ${context.unsaved}`)
+
+      if(context.etag !== calendar.etag) {
+        console.log(`🗑️ Outdated etag on mutation result. Discarding.`)
         return
       }
 
-      queryClient.setQueryData(['catalog'], data =>
-        data.map(c =>
-          c.calendar_id !== calendar.calendar_id
-            ? c
-            : {
-                ...c,
-                // In case of in-flight revision,
-                // take the more recent timestamp.
-                revised: Math.max(c.revised || 0, context.revised || 0),
-              }
-        )
-      )
+      // Where do I actually get the result of the mutation?
+      console.log('Mutation result data was: ', data[0])
+
+      let resolution = {}
+      console.log(`context unsaved = ${context.unsaved}, calendar unsaved = ${calendar.unsaved}`)
+      if (context.unsaved === calendar.unsaved) {
+        console.log('Timestamp match. Accepting return value.')
+        resolution = data[0]
+      } else {
+        console.log('Timestamp mismatch. Only accepting returned etag.')
+        resolution = {
+          ...calendar,
+          etag: data[0].etag,
+        }
+      }
+
+      queryClient.setQueryData(['catalog'], data => data.map(c =>
+        (c.calendar_id !== calendar.calendar_id)
+        ? c
+        : resolution
+        ))
     },
   })
 
@@ -391,7 +400,12 @@ function CalendarCard({ calendar, children }) {
                   queryClient.setQueryData(['catalog'], data =>
                     data.map(c =>
                       c.calendar_id === calendar.calendar_id
-                        ? { ...c, summary: e.target.value, revised: Date.now() }
+                        ? {
+                            ...c,
+                            summary: e.target.value,
+                            revised: Date.now(),
+                            unsaved: Date.now(),
+                          }
                         : c
                     )
                   )
@@ -399,9 +413,9 @@ function CalendarCard({ calendar, children }) {
                 350
               )}
               onBlur={e => {
-                updateMutation.mutate({
-                  summary: e.target.value,
-                })
+                // updateMutation.mutate({
+                //   summary: e.target.value,
+                // })
                 setIsEditing(false)
               }}
             />
@@ -409,6 +423,28 @@ function CalendarCard({ calendar, children }) {
         </Box>
       </Box>
       <CardContent sx={{ flexGrow: 1, width: '100%' }}>{children}</CardContent>
+      <Box sx={{ display: 'flex', justifyContent: 'end' }}>
+        <IconButton
+          onClick={() =>
+            updateMutation.mutate({
+              summary: calendar.summary,
+              _endpoint: `calendars/${calendar.calendar_id}`,
+            })
+          }
+        >
+          <SyncIcon />
+        </IconButton>
+        <IconButton
+          onClick={() =>
+            updateMutation.mutate({
+              summary: calendar.summary,
+              _endpoint: 'timeout',
+            })
+          }
+        >
+          <SyncDisabledIcon />
+        </IconButton>
+      </Box>
       <CardActions>
         <Button component={Link} to={`/calendars/${calendar.id}`}>
           Open
@@ -443,7 +479,7 @@ function CalendarCard({ calendar, children }) {
   )
 }
 
-function useCatalogQuery() {
+export function useCatalogQuery() {
   const queryClient = useQueryClient()
   return useQuery(makeCatalogQuery(queryClient))
 }
@@ -498,7 +534,14 @@ export function Catalog() {
               etag: {c.etag}
               <br />
               &ldquo;{c.summary}&rdquo;
-              <br />
+            </Typography>
+            <Typography variant="body2">
+              {c.unsaved && (
+                <>
+                  <span style={{ color: '#88f' }}>Unsaved: {c.unsaved}</span>
+                  <br />
+                </>
+              )}
               {c.revised && (
                 <span style={{ color: 'orange' }}>Revised: {c.revised}</span>
               )}

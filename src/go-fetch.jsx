@@ -72,17 +72,17 @@ function makeFetchId() {
   }
 }
 
-function recordFetch(fid, message) {
+function recordStatus(fid, message) {
   fetches.set(fid, { fid, message, status: 'sent' })
   onStatus()
 }
 
-function updateFetch(fid, message, status = 'updated') {
+function updateStatus(fid, message, status = 'updated') {
   fetches.set(fid, { fid, message, status })
   onStatus()
 }
 
-function expireFetch(fid) {
+function expireStatus(fid) {
   setTimeout(() => {
     fetches.set(fid, { ...fetches.get(fid), fadeOut: true })
     onStatus()
@@ -127,11 +127,11 @@ export function loggedFetch(resource, options = {}) {
   const defaultTimeout = 4000
   const controller = new AbortController()
 
-  recordFetch(fid, tag)
+  recordStatus(fid, tag)
 
   if (options.signal?.aborted) {
-    updateFetch(fid, tag + ' already cancelled', 'aborted')
-    expireFetch(fid, tag)
+    updateStatus(fid, tag + ' already cancelled', 'aborted')
+    expireStatus(fid, tag)
     throw new StatusError('Signal already cancelled', 'aborted')
   }
 
@@ -140,27 +140,30 @@ export function loggedFetch(resource, options = {}) {
     controller.abort(Error('Request timed out.'))
   }, options.timeout || defaultTimeout)
 
+
+  const abortListener = () => {
+    updateStatus(fid, tag + ' aborted', 'aborted')
+    controller.abort(options.signal.reason ?? Error('No reason specified.'))
+    clearTimeout(tid)
+  }
+
   if (options.signal) {
     options.signal.addEventListener(
       'abort',
-      () => {
-        updateFetch(fid, tag + ' aborted', 'aborted')
-        controller.abort(options.signal.reason ?? Error('No reason specified.'))
-        clearTimeout(tid)
-      },
+      abortListener,
       { signal: controller.signal }
     )
   }
 
   return fetch(resource, { ...options, signal: controller.signal })
     .then(result => {
-      updateFetch(fid, tag + ` 🡒 ${result.status}`, 'resolved')
+      updateStatus(fid, tag + ` 🡒 ${result.status}`, 'resolved')
       return result
     })
     .catch(e => {
       const isTimeout = e.message.endsWith('timed out.')
       const statusString = isTimeout ? 'timed out' : 'failed'
-      updateFetch(
+      updateStatus(
         fid,
         tag + ' ' + e.message,
         statusString
@@ -168,7 +171,14 @@ export function loggedFetch(resource, options = {}) {
       throw new StatusError(e.message, statusString)
     })
     .finally(() => {
-      expireFetch(fid, tag)
+      if(options.signal) {
+        options.signal.removeEventListener(
+          'abort',
+          abortListener
+        )
+      }
+
+      expireStatus(fid, tag)
       clearTimeout(tid)
     })
 }
@@ -207,7 +217,7 @@ export async function goFetch(resource, options) {
   return json
 }
 
-const noRetryList = [400, 401, 403, 404]
+const noRetryList = [400, 401, 403, 404, 409]
 export function retryCheck(failureCount, error) {
   console.log(
     '🏳️ Fetch failure #',
