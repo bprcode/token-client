@@ -49,10 +49,9 @@ function makeCatalogQuery(queryClient) {
   return makeCatalogQuery.query
 }
 
-// debug -- WIP, not fully implemented, check delete/create collision logic
-// debug -- still needs ghost delete flag support
+// debug -- still needs testing
 function reconcile({ localData, serverData, key }) {
-  const chillTime = 5 * 1000
+  const chillTime = 60 * 1000
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
   const localMap = new Map(localData.map(data => [data[key], data]))
@@ -63,37 +62,41 @@ function reconcile({ localData, serverData, key }) {
   const now = Date.now()
 
   for (const local of localData) {
-    if (local.revised && now - local.revised < chillTime) {
+    if (local.unsaved && now - local.unsaved < chillTime) {
       console.log('treating', local[key], 'as hot 🔥. Insisting...')
 
       // Could be missing if it has been deleted remotely during local update:
-      const updatedEtag = serverMap.get(local[key])?.etag || 'missing etag'
+      const updatedEtag = serverMap.get(local[key])?.etag || 'imaginary'
       merged.push({
         ...local,
         etag: updatedEtag,
       })
-    } else {
-      const pre = 'treating ' + local[key] + ' as cold 🧊'
 
-      if (!serverMap.has(local[key])) {
-        console.log(pre, '...appears to have been remote-deleted ✖️')
-        continue
-      }
-
-      const remote = serverMap.get(local[key])
-
-      if (local.etag === remote.etag) {
-        console.log(pre, `...etag matches (${local.etag}). Keeping local copy.`)
-        merged.push(local)
-      } else {
-        console.log(
-          pre,
-          `...etag mismatch (${local.etag} / ${remote.etag}). ` +
-            `Yielding to server copy.`
-        )
-        merged.push(remote)
-      }
+      continue
     }
+
+    const pre = 'treating ' + local[key] + ' as cold 🧊'
+
+    if (!serverMap.has(local[key])) {
+      console.log(pre, '...appears to have been remote-deleted ✖️')
+      continue
+    }
+
+    const remote = serverMap.get(local[key])
+
+    if (local.etag === remote.etag) {
+      console.log(pre, `...etag matches (${local.etag}). Keeping local copy.`)
+      merged.push(local)
+
+      continue
+    }
+
+    console.log(
+      pre,
+      `...etag mismatch (${local.etag} / ${remote.etag}). ` +
+        `Yielding to server copy.`
+    )
+    merged.push(remote)
   }
 
   for (const remote of serverData) {
@@ -268,10 +271,12 @@ function CalendarCard({ calendar, children }) {
         console.log('🪭 success. Signal was aborted.')
         return
       }
-      console.log(`🥂 update success (${variables.calendar_id}) - `+
-      `context etag was ${context.etag}, timestamp = ${context.unsaved}`)
+      console.log(
+        `🥂 update success (${variables.calendar_id}) - ` +
+          `context etag was ${context.etag}, timestamp = ${context.unsaved}`
+      )
 
-      if(context.etag !== calendar.etag) {
+      if (context.etag !== calendar.etag) {
         console.log(`🗑️ Outdated etag on mutation result. Discarding.`)
         return
       }
@@ -280,7 +285,9 @@ function CalendarCard({ calendar, children }) {
       console.log('Mutation result data was: ', data[0])
 
       let resolution = {}
-      console.log(`context unsaved = ${context.unsaved}, calendar unsaved = ${calendar.unsaved}`)
+      console.log(
+        `context unsaved = ${context.unsaved}, calendar unsaved = ${calendar.unsaved}`
+      )
       if (context.unsaved === calendar.unsaved) {
         console.log('Timestamp match. Accepting return value.')
         resolution = data[0]
@@ -292,11 +299,9 @@ function CalendarCard({ calendar, children }) {
         }
       }
 
-      queryClient.setQueryData(['catalog'], data => data.map(c =>
-        (c.calendar_id !== calendar.calendar_id)
-        ? c
-        : resolution
-        ))
+      queryClient.setQueryData(['catalog'], data =>
+        data.map(c => (c.calendar_id !== calendar.calendar_id ? c : resolution))
+      )
     },
   })
 
@@ -403,7 +408,6 @@ function CalendarCard({ calendar, children }) {
                         ? {
                             ...c,
                             summary: e.target.value,
-                            revised: Date.now(),
                             unsaved: Date.now(),
                           }
                         : c
@@ -541,9 +545,6 @@ export function Catalog() {
                   <span style={{ color: '#88f' }}>Unsaved: {c.unsaved}</span>
                   <br />
                 </>
-              )}
-              {c.revised && (
-                <span style={{ color: 'orange' }}>Revised: {c.revised}</span>
               )}
             </Typography>
           </CalendarCard>

@@ -7,7 +7,7 @@ function useTouchList() {
   const list = []
 
   for (const c of catalog.data || []) {
-    if (c.revised) {
+    if (c.unsaved) {
       list.push(c)
     }
   }
