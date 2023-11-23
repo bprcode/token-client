@@ -27,7 +27,7 @@ import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { leadingDebounce } from '../../debounce.mjs'
+import { leadingDebounce, bounceEarly } from '../../debounce.mjs'
 
 function makeCatalogQuery(queryClient) {
   makeCatalogQuery.query ??= {
@@ -177,7 +177,6 @@ function CardOuter({ sx, children }) {
 }
 
 function CreationCard() {
-  const theme = useTheme()
   const queryClient = useQueryClient()
   const [idemKey, setIdemKey] = useState(randomIdemKey)
 
@@ -399,7 +398,7 @@ function CalendarCard({ calendar, children }) {
                 }
               }}
               onChange={leadingDebounce(
-                'summary update',
+                `summary update ${calendar.calendar_id}`,
                 e => {
                   console.log('⚽ debounce landed')
                   queryClient.setQueryData(['catalog'], data =>
@@ -417,6 +416,7 @@ function CalendarCard({ calendar, children }) {
                 350
               )}
               onBlur={e => {
+                bounceEarly(`summary update ${calendar.calendar_id}`)
                 // updateMutation.mutate({
                 //   summary: e.target.value,
                 // })
@@ -522,6 +522,13 @@ export function Catalog() {
       </ViewContainer>
     )
 
+  let emptyPadding = []
+  if (catalog.data?.length < 3) {
+    emptyPadding = new Array(3 - catalog.data.length)
+      .fill(null)
+      .map((_, i) => <CardOuter key={i} sx={{ opacity: 0 }} />)
+  }
+
   const now = dayjs()
 
   return (
@@ -550,6 +557,7 @@ export function Catalog() {
           </CalendarCard>
         ))}
         <CreationCard />
+        {emptyPadding}
       </CatalogGrid>
     </ViewContainer>
   )
