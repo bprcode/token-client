@@ -7,13 +7,14 @@ function useTouchList() {
   const list = []
 
   for (const c of catalog.data || []) {
-    if (c.unsaved) {
+    if (c.unsaved || c.etag === 'creating') {
       list.push(c)
     }
   }
 
   return list
 }
+
 
 export function CatalogSync() {
   const list = useTouchList()

@@ -63,8 +63,10 @@ function reconcile({ localData, serverData, key }) {
   const isRecent = entry => entry.unsaved && now - entry.unsaved < chillTime
 
   for (const local of localData) {
-    if (local.etag === 'creating') {
-      console.log('Passing along creating event', local[key], '🌿')
+    const latestTag = local.retryTag ?? local.etag
+
+    if (latestTag === 'creating') {
+      console.log('Passing along creation event', local[key], '🌿')
       merged.push(local)
 
       continue
@@ -82,7 +84,7 @@ function reconcile({ localData, serverData, key }) {
       const updatedEtag = serverMap.get(local[key])?.etag || 'creating'
       merged.push({
         ...local,
-        etag: updatedEtag,
+        retryTag: updatedEtag,
       })
 
       continue
@@ -599,7 +601,8 @@ export function Catalog() {
                   <br />
                 </>
               )}
-              {c.isDeleting && <span style={{ color: 'red' }}>isDeleting</span>}
+              {c.isDeleting && <><span style={{ color: 'red' }}>isDeleting</span><br /></>}
+              {c.retryTag && <span style={{color: 'yellow'}}>retryTag: {c.retryTag}</span>}
             </Typography>
           </CalendarCard>
         ))}
