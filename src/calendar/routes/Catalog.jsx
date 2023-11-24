@@ -49,7 +49,6 @@ function makeCatalogQuery(queryClient) {
   return makeCatalogQuery.query
 }
 
-// debug -- still needs testing
 function reconcile({ localData, serverData, key }) {
   const chillTime = 60 * 1000
   const merged = []
@@ -61,19 +60,26 @@ function reconcile({ localData, serverData, key }) {
 
   const now = Date.now()
 
+  const isRecent = entry => entry.unsaved && now - entry.unsaved < chillTime
+
   for (const local of localData) {
-    if (local.etag === 'nascent') {
-      console.log('Passing along nascent event', local[key], '🌿')
+    if (local.etag === 'creating') {
+      console.log('Passing along creating event', local[key], '🌿')
       merged.push(local)
 
       continue
     }
 
-    if (local.unsaved && now - local.unsaved < chillTime) {
+    if (local.isDeleting && !serverMap.has(local[key])) {
+      console.log(`👋 unwanted event gone; omitting (${local[key]})`)
+      continue
+    }
+
+    if (isRecent(local)) {
       console.log('treating', local[key], 'as hot 🔥. Insisting...')
 
       // Could be missing if it has been deleted remotely during local update:
-      const updatedEtag = serverMap.get(local[key])?.etag || 'nascent'
+      const updatedEtag = serverMap.get(local[key])?.etag || 'creating'
       merged.push({
         ...local,
         etag: updatedEtag,
@@ -199,7 +205,7 @@ function CreationCard() {
     onMutate: () => {
       const temporary = {
         summary: 'Temporary Calendar',
-        etag: 'nascent',
+        etag: 'creating',
         calendar_id: idemKey,
       }
 
@@ -212,7 +218,7 @@ function CreationCard() {
       return { temporaryId: idemKey }
     },
     mutationFn: () =>
-        goFetch('calendars', {
+      goFetch('calendars', {
         method: 'POST',
         body: {
           key: idemKey,
@@ -271,7 +277,7 @@ function CalendarCard({ calendar, children }) {
   const theme = useTheme()
   const queryClient = useQueryClient()
   const [isEditing, setIsEditing] = useState(false)
-  const isNascent = calendar.etag === 'nascent'
+  const isCreating = calendar.etag === 'creating'
   const inputRef = useRef(null)
 
   const updateRef = useRef(null)
@@ -342,16 +348,25 @@ function CalendarCard({ calendar, children }) {
       }
 
       queryClient.setQueryData(['catalog'], data =>
-        data.map(c => (c.calendar_id !== calendar.calendar_id ? c : resolution))
+        data.map(c => (c.calendar_id === calendar.calendar_id ? resolution : c))
       )
     },
   })
 
   const deleteMutation = useMutation({
-    mutationFn: () =>
+    onMutate: () => {
+      queryClient.setQueryData(['catalog'], data =>
+        data.map(c =>
+          c.calendar_id === calendar.calendar_id
+            ? { ...c, isDeleting: true, unsaved: Date.now() }
+            : c
+        )
+      )
+    },
+    mutationFn: variables =>
       goFetch(`calendars/${calendar.calendar_id}`, {
         method: 'DELETE',
-        body: { etag: calendar.etag },
+        body: { etag: variables.etag },
       }),
 
     onSuccess: data => {
@@ -361,15 +376,7 @@ function CalendarCard({ calendar, children }) {
         queryClient.setQueryData(['catalog'], data =>
           data.filter(c => c.calendar_id !== calendar.calendar_id)
         )
-      } else {
-        // Outcome unknown: May already be deleted, may have failed
-        // due to remote update.
-        queryClient.invalidateQueries(['catalog'])
-        console.log('nothing deleted')
       }
-    },
-    onError: e => {
-      console.log('Delete Error!', e.status, e.message)
     },
   })
 
@@ -380,18 +387,18 @@ function CalendarCard({ calendar, children }) {
   return (
     <CardOuter
       sx={{
-        opacity: deleteMutation.isPending ? 0.3 : undefined,
+        opacity: calendar.isDeleting ? 0.5 : undefined,
       }}
     >
       <Box
-        component={isEditing || isNascent ? 'div' : Link}
+        component={isEditing || isCreating ? 'div' : Link}
         to={'/calendars/' + calendar.calendar_id}
         sx={{
           color: 'inherit',
           textDecoration: 'none',
           bgcolor: alpha(theme.palette.primary.dark, 0.3),
           '&:hover': {
-            bgcolor: !isNascent && alpha(theme.palette.primary.dark, 0.7),
+            bgcolor: !isCreating && alpha(theme.palette.primary.dark, 0.7),
           },
         }}
       >
@@ -457,7 +464,7 @@ function CalendarCard({ calendar, children }) {
       <CardContent sx={{ flexGrow: 1, width: '100%' }}>{children}</CardContent>
       <Box sx={{ display: 'flex', justifyContent: 'end' }}>
         <IconButton
-          disabled={isNascent}
+          disabled={isCreating}
           onClick={() =>
             updateMutation.mutate({
               summary: calendar.summary,
@@ -468,7 +475,7 @@ function CalendarCard({ calendar, children }) {
           <SyncIcon />
         </IconButton>
         <IconButton
-          disabled={isNascent}
+          disabled={isCreating}
           onClick={() =>
             updateMutation.mutate({
               summary: calendar.summary,
@@ -481,7 +488,7 @@ function CalendarCard({ calendar, children }) {
       </Box>
       <CardActions>
         <Button
-          disabled={isNascent}
+          disabled={isCreating}
           component={Link}
           to={`/calendars/${calendar.id}`}
         >
@@ -490,7 +497,7 @@ function CalendarCard({ calendar, children }) {
 
         <Box ml="auto">
           <IconButton
-            disabled={isNascent}
+            disabled={isCreating}
             aria-label="Share"
             onClick={() => console.log('share placeholder')}
           >
@@ -507,8 +514,8 @@ function CalendarCard({ calendar, children }) {
           </IconButton>
           <IconButton
             aria-label="Delete"
-            disabled={deleteMutation.isPending}
-            onClick={deleteMutation.mutate}
+            disabled={calendar.isDeleting}
+            onClick={() => deleteMutation.mutate({ etag: calendar.etag })}
           >
             <DeleteIcon sx={{ opacity: 0.9 }} />
           </IconButton>
@@ -577,7 +584,11 @@ export function Catalog() {
               <br />
               Updated: {dayjs(c.updated).from(now)}
               <br />
-              etag: {c.etag}
+              <span
+                style={{ color: c.etag === 'creating' ? 'green' : undefined }}
+              >
+                etag: {c.etag}
+              </span>
               <br />
               &ldquo;{c.summary}&rdquo;
             </Typography>
@@ -588,6 +599,7 @@ export function Catalog() {
                   <br />
                 </>
               )}
+              {c.isDeleting && <span style={{ color: 'red' }}>isDeleting</span>}
             </Typography>
           </CalendarCard>
         ))}
