@@ -25,7 +25,7 @@ import {
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
-import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { leadingDebounce, bounceEarly } from '../../debounce.mjs'
 
@@ -64,11 +64,11 @@ function reconcile({ localData, serverData, key }) {
 
   for (const local of localData) {
     const remote = serverMap.get(local[key])
-    const latestTag = local.retryTag ?? local.etag
+    const originTag = local.originTag ?? local.etag
 
-    if (local.etag === remote?.etag) {
+    if (originTag === remote?.etag) {
       console.log(
-        `Local etag matches remote (${local.etag}).` + ` Keeping local copy.`
+        `Local origin matches remote (${local.etag}).` + ` Keeping local copy.`
       )
 
       merged.push(local)
@@ -77,8 +77,8 @@ function reconcile({ localData, serverData, key }) {
     }
 
     if (
-      local.etag === 'creating' ||
-      (local.retryTag === 'creating' && isRecent(local))
+      originTag === 'creating' ||
+      (local.etag === 'creating' && isRecent(local))
     ) {
       console.log('Persisting creation event', local[key], '🌿')
       merged.push(local)
@@ -88,18 +88,21 @@ function reconcile({ localData, serverData, key }) {
 
     if (local.isDeleting && !serverMap.has(local[key])) {
       console.log(`👋 unwanted event gone; omitting (${local[key]})`)
+
       continue
     }
-    // ~~
 
     if (isRecent(local)) {
       console.log('treating', local[key], 'as hot 🔥. Insisting...')
 
       // etag could be missing if the record was deleted remotely
-      const update = serverMap.get(local[key])?.etag ?? 'creating'
+      const newTag = serverMap.get(local[key])?.etag ?? 'creating'
 
-      // If not redundant, add a retry tag
-      const overwrite = local.etag !== update ? { retryTag: update } : null
+      let overwrite = null
+
+      if (originTag !== newTag) {
+        overwrite = { etag: newTag, originTag }
+      }
 
       merged.push({
         ...local,
@@ -119,7 +122,7 @@ function reconcile({ localData, serverData, key }) {
 
     console.log(
       pre,
-      `...etag mismatch (${local.etag} / ${remote.etag}). ` +
+      `...etag mismatch (${originTag} / ${remote.etag}). ` +
         `Yielding to server copy.`
     )
     merged.push(remote)
@@ -393,7 +396,10 @@ function CalendarCard({ calendar, children }) {
   })
 
   useEffect(() => {
-    if (isEditing) inputRef.current?.focus()
+    if (isEditing) {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }
   }, [isEditing])
 
   return (
@@ -442,6 +448,11 @@ function CalendarCard({ calendar, children }) {
                 if (isEditing) {
                   e.preventDefault()
                   console.log('TextField preventDefault')
+                }
+              }}
+              onKeyUp={e => {
+                if (e.key === 'Enter') {
+                  inputRef.current.blur()
                 }
               }}
               onChange={leadingDebounce(
@@ -622,8 +633,10 @@ export function Catalog() {
                   <br />
                 </>
               )}
-              {c.retryTag && (
-                <span style={{ color: 'yellow' }}>retryTag: {c.retryTag}</span>
+              {c.originTag && (
+                <span style={{ color: 'orange' }}>
+                  originTag: {c.originTag}
+                </span>
               )}
             </Typography>
           </CalendarCard>
