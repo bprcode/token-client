@@ -62,11 +62,18 @@ function reconcile({ localData, serverData, key }) {
   const now = Date.now()
 
   for (const local of localData) {
+    if (local.etag === 'nascent') {
+      console.log('Passing along nascent event', local[key], '🌿')
+      merged.push(local)
+
+      continue
+    }
+
     if (local.unsaved && now - local.unsaved < chillTime) {
       console.log('treating', local[key], 'as hot 🔥. Insisting...')
 
       // Could be missing if it has been deleted remotely during local update:
-      const updatedEtag = serverMap.get(local[key])?.etag || 'imaginary'
+      const updatedEtag = serverMap.get(local[key])?.etag || 'nascent'
       merged.push({
         ...local,
         etag: updatedEtag,
@@ -79,6 +86,7 @@ function reconcile({ localData, serverData, key }) {
 
     if (!serverMap.has(local[key])) {
       console.log(pre, '...appears to have been remote-deleted ✖️')
+
       continue
     }
 
@@ -179,47 +187,81 @@ function CardOuter({ sx, children }) {
 function CreationCard() {
   const queryClient = useQueryClient()
   const [idemKey, setIdemKey] = useState(randomIdemKey)
+  const [disabled, setDisabled] = useState(false)
 
   function randomIdemKey() {
     return String(Math.floor(Math.random() * 1e9))
   }
 
   console.log('idemKey=', idemKey)
+
   const creationMutation = useMutation({
+    onMutate: () => {
+      const temporary = {
+        summary: 'Temporary Calendar',
+        etag: 'nascent',
+        calendar_id: idemKey,
+      }
+
+      queryClient.setQueryData(['catalog'], catalog => [...catalog, temporary])
+
+      const newKey = randomIdemKey()
+      console.log('setting new idem key to ', newKey)
+      setIdemKey(newKey)
+
+      return { temporaryId: idemKey }
+    },
     mutationFn: () =>
-      goFetch('calendars', {
+        goFetch('calendars', {
         method: 'POST',
         body: {
           key: idemKey,
         },
       }),
-    onSuccess: data => {
-      const newKey = randomIdemKey()
-      console.log('setting new idem key to ', newKey)
-      setIdemKey(newKey)
-      console.log('creation returned data: ', data)
-      queryClient.setQueryData(['catalog'], catalog => [...catalog, data])
+    onSuccess: (data, _variables, context) => {
+      console.log(
+        'creation returned data: ',
+        data,
+        ' - using context:',
+        context
+      )
+      // Take only the server fields from the returned event
+      // -- retain any pending edits
+      queryClient.setQueryData(['catalog'], catalog =>
+        catalog.map(c =>
+          c.calendar_id === context.temporaryId
+            ? {
+                ...c,
+                etag: data.etag,
+                created: data.created,
+                updated: data.updated,
+                calendar_id: data.calendar_id,
+              }
+            : c
+        )
+      )
     },
   })
 
   return (
     <CardOuter>
       <CardActionArea
-        disabled={creationMutation.isPending}
+        disabled={disabled}
         onClick={() => {
-          console.log('Creation placeholder')
+          setDisabled(true)
+          setTimeout(() => setDisabled(false), 500)
+
           creationMutation.mutate()
         }}
-        sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 }}
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          flexGrow: 1,
+          opacity: disabled ? 0.3 : 1.0,
+        }}
       >
-        {creationMutation.isPending ? (
-          <CircularProgress />
-        ) : (
-          <>
-            <AddCircleOutlineIcon sx={{ width: '80px', height: '80px' }} />
-            <Typography variant="subtitle1">New Calendar</Typography>
-          </>
-        )}
+        <AddCircleOutlineIcon sx={{ width: '80px', height: '80px' }} />
+        <Typography variant="subtitle1">New Calendar</Typography>
       </CardActionArea>
     </CardOuter>
   )
@@ -229,6 +271,7 @@ function CalendarCard({ calendar, children }) {
   const theme = useTheme()
   const queryClient = useQueryClient()
   const [isEditing, setIsEditing] = useState(false)
+  const isNascent = calendar.etag === 'nascent'
   const inputRef = useRef(null)
 
   const updateRef = useRef(null)
@@ -341,34 +384,19 @@ function CalendarCard({ calendar, children }) {
       }}
     >
       <Box
-        component={isEditing ? 'div' : Link}
+        component={isEditing || isNascent ? 'div' : Link}
         to={'/calendars/' + calendar.calendar_id}
         sx={{
           color: 'inherit',
           textDecoration: 'none',
           bgcolor: alpha(theme.palette.primary.dark, 0.3),
           '&:hover': {
-            bgcolor: alpha(theme.palette.primary.dark, 0.7),
+            bgcolor: !isNascent && alpha(theme.palette.primary.dark, 0.7),
           },
         }}
       >
-        {/* <Typography
-          variant="h5"
-          component="div"
-          sx={{
-            position: 'relative',
-            textOverflow: 'ellipsis',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {title || 'Untitled'}
-        </Typography> */}
-        {/* {!isEditing ? ( */}
-
         <Box
           sx={{
-            // width: '100%',
             height: '4rem',
 
             px: isEditing ? 0 : '12px',
@@ -429,6 +457,7 @@ function CalendarCard({ calendar, children }) {
       <CardContent sx={{ flexGrow: 1, width: '100%' }}>{children}</CardContent>
       <Box sx={{ display: 'flex', justifyContent: 'end' }}>
         <IconButton
+          disabled={isNascent}
           onClick={() =>
             updateMutation.mutate({
               summary: calendar.summary,
@@ -439,6 +468,7 @@ function CalendarCard({ calendar, children }) {
           <SyncIcon />
         </IconButton>
         <IconButton
+          disabled={isNascent}
           onClick={() =>
             updateMutation.mutate({
               summary: calendar.summary,
@@ -450,12 +480,17 @@ function CalendarCard({ calendar, children }) {
         </IconButton>
       </Box>
       <CardActions>
-        <Button component={Link} to={`/calendars/${calendar.id}`}>
+        <Button
+          disabled={isNascent}
+          component={Link}
+          to={`/calendars/${calendar.id}`}
+        >
           Open
         </Button>
 
         <Box ml="auto">
           <IconButton
+            disabled={isNascent}
             aria-label="Share"
             onClick={() => console.log('share placeholder')}
           >

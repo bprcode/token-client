@@ -7,8 +7,8 @@ export default function debounce(key, fn, delay = 1000) {
 
     const tid = setTimeout(() => {
       callbacks.get(key)()
-      timeouts.delete(key)
       callbacks.delete(key)
+      timeouts.delete(key)
     }, delay)
 
     timeouts.set(key, tid)
@@ -34,8 +34,8 @@ export function leadingDebounce(key, fn, delay = 1000) {
     clearTimeout(timeouts.get(key))
     const tid = setTimeout(() => {
       callbacks.get(key)()
-      timeouts.delete(key)
       callbacks.delete(key)
+      timeouts.delete(key)
     }, delay)
 
     timeouts.set(key, tid)
@@ -47,7 +47,7 @@ export function bounceEarly(key) {
   if (timeouts.has(key)) {
     clearTimeout(timeouts.get(key))
     callbacks.get(key)()
-    timeouts.delete(key)
     callbacks.delete(key)
+    timeouts.delete(key)
   }
 }
