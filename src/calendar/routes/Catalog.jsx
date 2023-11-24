@@ -38,7 +38,7 @@ function makeCatalogQuery(queryClient) {
         credentials: 'include',
       }).then(fetched => {
         const local = queryClient.getQueryData(['catalog']) ?? []
-        return reconcile2({
+        return reconcile({
           localData: local,
           serverData: fetched,
           key: 'calendar_id',
@@ -47,91 +47,6 @@ function makeCatalogQuery(queryClient) {
     },
   }
   return makeCatalogQuery.query
-}
-
-function reconcile2({ localData, serverData, key }) {
-  const chillTime = 60 * 1000
-  const merged = []
-  const serverMap = new Map(serverData.map(data => [data[key], data]))
-  const localMap = new Map(localData.map(data => [data[key], data]))
-
-  console.log('mapified local:', localMap)
-  console.log('mapified server:', serverMap)
-
-  const now = Date.now()
-
-  const isRecent = entry => entry.unsaved && now - entry.unsaved < chillTime
-
-  for (const local of localData) {
-    const remote = serverMap.get(local[key])
-    const latestTag = local.retryTag ?? local.etag
-
-    if (local.etag === remote.etag) {
-      console.log(`Local etag matches remote (${local.etag}).`
-      +` Keeping local copy.`)
-
-      merged.push(local)
-
-      continue
-    }
-
-    if (latestTag === 'creating') {
-      console.log('Persisting creation event', local[key], '🌿')
-      merged.push(local)
-
-      continue
-    }
-
-    if (local.isDeleting && !serverMap.has(local[key])) {
-      console.log(`👋 unwanted event gone; omitting (${local[key]})`)
-      continue
-    }
-    // ~~
-
-
-
-    if (isRecent(local)) {
-      console.log('treating', local[key], 'as hot 🔥. Insisting...')
-
-      // etag could be missing if the record was deleted remotely
-      const update = serverMap.get(local[key])?.etag ?? 'creating'
-
-      // Add a retry tag if it isn't redundant
-      const overwrite =
-        local.etag !== update ? { retryTag: update } : null
-
-      merged.push({
-        ...local,
-        ...overwrite,
-      })
-
-      continue
-    }
-
-    const pre = 'treating ' + local[key] + ' as cold 🧊'
-
-    if (!serverMap.has(local[key])) {
-      console.log(pre, '... yielding to remote-delete ✖️')
-
-      continue
-    }
-
-    console.log(
-      pre,
-      `...etag mismatch (${local.etag} / ${remote.etag}). ` +
-        `Yielding to server copy.`
-    )
-    merged.push(remote)
-  }
-
-  for (const remote of serverData) {
-    if (!localMap.has(remote[key])) {
-      console.log('local state was missing ', remote[key], ' -- adding.')
-      merged.push(remote)
-    }
-  }
-
-  return merged
 }
 
 function reconcile({ localData, serverData, key }) {
@@ -148,10 +63,24 @@ function reconcile({ localData, serverData, key }) {
   const isRecent = entry => entry.unsaved && now - entry.unsaved < chillTime
 
   for (const local of localData) {
+    const remote = serverMap.get(local[key])
     const latestTag = local.retryTag ?? local.etag
 
-    if (latestTag === 'creating') {
-      console.log('Passing along creation event', local[key], '🌿')
+    if (local.etag === remote?.etag) {
+      console.log(
+        `Local etag matches remote (${local.etag}).` + ` Keeping local copy.`
+      )
+
+      merged.push(local)
+
+      continue
+    }
+
+    if (
+      local.etag === 'creating' ||
+      (local.retryTag === 'creating' && isRecent(local))
+    ) {
+      console.log('Persisting creation event', local[key], '🌿')
       merged.push(local)
 
       continue
@@ -161,14 +90,16 @@ function reconcile({ localData, serverData, key }) {
       console.log(`👋 unwanted event gone; omitting (${local[key]})`)
       continue
     }
+    // ~~
 
     if (isRecent(local)) {
       console.log('treating', local[key], 'as hot 🔥. Insisting...')
 
-      // Could be missing if it has been deleted remotely during local update:
-      const updatedEtag = serverMap.get(local[key])?.etag ?? 'creating'
-      const overwrite =
-        local.etag !== updatedEtag ? { retryTag: updatedEtag } : null
+      // etag could be missing if the record was deleted remotely
+      const update = serverMap.get(local[key])?.etag ?? 'creating'
+
+      // If not redundant, add a retry tag
+      const overwrite = local.etag !== update ? { retryTag: update } : null
 
       merged.push({
         ...local,
@@ -181,16 +112,7 @@ function reconcile({ localData, serverData, key }) {
     const pre = 'treating ' + local[key] + ' as cold 🧊'
 
     if (!serverMap.has(local[key])) {
-      console.log(pre, '...appears to have been remote-deleted ✖️')
-
-      continue
-    }
-
-    const remote = serverMap.get(local[key])
-
-    if (local.etag === remote.etag) {
-      console.log(pre, `...etag matches (${local.etag}). Keeping local copy.`)
-      merged.push(local)
+      console.log(pre, '... yielding to remote-delete ✖️')
 
       continue
     }
@@ -454,7 +376,7 @@ function CalendarCard({ calendar, children }) {
       )
     },
     mutationFn: variables =>
-      goFetch(`calendars/${calendar.calendar_id}`, {
+      goFetch(`timeout/${calendar.calendar_id}`, {
         method: 'DELETE',
         body: { etag: variables.etag },
       }),
@@ -656,7 +578,7 @@ export function Catalog() {
   }
 
   if (!catalog.data) {
-    return <Navigate to='/login' />
+    return <Navigate to="/login" />
   }
 
   let emptyPadding = []
