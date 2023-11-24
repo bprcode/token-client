@@ -6,7 +6,7 @@ function useTouchList() {
   const catalog = useCatalogQuery()
   const list = []
 
-  for (const c of catalog.data || []) {
+  for (const c of (catalog.data ?? [])) {
     if (c.unsaved || c.etag === 'creating') {
       list.push(c)
     }
@@ -14,7 +14,6 @@ function useTouchList() {
 
   return list
 }
-
 
 export function CatalogSync() {
   const list = useTouchList()

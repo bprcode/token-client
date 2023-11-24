@@ -25,7 +25,7 @@ import {
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
-import { Link } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { leadingDebounce, bounceEarly } from '../../debounce.mjs'
 
@@ -38,7 +38,7 @@ function makeCatalogQuery(queryClient) {
         credentials: 'include',
       }).then(fetched => {
         const local = queryClient.getQueryData(['catalog']) ?? []
-        return reconcile({
+        return reconcile2({
           localData: local,
           serverData: fetched,
           key: 'calendar_id',
@@ -47,6 +47,91 @@ function makeCatalogQuery(queryClient) {
     },
   }
   return makeCatalogQuery.query
+}
+
+function reconcile2({ localData, serverData, key }) {
+  const chillTime = 60 * 1000
+  const merged = []
+  const serverMap = new Map(serverData.map(data => [data[key], data]))
+  const localMap = new Map(localData.map(data => [data[key], data]))
+
+  console.log('mapified local:', localMap)
+  console.log('mapified server:', serverMap)
+
+  const now = Date.now()
+
+  const isRecent = entry => entry.unsaved && now - entry.unsaved < chillTime
+
+  for (const local of localData) {
+    const remote = serverMap.get(local[key])
+    const latestTag = local.retryTag ?? local.etag
+
+    if (local.etag === remote.etag) {
+      console.log(`Local etag matches remote (${local.etag}).`
+      +` Keeping local copy.`)
+
+      merged.push(local)
+
+      continue
+    }
+
+    if (latestTag === 'creating') {
+      console.log('Persisting creation event', local[key], '🌿')
+      merged.push(local)
+
+      continue
+    }
+
+    if (local.isDeleting && !serverMap.has(local[key])) {
+      console.log(`👋 unwanted event gone; omitting (${local[key]})`)
+      continue
+    }
+    // ~~
+
+
+
+    if (isRecent(local)) {
+      console.log('treating', local[key], 'as hot 🔥. Insisting...')
+
+      // etag could be missing if the record was deleted remotely
+      const update = serverMap.get(local[key])?.etag ?? 'creating'
+
+      // Add a retry tag if it isn't redundant
+      const overwrite =
+        local.etag !== update ? { retryTag: update } : null
+
+      merged.push({
+        ...local,
+        ...overwrite,
+      })
+
+      continue
+    }
+
+    const pre = 'treating ' + local[key] + ' as cold 🧊'
+
+    if (!serverMap.has(local[key])) {
+      console.log(pre, '... yielding to remote-delete ✖️')
+
+      continue
+    }
+
+    console.log(
+      pre,
+      `...etag mismatch (${local.etag} / ${remote.etag}). ` +
+        `Yielding to server copy.`
+    )
+    merged.push(remote)
+  }
+
+  for (const remote of serverData) {
+    if (!localMap.has(remote[key])) {
+      console.log('local state was missing ', remote[key], ' -- adding.')
+      merged.push(remote)
+    }
+  }
+
+  return merged
 }
 
 function reconcile({ localData, serverData, key }) {
@@ -81,10 +166,13 @@ function reconcile({ localData, serverData, key }) {
       console.log('treating', local[key], 'as hot 🔥. Insisting...')
 
       // Could be missing if it has been deleted remotely during local update:
-      const updatedEtag = serverMap.get(local[key])?.etag || 'creating'
+      const updatedEtag = serverMap.get(local[key])?.etag ?? 'creating'
+      const overwrite =
+        local.etag !== updatedEtag ? { retryTag: updatedEtag } : null
+
       merged.push({
         ...local,
-        retryTag: updatedEtag,
+        ...overwrite,
       })
 
       continue
@@ -558,13 +646,18 @@ export function Catalog() {
     )
   }
 
-  if (catalog.error)
+  if (catalog.error) {
     return (
       <ViewContainer>
         {header}
         {loadingPane}
       </ViewContainer>
     )
+  }
+
+  if (!catalog.data) {
+    return <Navigate to='/login' />
+  }
 
   let emptyPadding = []
   if (catalog.data?.length < 3) {
@@ -601,8 +694,15 @@ export function Catalog() {
                   <br />
                 </>
               )}
-              {c.isDeleting && <><span style={{ color: 'red' }}>isDeleting</span><br /></>}
-              {c.retryTag && <span style={{color: 'yellow'}}>retryTag: {c.retryTag}</span>}
+              {c.isDeleting && (
+                <>
+                  <span style={{ color: 'red' }}>isDeleting</span>
+                  <br />
+                </>
+              )}
+              {c.retryTag && (
+                <span style={{ color: 'yellow' }}>retryTag: {c.retryTag}</span>
+              )}
             </Typography>
           </CalendarCard>
         ))}

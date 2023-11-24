@@ -43,7 +43,7 @@ export function HeartbeatPanel() {
       }),
     onSuccess: data => {
       console.log('logout mutation yielded ', data)
-      queryClient.setQueriesData({}, {})
+      queryClient.setQueriesData({}, null)
     },
   })
 
