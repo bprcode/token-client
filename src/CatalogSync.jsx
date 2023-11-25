@@ -1,6 +1,6 @@
 import SyncIcon from '@mui/icons-material/Sync'
 import CircularProgress from '@mui/material/CircularProgress'
-import { Box, IconButton, List, ListItem } from '@mui/material'
+import { Box, Button, IconButton, List, ListItem } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
@@ -19,6 +19,45 @@ function useTouchList() {
   return list
 }
 
+function makeCalendarRequest(calendar, signal) {
+  const endpoint = 'calendars'
+  const timeout = 5000
+
+  // Blank out fields not needed by the server
+  const blanks = {
+    unsaved: undefined,
+    created: undefined,
+    updated: undefined,
+    originTag: undefined,
+    primary_author_id: undefined,
+  }
+
+  if (calendar.isDeleting) {
+    return goFetch(`${endpoint}/${calendar.calendar_id}`, {
+      method: 'DELETE',
+      body: { etag: calendar.etag },
+      timeout,
+      signal,
+    })
+  }
+
+  if (calendar.etag === 'creating') {
+    return goFetch(endpoint, {
+      method: 'POST',
+      body: { ...calendar, ...blanks, key: calendar.calendar_id },
+      timeout,
+      signal,
+    })
+  }
+
+  return goFetch(`${endpoint}/${calendar.calendar_id}`, {
+    method: 'PUT',
+    body: { ...calendar, ...blanks },
+    timeout,
+    signal,
+  })
+}
+
 export function CatalogSync() {
   const controllerRef = useRef(new AbortController())
   const controllerNumRef = useRef(0)
@@ -27,12 +66,13 @@ export function CatalogSync() {
   const itemMutation = useMutation({
     onMutate: variables => {
       console.log('Item mutation started / ', controllerNumRef.current)
-      variables.num = controllerNumRef.current
+      // Extend the variables object to expose the current abort signal
+      variables.original = { ...variables }
       variables.signal = controllerRef.current.signal
     },
     mutationFn: variables => {
-      console.log('sending item mutation with variables: ', variables)
-      return goFetch(variables.endpoint, {signal: variables.signal})
+      console.log('Making request from record:', variables.original)
+      return makeCalendarRequest(variables.original, variables.signal)
     },
     onSettled: () => {
       console.log('Item mutation settled')
@@ -49,20 +89,11 @@ export function CatalogSync() {
       console.log('🌒 About to start promise bundle')
     },
     mutationFn: variables => {
-      const endpoints = ['me', 'timeout', 'coinflip']
-
-      return Promise.all(
-        variables.map((c,i) => itemMutation.mutateAsync({
-          id: c.calendar_id,
-          endpoint: endpoints[i % endpoints.length],
-        }
-      )))
-
+      return Promise.all(variables.map(c => itemMutation.mutateAsync({...c})))
     },
     onSettled: () => {
       console.log('☀️ Promise bundle finished')
-    }
-
+    },
   })
 
   return (
@@ -76,10 +107,11 @@ export function CatalogSync() {
           onClick={() => bundleMutation.mutate(list)}
           disabled={list.length === 0}
         >
-          {bundleMutation.isPending ? 
-          <CircularProgress size="20px" color="inherit" />
-          :
-          <SyncIcon />}
+          {bundleMutation.isPending ? (
+            <CircularProgress size="20px" color="inherit" />
+          ) : (
+            <SyncIcon />
+          )}
         </IconButton>
       </div>
       <List>
@@ -89,6 +121,9 @@ export function CatalogSync() {
           </ListItem>
         ))}
       </List>
+      <Button variant="contained" onClick={() => controllerNumRef.current++}>
+        +
+      </Button>
     </Box>
   )
 }

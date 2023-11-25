@@ -16,7 +16,6 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
-  CircularProgress,
   IconButton,
   Skeleton,
   TextField,
@@ -221,11 +220,11 @@ function CreationCard() {
   console.log('idemKey=', idemKey)
 
   const creationMutation = useMutation({
-    onMutate: () => {
+    onMutate: variables => {
       const temporary = {
         summary: 'Temporary Calendar',
         etag: 'creating',
-        calendar_id: idemKey,
+        calendar_id: variables.key,
       }
 
       queryClient.setQueryData(['catalog'], catalog => [...catalog, temporary])
@@ -236,25 +235,19 @@ function CreationCard() {
 
       return { temporaryId: idemKey }
     },
-    mutationFn: () =>
-      goFetch('calendars', {
+    mutationFn: variables =>
+      goFetch('timeout', {
         method: 'POST',
         body: {
-          key: idemKey,
+          key: variables.key,
         },
       }),
-    onSuccess: (data, _variables, context) => {
-      console.log(
-        'creation returned data: ',
-        data,
-        ' - using context:',
-        context
-      )
+    onSuccess: (data, variables) => {
       // Take only the server fields from the returned event
       // -- retain any pending edits
       queryClient.setQueryData(['catalog'], catalog =>
         catalog.map(c =>
-          c.calendar_id === context.temporaryId
+          c.calendar_id === variables.key
             ? {
                 ...c,
                 etag: data.etag,
@@ -276,7 +269,7 @@ function CreationCard() {
           setDisabled(true)
           setTimeout(() => setDisabled(false), 500)
 
-          creationMutation.mutate()
+          creationMutation.mutate({key: idemKey})
         }}
         sx={{
           display: 'flex',
