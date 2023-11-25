@@ -2,7 +2,7 @@ import SyncIcon from '@mui/icons-material/Sync'
 import CircularProgress from '@mui/material/CircularProgress'
 import { Box, Button, IconButton, List, ListItem } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
 import { useRef } from 'react'
 
@@ -19,11 +19,40 @@ function useTouchList() {
   return list
 }
 
-function makeCalendarRequest(calendar, signal) {
+function handleCalendarSuccess({ result, original, queryClient }) {
+
+  // Creation success
+  if (original.etag === 'creating') {
+
+    const current = queryClient
+      .getQueryData(['catalog'])
+      .find(c => c.calendar_id === original.calendar_id)
+
+    // Retain any pending edits
+    const update = {
+      ...current,
+      primary_author_id: result.primary_author_id,
+      etag: result.etag,
+      created: result.created,
+      updated: result.updated,
+      calendar_id: result.calendar_id,
+    }
+
+    if (current?.unsaved === original.unsaved) {
+      delete update.unsaved
+    }
+
+    queryClient.setQueryData(['catalog'], catalog =>
+      catalog.map(c => (c.calendar_id === original.calendar_id ? update : c))
+    )
+  }
+}
+
+function makeCalendarFetch(original, signal) {
   const endpoint = 'calendars'
   const timeout = 5000
 
-  // Blank out fields not needed by the server
+  // Omit fields not needed by the server
   const blanks = {
     unsaved: undefined,
     created: undefined,
@@ -32,33 +61,39 @@ function makeCalendarRequest(calendar, signal) {
     primary_author_id: undefined,
   }
 
-  if (calendar.isDeleting) {
-    return goFetch(`${endpoint}/${calendar.calendar_id}`, {
+  if (original.isDeleting) {
+    return goFetch(`${endpoint}/${original.calendar_id}`, {
       method: 'DELETE',
-      body: { etag: calendar.etag },
+      body: { etag: original.etag },
       timeout,
       signal,
     })
   }
 
-  if (calendar.etag === 'creating') {
+  if (original.etag === 'creating') {
     return goFetch(endpoint, {
       method: 'POST',
-      body: { ...calendar, ...blanks, key: calendar.calendar_id },
+      body: {
+        ...original,
+        ...blanks,
+        etag: undefined,
+        key: original.calendar_id,
+      },
       timeout,
       signal,
     })
   }
 
-  return goFetch(`${endpoint}/${calendar.calendar_id}`, {
+  return goFetch(`${endpoint}/${original.calendar_id}`, {
     method: 'PUT',
-    body: { ...calendar, ...blanks },
+    body: { ...original, ...blanks },
     timeout,
     signal,
   })
 }
 
 export function CatalogSync() {
+  const queryClient = useQueryClient()
   const controllerRef = useRef(new AbortController())
   const controllerNumRef = useRef(0)
   const list = useTouchList()
@@ -72,8 +107,14 @@ export function CatalogSync() {
     },
     mutationFn: variables => {
       console.log('Making request from record:', variables.original)
-      return makeCalendarRequest(variables.original, variables.signal)
+      return makeCalendarFetch(variables.original, variables.signal)
     },
+    onSuccess: (data, variables) =>
+      handleCalendarSuccess({
+        result: data,
+        original: variables.original,
+        queryClient,
+      }),
     onSettled: () => {
       console.log('Item mutation settled')
     },
@@ -88,9 +129,12 @@ export function CatalogSync() {
 
       console.log('🌒 About to start promise bundle')
     },
-    mutationFn: variables => {
-      return Promise.all(variables.map(c => itemMutation.mutateAsync({...c})))
-    },
+    mutationFn: variables =>
+      Promise.all(
+        // Important to clone the record, rather than passing it directly,
+        // since the mutate method also modifies the variables it receives.
+        variables.map(c => itemMutation.mutateAsync({ ...c }))
+      ),
     onSettled: () => {
       console.log('☀️ Promise bundle finished')
     },

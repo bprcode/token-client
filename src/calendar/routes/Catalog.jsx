@@ -236,12 +236,13 @@ function CreationCard() {
       return { temporaryId: idemKey }
     },
     mutationFn: variables =>
-      goFetch('timeout', {
-        method: 'POST',
-        body: {
-          key: variables.key,
-        },
-      }),
+      Promise.reject('autoreject'),
+      // goFetch('timeout', {
+      //   method: 'POST',
+      //   body: {
+      //     key: variables.key,
+      //   },
+      // }),
     onSuccess: (data, variables) => {
       // Take only the server fields from the returned event
       // -- retain any pending edits
@@ -376,10 +377,11 @@ function CalendarCard({ calendar, children }) {
       )
     },
     mutationFn: variables =>
-      goFetch(`timeout/${calendar.calendar_id}`, {
-        method: 'DELETE',
-        body: { etag: variables.etag },
-      }),
+      Promise.reject('autoreject'),
+      // goFetch(`timeout/${calendar.calendar_id}`, {
+      //   method: 'DELETE',
+      //   body: { etag: variables.etag },
+      // }),
 
     onSuccess: data => {
       if (data.length) {
