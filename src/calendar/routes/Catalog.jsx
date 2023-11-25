@@ -93,7 +93,11 @@ function reconcile({ localData, serverData, key }) {
     }
 
     if (isRecent(local)) {
-      console.log('treating', local[key], 'as hot 🔥. Insisting...')
+      console.log(
+        'treating',
+        local[key],
+        `as hot 🔥. (${Math.round((chillTime - (now - local.unsaved)) / 1000)}s left)`
+      )
 
       // etag could be missing if the record was deleted remotely
       const newTag = serverMap.get(local[key])?.etag ?? 'creating'

@@ -46,7 +46,7 @@ export function leadingDebounce(key, fn, delay = 1000) {
 export function bounceEarly(key) {
   if (timeouts.has(key)) {
     clearTimeout(timeouts.get(key))
-    callbacks.get(key)()
+    callbacks.get(key)?.()
     callbacks.delete(key)
     timeouts.delete(key)
   }
