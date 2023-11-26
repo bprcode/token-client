@@ -95,7 +95,9 @@ function reconcile({ localData, serverData, key }) {
       console.log(
         'treating',
         local[key],
-        `as hot 🔥. (${Math.round((chillTime - (now - local.unsaved)) / 1000)}s left)`
+        `as hot 🔥. (${Math.round(
+          (chillTime - (now - local.unsaved)) / 1000
+        )}s left)`
       )
 
       // etag could be missing if the record was deleted remotely
@@ -208,59 +210,33 @@ function CardOuter({ sx, children }) {
   )
 }
 
-function CreationCard() {
+function useCreateOptimistic() {
   const queryClient = useQueryClient()
-  const [idemKey, setIdemKey] = useState(randomIdemKey)
-  const [disabled, setDisabled] = useState(false)
+  const [idemKey, setIdemKey] = useState(randomIdemKey())
 
   function randomIdemKey() {
     return String(Math.floor(Math.random() * 1e9))
   }
 
-  console.log('idemKey=', idemKey)
+  return () => {
+    const temporary = {
+      summary: 'Temporary Calendar',
+      etag: 'creating',
+      calendar_id: idemKey,
+    }
+    console.log('creating with idemKey: ', temporary.calendar_id)
 
-  const creationMutation = useMutation({
-    onMutate: variables => {
-      const temporary = {
-        summary: 'Temporary Calendar',
-        etag: 'creating',
-        calendar_id: variables.key,
-      }
+    queryClient.setQueryData(['catalog'], catalog => [...catalog, temporary])
 
-      queryClient.setQueryData(['catalog'], catalog => [...catalog, temporary])
+    const newKey = randomIdemKey()
+    console.log('setting new idem key to ', newKey)
+    setIdemKey(newKey)
+  }
+}
 
-      const newKey = randomIdemKey()
-      console.log('setting new idem key to ', newKey)
-      setIdemKey(newKey)
-
-      return { temporaryId: idemKey }
-    },
-    mutationFn: variables =>
-      Promise.reject('autoreject'),
-      // goFetch('timeout', {
-      //   method: 'POST',
-      //   body: {
-      //     key: variables.key,
-      //   },
-      // }),
-    onSuccess: (data, variables) => {
-      // Take only the server fields from the returned event
-      // -- retain any pending edits
-      queryClient.setQueryData(['catalog'], catalog =>
-        catalog.map(c =>
-          c.calendar_id === variables.key
-            ? {
-                ...c,
-                etag: data.etag,
-                created: data.created,
-                updated: data.updated,
-                calendar_id: data.calendar_id,
-              }
-            : c
-        )
-      )
-    },
-  })
+function CreationCard() {
+  const createOptimistic = useCreateOptimistic()
+  const [disabled, setDisabled] = useState(false)
 
   return (
     <CardOuter>
@@ -270,7 +246,7 @@ function CreationCard() {
           setDisabled(true)
           setTimeout(() => setDisabled(false), 500)
 
-          creationMutation.mutate({key: idemKey})
+          createOptimistic()
         }}
         sx={{
           display: 'flex',
@@ -286,105 +262,46 @@ function CreationCard() {
   )
 }
 
-function CalendarCard({ calendar, children }) {
-  const theme = useTheme()
+function useDeleteOptimistic(id) {
   const queryClient = useQueryClient()
+
+  return () => {
+    queryClient.setQueryData(['catalog'], catalog =>
+      catalog.map(c =>
+        c.calendar_id === id
+          ? { ...c, isDeleting: true, unsaved: Date.now() }
+          : c
+      )
+    )
+  }
+}
+
+function useUpdateOptimistic(id) {
+  const queryClient = useQueryClient()
+
+  return updates => {
+    queryClient.setQueryData(['catalog'], catalog =>
+      catalog.map(c =>
+        c.calendar_id === id
+          ? {
+              ...c,
+              ...updates,
+              unsaved: Date.now(),
+            }
+          : c
+      )
+    )
+  }
+}
+
+function CalendarCard({ calendar, children }) {
+  const deleteOptimistic = useDeleteOptimistic(calendar.calendar_id)
+  const updateOptimistic = useUpdateOptimistic(calendar.calendar_id)
+
+  const theme = useTheme()
   const [isEditing, setIsEditing] = useState(false)
   const isCreating = calendar.etag === 'creating'
   const inputRef = useRef(null)
-
-  const updateRef = useRef(null)
-
-  const updateMutation = useMutation({
-    onMutate: variables => {
-      // Compose the PUT request. Mutate the variables object,
-      // so these changes are available to mutationFn:
-      Object.assign(variables, { ...calendar, ...variables })
-
-      console.log('Composed mutation variables: ', variables)
-
-      variables.controller = new AbortController()
-
-      // updateRef.current = "old" controller
-      updateRef.current?.abort()
-      updateRef.current = variables.controller
-
-      return {
-        unsaved: calendar.unsaved,
-        etag: calendar.etag,
-      }
-    },
-    mutationFn: variables => {
-      return goFetch(variables._endpoint ?? `timeout`, {
-        signal: variables.controller.signal,
-        timeout: 4000,
-        method: 'PUT',
-        body: {
-          ...variables,
-          controller: undefined,
-          _endpoint: undefined,
-          unsaved: undefined,
-        },
-      })
-    },
-    onSuccess: (data, variables, context) => {
-
-      if (context.etag !== calendar.etag) {
-        console.log(`🗑️ Outdated etag on mutation result. Discarding.`)
-        return
-      }
-
-      // Where do I actually get the result of the mutation?
-      console.log('Mutation result data was: ', data[0])
-
-      let resolution = {}
-      console.log(
-        `context unsaved = ${context.unsaved}, calendar unsaved = ${calendar.unsaved}`
-      )
-      if (context.unsaved === calendar.unsaved) {
-        console.log('Timestamp match. Accepting return value.')
-        resolution = data[0]
-      } else {
-        console.log('Timestamp mismatch. Only accepting returned etag.')
-        resolution = {
-          ...calendar,
-          etag: data[0].etag,
-        }
-      }
-
-      queryClient.setQueryData(['catalog'], data =>
-        data.map(c => (c.calendar_id === calendar.calendar_id ? resolution : c))
-      )
-    },
-  })
-
-  const deleteMutation = useMutation({
-    onMutate: () => {
-      queryClient.setQueryData(['catalog'], data =>
-        data.map(c =>
-          c.calendar_id === calendar.calendar_id
-            ? { ...c, isDeleting: true, unsaved: Date.now() }
-            : c
-        )
-      )
-    },
-    mutationFn: variables =>
-      Promise.reject('autoreject'),
-      // goFetch(`timeout/${calendar.calendar_id}`, {
-      //   method: 'DELETE',
-      //   body: { etag: variables.etag },
-      // }),
-
-    onSuccess: data => {
-      if (data.length) {
-        // Outcome certain: The event was definitely deleted from the server.
-        console.log('deleted ', data)
-        queryClient.setQueryData(['catalog'], data =>
-          data.filter(c => c.calendar_id !== calendar.calendar_id)
-        )
-      }
-    },
-  })
 
   useEffect(() => {
     if (isEditing) {
@@ -449,18 +366,10 @@ function CalendarCard({ calendar, children }) {
               onChange={leadingDebounce(
                 `summary update ${calendar.calendar_id}`,
                 e => {
-                  console.log('⚽ debounce landed')
-                  queryClient.setQueryData(['catalog'], data =>
-                    data.map(c =>
-                      c.calendar_id === calendar.calendar_id
-                        ? {
-                            ...c,
-                            summary: e.target.value,
-                            unsaved: Date.now(),
-                          }
-                        : c
-                    )
-                  )
+                  console.log(`⚽ debounce landed for ${calendar.calendar_id}`)
+                  updateOptimistic({
+                    summary: e.target.value,
+                  })
                 },
                 350
               )}
@@ -476,30 +385,7 @@ function CalendarCard({ calendar, children }) {
         </Box>
       </Box>
       <CardContent sx={{ flexGrow: 1, width: '100%' }}>{children}</CardContent>
-      <Box sx={{ display: 'flex', justifyContent: 'end' }}>
-        <IconButton
-          disabled={isCreating}
-          onClick={() =>
-            updateMutation.mutate({
-              summary: calendar.summary,
-              _endpoint: `calendars/${calendar.calendar_id}`,
-            })
-          }
-        >
-          <SyncIcon />
-        </IconButton>
-        <IconButton
-          disabled={isCreating}
-          onClick={() =>
-            updateMutation.mutate({
-              summary: calendar.summary,
-              _endpoint: 'timeout',
-            })
-          }
-        >
-          <SyncDisabledIcon />
-        </IconButton>
-      </Box>
+
       <CardActions>
         <Button
           disabled={isCreating}
@@ -529,7 +415,7 @@ function CalendarCard({ calendar, children }) {
           <IconButton
             aria-label="Delete"
             disabled={calendar.isDeleting}
-            onClick={() => deleteMutation.mutate({ etag: calendar.etag })}
+            onClick={() => deleteOptimistic(calendar.calendar_id)}
           >
             <DeleteIcon sx={{ opacity: 0.9 }} />
           </IconButton>

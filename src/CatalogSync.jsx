@@ -1,6 +1,6 @@
 import SyncIcon from '@mui/icons-material/Sync'
 import CircularProgress from '@mui/material/CircularProgress'
-import { Box, Button, IconButton, List, ListItem } from '@mui/material'
+import { Box, IconButton, List, ListItem } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
@@ -123,12 +123,10 @@ function makeCalendarFetch(original, signal) {
 export function CatalogSync() {
   const queryClient = useQueryClient()
   const controllerRef = useRef(new AbortController())
-  const controllerNumRef = useRef(0)
   const list = useTouchList()
 
   const itemMutation = useMutation({
     onMutate: variables => {
-      console.log('Item mutation started / ', controllerNumRef.current)
       // Extend the variables object to expose the current abort signal
       variables.original = { ...variables }
       variables.signal = controllerRef.current.signal
@@ -152,7 +150,6 @@ export function CatalogSync() {
     retry: 0,
     onMutate: () => {
       controllerRef.current.abort()
-      controllerNumRef.current++
       controllerRef.current = new AbortController()
 
       console.log('🌒 About to start promise bundle')
@@ -193,9 +190,6 @@ export function CatalogSync() {
           </ListItem>
         ))}
       </List>
-      <Button variant="contained" onClick={() => controllerNumRef.current++}>
-        +
-      </Button>
     </Box>
   )
 }
