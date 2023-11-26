@@ -328,14 +328,6 @@ function CalendarCard({ calendar, children }) {
       })
     },
     onSuccess: (data, variables, context) => {
-      if (variables.controller.signal.aborted) {
-        console.log('🪭 success. Signal was aborted.')
-        return
-      }
-      console.log(
-        `🥂 update success (${variables.calendar_id}) - ` +
-          `context etag was ${context.etag}, timestamp = ${context.unsaved}`
-      )
 
       if (context.etag !== calendar.etag) {
         console.log(`🗑️ Outdated etag on mutation result. Discarding.`)

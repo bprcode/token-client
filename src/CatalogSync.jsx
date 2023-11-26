@@ -20,13 +20,12 @@ function useTouchList() {
 }
 
 function handleCalendarSuccess({ result, original, queryClient }) {
+  const current = queryClient
+    .getQueryData(['catalog'])
+    .find(c => c.calendar_id === original.calendar_id)
 
   // Creation success
   if (original.etag === 'creating') {
-    const current = queryClient
-      .getQueryData(['catalog'])
-      .find(c => c.calendar_id === original.calendar_id)
-
     // Retain any pending edits
     const update = {
       ...current,
@@ -51,12 +50,30 @@ function handleCalendarSuccess({ result, original, queryClient }) {
   // Deletion success
   if (original.isDeleting) {
     queryClient.setQueryData(['catalog'], catalog =>
-          catalog.filter(c => c.calendar_id !== original.calendar_id)
-        )
+      catalog.filter(c => c.calendar_id !== original.calendar_id)
+    )
 
     return
   }
 
+  // Update success
+  if (current.etag !== original.etag) {
+    return
+  }
+
+  let resolution = {}
+  if (current.unsaved === original.unsaved) {
+    resolution = result[0]
+  } else {
+    resolution = {
+      ...current,
+      etag: result[0].etag,
+    }
+  }
+
+  queryClient.setQueryData(['catalog'], catalog =>
+    catalog.map(c => (c.calendar_id === original.calendar_id ? resolution : c))
+  )
 }
 
 function makeCalendarFetch(original, signal) {
