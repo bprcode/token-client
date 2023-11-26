@@ -23,7 +23,6 @@ function handleCalendarSuccess({ result, original, queryClient }) {
 
   // Creation success
   if (original.etag === 'creating') {
-
     const current = queryClient
       .getQueryData(['catalog'])
       .find(c => c.calendar_id === original.calendar_id)
@@ -45,7 +44,19 @@ function handleCalendarSuccess({ result, original, queryClient }) {
     queryClient.setQueryData(['catalog'], catalog =>
       catalog.map(c => (c.calendar_id === original.calendar_id ? update : c))
     )
+
+    return
   }
+
+  // Deletion success
+  if (original.isDeleting) {
+    queryClient.setQueryData(['catalog'], catalog =>
+          catalog.filter(c => c.calendar_id !== original.calendar_id)
+        )
+
+    return
+  }
+
 }
 
 function makeCalendarFetch(original, signal) {
