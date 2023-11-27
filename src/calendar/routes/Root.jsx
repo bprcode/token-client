@@ -3,17 +3,12 @@ import { useState } from 'react'
 import { ToggleMenuContext, useNarrowCheck } from '../LayoutContext.mjs'
 import { Box, Container } from '@mui/material'
 import { Outlet, useNavigation } from 'react-router-dom'
-import RouterSidebar from '../../RouterSidebar'
+import RouterSidebar from '../RouterSidebar'
 import { FetchDisplay } from '../../go-fetch'
+import SyncStatus from '../SyncStatus'
 
 export const loader = queryClient => async () => {
-
   return 'unused'
-
-  // const data = queryClient.getQueryData(debugQuery.queryKey)
-  //   || await queryClient.fetchQuery(debugQuery)
-  // console.log('debug query data is:', data)
-  // return 6
 }
 
 export function Root() {
@@ -49,6 +44,8 @@ export function Root() {
               position: 'relative',
             }}
           >
+            <SyncStatus />
+
             {navigation.state === 'loading' && (
               <div
                 style={{

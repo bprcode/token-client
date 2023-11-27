@@ -8,13 +8,13 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
+import { ToggleMenuContext, useNarrowCheck } from './LayoutContext.mjs'
 import { useContext } from 'react'
-import hourglassPng from './assets/hourglass2.png'
+import hourglassPng from '../assets/hourglass2.png'
 
-import { CalendarFolder } from './CalendarFolder'
-import { HeartbeatPanel } from './HeartbeatPanel'
-import { TopNavLink } from './TopNavLink'
+import { CalendarFolder } from '../CalendarFolder'
+import { HeartbeatPanel } from '../HeartbeatPanel'
+import { TopNavLink } from '../TopNavLink'
 
 function NavSection() {
   return (
@@ -30,7 +30,6 @@ function NavSection() {
         <CalendarFolder route={'/calendars/123'} title="Calendar 123" />
         <CalendarFolder route={'/calendars/456'} title="Calendar 456" />
         <CalendarFolder route={'/calendars/789'} title="Calendar 789" />
-        
       </List>
     </Box>
   )

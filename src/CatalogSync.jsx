@@ -19,6 +19,16 @@ function useTouchList() {
   return list
 }
 
+function handleCalendarError({ error, original, queryClient }) {
+  // Tried to delete something that doesn't exist yet
+  if (original.isDeleting && error.status === 404) {
+    queryClient.setQueryData(['catalog'], catalog =>
+      catalog.filter(c => c.calendar_id !== original.calendar_id)
+    )
+    return
+  }
+}
+
 function handleCalendarSuccess({ result, original, queryClient }) {
   const current = queryClient
     .getQueryData(['catalog'])
@@ -131,19 +141,20 @@ export function CatalogSync() {
       variables.original = { ...variables }
       variables.signal = controllerRef.current.signal
     },
-    mutationFn: variables => {
-      console.log('Making request from record:', variables.original)
-      return makeCalendarFetch(variables.original, variables.signal)
-    },
+    mutationFn: variables =>
+      makeCalendarFetch(variables.original, variables.signal),
     onSuccess: (data, variables) =>
       handleCalendarSuccess({
         result: data,
         original: variables.original,
         queryClient,
       }),
-    onSettled: () => {
-      console.log('Item mutation settled')
-    },
+    onError: (error, variables) =>
+      handleCalendarError({
+        error,
+        original: variables.original,
+        queryClient,
+      }),
   })
 
   const bundleMutation = useMutation({
@@ -151,8 +162,6 @@ export function CatalogSync() {
     onMutate: () => {
       controllerRef.current.abort()
       controllerRef.current = new AbortController()
-
-      console.log('🌒 About to start promise bundle')
     },
     mutationFn: variables =>
       Promise.all(
@@ -161,22 +170,19 @@ export function CatalogSync() {
         variables.map(c => itemMutation.mutateAsync({ ...c }))
       ),
     onSettled: () => {
-      console.log('☀️ Promise bundle finished')
+      // Promise bundle finished
     },
   })
 
   return (
-    <Box
-      sx={{
-        backgroundColor: '#420',
-        position: 'fixed',
-        right: 0,
-        top: 0,
-      }}
-    >
-      {bundleMutation.status} / {bundleMutation.error?.message} /{' '}
-      {bundleMutation.data ? 'Data ✅' : 'No data ⭕'}
-      <div style={{ display: 'flex', alignItems: 'center' }}>
+    <Box>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          padding: '0.25rem 1rem',
+        }}
+      >
         <Box sx={{}}>Touch list ({list.length}):</Box>
         <IconButton
           sx={{ marginLeft: 'auto' }}
@@ -184,7 +190,7 @@ export function CatalogSync() {
           disabled={list.length === 0}
         >
           {bundleMutation.isPending ? (
-            <CircularProgress size="20px" color="inherit" />
+            <CircularProgress size="24px" color="inherit" />
           ) : (
             <SyncIcon />
           )}

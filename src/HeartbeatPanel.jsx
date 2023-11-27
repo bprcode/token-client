@@ -94,7 +94,11 @@ export function HeartbeatPanel() {
         </IconButton>
       </>
     ) : (
-      <Button variant="contained" onClick={loginMutation.mutate}>
+      <Button
+        variant="contained"
+        onClick={loginMutation.mutate}
+        sx={{ mx: 'auto' }}
+      >
         Login Sample User
       </Button>
     )

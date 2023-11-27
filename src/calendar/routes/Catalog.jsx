@@ -1,10 +1,8 @@
-import SyncIcon from '@mui/icons-material/Sync'
-import SyncDisabledIcon from '@mui/icons-material/SyncDisabled'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
 import ShareIcon from '@mui/icons-material/Share'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useLoadingPane } from '../LoadingPane'
 import { ViewContainer } from '../ViewContainer'
@@ -441,8 +439,6 @@ export function Catalog() {
       <Typography variant="h6" component="span">
         My Calendars
       </Typography>
-
-      <CatalogSync />
     </ViewHeader>
   )
 
