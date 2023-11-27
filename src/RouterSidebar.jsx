@@ -33,11 +33,13 @@ function NavSection() {
         <CalendarFolder route={'/calendars/789'} title="Calendar 789" />
         <ListItem
           disablePadding
+          
+          sx={{ color: 'inherit', }}
+        >
+          <ListItemButton
           component={Link}
           to="/catalog"
-          sx={{ color: 'inherit' }}
-        >
-          <ListItemButton>Catalog</ListItemButton>
+          >Catalog</ListItemButton>
         </ListItem>
       </List>
     </Box>
