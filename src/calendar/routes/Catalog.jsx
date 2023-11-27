@@ -27,6 +27,7 @@ import dayjs from 'dayjs'
 import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { leadingDebounce, bounceEarly } from '../../debounce.mjs'
+import { CatalogSync } from '../../CatalogSync'
 
 function makeCatalogQuery(queryClient) {
   makeCatalogQuery.query ??= {
@@ -439,6 +440,8 @@ export function Catalog() {
       <Typography variant="h6" component="span">
         My Calendars
       </Typography>
+
+      <CatalogSync />
     </ViewHeader>
   )
 

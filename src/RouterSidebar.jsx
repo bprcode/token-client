@@ -5,6 +5,7 @@ import {
   Drawer,
   List,
   ListItem,
+  ListItemButton,
   Paper,
   Typography,
   useTheme,
@@ -16,7 +17,6 @@ import hourglassPng from './assets/hourglass2.png'
 import { CalendarFolder } from './CalendarFolder'
 import { Link } from 'react-router-dom'
 import { HeartbeatPanel } from './HeartbeatPanel'
-import { CatalogSync } from './CatalogSync'
 
 function NavSection() {
   return (
@@ -31,8 +31,13 @@ function NavSection() {
         <CalendarFolder route={'/calendars/123'} title="Calendar 123" />
         <CalendarFolder route={'/calendars/456'} title="Calendar 456" />
         <CalendarFolder route={'/calendars/789'} title="Calendar 789" />
-        <ListItem>
-          <Link to="/catalog">Catalog</Link>
+        <ListItem
+          disablePadding
+          component={Link}
+          to="/catalog"
+          sx={{ color: 'inherit' }}
+        >
+          <ListItemButton>Catalog</ListItemButton>
         </ListItem>
       </List>
     </Box>
@@ -87,7 +92,6 @@ export default function RouterSidebar({ width = '240px', expand }) {
     <>
       <HourglassHeader />
       <NavSection />
-      <CatalogSync />
       <HeartbeatPanel />
     </>
   )

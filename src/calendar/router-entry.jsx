@@ -60,10 +60,6 @@ const router = createBrowserRouter([
             element: <Index />,
           },
           {
-            path: 'foo',
-            element: <div>Foo Element</div>,
-          },
-          {
             path: 'login',
             element: <LoginPage />,
           },

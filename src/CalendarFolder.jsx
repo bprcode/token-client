@@ -9,17 +9,13 @@ import {
   ListItemIcon,
   useTheme,
 } from '@mui/material'
-import { styled, alpha } from '@mui/material/styles'
+import { alpha } from '@mui/material/styles'
 import { ToggleMenuContext } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
 import { Link, useLocation, useNavigate, useNavigation } from 'react-router-dom'
 
 const openColor = '#0116'
 const activeColor = '#153244cc'
-const PlainLink = styled(Link)({
-  color: 'inherit',
-  textDecoration: 'none',
-})
 
 export function CalendarFolder({ route, title }) {
   const location = useLocation()
@@ -61,6 +57,8 @@ export function CalendarFolder({ route, title }) {
       aria-label="Nested folder"
     >
       <ListItemButton
+        component={Link}
+        to={route}
         onClick={() => navigate(route)}
         sx={{
           backgroundColor: isCurrentLocation
@@ -71,10 +69,10 @@ export function CalendarFolder({ route, title }) {
 
           boxShadow:
             (isNavTarget || isBaseView) &&
-            '4px 0 0 inset' + alpha(theme.palette.primary.main, .53),
+            '4px 0 0 inset ' + alpha(theme.palette.primary.main, .53),
         }}
       >
-        <PlainLink to={route}>{title}</PlainLink>
+        {title}
       </ListItemButton>
       <Collapse in={isOpen} timeout={350} unmountOnExit>
         <List component="div" disablePadding>
@@ -122,10 +120,13 @@ function ViewLink({ to = '', label, children }) {
 
   return (
     <ListItem
+      component={Link}
+      to={to}
       sx={{
+        color: 'inherit',
         boxShadow:
           (isNavTarget || (isCurrentLocation && !navigation.location)) &&
-          '4px 0 0 inset' + alpha(theme.palette.primary.main, .53),
+          '4px 0 0 inset ' + alpha(theme.palette.primary.main, .53),
         backgroundColor: isCurrentLocation ? activeColor : openColor,
       }}
       disablePadding
@@ -137,10 +138,6 @@ function ViewLink({ to = '', label, children }) {
             backgroundColor: '#aef3',
           },
         }}
-        onClick={() => {
-          navigate(to)
-          toggleMenu(false)
-        }}
       >
         <ListItemIcon
           sx={{
@@ -149,7 +146,7 @@ function ViewLink({ to = '', label, children }) {
         >
           {children}
         </ListItemIcon>
-        <PlainLink to={to}>{label}</PlainLink>
+        {label}
       </ListItemButton>
     </ListItem>
   )
