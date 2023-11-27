@@ -349,6 +349,7 @@ function CalendarCard({ calendar, children }) {
             </Box>
           ) : (
             <TextField
+            sx={{width: '100%'}}
               variant="filled"
               key={calendar.calendar_id + isEditing}
               inputRef={inputRef}

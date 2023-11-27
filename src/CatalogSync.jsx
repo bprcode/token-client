@@ -166,7 +166,14 @@ export function CatalogSync() {
   })
 
   return (
-    <Box sx={{ backgroundColor: '#420' }}>
+    <Box
+      sx={{
+        backgroundColor: '#420',
+        position: 'fixed',
+        right: 0,
+        top: 0,
+      }}
+    >
       {bundleMutation.status} / {bundleMutation.error?.message} /{' '}
       {bundleMutation.data ? 'Data ✅' : 'No data ⭕'}
       <div style={{ display: 'flex', alignItems: 'center' }}>
