@@ -1,5 +1,12 @@
-import { Alert, AlertTitle, Box, Button, CircularProgress, useTheme } from '@mui/material'
-import {alpha} from '@mui/material/styles'
+import {
+  Alert,
+  AlertTitle,
+  Box,
+  Button,
+  CircularProgress,
+  useTheme,
+} from '@mui/material'
+import { alpha } from '@mui/material/styles'
 
 function LoadingPane({ query }) {
   const theme = useTheme()
@@ -8,7 +15,8 @@ function LoadingPane({ query }) {
     return (
       <Box
         sx={{
-          boxShadow: '0 0 1rem inset ' + alpha(theme.palette.primary.main, .08),
+          boxShadow:
+            '0 0 1rem inset ' + alpha(theme.palette.primary.main, 0.08),
           height: '100%',
           display: 'grid',
           placeContent: 'center',
@@ -22,7 +30,8 @@ function LoadingPane({ query }) {
     return (
       <Box
         sx={{
-          boxShadow: '0 0 1rem inset ' + alpha(theme.palette.primary.main, .08),
+          boxShadow:
+            '0 0 1rem inset ' + alpha(theme.palette.primary.main, 0.08),
           height: '100%',
           display: 'grid',
           placeContent: 'center',
@@ -31,7 +40,7 @@ function LoadingPane({ query }) {
         <Alert
           severity="error"
           sx={{
-            border: '1px solid ' + alpha(theme.palette.error.main, .08),
+            border: '1px solid ' + alpha(theme.palette.error.main, 0.08),
           }}
           action={
             <Button sx={{ mt: 'auto' }} onClick={query.refetch}>

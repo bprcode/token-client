@@ -4,8 +4,6 @@ import {
   Divider,
   Drawer,
   List,
-  ListItem,
-  ListItemButton,
   Paper,
   Typography,
   useTheme,
@@ -15,8 +13,8 @@ import { useContext } from 'react'
 import hourglassPng from './assets/hourglass2.png'
 
 import { CalendarFolder } from './CalendarFolder'
-import { Link } from 'react-router-dom'
 import { HeartbeatPanel } from './HeartbeatPanel'
+import { TopNavLink } from './TopNavLink'
 
 function NavSection() {
   return (
@@ -28,19 +26,11 @@ function NavSection() {
       }}
     >
       <List disablePadding>
+        <TopNavLink route="/catalog">All Calendars</TopNavLink>
         <CalendarFolder route={'/calendars/123'} title="Calendar 123" />
         <CalendarFolder route={'/calendars/456'} title="Calendar 456" />
         <CalendarFolder route={'/calendars/789'} title="Calendar 789" />
-        <ListItem
-          disablePadding
-          
-          sx={{ color: 'inherit', }}
-        >
-          <ListItemButton
-          component={Link}
-          to="/catalog"
-          >Catalog</ListItemButton>
-        </ListItem>
+        
       </List>
     </Box>
   )

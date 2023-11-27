@@ -12,35 +12,20 @@ import {
 import { alpha } from '@mui/material/styles'
 import { ToggleMenuContext } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
-import { Link, useLocation, useNavigate, useNavigation } from 'react-router-dom'
+import { Link, useLocation, useNavigation } from 'react-router-dom'
+import { TopNavLink } from './TopNavLink'
 
-const openColor = '#0116'
-const activeColor = '#153244cc'
+export const openColor = '#0116'
+export const activeColor = '#153244cc'
 
 export function CalendarFolder({ route, title }) {
   const location = useLocation()
   const navigation = useNavigation()
-  const navigate = useNavigate()
   const theme = useTheme()
 
   const isOpen =
     (location.pathname === route && !navigation.location) ||
     (navigation.location && navigation.location.pathname === route)
-
-  const navParams = new URLSearchParams(
-    (navigation.location && navigation.location.search) || 'v='
-  )
-  const locParams = new URLSearchParams(location.search || 'v=')
-
-  const navView = navParams.get('v')
-  const locView = locParams.get('v')
-
-  const isBaseView = isOpen && !navView && !locView
-
-  const isNavTarget =
-    navigation.location && navigation.location.pathname === route && !navView
-
-  const isCurrentLocation = location.pathname === route && !locView
 
   return (
     <ListItem disablePadding>
@@ -56,26 +41,7 @@ export function CalendarFolder({ route, title }) {
         }}
         aria-label={`Nested folder ${route}`}
       >
-        <ListItem disablePadding>
-          <ListItemButton
-            component={Link}
-            to={route}
-            onClick={() => navigate(route)}
-            sx={{
-              backgroundColor: isCurrentLocation
-                ? activeColor
-                : isOpen
-                ? openColor
-                : undefined,
-
-              boxShadow:
-                (isNavTarget || isBaseView) &&
-                '4px 0 0 inset ' + alpha(theme.palette.primary.main, 0.53),
-            }}
-          >
-            {title}
-          </ListItemButton>
-        </ListItem>
+        <TopNavLink route={route}>{title}</TopNavLink>
         <Collapse in={isOpen} timeout={350} unmountOnExit>
           <List disablePadding>
             <ViewLink to={`${route}?v=month`} label="Month">
