@@ -67,7 +67,15 @@ export function HeartbeatPanel() {
   if (!loginMutation.isPending && !logoutMutation.isPending) {
     interactions = heartbeatResult.data?.name ? (
       <>
-        <Avatar sx={{ bgcolor: theme.palette.primary.main, mr: 1, ml: 1 }}>
+        <Avatar
+          sx={{
+            bgcolor: theme.palette.primary.main,
+            mr: 1,
+            ml: 1,
+            width: '30px',
+            height: '30px',
+          }}
+        >
           {heartbeatResult.data.name[0]}
         </Avatar>
         <span
@@ -93,7 +101,7 @@ export function HeartbeatPanel() {
   }
 
   return (
-    <List>
+    <List disablePadding>
       {heartbeatResult.error && (
         <ListItem sx={{ backgroundColor: 'red' }}>
           error.message: {heartbeatResult.error?.message}
@@ -103,7 +111,9 @@ export function HeartbeatPanel() {
       )}
       <ListItem
         sx={{
-          backgroundColor: '#008',
+          backgroundColor: '#0002',
+          py: 1,
+          borderTop: '1px solid #0004',
         }}
         disablePadding
       >
