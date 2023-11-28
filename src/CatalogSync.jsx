@@ -5,6 +5,83 @@ import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
 import { useRef } from 'react'
+import debounce from './debounce.mjs'
+
+export function useSyncCatalogData() {
+  const queryClient = useQueryClient()
+  const controllerRef = useRef(new AbortController())
+
+  const itemMutation = useMutation({
+    onMutate: variables => {
+      // Extend the variables object to expose the current abort signal
+      variables.original = { ...variables }
+      variables.signal = controllerRef.current.signal
+    },
+    mutationFn: variables =>
+      makeCalendarFetch(variables.original, variables.signal),
+    onSuccess: (data, variables) =>
+      handleCalendarSuccess({
+        result: data,
+        original: variables.original,
+        queryClient,
+      }),
+    onError: (error, variables) =>
+      handleCalendarError({
+        error,
+        original: variables.original,
+        queryClient,
+      }),
+  })
+
+  const bundleMutation = useMutation({
+    retry: 0,
+    onMutate: variables => {
+      console.log(
+        `☢️ Starting bundle mutation with calendars (${variables.length})`,
+        variables.map(c => c.calendar_id).join(', ')
+      )
+      controllerRef.current.abort()
+      controllerRef.current = new AbortController()
+    },
+    mutationFn: variables =>
+      Promise.all(
+        // Important to clone the record, rather than passing it directly,
+        // since the mutate method also modifies the variables it receives.
+        variables.map(c => itemMutation.mutateAsync({ ...c }))
+      ),
+    onSettled: () => {
+      // Promise bundle finished
+    },
+  })
+
+  return (queryKey, updater) => {
+    console.log(`Initiating cache update and debounced sync...`)
+
+    queryClient.setQueryData(queryKey, updater)
+    debounce(
+      `catalog sync`,
+      () => {
+        console.log('⚽ debounced sync activated')
+        bundleMutation.mutate(touchList(queryClient))
+      },
+      3000
+    )()
+  }
+}
+
+export function touchList(queryClient) {
+  const catalog = queryClient.getQueryData(['catalog'])
+
+  const list = []
+
+  for (const c of catalog ?? []) {
+    if (c.unsaved || c.etag === 'creating') {
+      list.push(c)
+    }
+  }
+
+  return list
+}
 
 function useTouchList() {
   const catalog = useCatalogQuery()

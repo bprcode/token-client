@@ -25,7 +25,7 @@ import dayjs from 'dayjs'
 import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { leadingDebounce, bounceEarly } from '../../debounce.mjs'
-import { CatalogSync } from '../../CatalogSync'
+import { useSyncCatalogData } from '../../CatalogSync'
 
 function makeCatalogQuery(queryClient) {
   makeCatalogQuery.query ??= {
@@ -209,30 +209,6 @@ function CardOuter({ sx, children }) {
   )
 }
 
-function useCreateOptimistic() {
-  const queryClient = useQueryClient()
-  const [idemKey, setIdemKey] = useState(randomIdemKey())
-
-  function randomIdemKey() {
-    return String(Math.floor(Math.random() * 1e9))
-  }
-
-  return () => {
-    const temporary = {
-      summary: 'Temporary Calendar',
-      etag: 'creating',
-      calendar_id: idemKey,
-    }
-    console.log('creating with idemKey: ', temporary.calendar_id)
-
-    queryClient.setQueryData(['catalog'], catalog => [...catalog, temporary])
-
-    const newKey = randomIdemKey()
-    console.log('setting new idem key to ', newKey)
-    setIdemKey(newKey)
-  }
-}
-
 function CreationCard() {
   const createOptimistic = useCreateOptimistic()
   const [disabled, setDisabled] = useState(false)
@@ -261,11 +237,35 @@ function CreationCard() {
   )
 }
 
-function useDeleteOptimistic(id) {
-  const queryClient = useQueryClient()
+function useCreateOptimistic() {
+  const syncCatalogData = useSyncCatalogData()
+  const [idemKey, setIdemKey] = useState(randomIdemKey())
+
+  function randomIdemKey() {
+    return String(Math.floor(Math.random() * 1e9))
+  }
 
   return () => {
-    queryClient.setQueryData(['catalog'], catalog =>
+    const temporary = {
+      summary: 'Temporary Calendar',
+      etag: 'creating',
+      calendar_id: idemKey,
+    }
+    console.log('creating with idemKey: ', temporary.calendar_id)
+
+    syncCatalogData(['catalog'], catalog => [...catalog, temporary])
+
+    const newKey = randomIdemKey()
+    console.log('setting new idem key to ', newKey)
+    setIdemKey(newKey)
+  }
+}
+
+function useDeleteOptimistic(id) {
+  const syncCatalogData = useSyncCatalogData()
+
+  return () => {
+    syncCatalogData(['catalog'], catalog =>
       catalog.map(c =>
         c.calendar_id === id
           ? { ...c, isDeleting: true, unsaved: Date.now() }
@@ -276,10 +276,10 @@ function useDeleteOptimistic(id) {
 }
 
 function useUpdateOptimistic(id) {
-  const queryClient = useQueryClient()
+  const syncCatalogData = useSyncCatalogData()
 
   return updates => {
-    queryClient.setQueryData(['catalog'], catalog =>
+    syncCatalogData(['catalog'], catalog =>
       catalog.map(c =>
         c.calendar_id === id
           ? {
@@ -366,7 +366,6 @@ function CalendarCard({ calendar, children }) {
               onChange={leadingDebounce(
                 `summary update ${calendar.calendar_id}`,
                 e => {
-                  console.log(`⚽ debounce landed for ${calendar.calendar_id}`)
                   updateOptimistic({
                     summary: e.target.value,
                   })

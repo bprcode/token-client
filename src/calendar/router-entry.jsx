@@ -85,7 +85,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={digitalTheme}>
         <CssBaseline enableColorScheme>
-          <RouterProvider router={router} />
+            <RouterProvider router={router} />
         </CssBaseline>
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />

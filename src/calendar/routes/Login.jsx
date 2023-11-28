@@ -97,14 +97,15 @@ function LoginSection() {
 
             {/* {buttons} */}
             <Button
-            disabled={loginMutation.isPending}
+              disabled={loginMutation.isPending}
               onClick={() => loginMutation.mutate({ email, password })}
               variant="outlined"
             >
-              {loginMutation.isPending ?
-              <CircularProgress size='1.5rem' />
-              : 'Sign In'
-}
+              {loginMutation.isPending ? (
+                <CircularProgress size="1.5rem" />
+              ) : (
+                'Sign In'
+              )}
             </Button>
           </Stack>
         </Container>
