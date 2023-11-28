@@ -1,5 +1,5 @@
 import { Box } from '@mui/material'
-import { CatalogSync } from '../CatalogSync'
+import { CatalogSyncStatus } from '../CatalogSync'
 
 export default function SyncStatus() {
   return (
@@ -13,7 +13,7 @@ export default function SyncStatus() {
         width: '20ch',
       }}
     >
-      <CatalogSync />
+      <CatalogSyncStatus />
     </Box>
   )
 }

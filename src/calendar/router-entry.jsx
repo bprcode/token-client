@@ -11,38 +11,39 @@ import digitalTheme from '../blueDigitalTheme'
 import ReactDOM from 'react-dom/client'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import RouterError from './RouterError'
-import {Root, loader as rootLoader}  from './routes/Root'
-import {Catalog, loader as catalogLoader} from './routes/Catalog'
+import { Root, loader as rootLoader } from './routes/Root'
+import { Catalog, loader as catalogLoader } from './routes/Catalog'
 import { Calendar, loader as calendarLoader } from './routes/Calendar'
 import { LoginPage } from './routes/Login'
 import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
+import { CatalogMutationProvider } from '../CatalogSync'
 
 const globalExpiryHandler = error => {
   console.log('🌍 global cache error handler:', error.status, error.message)
-      if(error.message?.includes('No identification')) {
-        console.log('❔ No ID')
-        queryClient.setQueryData(['heartbeat'], null)
-        queryClient.invalidateQueries({ queryKey: ['heartbeat']})
-      }
-    }
-    
+  if (error.message?.includes('No identification')) {
+    console.log('❔ No ID')
+    queryClient.setQueryData(['heartbeat'], null)
+    queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
+  }
+}
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: retryCheck
+      retry: retryCheck,
     },
     mutations: {
-      retry: retryCheck
-    }
+      retry: retryCheck,
+    },
   },
   queryCache: new QueryCache({
-    onError: globalExpiryHandler
+    onError: globalExpiryHandler,
   }),
   mutationCache: new MutationCache({
-    onError: globalExpiryHandler
-  })
+    onError: globalExpiryHandler,
+  }),
 })
 
 const router = createBrowserRouter([
@@ -79,13 +80,14 @@ const router = createBrowserRouter([
   },
 ])
 
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={digitalTheme}>
         <CssBaseline enableColorScheme>
+          <CatalogMutationProvider>
             <RouterProvider router={router} />
+          </CatalogMutationProvider>
         </CssBaseline>
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />

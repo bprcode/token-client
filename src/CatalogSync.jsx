@@ -2,12 +2,17 @@ import SyncIcon from '@mui/icons-material/Sync'
 import CircularProgress from '@mui/material/CircularProgress'
 import { Box, IconButton, List, ListItem } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
-import { useRef } from 'react'
+import { createContext, useContext, useRef } from 'react'
 import debounce from './debounce.mjs'
 
-export function useSyncCatalogData() {
+const CatalogMutationContext = createContext(null)
+
+export function CatalogMutationProvider({ children }) {
   const queryClient = useQueryClient()
   const controllerRef = useRef(new AbortController())
 
@@ -35,6 +40,7 @@ export function useSyncCatalogData() {
 
   const bundleMutation = useMutation({
     retry: 0,
+    mutationKey: ['catalog bundle'],
     onMutate: variables => {
       console.log(
         `☢️ Starting bundle mutation with calendars (${variables.length})`,
@@ -53,6 +59,21 @@ export function useSyncCatalogData() {
       // Promise bundle finished
     },
   })
+
+  return (
+    <CatalogMutationContext.Provider value={bundleMutation}>
+      {children}
+    </CatalogMutationContext.Provider>
+  )
+}
+
+export function useSyncCatalogData() {
+  const queryClient = useQueryClient()
+  const bundleMutation = useContext(CatalogMutationContext)
+
+  if (!bundleMutation) {
+    throw Error('CatalogMutationProvider required.')
+  }
 
   return (queryKey, updater) => {
     console.log(`Initiating cache update and debounced sync...`)
@@ -207,49 +228,10 @@ function makeCalendarFetch(original, signal) {
   })
 }
 
-export function CatalogSync() {
-  const queryClient = useQueryClient()
-  const controllerRef = useRef(new AbortController())
+export function CatalogSyncStatus() {
+  const bundleMutation = useContext(CatalogMutationContext)
   const list = useTouchList()
-
-  const itemMutation = useMutation({
-    onMutate: variables => {
-      // Extend the variables object to expose the current abort signal
-      variables.original = { ...variables }
-      variables.signal = controllerRef.current.signal
-    },
-    mutationFn: variables =>
-      makeCalendarFetch(variables.original, variables.signal),
-    onSuccess: (data, variables) =>
-      handleCalendarSuccess({
-        result: data,
-        original: variables.original,
-        queryClient,
-      }),
-    onError: (error, variables) =>
-      handleCalendarError({
-        error,
-        original: variables.original,
-        queryClient,
-      }),
-  })
-
-  const bundleMutation = useMutation({
-    retry: 0,
-    onMutate: () => {
-      controllerRef.current.abort()
-      controllerRef.current = new AbortController()
-    },
-    mutationFn: variables =>
-      Promise.all(
-        // Important to clone the record, rather than passing it directly,
-        // since the mutate method also modifies the variables it receives.
-        variables.map(c => itemMutation.mutateAsync({ ...c }))
-      ),
-    onSettled: () => {
-      // Promise bundle finished
-    },
-  })
+  const isMutating = bundleMutation.isPending
 
   return (
     <Box>
@@ -263,10 +245,10 @@ export function CatalogSync() {
         <Box sx={{}}>Touch list ({list.length}):</Box>
         <IconButton
           sx={{ marginLeft: 'auto' }}
-          onClick={() => bundleMutation.mutate(list)}
+          // onClick={() => bundleMutation.mutate(list)}
           disabled={list.length === 0}
         >
-          {bundleMutation.isPending ? (
+          {isMutating ? (
             <CircularProgress size="24px" color="inherit" />
           ) : (
             <SyncIcon />
