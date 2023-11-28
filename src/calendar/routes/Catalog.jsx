@@ -24,7 +24,7 @@ import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { leadingDebounce, bounceEarly } from '../../debounce.mjs'
+import { debounce, bounceEarly } from '../../debounce.mjs'
 import { useSyncCatalogData } from '../../CatalogSync'
 
 function makeCatalogQuery(queryClient) {
@@ -275,11 +275,11 @@ function useDeleteOptimistic(id) {
   }
 }
 
-function useUpdateOptimistic(id) {
-  const syncCatalogData = useSyncCatalogData()
+function useUpdateNoSync(id) {
+  const queryClient = useQueryClient()
 
   return updates => {
-    syncCatalogData(['catalog'], catalog =>
+    queryClient.setQueryData(['catalog'], catalog =>
       catalog.map(c =>
         c.calendar_id === id
           ? {
@@ -295,7 +295,8 @@ function useUpdateOptimistic(id) {
 
 function CalendarCard({ calendar, children }) {
   const deleteOptimistic = useDeleteOptimistic(calendar.calendar_id)
-  const updateOptimistic = useUpdateOptimistic(calendar.calendar_id)
+  const updateNoSync = useUpdateNoSync(calendar.calendar_id)
+  const syncCatalogData = useSyncCatalogData()
 
   const theme = useTheme()
   const [isEditing, setIsEditing] = useState(false)
@@ -363,10 +364,10 @@ function CalendarCard({ calendar, children }) {
                   inputRef.current.blur()
                 }
               }}
-              onChange={leadingDebounce(
+              onChange={debounce(
                 `summary update ${calendar.calendar_id}`,
                 e => {
-                  updateOptimistic({
+                  updateNoSync({
                     summary: e.target.value,
                   })
                 },
@@ -374,9 +375,7 @@ function CalendarCard({ calendar, children }) {
               )}
               onBlur={e => {
                 bounceEarly(`summary update ${calendar.calendar_id}`)
-                // updateMutation.mutate({
-                //   summary: e.target.value,
-                // })
+                syncCatalogData()
                 setIsEditing(false)
               }}
             />

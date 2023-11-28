@@ -1,7 +1,7 @@
 const timeouts = new Map()
 const callbacks = new Map()
 
-export default function debounce(key, fn, delay = 1000) {
+export function debounce(key, fn, delay = 1000) {
   return (...stuff) => {
     clearTimeout(timeouts.get(key))
 

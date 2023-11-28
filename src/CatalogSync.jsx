@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
 import { createContext, useContext, useRef } from 'react'
-import debounce from './debounce.mjs'
+import { leadingDebounce } from './debounce.mjs'
 
 const CatalogMutationContext = createContext(null)
 
@@ -79,7 +79,7 @@ export function useSyncCatalogData() {
     console.log(`Initiating cache update and debounced sync...`)
 
     queryClient.setQueryData(queryKey, updater)
-    debounce(
+    leadingDebounce(
       `catalog sync`,
       () => {
         console.log('⚽ debounced sync activated')
