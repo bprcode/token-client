@@ -24,7 +24,6 @@ import { alpha } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
-import { debounce, bounceEarly } from '../../debounce.mjs'
 
 function makeCatalogQuery(queryClient) {
   makeCatalogQuery.query ??= {
@@ -360,17 +359,11 @@ function CalendarCard({ calendar, children }) {
                   inputRef.current.blur()
                 }
               }}
-              onChange={debounce(
-                `summary update ${calendar.calendar_id}`,
-                e => {
-                  updateOptimistic({
-                    summary: e.target.value,
-                  })
-                },
-                3500
-              )}
-              onBlur={() => {
-                bounceEarly(`summary update ${calendar.calendar_id}`)
+              onBlur={e => {
+                console.log('☁️ Blur: e.target.value=', e.target.value)
+                updateOptimistic({
+                  summary: e.target.value,
+                })
                 setIsEditing(false)
               }}
             />

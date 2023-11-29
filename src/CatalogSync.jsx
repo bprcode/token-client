@@ -2,15 +2,11 @@ import SyncIcon from '@mui/icons-material/Sync'
 import CircularProgress from '@mui/material/CircularProgress'
 import { Box, IconButton, List, ListItem } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
-import {
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
 import { useContext, useEffect, useRef } from 'react'
 import { bounceEarly, debounce, leadingDebounce } from './debounce.mjs'
 import { CatalogMutationContext } from './CatalogMutationContext'
-
 
 export function CatalogMutationProvider({ children }) {
   const queryClient = useQueryClient()
@@ -210,14 +206,14 @@ export function CatalogAutosaver() {
   const { data } = useCatalogQuery()
 
   const queryClient = useQueryClient()
-  const {mutate } = useContext(CatalogMutationContext)
+  const { mutate } = useContext(CatalogMutationContext)
 
   useEffect(() => {
     debounce(
       `Catalog autosaver`,
       () => {
         countRef.current++
-        
+
         const list = touchList(queryClient)
         if (list.length > 0) {
           console.log(`♻️ Autosaving... (check # ${countRef.current})`)
@@ -243,37 +239,38 @@ export function CatalogSyncStatus() {
   const list = useTouchList()
   const isMutating = bundleMutation.isPending
 
-  return (<>
-  <CatalogAutosaver />
-    <Box>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0.25rem 1rem',
-        }}
-      >
-        <Box sx={{}}>Touch list ({list.length}):</Box>
-        <IconButton
-          sx={{ marginLeft: 'auto' }}
-          // onClick={() => bundleMutation.mutate(list)}
-          disabled={list.length === 0}
+  return (
+    <>
+      <CatalogAutosaver />
+      <Box>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0.25rem 1rem',
+          }}
         >
-          {isMutating ? (
-            <CircularProgress size="24px" color="inherit" />
-          ) : (
-            <SyncIcon />
-          )}
-        </IconButton>
-      </div>
-      <List>
-        {list.map(e => (
-          <ListItem key={e.calendar_id} disablePadding>
-            {e.calendar_id}
-          </ListItem>
-        ))}
-      </List>
-    </Box>
+          <Box sx={{}}>Touch list ({list.length}):</Box>
+          <IconButton
+            sx={{ marginLeft: 'auto' }}
+            // onClick={() => bundleMutation.mutate(list)}
+            disabled={list.length === 0}
+          >
+            {isMutating ? (
+              <CircularProgress size="24px" color="inherit" />
+            ) : (
+              <SyncIcon />
+            )}
+          </IconButton>
+        </div>
+        <List>
+          {list.map(e => (
+            <ListItem key={e.calendar_id} disablePadding>
+              {e.calendar_id}
+            </ListItem>
+          ))}
+        </List>
+      </Box>
     </>
   )
 }
