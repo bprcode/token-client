@@ -144,7 +144,10 @@ function handleCalendarSuccess({ result, original, queryClient }) {
 
   let resolution = {}
   if (current.unsaved === original.unsaved) {
-    resolution = result[0]
+    resolution = {
+      ...result[0],
+      stableKey: current.stableKey,
+    }
   } else {
     resolution = {
       ...current,
@@ -167,6 +170,7 @@ function makeCalendarFetch(original, signal) {
     created: undefined,
     updated: undefined,
     originTag: undefined,
+    stableKey: undefined,
     primary_author_id: undefined,
   }
 
