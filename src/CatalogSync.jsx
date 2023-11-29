@@ -7,10 +7,10 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
-import { createContext, useContext, useRef } from 'react'
+import { useContext, useRef } from 'react'
 import { leadingDebounce } from './debounce.mjs'
+import { CatalogMutationContext } from './CatalogMutationContext'
 
-const CatalogMutationContext = createContext(null)
 
 export function CatalogMutationProvider({ children }) {
   const queryClient = useQueryClient()

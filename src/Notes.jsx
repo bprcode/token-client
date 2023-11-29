@@ -27,7 +27,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import calendarPhoto from './assets/notebook-unsplash.jpg'
 import { useWrapFetch } from './fetchTimeout.jsx'
 import { LoadingError } from './LoadingError'
-import debounce from './debounce.mjs'
+import { debounce } from './debounce.mjs'
 
 const log = console.log.bind(console)
 

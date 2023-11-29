@@ -350,7 +350,6 @@ function CalendarCard({ calendar, children }) {
             <TextField
             sx={{width: '100%'}}
               variant="filled"
-              key={calendar.calendar_id + isEditing}
               inputRef={inputRef}
               defaultValue={calendar.summary || 'Untitled'}
               onClick={e => {
@@ -481,7 +480,7 @@ export function Catalog() {
       {header}
       <CatalogGrid>
         {catalog.data?.map?.((c, i) => (
-          <CalendarCard key={c.calendar_id} calendar={c}>
+          <CalendarCard key={i} calendar={c}>
             <Typography variant="body2" sx={{ opacity: 0.5 }}>
               Created: {dayjs(c.created).from(now)}
               <br />
