@@ -25,22 +25,19 @@ import dayjs from 'dayjs'
 import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { debounce, bounceEarly } from '../../debounce.mjs'
-import { useSyncCatalogData } from '../../CatalogSync'
 
 function makeCatalogQuery(queryClient) {
   makeCatalogQuery.query ??= {
     queryKey: ['catalog'],
-    queryFn: () => {
-      console.log('🦕 catalog queryFn called')
-      return goFetch('calendars', {
+    queryFn: async () => {
+      const fetched = await goFetch('calendars', {
         credentials: 'include',
-      }).then(fetched => {
-        const local = queryClient.getQueryData(['catalog']) ?? []
-        return reconcile({
-          localData: local,
-          serverData: fetched,
-          key: 'calendar_id',
-        })
+      })
+      const local = queryClient.getQueryData(['catalog']) ?? []
+      return reconcile({
+        localData: local,
+        serverData: fetched,
+        key: 'calendar_id',
       })
     },
   }
@@ -238,8 +235,8 @@ function CreationCard() {
 }
 
 function useCreateOptimistic() {
-  const syncCatalogData = useSyncCatalogData()
-  const [idemKey, setIdemKey] = useState(randomIdemKey())
+  const queryClient = useQueryClient()
+  const [idemKey, setIdemKey] = useState(() => randomIdemKey())
 
   function randomIdemKey() {
     return String(Math.floor(Math.random() * 1e9))
@@ -253,7 +250,7 @@ function useCreateOptimistic() {
     }
     console.log('creating with idemKey: ', temporary.calendar_id)
 
-    syncCatalogData(['catalog'], catalog => [...catalog, temporary])
+    queryClient.setQueryData(['catalog'], catalog => [...catalog, temporary])
 
     const newKey = randomIdemKey()
     console.log('setting new idem key to ', newKey)
@@ -262,10 +259,10 @@ function useCreateOptimistic() {
 }
 
 function useDeleteOptimistic(id) {
-  const syncCatalogData = useSyncCatalogData()
+  const queryClient = useQueryClient()
 
   return () => {
-    syncCatalogData(['catalog'], catalog =>
+    queryClient.setQueryData(['catalog'], catalog =>
       catalog.map(c =>
         c.calendar_id === id
           ? { ...c, isDeleting: true, unsaved: Date.now() }
@@ -275,7 +272,7 @@ function useDeleteOptimistic(id) {
   }
 }
 
-function useUpdateNoSync(id) {
+function useUpdateOptimistic(id) {
   const queryClient = useQueryClient()
 
   return updates => {
@@ -295,8 +292,7 @@ function useUpdateNoSync(id) {
 
 function CalendarCard({ calendar, children }) {
   const deleteOptimistic = useDeleteOptimistic(calendar.calendar_id)
-  const updateNoSync = useUpdateNoSync(calendar.calendar_id)
-  const syncCatalogData = useSyncCatalogData()
+  const updateOptimistic = useUpdateOptimistic(calendar.calendar_id)
 
   const theme = useTheme()
   const [isEditing, setIsEditing] = useState(false)
@@ -366,15 +362,14 @@ function CalendarCard({ calendar, children }) {
               onChange={debounce(
                 `summary update ${calendar.calendar_id}`,
                 e => {
-                  updateNoSync({
+                  updateOptimistic({
                     summary: e.target.value,
                   })
                 },
-                350
+                3500
               )}
-              onBlur={e => {
+              onBlur={() => {
                 bounceEarly(`summary update ${calendar.calendar_id}`)
-                syncCatalogData()
                 setIsEditing(false)
               }}
             />

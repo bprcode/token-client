@@ -45,6 +45,7 @@ export function leadingDebounce(key, fn, delay = 1000) {
 
 export function bounceEarly(key) {
   if (timeouts.has(key)) {
+    console.log('⏲️ early-resolving', key)
     clearTimeout(timeouts.get(key))
     callbacks.get(key)?.()
     callbacks.delete(key)

@@ -30,6 +30,7 @@ function NavSection() {
         <CalendarFolder route={'/calendars/123'} title="Calendar 123" />
         <CalendarFolder route={'/calendars/456'} title="Calendar 456" />
         <CalendarFolder route={'/calendars/789'} title="Calendar 789" />
+        <TopNavLink route="/foo">Broken Link</TopNavLink>
       </List>
     </Box>
   )
