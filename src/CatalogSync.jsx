@@ -14,13 +14,11 @@ import { CatalogMutationContext } from './CatalogMutationContext'
 
 export function CatalogMutationProvider({ children }) {
   const queryClient = useQueryClient()
-  const controllerRef = useRef(new AbortController())
 
   const itemMutation = useMutation({
     onMutate: variables => {
       // Extend the variables object to expose the current abort signal
       variables.original = { ...variables }
-      variables.signal = controllerRef.current.signal
     },
     mutationFn: variables =>
       makeCalendarFetch(variables.original, variables.signal),
@@ -46,8 +44,6 @@ export function CatalogMutationProvider({ children }) {
         `☢️ Starting bundle mutation with calendars (${variables.length})`,
         variables.map(c => c.calendar_id).join(', ')
       )
-      controllerRef.current.abort()
-      controllerRef.current = new AbortController()
     },
     mutationFn: variables =>
       Promise.all(
