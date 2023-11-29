@@ -7,7 +7,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
-import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef } from 'react'
 import { bounceEarly, debounce, leadingDebounce } from './debounce.mjs'
 import { CatalogMutationContext } from './CatalogMutationContext'
 
@@ -65,48 +65,6 @@ export function CatalogMutationProvider({ children }) {
       {children}
     </CatalogMutationContext.Provider>
   )
-}
-
-function useSaveCatalogData() {
-  const queryClient = useQueryClient()
-  const bundleMutation = useContext(CatalogMutationContext)
-
-  if (!bundleMutation) {
-    throw Error('CatalogMutationProvider required.')
-  }
-
-  return debounce(
-    `catalog save`,
-    () => {
-      console.log('⚽⚽ debounced save activated')
-      bundleMutation.mutate(touchList(queryClient))
-    },
-    3000
-  )
-
-}
-
-export function useSyncCatalogData() {
-  const queryClient = useQueryClient()
-  const bundleMutation = useContext(CatalogMutationContext)
-
-  if (!bundleMutation) {
-    throw Error('CatalogMutationProvider required.')
-  }
-
-  return (queryKey, updater) => {
-    console.log(`Initiating cache update and debounced sync...`)
-
-    queryClient.setQueryData(queryKey, updater)
-    leadingDebounce(
-      `catalog sync`,
-      () => {
-        console.log('⚽ debounced sync activated')
-        bundleMutation.mutate(touchList(queryClient))
-      },
-      3000
-    )()
-  }
 }
 
 export function touchList(queryClient) {
@@ -247,20 +205,6 @@ function makeCalendarFetch(original, signal) {
   })
 }
 
-// const debouncedSave = debounce(
-//   `Catalog autosaver`,
-//   (queryClient, mutate, countRef) => {
-//     console.log(`♻️ Autosaver triggered (time # ${countRef.current})`)
-//     countRef.current++
-
-//     const list = touchList(queryClient)
-//     if (list.length > 0) {
-//       mutate(touchList(queryClient))
-//     }
-//   },
-//   4000
-// )
-
 export function CatalogAutosaver() {
   const countRef = useRef(1)
   const { data } = useCatalogQuery()
@@ -268,22 +212,22 @@ export function CatalogAutosaver() {
   const queryClient = useQueryClient()
   const {mutate } = useContext(CatalogMutationContext)
 
-  const [debouncedSave] = useState(() => debounce(
-    `Catalog autosaver`,
-    (queryClient, mutate, countRef) => {
-      console.log(`♻️ Autosaver triggered (time # ${countRef.current})`)
-      countRef.current++
-  
-      const list = touchList(queryClient)
-      if (list.length > 0) {
-        mutate(touchList(queryClient))
-      }
-    },
-    4000
-  ))
-
   useEffect(() => {
-    debouncedSave(queryClient, mutate, countRef)
+    debounce(
+      `Catalog autosaver`,
+      () => {
+        countRef.current++
+        
+        const list = touchList(queryClient)
+        if (list.length > 0) {
+          console.log(`♻️ Autosaving... (check # ${countRef.current})`)
+          mutate(touchList(queryClient))
+        } else {
+          console.log(`✅ Autosaver clean. (check # ${countRef.current})`)
+        }
+      },
+      4000
+    )()
   }, [data, queryClient, mutate])
 
   useEffect(() => {
