@@ -480,6 +480,8 @@ export function Catalog() {
       {header}
       <CatalogGrid>
         {catalog.data?.map?.((c, i) => (
+          // N.B. index is more stable than calendar_id in the case
+          // of an in-creation calendar.
           <CalendarCard key={i} calendar={c}>
             <Typography variant="body2" sx={{ opacity: 0.5 }}>
               Created: {dayjs(c.created).from(now)}
