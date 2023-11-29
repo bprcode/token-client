@@ -34,6 +34,7 @@ function LoginSection() {
       }),
     onSuccess: data => {
       console.log('mutation success with data: ', data)
+      queryClient.cancelQueries()
       queryClient.resetQueries()
       queryClient.setQueryData(['heartbeat'], data)
       navigate('/catalog')

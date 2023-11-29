@@ -104,6 +104,11 @@ function reconcile({ localData, serverData, key }) {
         overwrite = { etag: newTag, originTag }
       }
 
+      if (newTag === 'creating') {
+        overwrite.stableKey = local.stableKey ?? local.calendar_id
+        console.log('>> applying stableKey=', overwrite.stableKey)
+      }
+
       merged.push({
         ...local,
         ...overwrite,
@@ -344,7 +349,7 @@ function CalendarCard({ calendar, children }) {
             </Box>
           ) : (
             <TextField
-            sx={{width: '100%'}}
+              sx={{ width: '100%' }}
               variant="filled"
               inputRef={inputRef}
               defaultValue={calendar.summary || 'Untitled'}
@@ -497,14 +502,20 @@ export function Catalog() {
                 </>
               )}
               {c.originTag && (
-                <span style={{ color: 'orange' }}>
-                  originTag: {c.originTag}
-                </span>
+                <>
+                  <span style={{ color: 'orange' }}>
+                    originTag: {c.originTag}
+                  </span>
+                  <br />
+                </>
               )}
               {c.stableKey && (
-                <span style={{ color: 'thistle' }}>
-                  stableKey: {c.stableKey}
-                </span>
+                <>
+                  <span style={{ color: 'thistle' }}>
+                    stableKey: {c.stableKey}
+                  </span>
+                  <br />
+                </>
               )}
             </Typography>
           </CalendarCard>
