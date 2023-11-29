@@ -47,6 +47,16 @@ export function CatalogMutationProvider({ children }) {
         // since the mutate method also modifies the variables it receives.
         variables.map(c => itemMutation.mutateAsync({ ...c }))
       ),
+    onError: () => {
+      console.log(`⛔ Bundle mutation resulted in error. Refetch?`)
+      leadingDebounce(`Retry sync`,
+        () => {
+          queryClient.refetchQueries({queryKey: ['catalog']})
+
+        },
+        3000
+      )()
+    },
     onSettled: () => {
       // Promise bundle finished
     },
