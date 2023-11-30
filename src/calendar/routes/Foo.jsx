@@ -1,7 +1,26 @@
 import { Box, Button } from '@mui/material'
 import { useEffect, useReducer, useRef } from 'react'
+import { keyframes } from '@mui/system'
+import { styled} from '@mui/material/styles'
 
 const schedule = new Map()
+
+const myEffect = keyframes`
+from {
+  color: #fea;
+  text-shadow: 0 0 1rem #f40f;
+}
+to {
+  color: #ddd;
+  text-shadow: 0 0 1rem #f400;
+}
+`
+
+const BlinkyBox = styled('div')({
+  color: '#ddd',
+  textShadow: '0 0 1rem #f400',
+  animation: `${myEffect} 0.5s linear`,
+})
 
 function backoff(key, callback, log = console.log.bind(console)) {
   const now = Date.now()
@@ -85,8 +104,10 @@ function Bar({onReset }) {
           flexDirection: 'column',
         }}
       >
-        <div>Count is: {current.count}</div>
+        <BlinkyBox key={current.count}>
+          Count is: {current.count}
         <div>Last stamped: {new Date(current.time).toLocaleTimeString()}</div>
+          </BlinkyBox>
         <div
           style={{
             marginTop: '1rem',
