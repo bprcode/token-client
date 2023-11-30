@@ -1,30 +1,30 @@
 import { Box, Button } from '@mui/material'
 import { useEffect, useReducer, useRef } from 'react'
 import { keyframes } from '@mui/system'
-import { styled} from '@mui/material/styles'
+import { styled } from '@mui/material/styles'
 
 const schedule = new Map()
 
 const myEffect = keyframes`
 from {
   color: #fea;
-  text-shadow: 0 0 1rem #f40f;
+  text-shadow: 0 0 0.5rem #f40f;
 }
 to {
-  color: #ddd;
-  text-shadow: 0 0 1rem #f400;
+  color: #ccc;
+  text-shadow: 0 0 0.5rem #f400;
 }
 `
 
 const BlinkyBox = styled('div')({
-  color: '#ddd',
-  textShadow: '0 0 1rem #f400',
+  color: '#ccc',
+  textShadow: '0 0 0.5rem #f400',
   animation: `${myEffect} 0.5s linear`,
 })
 
 function backoff(key, callback, log = console.log.bind(console)) {
   const now = Date.now()
-  const wait = 1000
+  const wait = 3000
 
   if (!schedule.has(key)) {
     log(`immediate activation: ${key}`)
@@ -34,6 +34,13 @@ function backoff(key, callback, log = console.log.bind(console)) {
   }
 
   const scheduled = schedule.get(key)
+  if (now - scheduled.time > wait) {
+    log(`${key} was available; triggering immediately.`)
+    callback()
+    schedule.set(key, { time: now })
+    return
+  }
+
   if (now < scheduled.time) {
     const timeLeft = (scheduled.time - now) / 1000
     log(`⏳ ${key} has ${timeLeft} seconds to go...`)
@@ -41,15 +48,16 @@ function backoff(key, callback, log = console.log.bind(console)) {
     return
   }
 
-  log(`Scheduling ${key} in ${wait / 1000} seconds...`)
+  const nextAllowed = scheduled.time + wait
 
+  log(`Scheduling ${key} in ${(nextAllowed - now) / 1000} seconds...`)
   setTimeout(() => {
     log(`⏰ ${key} triggering.`)
     callback()
-  }, wait)
+  }, nextAllowed - now)
 
   schedule.set(key, {
-    time: now + wait,
+    time: nextAllowed,
   })
 }
 
@@ -59,7 +67,7 @@ export function Foo() {
   return <Bar key={key} onReset={onReset} />
 }
 
-function Bar({onReset }) {
+function Bar({ onReset }) {
   const scrollRef = useRef(null)
   const [current, increment] = useReducer(
     c => ({ count: c.count + 1, time: Date.now() }),
@@ -79,7 +87,7 @@ function Bar({onReset }) {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView()
-    console.log('scrollRef.current=',scrollRef.current)
+    console.log('scrollRef.current=', scrollRef.current)
   }, [history])
 
   return (
@@ -106,8 +114,8 @@ function Bar({onReset }) {
       >
         <BlinkyBox key={current.count}>
           Count is: {current.count}
-        <div>Last stamped: {new Date(current.time).toLocaleTimeString()}</div>
-          </BlinkyBox>
+          <div>Last stamped: {new Date(current.time).toLocaleTimeString()}</div>
+        </BlinkyBox>
         <div
           style={{
             marginTop: '1rem',
@@ -122,13 +130,16 @@ function Bar({onReset }) {
         >
           {history.map(r => (
             <div key={r.timestamp}>
-              <span style={{
-                display: 'inline-block',
-                opacity: 0.5,
-                width: '10ch',
-              }}>
-                {new Date(r.timestamp).toLocaleTimeString().split(' ')[0]}</span>
-               {r.message}
+              <span
+                style={{
+                  display: 'inline-block',
+                  opacity: 0.5,
+                  width: '10ch',
+                }}
+              >
+                {new Date(r.timestamp).toLocaleTimeString().split(' ')[0]}
+              </span>
+              {r.message}
             </div>
           ))}
           <div ref={scrollRef} />
@@ -143,10 +154,7 @@ function Bar({onReset }) {
           >
             Ping
           </Button>
-          <Button
-            variant='outlined'
-            sx={{ml: 2}}
-            onClick={onReset}>
+          <Button variant="outlined" sx={{ ml: 2 }} onClick={onReset}>
             Reset
           </Button>
         </div>
