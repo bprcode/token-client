@@ -35,6 +35,12 @@ function backoff(key, callback, log = console.log.bind(console)) {
 }
 
 export function Foo() {
+  const [key, onReset] = useReducer(r => r + 1, 1)
+
+  return <Bar key={key} onReset={onReset} />
+}
+
+function Bar({onReset }) {
   const scrollRef = useRef(null)
   const [current, increment] = useReducer(
     c => ({ count: c.count + 1, time: Date.now() }),
@@ -54,6 +60,7 @@ export function Foo() {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView()
+    console.log('scrollRef.current=',scrollRef.current)
   }, [history])
 
   return (
@@ -61,9 +68,10 @@ export function Foo() {
       sx={{
         bgcolor: '#00f1',
         display: 'grid',
-        placeContent: 'center',
+        justifyContent: 'center',
         height: '100%',
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+        overflowY: 'auto',
       }}
     >
       <Box
@@ -72,15 +80,16 @@ export function Foo() {
           width: '80ch',
           bgcolor: 'background.paper',
           p: 3,
+          mt: 4,
           display: 'flex',
           flexDirection: 'column',
         }}
       >
         <div>Count is: {current.count}</div>
-        <div>Last stamped: {current.time}</div>
+        <div>Last stamped: {new Date(current.time).toLocaleTimeString()}</div>
         <div
-          ref={scrollRef}
           style={{
+            marginTop: '1rem',
             height: '100%',
             backgroundColor: '#0004',
             overflowY: 'auto',
@@ -91,7 +100,15 @@ export function Foo() {
           }}
         >
           {history.map(r => (
-            <div key={r.timestamp}>{r.message}</div>
+            <div key={r.timestamp}>
+              <span style={{
+                display: 'inline-block',
+                opacity: 0.5,
+                width: '10ch',
+              }}>
+                {new Date(r.timestamp).toLocaleTimeString().split(' ')[0]}</span>
+               {r.message}
+            </div>
           ))}
           <div ref={scrollRef} />
         </div>
@@ -104,6 +121,12 @@ export function Foo() {
             }}
           >
             Ping
+          </Button>
+          <Button
+            variant='outlined'
+            sx={{ml: 2}}
+            onClick={onReset}>
+            Reset
           </Button>
         </div>
       </Box>
