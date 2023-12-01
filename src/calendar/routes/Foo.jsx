@@ -2,8 +2,7 @@ import { Box, Button } from '@mui/material'
 import { useEffect, useReducer, useRef } from 'react'
 import { keyframes } from '@mui/system'
 import { styled } from '@mui/material/styles'
-
-const schedule = new Map()
+import { debounce } from '../../debounce'
 
 const myEffect = keyframes`
 from {
@@ -22,23 +21,66 @@ const BlinkyBox = styled('div')({
   animation: `${myEffect} 0.5s linear`,
 })
 
+const schedule = new Map()
+
 function backoff(key, callback, log = console.log.bind(console)) {
+  const resetTime = 10 * 1000
   const now = Date.now()
-  const wait = 3000
+
+  const resolve = () => {
+    if (schedule.get(key)?.shouldReset) {
+      log(`🧌 ${key} resolving and resetting.`)
+      schedule.delete(key)
+    }
+
+    callback()
+    console.log('schedule:', [...schedule])
+  }
+
+  debounce(
+    `backoff reset (${key})`,
+    () => {
+      const now = Date.now()
+      const latest = schedule.get(key)
+      if (latest.shouldReset) {
+        log(`🧌 ${key} cleanup already started...`)
+        return
+      }
+      if (now < latest.time) {
+        log(`🧌 ${key} pending, marking for reset...`)
+        schedule.set(key, { ...latest, shouldReset: true })
+      }
+      if (now >= latest?.time) {
+        log(`🧌 ${key} not pending; resetting schedule.`)
+        schedule.delete(key)
+        console.log('schedule:', [...schedule])
+      }
+    },
+    resetTime
+  )()
 
   if (!schedule.has(key)) {
     log(`immediate activation: ${key}`)
-    schedule.set(key, { time: now })
+    schedule.set(key, { time: now, step: 0 })
 
-    return callback()
+    return resolve()
   }
 
   const scheduled = schedule.get(key)
+  const wait = 1000 * 2 ** scheduled.step
+
   if (now - scheduled.time > wait) {
-    log(`${key} was available; triggering immediately.`)
-    callback()
-    schedule.set(key, { time: now })
-    return
+    log(
+      `${key} triggering immediately (${(now - scheduled.time) / 1000} ` +
+        `elapsed, ${wait / 1000} wait); ` +
+        `(step ${scheduled.step})`
+    )
+
+    schedule.set(key, {
+      time: now,
+      step: scheduled.step + 1,
+    })
+    return resolve()
   }
 
   if (now < scheduled.time) {
@@ -50,14 +92,18 @@ function backoff(key, callback, log = console.log.bind(console)) {
 
   const nextAllowed = scheduled.time + wait
 
-  log(`Scheduling ${key} in ${(nextAllowed - now) / 1000} seconds...`)
+  log(
+    `${scheduled.step}> Scheduling ${key} in ` +
+      `${(nextAllowed - now) / 1000} seconds...`
+  )
   setTimeout(() => {
-    log(`⏰ ${key} triggering.`)
-    callback()
+    log(`⏰ ${key} triggering. (step ${scheduled.step})`)
+    resolve()
   }, nextAllowed - now)
 
   schedule.set(key, {
     time: nextAllowed,
+    step: scheduled.step + 1,
   })
 }
 
@@ -87,7 +133,6 @@ function Bar({ onReset }) {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView()
-    console.log('scrollRef.current=', scrollRef.current)
   }, [history])
 
   return (
@@ -129,7 +174,7 @@ function Bar({ onReset }) {
           }}
         >
           {history.map(r => (
-            <div key={r.timestamp}>
+            <div key={r.timestamp + r.message}>
               <span
                 style={{
                   display: 'inline-block',
