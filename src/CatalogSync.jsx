@@ -5,7 +5,7 @@ import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
 import { useContext, useEffect, useRef } from 'react'
-import { bounceEarly, debounce, leadingDebounce } from './debounce.mjs'
+import { bounceEarly, backoff, leadingDebounce } from './debounce.mjs'
 import { CatalogMutationContext } from './CatalogMutationContext'
 
 export function CatalogMutationProvider({ children }) {
@@ -48,17 +48,13 @@ export function CatalogMutationProvider({ children }) {
         variables.map(c => itemMutation.mutateAsync({ ...c }))
       ),
     onError: () => {
-      console.log(`⛔ Bundle mutation resulted in error. Refetch?`)
-      leadingDebounce(`Retry sync`,
-        () => {
-          queryClient.refetchQueries({queryKey: ['catalog']})
-
-        },
-        3000
-      )()
-    },
-    onSettled: () => {
-      // Promise bundle finished
+      console.log(
+        `⛔ Bundle mutation resulted in error. ` + `Backoff-refetching...`
+      )
+      backoff(`catalog conflict refetch`, () => {
+        console.log(`⛔ Bundle refetching.`)
+        queryClient.refetchQueries({ queryKey: ['catalog'] })
+      })
     },
   })
 
@@ -219,7 +215,7 @@ export function CatalogAutosaver() {
   const { mutate } = useContext(CatalogMutationContext)
 
   useEffect(() => {
-    debounce(
+    leadingDebounce(
       `Catalog autosaver`,
       () => {
         countRef.current++

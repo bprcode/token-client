@@ -19,7 +19,6 @@ import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
 import { CatalogMutationProvider } from '../CatalogSync'
-import { Foo } from './routes/Foo'
 
 const globalExpiryHandler = error => {
   console.log('🌍 global cache error handler:', error.status, error.message)
@@ -60,10 +59,6 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Index />,
-          },
-          {
-            path: 'foo',
-            element: <Foo />,
           },
           {
             path: 'login',

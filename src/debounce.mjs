@@ -95,7 +95,6 @@ export function backoff(key, callback) {
   const wait = 500 * 2 ** scheduled.step
 
   if (now - scheduled.time > wait) {
-
     schedule.set(key, {
       time: now,
       step: scheduled.step + 1,
