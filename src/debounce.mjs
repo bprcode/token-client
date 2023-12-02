@@ -16,6 +16,10 @@ export function debounce(key, fn, delay = 1000) {
   }
 }
 
+export function hasDebounce(key) {
+  return timeouts.has(key)
+}
+
 export function leadingDebounce(key, fn, delay = 1000) {
   return (...stuff) => {
     if (!timeouts.has(key)) {

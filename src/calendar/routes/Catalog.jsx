@@ -26,7 +26,7 @@ import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 
 function makeCatalogQuery(queryClient) {
-  makeCatalogQuery.query ??= {
+  return {
     queryKey: ['catalog'],
     queryFn: async () => {
       const fetched = await goFetch('calendars', {
@@ -40,7 +40,6 @@ function makeCatalogQuery(queryClient) {
       })
     },
   }
-  return makeCatalogQuery.query
 }
 
 function reconcile({ localData, serverData, key }) {

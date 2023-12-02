@@ -5,7 +5,7 @@ import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
 import { useContext, useEffect, useRef } from 'react'
-import { bounceEarly, backoff, leadingDebounce } from './debounce.mjs'
+import { bounceEarly, backoff, leadingDebounce, hasDebounce } from './debounce.mjs'
 import { CatalogMutationContext } from './CatalogMutationContext'
 
 export function CatalogMutationProvider({ children }) {
@@ -209,10 +209,12 @@ function makeCalendarFetch(original, signal) {
 
 export function CatalogAutosaver() {
   const countRef = useRef(1)
-  const { data } = useCatalogQuery()
+  const { data, isFetching, isError } = useCatalogQuery()
 
   const queryClient = useQueryClient()
   const { mutate } = useContext(CatalogMutationContext)
+
+  // data could change without onSuccess, onSuccess could fire without data
 
   useEffect(() => {
     leadingDebounce(
@@ -231,6 +233,32 @@ export function CatalogAutosaver() {
       4000
     )()
   }, [data, queryClient, mutate])
+
+  // debug -- note this will double up due to the leading.
+  // could use a 'hasDebounce' here.
+  useEffect(() => {
+    if (!isFetching && !isError) {
+      console.log(`👁️ fetch success. ${Math.floor(Math.random()*1e9)}`)
+      if(hasDebounce(`Catalog autosaver`)) {
+        console.log(`Autosaver already ran or running.`)
+        return
+      }
+
+      leadingDebounce(
+        `Catalog autosaver`,
+        () => {
+          const list = touchList(queryClient)
+          if (list.length > 0) {
+            console.log(`♻️👁️ Fetch sentinel syncing...`)
+            mutate(touchList(queryClient))
+          } else {
+            console.log(`✅👁️ Fetch sentinel clean.`)
+          }
+        },
+        4000
+      )()
+    }
+  }, [queryClient, mutate, isFetching, isError])
 
   useEffect(() => {
     return () => {
