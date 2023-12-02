@@ -5,7 +5,12 @@ import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
 import { useContext, useEffect, useRef } from 'react'
-import { bounceEarly, backoff, leadingDebounce, hasDebounce } from './debounce.mjs'
+import {
+  bounceEarly,
+  backoff,
+  leadingDebounce,
+  hasDebounce,
+} from './debounce.mjs'
 import { CatalogMutationContext } from './CatalogMutationContext'
 
 export function CatalogMutationProvider({ children }) {
@@ -47,14 +52,17 @@ export function CatalogMutationProvider({ children }) {
         // since the mutate method also modifies the variables it receives.
         variables.map(c => itemMutation.mutateAsync({ ...c }))
       ),
-    onError: () => {
-      console.log(
-        `⛔ Bundle mutation resulted in error. ` + `Backoff-refetching...`
-      )
-      backoff(`catalog conflict refetch`, () => {
-        console.log(`⛔ Bundle refetching.`)
-        queryClient.refetchQueries({ queryKey: ['catalog'] })
-      })
+    onError: error => {
+      if (error?.status === 409) {
+        console.log(
+          `⛔ Bundle mutation resulted in ${error.status}. ` +
+            `Backoff-refetching...`
+        )
+        backoff(`catalog conflict refetch`, () => {
+          console.log(`⛔ Bundle refetching.`)
+          queryClient.refetchQueries({ queryKey: ['catalog'] })
+        })
+      }
     },
   })
 
@@ -214,8 +222,6 @@ export function CatalogAutosaver() {
   const queryClient = useQueryClient()
   const { mutate } = useContext(CatalogMutationContext)
 
-  // data could change without onSuccess, onSuccess could fire without data
-
   useEffect(() => {
     leadingDebounce(
       `Catalog autosaver`,
@@ -234,12 +240,10 @@ export function CatalogAutosaver() {
     )()
   }, [data, queryClient, mutate])
 
-  // debug -- note this will double up due to the leading.
-  // could use a 'hasDebounce' here.
   useEffect(() => {
     if (!isFetching && !isError) {
-      console.log(`👁️ fetch success. ${Math.floor(Math.random()*1e9)}`)
-      if(hasDebounce(`Catalog autosaver`)) {
+      console.log(`👁️ fetch success. ${Math.floor(Math.random() * 1e9)}`)
+      if (hasDebounce(`Catalog autosaver`)) {
         console.log(`Autosaver already ran or running.`)
         return
       }
