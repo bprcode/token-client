@@ -33,6 +33,7 @@ function makeCatalogQuery(queryClient) {
         credentials: 'include',
       })
       const local = queryClient.getQueryData(['catalog']) ?? []
+
       return reconcile({
         localData: local,
         serverData: fetched,
@@ -146,11 +147,9 @@ function reconcile({ localData, serverData, key }) {
 export const loader =
   queryClient =>
   ({ request, params }) => {
-    queryClient
-      .fetchQuery(makeCatalogQuery(queryClient))
-      .catch(e => console.log('Catalog loader caught: ', e.message))
+    queryClient.prefetchQuery(makeCatalogQuery(queryClient))
 
-    return false
+    return 'unused'
 
     // Don't do this. 👇 Makes direct URL navigation hang 10s+.
     // return queryClient.ensureQueryData(catalogQuery)
