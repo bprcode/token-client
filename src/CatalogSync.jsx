@@ -1,6 +1,6 @@
 import SyncIcon from '@mui/icons-material/Sync'
 import CircularProgress from '@mui/material/CircularProgress'
-import { Box, IconButton, List, ListItem } from '@mui/material'
+import { Box, IconButton, List, ListItem, Typography } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
@@ -277,6 +277,18 @@ export function CatalogSyncStatus() {
   const list = useTouchList()
   const isMutating = bundleMutation.isPending
 
+  let color = 'success.main'
+  let status = 'Saved.'
+
+  if (list.length > 0) {
+    color = 'info.main'
+    status = `Pending (${list.length})`
+  }
+  if (isMutating) {
+    color = 'warning.main'
+    status = `Autosaving... (${list.length})`
+  }
+
   return (
     <>
       <CatalogAutosaver />
@@ -288,26 +300,15 @@ export function CatalogSyncStatus() {
             padding: '0.25rem 1rem',
           }}
         >
-          <Box sx={{}}>Touch list ({list.length}):</Box>
-          <IconButton
-            sx={{ marginLeft: 'auto' }}
-            // onClick={() => bundleMutation.mutate(list)}
-            disabled={list.length === 0}
-          >
-            {isMutating ? (
-              <CircularProgress size="24px" color="inherit" />
-            ) : (
-              <SyncIcon />
-            )}
-          </IconButton>
+          <Box sx={{}}>
+            <Typography variant="subtitle2" color={color}>
+              {status}
+            </Typography>
+          </Box>
+          {isMutating && (
+            <CircularProgress size="20px" sx={{ ml: 'auto', color }} />
+          )}
         </div>
-        <List>
-          {list.map(e => (
-            <ListItem key={e.calendar_id} disablePadding>
-              {e.calendar_id}
-            </ListItem>
-          ))}
-        </List>
       </Box>
     </>
   )
