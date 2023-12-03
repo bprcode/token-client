@@ -95,6 +95,18 @@ function reconcile({ localData, serverData, key }) {
         )}s left)`
       )
 
+      // debug -- the following condition should be removed for
+      // event processing, to allow revival of deleted events,
+      // but yielding is necessary for calendar objects,
+      // due to broken, unretrievable calendar references.
+      if (!serverMap.has(local[key])) {
+        console.log(
+          '<calendar only> yielding to remote-delete despite recency 🚭'
+        )
+
+        continue
+      }
+
       // etag could be missing if the record was deleted remotely
       const newTag = serverMap.get(local[key])?.etag ?? 'creating'
 
