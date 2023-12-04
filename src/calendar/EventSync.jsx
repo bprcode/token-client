@@ -1,30 +1,33 @@
 import UploadIcon from '@mui/icons-material/Upload'
-import { IconButton, Typography } from '@mui/material'
+import { CircularProgress, IconButton, Typography } from '@mui/material'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams } from 'react-router-dom'
 import { goFetch } from '../go-fetch'
-import { useReducer } from 'react'
+import { useRef } from 'react'
+import { createSampleWeek } from './calendarLogic.mjs'
+import dayjs from 'dayjs'
 
-function useUploadMockEvent() {
+function useUploadMockEvents() {
   function randomIdemKey() {
     return String(Math.floor(Math.random() * 1e9))
   }
 
-  const [idemKey, resetIdemKey] = useReducer(() => randomIdemKey(), null, () => randomIdemKey())
-
+  const idemKey = useRef(null)
   const timeout = 5000
-  const queryClient = useQueryClient()
   const { id } = useParams()
   const endpoint = `calendars/${id}/events`
 
-  const { mutate } = useMutation({
+  const mockEventMutation = useMutation({
     onMutate: variables => {
-      console.log('🟩 mock mutation had variables:', variables, 'and idemkey=', idemKey)
-      variables.key = idemKey
-      resetIdemKey()
+      idemKey.current = randomIdemKey()
+      variables.key = idemKey.current
+
+      console.log('🟩 mock mutation had variables:', variables)
+
+      variables.mockEvents = createSampleWeek(dayjs())
     },
     mutationFn: variables => {
-      const datum = queryClient.getQueryData(['calendars', id])[0]
+      const datum = variables
       console.log('key for mutation:', variables.key)
       return goFetch(endpoint, {
         method: 'POST',
@@ -42,18 +45,35 @@ function useUploadMockEvent() {
     },
   })
 
-  return mutate
+  const mockEventBundle = useMutation({
+    retry: 0,
+    onMutate: variables => {
+      variables.mockEvents = createSampleWeek(dayjs(), 10)
+    },
+    mutationFn: variables => {
+      console.log('bundle mockEvents = ', variables.mockEvents)
+      return Promise.all(
+        variables.mockEvents.map(e => mockEventMutation.mutateAsync({ ...e }))
+      )
+    },
+  })
+
+  return mockEventBundle
 }
 
 export function EventSyncStatus() {
-  const uploadMockEvent = useUploadMockEvent()
+  const { mutate, isPending } = useUploadMockEvents()
 
   return (
     <Typography variant="subtitle2" color={'info.main'}>
       Event sync placeholder
-      <IconButton onClick={uploadMockEvent}>
-        <UploadIcon />
-      </IconButton>
+      {isPending ? (
+        <CircularProgress size="16px" sx={{ ml: 2 }} />
+      ) : (
+        <IconButton onClick={mutate}>
+          <UploadIcon />
+        </IconButton>
+      )}
     </Typography>
   )
 }

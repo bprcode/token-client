@@ -175,6 +175,8 @@ export function EventPane({
             <br />
             colorId:{event.colorId}
             <br />
+            {event.description}
+            <br />
           </>
         )}
       </div>

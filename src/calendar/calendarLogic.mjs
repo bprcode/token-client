@@ -60,6 +60,51 @@ export function createSampleCalendar({ summary }) {
   }
 }
 
+function mockDescription(summary) {
+  function pickRandom(arr) {
+    return arr[Math.floor(arr.length * Math.random())]
+  }
+
+  const exerciseDescriptions = [
+    'Lift weights',
+    'Go for a jog',
+    'Play tennis',
+    'Swim laps',
+  ]
+  
+  const workDescriptions = [
+    'In-office',
+    'WFH',
+    'Meeting with corporate',
+    'Consult with team',
+  ]
+
+  const studyDescriptions = [
+    'Compute dynamical integration',
+    'Compile lab data',
+    'Review journal publications',
+    'Revise thesis materials',
+  ]
+
+  const otherDescriptions = [
+    'Meet for coffee',
+    'Try out board game',
+    'Hiking trail time',
+    'Catch a movie',
+  ]
+
+  switch(summary) {
+    case 'Exercise':
+      return pickRandom(exerciseDescriptions)
+    case 'Work':
+      return pickRandom(workDescriptions)
+    case 'Study':
+      return pickRandom(studyDescriptions)
+    default:
+      return pickRandom(otherDescriptions)
+  }
+}
+
 export function createSampleEvent({ startTime, endTime, summary, colorId }) {
   const etag = Array(32)
     .fill(0)
@@ -75,7 +120,7 @@ export function createSampleEvent({ startTime, endTime, summary, colorId }) {
     // text
     summary: summary || 'Default Title',
     // text
-    description: summary !== 'Exercise' && 'Detailed description',
+    description: mockDescription(summary),
     // RFC3339-compatible datetime
     startTime,
     // RFC3339-compatible datetime
@@ -85,12 +130,12 @@ export function createSampleEvent({ startTime, endTime, summary, colorId }) {
   }
 }
 
-export function createSampleWeek(aroundDate) {
+export function createSampleWeek(aroundDate, quantity = 180) {
   const labels = ['Work', 'Study', 'Exercise', 'Social']
   const startOfPriorWeek = aroundDate.subtract(1, 'week').startOf('week')
   const sampleEvents = []
 
-  for (let i = 0; i < 360; i++) {
+  for (let i = 0; i < quantity; i++) {
     // Split a three-week interval into random 15-minute chunks:
     const offsetMinutes = Math.trunc(Math.random() * 2016) * 15
     const startTime = startOfPriorWeek.add(offsetMinutes, 'minutes')
