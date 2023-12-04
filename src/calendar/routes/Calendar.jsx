@@ -13,7 +13,7 @@ import { WeeklyView } from '../WeeklyView'
 import { DailyView } from '../DailyView'
 
 export const loader = queryClient => ({ request, params }) => {
-  console.log('params = ', params)
+  console.log('📆 Calendar loader params = ', params)
   const data = createSampleWeek(dayjs())
 
   return new Promise(k => {

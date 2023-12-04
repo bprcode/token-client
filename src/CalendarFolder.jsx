@@ -1,6 +1,7 @@
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
 import CalendarViewWeekIcon from '@mui/icons-material/CalendarViewWeek'
 import CalendarViewDayIcon from '@mui/icons-material/CalendarViewDay'
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import {
   Collapse,
   List,
@@ -41,7 +42,7 @@ export function CalendarFolder({ route, title }) {
         }}
         aria-label={`Nested folder ${route}`}
       >
-        <TopNavLink route={route}>{title}</TopNavLink>
+        <TopNavLink route={route}><CalendarTodayIcon sx={{mr: 2}} />{title}</TopNavLink>
         <Collapse in={isOpen} timeout={350} unmountOnExit>
           <List disablePadding>
             <ViewLink to={`${route}?v=month`} label="Month">
@@ -110,7 +111,7 @@ function ViewLink({ to = '', label, children }) {
       >
         <ListItemIcon
           sx={{
-            minWidth: '40px',
+            minWidth: '48px',
           }}
         >
           {children}
