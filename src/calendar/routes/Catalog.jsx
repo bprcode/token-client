@@ -20,7 +20,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import { alpha } from '@mui/material/styles'
+import { alpha, keyframes } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link, Navigate } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
@@ -305,6 +305,26 @@ function useUpdateOptimistic(id) {
   }
 }
 
+const initialGlow = keyframes`
+  from {
+    box-shadow: 0 0 3rem #afff inset;
+  }
+  to {
+    box-shadow: 0 0 3rem #aff0 inset;
+  }
+`
+
+const fadeOut = keyframes`
+from {
+  opacity: 1.0;
+  box-shadow: 0 0 0px #0000 inset;
+}
+to {
+  opacity: 0.0;
+  box-shadow: 0 0 200px #000f inset;
+}
+`
+
 function CalendarCard({ calendar, children }) {
   const deleteOptimistic = useDeleteOptimistic(calendar.calendar_id)
   const updateOptimistic = useUpdateOptimistic(calendar.calendar_id)
@@ -314,6 +334,10 @@ function CalendarCard({ calendar, children }) {
   const isCreating = calendar.etag === 'creating'
   const inputRef = useRef(null)
 
+  const now = dayjs()
+  const isNew = now.diff(calendar.created) < 1000
+  const isErasing = calendar.isDeleting && calendar.unsaved - Date.now() < 1000
+
   useEffect(() => {
     if (isEditing) {
       inputRef.current?.focus()
@@ -321,10 +345,19 @@ function CalendarCard({ calendar, children }) {
     }
   }, [isEditing])
 
+  let animation
+  if (isNew) {
+    animation = `${initialGlow} 1s ease`
+  }
+  if (isErasing) {
+    animation = `${fadeOut} 1s ease`
+  }
+
   return (
     <CardOuter
       sx={{
         opacity: calendar.isDeleting ? 0.5 : undefined,
+        animation,
       }}
     >
       <Box
