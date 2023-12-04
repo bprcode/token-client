@@ -12,11 +12,15 @@ import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
 import { DailyView } from '../DailyView'
 
-export function loader({ request, params }) {
+export const loader = queryClient => ({ request, params }) => {
+  console.log('params = ', params)
   const data = createSampleWeek(dayjs())
 
   return new Promise(k => {
-    setTimeout(() => k(data), Math.random() * 1000 + 500)
+    setTimeout(() => {
+      queryClient.setQueryData(['calendars', params.id], () => data)
+      k(null)
+    }, Math.random() * 1000 + 500)
   })
 }
 

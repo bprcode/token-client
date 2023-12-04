@@ -72,7 +72,7 @@ const router = createBrowserRouter([
           {
             path: 'calendars/:id',
             element: <Calendar />,
-            loader: calendarLoader,
+            loader: calendarLoader(queryClient),
           },
         ],
       },

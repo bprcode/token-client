@@ -220,7 +220,8 @@ function makeCalendarFetch(variables) {
   })
 }
 
-export function CatalogAutosaver() {
+const noop = () => {}
+export function CatalogAutosaver({log = noop}) {
   const countRef = useRef(1)
   const { data, isFetching, isError } = useCatalogQuery()
 
@@ -235,21 +236,21 @@ export function CatalogAutosaver() {
 
         const list = touchList(queryClient)
         if (list.length > 0) {
-          console.log(`♻️ Autosaving... (check # ${countRef.current})`)
+          log(`♻️ Autosaving... (check # ${countRef.current})`)
           mutate(touchList(queryClient))
         } else {
-          console.log(`✅ Autosaver clean. (check # ${countRef.current})`)
+          log(`✅ Autosaver clean. (check # ${countRef.current})`)
         }
       },
       4000
     )()
-  }, [data, queryClient, mutate])
+  }, [data, queryClient, mutate, log])
 
   useEffect(() => {
     if (!isFetching && !isError) {
-      console.log(`👁️ fetch success. ${Math.floor(Math.random() * 1e9)}`)
+      log(`👁️ fetch success. ${Math.floor(Math.random() * 1e9)}`)
       if (hasDebounce(`Catalog autosaver`)) {
-        console.log(`Autosaver already ran or running.`)
+        log(`Autosaver already ran or running.`)
         return
       }
 
@@ -258,23 +259,23 @@ export function CatalogAutosaver() {
         () => {
           const list = touchList(queryClient)
           if (list.length > 0) {
-            console.log(`♻️👁️ Fetch sentinel syncing...`)
+            log(`♻️👁️ Fetch sentinel syncing...`)
             mutate(touchList(queryClient))
           } else {
-            console.log(`✅👁️ Fetch sentinel clean.`)
+            log(`✅👁️ Fetch sentinel clean.`)
           }
         },
         4000
       )()
     }
-  }, [queryClient, mutate, isFetching, isError])
+  }, [queryClient, mutate, isFetching, isError, log])
 
   useEffect(() => {
     return () => {
-      console.log('🫧 Unmounting autosave effect')
+      log('🫧 Unmounting autosave effect')
       bounceEarly(`Catalog autosaver`)
     }
-  }, [])
+  }, [log])
 }
 
 export function CatalogSyncStatus() {

@@ -15,8 +15,11 @@ import hourglassPng from '../assets/hourglass2.png'
 import { CalendarFolder } from '../CalendarFolder'
 import { HeartbeatPanel } from '../HeartbeatPanel'
 import { TopNavLink } from '../TopNavLink'
+import { useCatalogQuery } from './routes/Catalog'
 
 function NavSection() {
+  const catalog = useCatalogQuery()
+
   return (
     <Box
       sx={{
@@ -27,9 +30,13 @@ function NavSection() {
     >
       <List disablePadding>
         <TopNavLink route="/catalog">All Calendars</TopNavLink>
-        <CalendarFolder route={'/calendars/123'} title="Calendar 123" />
-        <CalendarFolder route={'/calendars/456'} title="Calendar 456" />
-        <CalendarFolder route={'/calendars/789'} title="Calendar 789" />
+        {
+          catalog.data?.map(c => {
+            const key = c.stableKey ?? c.calendar_id
+            if(c.isDeleting || c.etag === 'creating') return
+          return <CalendarFolder route={`/calendars/${c.calendar_id}`} key={key} title={c.summary} />
+        })
+        }
         <TopNavLink route="/foo">Broken Link</TopNavLink>
       </List>
     </Box>

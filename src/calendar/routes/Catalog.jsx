@@ -38,19 +38,20 @@ function makeCatalogQuery(queryClient) {
         localData: local,
         serverData: fetched,
         key: 'calendar_id',
+        log: () => {},
       })
     },
   }
 }
 
-function reconcile({ localData, serverData, key }) {
+function reconcile({ localData, serverData, key, log = console.log.bind(console) }) {
   const chillTime = 60 * 1000
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
   const localMap = new Map(localData.map(data => [data[key], data]))
 
-  console.log('mapified local:', localMap)
-  console.log('mapified server:', serverMap)
+  log('mapified local:', localMap)
+  log('mapified server:', serverMap)
 
   const now = Date.now()
 
@@ -61,7 +62,7 @@ function reconcile({ localData, serverData, key }) {
     const originTag = local.originTag ?? local.etag
 
     if (originTag === remote?.etag) {
-      console.log(
+      log(
         `Local origin matches remote (${local.etag}).` + ` Keeping local copy.`
       )
 
@@ -74,20 +75,20 @@ function reconcile({ localData, serverData, key }) {
       originTag === 'creating' ||
       (local.etag === 'creating' && isRecent(local))
     ) {
-      console.log('Persisting creation event', local[key], '🌿')
+      log('Persisting creation event', local[key], '🌿')
       merged.push(local)
 
       continue
     }
 
     if (local.isDeleting && !serverMap.has(local[key])) {
-      console.log(`👋 unwanted event gone; omitting (${local[key]})`)
+      log(`👋 unwanted event gone; omitting (${local[key]})`)
 
       continue
     }
 
     if (isRecent(local)) {
-      console.log(
+      log(
         'treating',
         local[key],
         `as hot 🔥. (${Math.round(
@@ -100,7 +101,7 @@ function reconcile({ localData, serverData, key }) {
       // but yielding is necessary for calendar objects,
       // due to broken, unretrievable calendar references.
       if (!serverMap.has(local[key])) {
-        console.log(
+        log(
           '<calendar only> yielding to remote-delete despite recency 🚭'
         )
 
@@ -118,7 +119,7 @@ function reconcile({ localData, serverData, key }) {
 
       if (newTag === 'creating') {
         overwrite.stableKey = local.stableKey ?? local.calendar_id
-        console.log('>> applying stableKey=', overwrite.stableKey)
+        log('>> applying stableKey=', overwrite.stableKey)
       }
 
       merged.push({
@@ -132,12 +133,12 @@ function reconcile({ localData, serverData, key }) {
     const pre = 'treating ' + local[key] + ' as cold 🧊'
 
     if (!serverMap.has(local[key])) {
-      console.log(pre, '... yielding to remote-delete ✖️')
+      log(pre, '... yielding to remote-delete ✖️')
 
       continue
     }
 
-    console.log(
+    log(
       pre,
       `...etag mismatch (${originTag} / ${remote.etag}). ` +
         `Yielding to server copy.`
@@ -147,7 +148,7 @@ function reconcile({ localData, serverData, key }) {
 
   for (const remote of serverData) {
     if (!localMap.has(remote[key])) {
-      console.log('local state was missing ', remote[key], ' -- adding.')
+      log('local state was missing ', remote[key], ' -- adding.')
       merged.push(remote)
     }
   }
