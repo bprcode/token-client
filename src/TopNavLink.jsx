@@ -42,6 +42,8 @@ export function TopNavLink({ route, children }) {
           boxShadow:
             (isNavTarget || isBaseView) &&
             '4px 0 0 inset ' + alpha(theme.palette.primary.main, 0.53),
+
+          pr: '0.25rem',
         }}
       >
         {children}
