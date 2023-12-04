@@ -14,35 +14,23 @@ import { CatalogMutationContext } from './CatalogMutationContext'
 
 export function CatalogMutationProvider({ children }) {
   const abortRef = useRef(new AbortController())
-  const batchRef = useRef(0)
 
   const queryClient = useQueryClient()
 
   const itemMutation = useMutation({
-    onMutate: variables => {
-      variables.original = { ...variables }
-    },
     mutationFn: variables => {
-      console.log(
-        `🟠 batch #:`,
-        variables.batch,
-        `item mutation fn with etag=`,
-        variables.original.etag,
-        `signal=`,
-        variables.signal
-      )
-      return makeCalendarFetch(variables.original, variables.signal)
+      return makeCalendarFetch(variables)
     },
     onSuccess: (data, variables) =>
       handleCalendarSuccess({
         result: data,
-        original: variables.original,
+        original: variables,
         queryClient,
       }),
     onError: (error, variables) =>
       handleCalendarError({
         error,
-        original: variables.original,
+        original: variables,
         queryClient,
       }),
   })
@@ -53,22 +41,16 @@ export function CatalogMutationProvider({ children }) {
     onMutate: variables => {
       abortRef.current.abort()
       abortRef.current = new AbortController()
-      batchRef.current++
       console.log(
-        `(batch ${batchRef.current}) ` +
-          `☢️ Starting bundle mutation with calendars (${variables.length})`,
+        `🟧 Starting bundle mutation with calendars (${variables.length})`,
         variables.map(c => c.calendar_id).join(', ')
       )
     },
     mutationFn: variables =>
       Promise.all(
-        // Important to clone the record, rather than passing it directly,
-        // since the mutate method also modifies the variables it receives.
-        // variables.map(c => itemMutation.mutateAsync({ ...c }))
         variables.map(c =>
           itemMutation.mutateAsync({
             ...c,
-            batch: batchRef.current,
             signal: abortRef.current.signal,
           })
         )
@@ -191,12 +173,14 @@ function handleCalendarSuccess({ result, original, queryClient }) {
   )
 }
 
-function makeCalendarFetch(original, signal) {
+function makeCalendarFetch(variables) {
   const endpoint = 'calendars'
   const timeout = 5000
+  const signal = variables.signal
 
-  // Omit fields not needed by the server
+  // Omit local fields not needed by the server
   const blanks = {
+    signal: undefined,
     unsaved: undefined,
     created: undefined,
     updated: undefined,
@@ -205,32 +189,32 @@ function makeCalendarFetch(original, signal) {
     primary_author_id: undefined,
   }
 
-  if (original.isDeleting) {
-    return goFetch(`${endpoint}/${original.calendar_id}`, {
+  if (variables.isDeleting) {
+    return goFetch(`${endpoint}/${variables.calendar_id}`, {
       method: 'DELETE',
-      body: { etag: original.etag },
+      body: { etag: variables.etag },
       timeout,
       signal,
     })
   }
 
-  if (original.etag === 'creating') {
+  if (variables.etag === 'creating') {
     return goFetch(endpoint, {
       method: 'POST',
       body: {
-        ...original,
+        ...variables,
         ...blanks,
         etag: undefined,
-        key: original.calendar_id,
+        key: variables.calendar_id,
       },
       timeout,
       signal,
     })
   }
 
-  return goFetch(`${endpoint}/${original.calendar_id}`, {
+  return goFetch(`${endpoint}/${variables.calendar_id}`, {
     method: 'PUT',
-    body: { ...original, ...blanks },
+    body: { ...variables, ...blanks },
     timeout,
     signal,
   })
