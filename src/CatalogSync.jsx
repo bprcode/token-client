@@ -1,6 +1,5 @@
-import SyncIcon from '@mui/icons-material/Sync'
 import CircularProgress from '@mui/material/CircularProgress'
-import { Box, IconButton, List, ListItem, Typography } from '@mui/material'
+import { Box, Typography } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
@@ -284,7 +283,7 @@ export function CatalogSyncStatus() {
     color = 'info.main'
     status = `Pending (${list.length})`
   }
-  if (isMutating) {
+  if (isMutating && list.length > 0) {
     color = 'warning.main'
     status = `Autosaving... (${list.length})`
   }
@@ -296,8 +295,8 @@ export function CatalogSyncStatus() {
         <div
           style={{
             display: 'flex',
-            alignItems: 'center',
-            padding: '0.25rem 1rem',
+            justifyContent: 'end',
+            padding: '0.25rem 0.25rem',
           }}
         >
           <Box sx={{}}>
@@ -306,7 +305,7 @@ export function CatalogSyncStatus() {
             </Typography>
           </Box>
           {isMutating && (
-            <CircularProgress size="20px" sx={{ ml: 'auto', color }} />
+            <CircularProgress size="20px" sx={{ ml: '1rem', color }} />
           )}
         </div>
       </Box>

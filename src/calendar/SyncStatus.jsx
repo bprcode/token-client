@@ -10,7 +10,6 @@ export default function SyncStatus() {
         position: 'absolute',
         right: 0,
         bottom: 0,
-        width: '20ch',
       }}
     >
       <CatalogSyncStatus />
