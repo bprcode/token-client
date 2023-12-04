@@ -1,5 +1,5 @@
 import CircularProgress from '@mui/material/CircularProgress'
-import { Box, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
@@ -297,24 +297,20 @@ export function CatalogSyncStatus() {
   return (
     <>
       <CatalogAutosaver />
-      <Box>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'end',
-            padding: '0.25rem 0.25rem',
-          }}
-        >
-          <Box sx={{}}>
-            <Typography variant="subtitle2" color={color}>
-              {status}
-            </Typography>
-          </Box>
-          {isMutating && (
-            <CircularProgress size="20px" sx={{ ml: '1rem', color }} />
-          )}
-        </div>
-      </Box>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'end',
+          padding: '0.25rem 0.25rem',
+        }}
+      >
+        <Typography variant="subtitle2" color={color}>
+          {status}
+        </Typography>
+        {isMutating && (
+          <CircularProgress size="20px" sx={{ ml: '1rem', color }} />
+        )}
+      </div>
     </>
   )
 }

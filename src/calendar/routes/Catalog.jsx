@@ -155,7 +155,6 @@ function reconcile({ localData, serverData, key }) {
   return merged
 }
 
-// debug -- can probably choose await or not here?
 export const loader =
   queryClient =>
   ({ request, params }) => {

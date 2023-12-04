@@ -366,14 +366,21 @@ export function MonthlyView({ date, onChange, onExpand, unfilteredEvents }) {
       <MonthHeader date={date} onChange={onChange} />
       <Stack
         direction="column"
-        sx={{ mt: [0, 1], px: [1, 2], mb: 4, flexGrow: 1 }}
+        sx={{ mt: [0, 1], px: [1, 2], mb: 4, flexGrow: 1,
+        alignItems: 'center',
+       }}
       >
+        <Box sx={{
+          width: '100%',
+          maxWidth: '800px',
+        }}>
         <GridHeader />
         <MonthGrid
           date={date}
           unfilteredEvents={unfilteredEvents}
           onExpand={onExpand}
         />
+        </Box>
       </Stack>
     </ViewContainer>
   )
