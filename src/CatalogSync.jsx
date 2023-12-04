@@ -13,15 +13,26 @@ import {
 import { CatalogMutationContext } from './CatalogMutationContext'
 
 export function CatalogMutationProvider({ children }) {
+  const abortRef = useRef(new AbortController())
+  const batchRef = useRef(0)
+
   const queryClient = useQueryClient()
 
   const itemMutation = useMutation({
     onMutate: variables => {
-      // Extend the variables object to expose the current abort signal
       variables.original = { ...variables }
     },
-    mutationFn: variables =>
-      makeCalendarFetch(variables.original, variables.signal),
+    mutationFn: variables => {
+      console.log(
+        `🟠 batch #:`,
+        variables.batch,
+        `item mutation fn with etag=`,
+        variables.original.etag,
+        `signal=`,
+        variables.signal
+      )
+      return makeCalendarFetch(variables.original, variables.signal)
+    },
     onSuccess: (data, variables) =>
       handleCalendarSuccess({
         result: data,
@@ -40,8 +51,12 @@ export function CatalogMutationProvider({ children }) {
     retry: 0,
     mutationKey: ['catalog bundle'],
     onMutate: variables => {
+      abortRef.current.abort()
+      abortRef.current = new AbortController()
+      batchRef.current++
       console.log(
-        `☢️ Starting bundle mutation with calendars (${variables.length})`,
+        `(batch ${batchRef.current}) ` +
+          `☢️ Starting bundle mutation with calendars (${variables.length})`,
         variables.map(c => c.calendar_id).join(', ')
       )
     },
@@ -49,7 +64,14 @@ export function CatalogMutationProvider({ children }) {
       Promise.all(
         // Important to clone the record, rather than passing it directly,
         // since the mutate method also modifies the variables it receives.
-        variables.map(c => itemMutation.mutateAsync({ ...c }))
+        // variables.map(c => itemMutation.mutateAsync({ ...c }))
+        variables.map(c =>
+          itemMutation.mutateAsync({
+            ...c,
+            batch: batchRef.current,
+            signal: abortRef.current.signal,
+          })
+        )
       ),
     onError: error => {
       if (error?.status === 409) {
