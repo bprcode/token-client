@@ -44,6 +44,7 @@ export function TopNavLink({ route, children }) {
             '4px 0 0 inset ' + alpha(theme.palette.primary.main, 0.53),
 
           pr: '0.25rem',
+          color: alpha(theme.palette.text.primary, isOpen ? 1.0 : 0.775),
         }}
       >
         {children}

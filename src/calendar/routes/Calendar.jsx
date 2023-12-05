@@ -11,20 +11,66 @@ import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
 import { DailyView } from '../DailyView'
+import { goFetch } from '../../go-fetch'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-export const loader = queryClient => ({ request, params }) => {
-  console.log('📆 Calendar loader params = ', params)
-  const data = createSampleWeek(dayjs())
+const calendarFetcher = queryClient => async ({queryKey}) => {
+  const [, calendar_id, filters = {}] = queryKey
+  console.log(
+    'queryFn running for calendar_id=',
+    calendar_id,
+    ' filters=',
+    filters
+  )
+  return goFetch(`calendars/${calendar_id}/events`, )
 
-  return new Promise(k => {
-    setTimeout(() => {
-      queryClient.setQueryData(['calendars', params.id], () => data)
-      k(null)
-    }, Math.random() * 1000 + 500)
-  })
+  // const fetched = await goFetch('calendars', {
+  //   credentials: 'include',
+  // })
+  // const local = queryClient.getQueryData(['catalog']) ?? []
+
+  // return reconcile({
+  //   localData: local,
+  //   serverData: fetched,
+  //   key: 'calendar_id',
+  //   log: () => {},
+  // })
 }
 
+function makeCalendarQuery(queryClient, calendar_id, filters) {
+  return {
+    queryKey: ['calendars', calendar_id, filters],
+    queryFn: calendarFetcher(queryClient),
+  }
+}
+
+function useCalendarQuery() {
+  const { id } = useParams()
+  const [searchParams] = useSearchParams()
+  // debug -- wip, not using search params yet
+  const queryClient = useQueryClient()
+  return useQuery(makeCalendarQuery(queryClient, id, {start: 'abc', end: 'xyz'}))
+}
+
+export const loader =
+  queryClient =>
+  ({ request, params }) => {
+    console.log('📆 Calendar loader params = ', params)
+    console.log(`searchParams = `, new URL(request.url).searchParams)
+
+    const data = createSampleWeek(dayjs())
+
+    return new Promise(k => {
+      setTimeout(() => {
+        queryClient.setQueryData(['calendars', params.id], () => data)
+        k(null)
+      }, Math.random() * 1000 + 500)
+    })
+  }
+
 export function Calendar() {
+  const query = useCalendarQuery()
+
   const [searchParams, setSearchParams] = useSearchParams()
   const params = useParams()
   const loaded = useLoaderData()

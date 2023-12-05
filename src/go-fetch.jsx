@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+const log = () => {}
 
 const fetches = new Map()
 const listeners = new Set()
@@ -136,7 +137,7 @@ export function loggedFetch(resource, options = {}) {
   }
 
   const tid = setTimeout(() => {
-    console.log('⌚ timed out: ', tag)
+    log('⌚ timed out: ', tag)
     controller.abort(Error('Request timed out.'))
   }, options.timeout || defaultTimeout)
 
@@ -190,9 +191,10 @@ class StatusError extends Error {
   }
 }
 
+
 export async function goFetch(resource, options) {
   const response = await loggedFetch(resource, options)
-  console.log(
+  log(
     resource,
     'response had status: ',
     response.status,
@@ -219,7 +221,7 @@ export async function goFetch(resource, options) {
 
 const noRetryList = [400, 401, 403, 404, 409]
 export function retryCheck(failureCount, error) {
-  console.log(
+  log(
     '🏳️ Fetch failure #',
     failureCount,
     'with error:',
@@ -228,15 +230,15 @@ export function retryCheck(failureCount, error) {
     error.status
   )
   if(error.status === 'aborted') {
-    console.log('🟨 Fetch aborted. Will not retry.')
+    log('🟨 Fetch aborted. Will not retry.')
     return false
   }
   if (failureCount >= 3) {
-    console.log('too many retry attempts. Cancelling.')
+    log('too many retry attempts. Cancelling.')
     return false
   }
   if (noRetryList.includes(error.status)) {
-    console.log('skipping retry on status', error.status)
+    log('skipping retry on status', error.status)
     return false
   }
   return true

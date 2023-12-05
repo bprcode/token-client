@@ -1,4 +1,5 @@
 import HourglassTopIcon from '@mui/icons-material/HourglassTop'
+import HomeIcon from '@mui/icons-material/Home';
 import {
   Box,
   Divider,
@@ -29,7 +30,7 @@ function NavSection() {
       }}
     >
       <List disablePadding>
-        <TopNavLink route="/catalog">All Calendars</TopNavLink>
+        <TopNavLink route="/catalog"><HomeIcon sx={{mr:1}}/>All Calendars</TopNavLink>
         {
           catalog.data?.map(c => {
             const key = c.stableKey ?? c.calendar_id

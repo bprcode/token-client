@@ -29,9 +29,7 @@ function makeCatalogQuery(queryClient) {
   return {
     queryKey: ['catalog'],
     queryFn: async () => {
-      const fetched = await goFetch('calendars', {
-        credentials: 'include',
-      })
+      const fetched = await goFetch('calendars')
       const local = queryClient.getQueryData(['catalog']) ?? []
 
       return reconcile({

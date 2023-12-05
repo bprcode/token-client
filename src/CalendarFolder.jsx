@@ -1,7 +1,6 @@
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
 import CalendarViewWeekIcon from '@mui/icons-material/CalendarViewWeek'
 import CalendarViewDayIcon from '@mui/icons-material/CalendarViewDay'
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday'
 import {
   Box,
   Collapse,
@@ -34,7 +33,7 @@ export function CalendarFolder({ route, title }) {
       <List
         disablePadding
         sx={{
-          color: theme.palette.text.primary + (isOpen ? '' : 'cc'),
+          color: alpha(theme.palette.text.primary, isOpen ? 1.0 : 0.775),
 
           width: '100%',
           maxWidth: 360,
@@ -44,7 +43,6 @@ export function CalendarFolder({ route, title }) {
         aria-label={`Nested folder ${route}`}
       >
         <TopNavLink route={route}>
-          <CalendarTodayIcon sx={{ mr: 2 }} />
           <Box
             sx={{
               textOverflow: 'ellipsis',
