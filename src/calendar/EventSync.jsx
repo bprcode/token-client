@@ -1,13 +1,15 @@
 import UploadIcon from '@mui/icons-material/Upload'
 import { CircularProgress, IconButton, Typography } from '@mui/material'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { goFetch } from '../go-fetch'
 import { useRef } from 'react'
 import { createSampleWeek } from './calendarLogic.mjs'
 import dayjs from 'dayjs'
 
 function useUploadMockEvents() {
+  const [searchParams] = useSearchParams()
+
   function randomIdemKey() {
     return String(Math.floor(Math.random() * 1e9))
   }
@@ -22,13 +24,11 @@ function useUploadMockEvents() {
       idemKey.current = randomIdemKey()
       variables.key = idemKey.current
 
-      console.log('🟩 mock mutation had variables:', variables)
-
-      variables.mockEvents = createSampleWeek(dayjs())
+      // console.log('🟩 mock mutation had variables:', variables)
     },
     mutationFn: variables => {
       const datum = variables
-      console.log('key for mutation:', variables.key)
+      // console.log('key for mutation:', variables.key)
       return goFetch(endpoint, {
         method: 'POST',
         body: {
@@ -48,7 +48,9 @@ function useUploadMockEvents() {
   const mockEventBundle = useMutation({
     retry: 0,
     onMutate: variables => {
-      variables.mockEvents = createSampleWeek(dayjs(), 10)
+      const d = searchParams.get('d')?.replaceAll('.',':')
+      const day = dayjs(d ?? undefined)
+      variables.mockEvents = createSampleWeek(day, 10)
     },
     mutationFn: variables => {
       console.log('bundle mockEvents = ', variables.mockEvents)
