@@ -84,7 +84,7 @@ export function Calendar() {
   const canUndo = eventListHistory.length > 1
 
   const date = searchParams.has('d')
-    ? dayjs(searchParams.get('d').replaceAll('.', ':'))
+    ? dayjs(searchParams.get('d').replaceAll('_', ':'))
     : dayjs()
 
   const dayEvents = useMemo(() => {
@@ -188,7 +188,7 @@ export function Calendar() {
       newParams.set('v', view)
     }
     if (date) {
-      newParams.set('d', date.utc().format().replaceAll(':', '.'))
+      newParams.set('d', date.utc().format().replaceAll(':', '_'))
     }
     setSearchParams(newParams)
   }

@@ -48,7 +48,7 @@ function useUploadMockEvents() {
   const mockEventBundle = useMutation({
     retry: 0,
     onMutate: variables => {
-      const d = searchParams.get('d')?.replaceAll('.',':')
+      const d = searchParams.get('d')?.replaceAll('_',':')
       const day = dayjs(d ?? undefined)
       variables.mockEvents = createSampleWeek(day, 10)
     },
