@@ -1,4 +1,5 @@
 import UploadIcon from '@mui/icons-material/Upload'
+import SendIcon from '@mui/icons-material/Send';
 import { CircularProgress, IconButton, Typography } from '@mui/material'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -76,6 +77,12 @@ export function EventSyncStatus() {
           <UploadIcon />
         </IconButton>
       )}
+        <IconButton onClick={() => {
+          goFetch(`calendars/5j2VrWQK/events?from=2024-02-29T00:00:00.000Z&`+
+          `to=2024-03-29T00:00:00.000Z`)
+        }}>
+          <SendIcon />
+        </IconButton>
     </Typography>
   )
 }

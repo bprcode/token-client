@@ -4,8 +4,9 @@ import { useLoaderData, useParams, useSearchParams } from 'react-router-dom'
 import { PreferencesContext } from '../PreferencesContext.mjs'
 import {
   isOverlap,
-  createSampleWeek,
   useEventListHistory,
+  useCurrentEvents,
+  createSampleWeek,
 } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
@@ -22,7 +23,18 @@ const calendarFetcher = queryClient => async ({queryKey}) => {
     ' filters=',
     filters
   )
-  return goFetch(`calendars/${calendar_id}/events`, )
+
+  const response = await goFetch(`calendars/${calendar_id}/events`, )
+  return response.map(row => ({
+    id: row.event_id,
+    etag: row.etag,
+    created: dayjs(row.created),
+    summary: row.summary || 'Default Event',
+    description: row.description || 'Default Description',
+    startTime: dayjs(row.start_time),
+    endTime: dayjs(row.end_time),
+    colorId: row.color_id,
+  }))
 
   // const fetched = await goFetch('calendars', {
   //   credentials: 'include',
@@ -48,45 +60,58 @@ function useCalendarQuery() {
   const { id } = useParams()
   const [searchParams] = useSearchParams()
   // debug -- wip, not using search params yet
+  const currentDate =  searchParams.get('d')?.replaceAll('_', ':') ?? new Date().toISOString()
+  let from, to
+
+  if(searchParams.get('v') === 'week') {
+
+      from = dayjs(currentDate).startOf('week')
+      to = from.add(6, 'days')
+
+      console.log('Using week range from', from.toISOString(), 'to', to.toISOString())
+  }
   const queryClient = useQueryClient()
-  return useQuery(makeCalendarQuery(queryClient, id, {start: 'abc', end: 'xyz'}))
+  return useQuery(makeCalendarQuery(queryClient, id, {from, to}))
 }
 
 export const loader =
   queryClient =>
   ({ request, params }) => {
-    console.log('📆 Calendar loader params = ', params)
-    console.log(`searchParams = `, new URL(request.url).searchParams)
-
-    const data = createSampleWeek(dayjs())
-
-    return new Promise(k => {
-      setTimeout(() => {
-        queryClient.setQueryData(['calendars', params.id], () => data)
-        k(null)
-      }, Math.random() * 1000 + 500)
-    })
+    console.log('🐜 debug / placeholder / not prefetching events yet')
+    // const data = createSampleWeek(dayjs())
+    return 'not yet implemented'
+    // return new Promise(k => {
+    //   setTimeout(() => {
+    //     queryClient.setQueryData(['calendars', params.id], () => data)
+    //     k(null)
+    //   }, Math.random() * 1000 + 500)
+    // })
   }
 
 export function Calendar() {
-  const query = useCalendarQuery()
+  const { data: calendarData } = useCalendarQuery()
 
   const [searchParams, setSearchParams] = useSearchParams()
   const params = useParams()
-  const loaded = useLoaderData()
   const view = searchParams.get('v') || 'month'
 
+  // const [currentEvents, dispatchCurrentEvents] = useCurrentEvents(calendarData)
+  const dispatchCurrentEvents = () => console.log(`placeholder`)
+
   const preferences = useContext(PreferencesContext)
+  /*
   const [eventListHistory, dispatchEventListHistory] =
-    useEventListHistory(loaded)
+    useEventListHistory(calendarData)
   const eventList = eventListHistory[eventListHistory.length - 1]
   const dispatchAction = dispatchEventListHistory
   const canUndo = eventListHistory.length > 1
+  */
 
   const date = searchParams.has('d')
     ? dayjs(searchParams.get('d').replaceAll('_', ':'))
     : dayjs()
 
+  /*
   const dayEvents = useMemo(() => {
     console.log('memoizing day events')
     if (view !== 'day') {
@@ -99,7 +124,12 @@ export function Calendar() {
       isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
     )
   }, [view, eventList, date])
+  */
 
+  if(!calendarData) {
+    return <div>Loading...</div>
+  }
+  
   return (
     <Paper
       elevation={1}
@@ -128,7 +158,7 @@ export function Calendar() {
           {view === 'month' && (
             <MonthlyView
               date={date}
-              unfilteredEvents={eventList}
+              unfilteredEvents={calendarData}
               onExpand={date => updateParams({ view: 'week', date })}
               onChange={date => updateParams({ date })}
             />
@@ -139,7 +169,7 @@ export function Calendar() {
                 updateParams({ view: 'month' })
               }}
               date={date}
-              eventList={eventList}
+              eventList={calendarData}
               onExpand={date => updateParams({ view: 'day', date })}
               onChange={date => updateParams({ date })}
             />
@@ -150,17 +180,18 @@ export function Calendar() {
                 updateParams({ view: 'week' })
               }}
               date={date}
-              unfilteredEvents={eventList}
-              filteredEvents={dayEvents}
+              unfilteredEvents={calendarData}
+              // debug -- need refactoring
+              filteredEvents={calendarData}
               onCreate={addition =>
-                dispatchAction({
+                dispatchCurrentEvents({
                   type: 'create',
                   merge: preferences.merge,
                   addition,
                 })
               }
               onUpdate={updates =>
-                dispatchAction({
+                dispatchCurrentEvents({
                   type: 'update',
                   id: updates.id,
                   merge: preferences.merge,
@@ -168,13 +199,13 @@ export function Calendar() {
                 })
               }
               onDelete={id =>
-                dispatchAction({
+                dispatchCurrentEvents({
                   type: 'delete',
                   id: id,
                 })
               }
-              onUndo={() => dispatchAction({ type: 'undo' })}
-              canUndo={canUndo}
+              onUndo={() => console.log(`debug: not implemented.`)}
+              canUndo={false}
             />
           )}
         </div>

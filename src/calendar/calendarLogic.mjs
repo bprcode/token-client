@@ -370,6 +370,43 @@ export function useEventListHistory(initialList) {
   ])
 }
 
+function reduceCurrentEvents(eventList, action) {
+  switch (action.type) {
+    case 'create':
+      if (action.merge) {
+        return mergeEventIntoList(action.addition, eventList)
+      }
+      return [...eventList, action.addition]
+
+    case 'update': {
+      const prior = eventList.find(e => e.id === action.id)
+
+      const updated = {
+        ...prior,
+        ...action.updates,
+        etag: 'modified-' + prior.etag,
+      }
+
+      const omitted = eventList.filter(e => e.id !== action.id)
+      if (action.merge) {
+        return mergeEventIntoList(updated, omitted)
+      }
+      return omitted.concat(updated)
+    }
+
+    case 'delete':
+      return eventList.filter(e => e.id !== action.id)
+
+    default:
+      throw Error('Unhandled dispatch: ' + action.type)
+  }
+}
+
+const defaultCurrentEvents = []
+export function useCurrentEvents(initialList) {
+  return useReducer(reduceCurrentEvents, initialList || defaultCurrentEvents)
+}
+
 export function useEventStyles() {
   return mockStyles
 }
