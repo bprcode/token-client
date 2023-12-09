@@ -3,7 +3,11 @@ import { IconButton, Paper, Slide } from '@mui/material'
 import { useContext, useMemo, useReducer, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { PreferencesContext } from '../PreferencesContext.mjs'
-import { createSampleWeek, reduceCurrentEvents } from '../calendarLogic.mjs'
+import {
+  createSampleWeek,
+  isOverlap,
+  reduceCurrentEvents,
+} from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
@@ -13,8 +17,82 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 const log = console.log.bind(console)
 
-function mergeViewList(list, newView) {
-  return [...list, newView]
+function mergeViewList(list, incoming) {
+  const merged = []
+  log('mergeViewList(...)', Math.random())
+
+  function format(first, second) {
+    const display = `<DD>HH:mm`
+    return (
+      first.from.utc().format(display) +
+      '–' +
+      first.to.utc().format(display) +
+      ' & ' +
+      second.from.utc().format(display) +
+      '–' +
+      second.to.utc().format(display)
+    )
+  }
+
+  function merge(view) {
+    if(view.to.diff(view.from) <= 1) {
+      log(`skipping merge on degenerate view`)
+      return
+    }
+    
+    merged.push(view)
+  }
+
+  for (const v of list) {
+    if (!isOverlap(v.from, v.to, incoming.from, incoming.to)) {
+      log('🟢 no collision in ', format(v, incoming))
+
+      merge(v)
+      continue
+    }
+
+    if (v.from.isBefore(incoming.from) && v.to.isAfter(incoming.to)) {
+      const before = { from: v.from, to: incoming.from }
+      const after = { from: incoming.to, to: v.to }
+      log(
+        '🪓 should split:',
+        format(v, incoming),
+        'source into:',
+        format(before, after)
+      )
+
+      merge({ ...v, ...before })
+      merge({ ...v, ...after })
+      continue
+    }
+
+    // negation to handle edge overlap
+    if (!v.from.isBefore(incoming.from) && !v.to.isAfter(incoming.to)) {
+      log('📥 should absorb ', format(v, incoming))
+      continue
+    }
+
+    if (v.from.isBefore(incoming.from)) {
+      const before = { from: v.from, to: incoming.from }
+      log('💥 before-collision: ', format(v, incoming))
+
+      merge({ ...v, ...before })
+      continue
+    }
+    if (v.to.isAfter(incoming.to)) {
+      const after = { from: incoming.to, to: v.to }
+      log('💥 after-collision: ', format(v, incoming))
+
+      merge({ ...v, ...after })
+      continue
+    }
+
+    console.warn('Unhandled view collision.')
+    merge(v)
+  }
+
+  merge(incoming)
+  return merged
 }
 
 const calendarFetcher = queryClient => async queryContext => {
@@ -24,11 +102,15 @@ const calendarFetcher = queryClient => async queryContext => {
   const endpoint = `calendars/${calendar_id}/events`
   const search = new URLSearchParams(filters).toString()
 
-  log('queryFn running for calendar_id=', calendar_id, ' filters=', filters)
-  log('queryContext = ', queryContext)
-
   const response = await goFetch(endpoint + (search && '?' + search))
-  setViewList(list => mergeViewList(list, { from: filters.from, to: filters.to }))
+  log('setting view list', Math.random())
+  setViewList(list =>
+    mergeViewList(list, {
+      from: dayjs(filters.from),
+      to: dayjs(filters.to),
+      fetchedAt: Date.now(),
+    })
+  )
   return response.map(row => ({
     id: row.event_id,
     etag: row.etag,
@@ -90,10 +172,7 @@ function useCalendarQuery(setViewList) {
     makeCalendarQuery(
       queryClient,
       id,
-      {
-        from: from.toISOString(),
-        to: to.toISOString(),
-      },
+      { from: from.toISOString(), to: to.toISOString() },
       setViewList
     )
   )
@@ -201,16 +280,20 @@ export function CalendarContents() {
             bottom: 0,
             backgroundColor: '#0af4',
             width: '40ch',
-            height: '20rem',
+            height: '12rem',
+            overflowY: 'auto',
             zIndex: 3,
           }}
         >
-          {viewList.map((v, i) => (
-            <div key={i}>
-              {dayjs(v.from).format('MMM DD')}
-              &nbsp;to {dayjs(v.to).format('MMM DD')}
-            </div>
-          ))}
+          {viewList
+            .toSorted((x, y) => x.from.unix() - y.from.unix())
+            .map((v, i) => (
+              <div key={i}>
+                {v.from.utc().format('MMM-DD HH:mm:ss')}
+                &nbsp;to {v.to.utc().format('MMM-DD HH:mm:ss')}
+                &nbsp;at {Math.round((v.fetchedAt / 1000) % 10000)}
+              </div>
+            ))}
         </div>
       )}
       <Slide
