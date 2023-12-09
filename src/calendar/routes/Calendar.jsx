@@ -18,6 +18,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 const log = console.log.bind(console)
 
 function mergeViewList(list, incoming) {
+  // const log = () => {}
+  const log = console.log.bind(console)
   const merged = []
   log('mergeViewList(...)', Math.random())
 
@@ -35,11 +37,11 @@ function mergeViewList(list, incoming) {
   }
 
   function merge(view) {
-    if(view.to.diff(view.from) <= 1) {
-      log(`skipping merge on degenerate view`)
+    if (view.to.diff(view.from) <= 1) {
+      log(`skipping degenerate view`)
       return
     }
-    
+
     merged.push(view)
   }
 
@@ -103,7 +105,7 @@ const calendarFetcher = queryClient => async queryContext => {
   const search = new URLSearchParams(filters).toString()
 
   const response = await goFetch(endpoint + (search && '?' + search))
-  log('setting view list', Math.random())
+
   setViewList(list =>
     mergeViewList(list, {
       from: dayjs(filters.from),
@@ -111,6 +113,9 @@ const calendarFetcher = queryClient => async queryContext => {
       fetchedAt: Date.now(),
     })
   )
+
+  queryClient.refetchQueries({ queryKey: ['views', calendar_id] })
+
   return response.map(row => ({
     id: row.event_id,
     etag: row.etag,
@@ -143,9 +148,7 @@ function makeCalendarQuery(queryClient, calendar_id, filters, setViewList) {
   }
 }
 
-function useCalendarQuery(setViewList) {
-  const { id } = useParams()
-  const queryClient = useQueryClient()
+function useSearchRange() {
   const [searchParams] = useSearchParams()
   const currentDate =
     searchParams.get('d')?.replaceAll('_', ':') ?? new Date().toISOString()
@@ -153,20 +156,25 @@ function useCalendarQuery(setViewList) {
 
   switch (searchParams.get('v')) {
     case 'week':
-      log('fetching week')
       from = dayjs(currentDate).startOf('week')
       to = dayjs(currentDate).endOf('week')
       break
     case 'day':
-      log('fetching day')
       from = dayjs(currentDate).startOf('day')
       to = dayjs(currentDate).endOf('day')
       break
     default:
-      log('fetching month')
       from = dayjs(currentDate).startOf('month')
       to = dayjs(currentDate).endOf('month')
   }
+
+  return { from, to }
+}
+
+function useCalendarQuery(setViewList) {
+  const { id } = useParams()
+  const queryClient = useQueryClient()
+  const { from, to } = useSearchRange()
 
   return useQuery(
     makeCalendarQuery(
@@ -178,10 +186,66 @@ function useCalendarQuery(setViewList) {
   )
 }
 
+function storeView(queryClient, id, range) {}
+
+function useViewQuery(viewList) {
+  const { id } = useParams()
+  const { from, to } = useSearchRange()
+  const queryClient = useQueryClient()
+
+  return useQuery({
+    queryKey: ['views', id, { from: from.toISOString(), to: to.toISOString() }],
+    queryFn: async ({ queryKey }) => {
+      // if the primary cache already has the answer, use it
+      // otherwise, pull down the new result, cache it, and expose it
+      log(`👁️ view query running queryFn with key=`, queryKey)
+
+      const cached = queryClient.getQueryData(['primary cache', id])
+      log('cached data from primary was:', cached)
+
+      if (cached.viewed === `debug placeholder false`) {
+        log(`can use stored data`)
+        return cached.stored
+      }
+
+      const [, calendar_id, filters = {}] = queryKey
+      const endpoint = `calendars/${calendar_id}/events`
+      const search = new URLSearchParams(filters).toString()
+
+      const response = await goFetch(endpoint + (search && '?' + search))
+      const parsed = response.map(row => ({
+        id: row.event_id,
+        etag: row.etag,
+        created: dayjs(row.created),
+        summary: row.summary || 'Default Event',
+        description: row.description || 'Default Description',
+        startTime: dayjs(row.start_time),
+        endTime: dayjs(row.end_time),
+        colorId: row.color_id,
+      }))
+
+      queryClient.setQueryData(['primary cache', id], cache => ({
+        stored: cache.stored,
+        viewed: mergeViewList(cache.viewed, {from: dayjs(filters.from), to: dayjs(filters.to)}),
+      }))
+
+      return parsed
+    },
+  })
+}
+
 export const loader =
   queryClient =>
   ({ request, params }) => {
-    console.log('🐜 debug / placeholder / not prefetching events yet')
+    console.log('🐜 debug / placeholder / working on centralizing cache')
+    queryClient.setQueryData(['primary cache', params.id], data => {
+      if (data) {
+        log(`🌙 primary cache already initialized`)
+        return
+      }
+
+      return { stored: [], viewed: [] }
+    })
     // const data = createSampleWeek(dayjs())
     return 'not yet implemented'
     // return new Promise(k => {
@@ -210,10 +274,9 @@ export function Calendar() {
 }
 
 export function CalendarContents() {
-  const [viewList, setViewList] = useState(() => [])
   const [showViewList, toggleViewList] = useReducer(v => !v, true)
 
-  const { data: calendarData } = useCalendarQuery(setViewList)
+  const { data: calendarData } = useViewQuery()
 
   const [searchParams, setSearchParams] = useSearchParams()
   const params = useParams()
@@ -285,7 +348,7 @@ export function CalendarContents() {
             zIndex: 3,
           }}
         >
-          {viewList
+          {/* {viewList
             .toSorted((x, y) => x.from.unix() - y.from.unix())
             .map((v, i) => (
               <div key={i}>
@@ -293,7 +356,7 @@ export function CalendarContents() {
                 &nbsp;to {v.to.utc().format('MMM-DD HH:mm:ss')}
                 &nbsp;at {Math.round((v.fetchedAt / 1000) % 10000)}
               </div>
-            ))}
+            ))} */}
         </div>
       )}
       <Slide
