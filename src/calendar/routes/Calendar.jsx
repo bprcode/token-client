@@ -1,13 +1,9 @@
-import { Paper, Slide } from '@mui/material'
-import { useContext, useMemo } from 'react'
-import { useLoaderData, useParams, useSearchParams } from 'react-router-dom'
+import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
+import { IconButton, Paper, Slide } from '@mui/material'
+import { useContext, useMemo, useReducer, useState } from 'react'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { PreferencesContext } from '../PreferencesContext.mjs'
-import {
-  isOverlap,
-  useEventListHistory,
-  useCurrentEvents,
-  createSampleWeek,
-} from '../calendarLogic.mjs'
+import { createSampleWeek, reduceCurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
@@ -15,16 +11,24 @@ import { DailyView } from '../DailyView'
 import { goFetch } from '../../go-fetch'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
-const calendarFetcher = queryClient => async ({queryKey}) => {
-  const [, calendar_id, filters = {}] = queryKey
-  console.log(
-    'queryFn running for calendar_id=',
-    calendar_id,
-    ' filters=',
-    filters
-  )
+const log = console.log.bind(console)
 
-  const response = await goFetch(`calendars/${calendar_id}/events`, )
+function mergeViewList(list, newView) {
+  return [...list, newView]
+}
+
+const calendarFetcher = queryClient => async queryContext => {
+  const { queryKey } = queryContext
+  const setViewList = queryContext.meta.setViewList
+  const [, calendar_id, filters = {}] = queryKey
+  const endpoint = `calendars/${calendar_id}/events`
+  const search = new URLSearchParams(filters).toString()
+
+  log('queryFn running for calendar_id=', calendar_id, ' filters=', filters)
+  log('queryContext = ', queryContext)
+
+  const response = await goFetch(endpoint + (search && '?' + search))
+  setViewList(list => mergeViewList(list, { from: filters.from, to: filters.to }))
   return response.map(row => ({
     id: row.event_id,
     etag: row.etag,
@@ -49,29 +53,50 @@ const calendarFetcher = queryClient => async ({queryKey}) => {
   // })
 }
 
-function makeCalendarQuery(queryClient, calendar_id, filters) {
+function makeCalendarQuery(queryClient, calendar_id, filters, setViewList) {
   return {
     queryKey: ['calendars', calendar_id, filters],
     queryFn: calendarFetcher(queryClient),
+    meta: { setViewList },
   }
 }
 
-function useCalendarQuery() {
+function useCalendarQuery(setViewList) {
   const { id } = useParams()
+  const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
-  // debug -- wip, not using search params yet
-  const currentDate =  searchParams.get('d')?.replaceAll('_', ':') ?? new Date().toISOString()
+  const currentDate =
+    searchParams.get('d')?.replaceAll('_', ':') ?? new Date().toISOString()
   let from, to
 
-  if(searchParams.get('v') === 'week') {
-
+  switch (searchParams.get('v')) {
+    case 'week':
+      log('fetching week')
       from = dayjs(currentDate).startOf('week')
-      to = from.add(6, 'days')
-
-      console.log('Using week range from', from.toISOString(), 'to', to.toISOString())
+      to = dayjs(currentDate).endOf('week')
+      break
+    case 'day':
+      log('fetching day')
+      from = dayjs(currentDate).startOf('day')
+      to = dayjs(currentDate).endOf('day')
+      break
+    default:
+      log('fetching month')
+      from = dayjs(currentDate).startOf('month')
+      to = dayjs(currentDate).endOf('month')
   }
-  const queryClient = useQueryClient()
-  return useQuery(makeCalendarQuery(queryClient, id, {from, to}))
+
+  return useQuery(
+    makeCalendarQuery(
+      queryClient,
+      id,
+      {
+        from: from.toISOString(),
+        to: to.toISOString(),
+      },
+      setViewList
+    )
+  )
 }
 
 export const loader =
@@ -88,15 +113,35 @@ export const loader =
     // })
   }
 
+function useCalendarDispatch() {
+  const queryClient = useQueryClient()
+  const params = useParams()
+  // debug -- if multiple queries are active, they generally don't share events
+  // the current reducer does not account for this
+  return action =>
+    queryClient.setQueriesData({ queryKey: ['calendars', params.id] }, data => {
+      console.log(`🧑‍🍳 reducing on`, data)
+      return reduceCurrentEvents(data, action)
+    })
+}
+
 export function Calendar() {
-  const { data: calendarData } = useCalendarQuery()
+  const params = useParams()
+  return <CalendarContents key={params.id} />
+}
+
+export function CalendarContents() {
+  const [viewList, setViewList] = useState(() => [])
+  const [showViewList, toggleViewList] = useReducer(v => !v, true)
+
+  const { data: calendarData } = useCalendarQuery(setViewList)
 
   const [searchParams, setSearchParams] = useSearchParams()
   const params = useParams()
   const view = searchParams.get('v') || 'month'
 
   // const [currentEvents, dispatchCurrentEvents] = useCurrentEvents(calendarData)
-  const dispatchCurrentEvents = () => console.log(`placeholder`)
+  const dispatch = useCalendarDispatch()
 
   const preferences = useContext(PreferencesContext)
   /*
@@ -126,10 +171,10 @@ export function Calendar() {
   }, [view, eventList, date])
   */
 
-  if(!calendarData) {
+  if (!calendarData) {
     return <div>Loading...</div>
   }
-  
+
   return (
     <Paper
       elevation={1}
@@ -139,6 +184,35 @@ export function Calendar() {
         position: 'relative',
       }}
     >
+      <IconButton
+        onClick={toggleViewList}
+        sx={{
+          position: 'absolute',
+          bottom: 0,
+          zIndex: 4,
+        }}
+      >
+        <FormatListBulletedIcon />
+      </IconButton>
+      {showViewList && (
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            backgroundColor: '#0af4',
+            width: '40ch',
+            height: '20rem',
+            zIndex: 3,
+          }}
+        >
+          {viewList.map((v, i) => (
+            <div key={i}>
+              {dayjs(v.from).format('MMM DD')}
+              &nbsp;to {dayjs(v.to).format('MMM DD')}
+            </div>
+          ))}
+        </div>
+      )}
       <Slide
         key={params.id}
         timeout={350}
@@ -181,17 +255,17 @@ export function Calendar() {
               }}
               date={date}
               unfilteredEvents={calendarData}
-              // debug -- need refactoring
-              filteredEvents={calendarData}
+              // debug -- need refactoring --
+              // filteredEvents={calendarData/needs filtering}
               onCreate={addition =>
-                dispatchCurrentEvents({
+                dispatch({
                   type: 'create',
                   merge: preferences.merge,
                   addition,
                 })
               }
               onUpdate={updates =>
-                dispatchCurrentEvents({
+                dispatch({
                   type: 'update',
                   id: updates.id,
                   merge: preferences.merge,
@@ -199,7 +273,7 @@ export function Calendar() {
                 })
               }
               onDelete={id =>
-                dispatchCurrentEvents({
+                dispatch({
                   type: 'delete',
                   id: id,
                 })

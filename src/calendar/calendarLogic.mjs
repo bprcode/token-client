@@ -370,7 +370,7 @@ export function useEventListHistory(initialList) {
   ])
 }
 
-function reduceCurrentEvents(eventList, action) {
+export function reduceCurrentEvents(eventList, action) {
   switch (action.type) {
     case 'create':
       if (action.merge) {
@@ -400,11 +400,6 @@ function reduceCurrentEvents(eventList, action) {
     default:
       throw Error('Unhandled dispatch: ' + action.type)
   }
-}
-
-const defaultCurrentEvents = []
-export function useCurrentEvents(initialList) {
-  return useReducer(reduceCurrentEvents, initialList || defaultCurrentEvents)
 }
 
 export function useEventStyles() {
