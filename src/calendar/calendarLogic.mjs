@@ -373,10 +373,7 @@ export function useEventListHistory(initialList) {
 export function reduceCurrentEvents(eventList, action) {
   switch (action.type) {
     case 'create':
-      if (action.merge) {
-        return mergeEventIntoList(action.addition, eventList)
-      }
-      return [...eventList, action.addition]
+      return mergeEventIntoList(action.addition, eventList)
 
     case 'update': {
       const prior = eventList.find(e => e.id === action.id)
@@ -388,10 +385,7 @@ export function reduceCurrentEvents(eventList, action) {
       }
 
       const omitted = eventList.filter(e => e.id !== action.id)
-      if (action.merge) {
-        return mergeEventIntoList(updated, omitted)
-      }
-      return omitted.concat(updated)
+      return mergeEventIntoList(updated, omitted)
     }
 
     case 'delete':

@@ -18,8 +18,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 const log = console.log.bind(console)
 
 function mergeViewList(list, incoming) {
-  // const log = () => {}
-  const log = console.log.bind(console)
+  const log = () => {}
+  // const log = console.log.bind(console)
   const merged = []
   log('mergeViewList(...)', Math.random())
 
@@ -97,57 +97,6 @@ function mergeViewList(list, incoming) {
   return merged
 }
 
-const calendarFetcher = queryClient => async queryContext => {
-  const { queryKey } = queryContext
-  const setViewList = queryContext.meta.setViewList
-  const [, calendar_id, filters = {}] = queryKey
-  const endpoint = `calendars/${calendar_id}/events`
-  const search = new URLSearchParams(filters).toString()
-
-  const response = await goFetch(endpoint + (search && '?' + search))
-
-  setViewList(list =>
-    mergeViewList(list, {
-      from: dayjs(filters.from),
-      to: dayjs(filters.to),
-      fetchedAt: Date.now(),
-    })
-  )
-
-  queryClient.refetchQueries({ queryKey: ['views', calendar_id] })
-
-  return response.map(row => ({
-    id: row.event_id,
-    etag: row.etag,
-    created: dayjs(row.created),
-    summary: row.summary || 'Default Event',
-    description: row.description || 'Default Description',
-    startTime: dayjs(row.start_time),
-    endTime: dayjs(row.end_time),
-    colorId: row.color_id,
-  }))
-
-  // const fetched = await goFetch('calendars', {
-  //   credentials: 'include',
-  // })
-  // const local = queryClient.getQueryData(['catalog']) ?? []
-
-  // return reconcile({
-  //   localData: local,
-  //   serverData: fetched,
-  //   key: 'calendar_id',
-  //   log: () => {},
-  // })
-}
-
-function makeCalendarQuery(queryClient, calendar_id, filters, setViewList) {
-  return {
-    queryKey: ['calendars', calendar_id, filters],
-    queryFn: calendarFetcher(queryClient),
-    meta: { setViewList },
-  }
-}
-
 function useSearchRange() {
   const [searchParams] = useSearchParams()
   const currentDate =
@@ -172,22 +121,7 @@ function useSearchRange() {
   return { from, to }
 }
 
-function useCalendarQuery(setViewList) {
-  const { id } = useParams()
-  const queryClient = useQueryClient()
-  const { from, to } = useSearchRange()
-
-  return useQuery(
-    makeCalendarQuery(
-      queryClient,
-      id,
-      { from: from.toISOString(), to: to.toISOString() },
-      setViewList
-    )
-  )
-}
-
-function useViewQuery(viewList) {
+function useViewQuery() {
   const { id } = useParams()
   const { from, to } = useSearchRange()
   const queryClient = useQueryClient()
@@ -227,15 +161,14 @@ function useViewQuery(viewList) {
       queryClient.setQueryData(['primary cache', id], cache => {
         const merged = []
         const fetchedMap = new Map(parsed.map(f => [f.id, f]))
+        log(`fetched map:`,fetchedMap)
         for(const c of cache.stored) {
           if(!fetchedMap.has(c.id)) {
-            log(`${c.id} was not included in latest fetch`)
             merged.push(c)
           }
         }
         log(`${merged.length} events free-passed and ${parsed.length} events fetched`)
         merged.push(...parsed)
-        log(`new cache store:`, merged)
 
         return {
         stored: merged,
@@ -288,13 +221,17 @@ function useCalendarDispatch() {
 
 export function Calendar() {
   const params = useParams()
-  return <CalendarContents key={params.id} />
+  return <CalendarContents key={params.id} calendarId={params.id} />
 }
 
-export function CalendarContents() {
-  const [showViewList, toggleViewList] = useReducer(v => !v, true)
+export function CalendarContents({calendarId}) {
+  const [showViewList, toggleViewList] = useReducer(on => !on, true)
 
   const { data: calendarData } = useViewQuery()
+  const { data: primaryCacheData } = useQuery({
+    queryKey: ['primary cache', calendarId],
+    enabled: false,
+  })
 
   const [searchParams, setSearchParams] = useSearchParams()
   const params = useParams()
@@ -303,7 +240,6 @@ export function CalendarContents() {
   // const [currentEvents, dispatchCurrentEvents] = useCurrentEvents(calendarData)
   const dispatch = useCalendarDispatch()
 
-  const preferences = useContext(PreferencesContext)
   /*
   const [eventListHistory, dispatchEventListHistory] =
     useEventListHistory(calendarData)
@@ -366,15 +302,15 @@ export function CalendarContents() {
             zIndex: 3,
           }}
         >
-          {/* {viewList
+          {primaryCacheData.viewed
             .toSorted((x, y) => x.from.unix() - y.from.unix())
             .map((v, i) => (
               <div key={i}>
                 {v.from.utc().format('MMM-DD HH:mm:ss')}
                 &nbsp;to {v.to.utc().format('MMM-DD HH:mm:ss')}
-                &nbsp;at {Math.round((v.fetchedAt / 1000) % 10000)}
+                &nbsp;at {Math.round((v.at / 1000) % 10000)}
               </div>
-            ))} */}
+            ))}
         </div>
       )}
       <Slide
@@ -424,7 +360,6 @@ export function CalendarContents() {
               onCreate={addition =>
                 dispatch({
                   type: 'create',
-                  merge: preferences.merge,
                   addition,
                 })
               }
@@ -432,7 +367,6 @@ export function CalendarContents() {
                 dispatch({
                   type: 'update',
                   id: updates.id,
-                  merge: preferences.merge,
                   updates,
                 })
               }
