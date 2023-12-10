@@ -2,9 +2,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import { CircularProgress, IconButton, Paper, Slide } from '@mui/material'
 import { useContext, useMemo, useReducer, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { PreferencesContext } from '../PreferencesContext.mjs'
 import {
-  createSampleWeek,
   isOverlap,
   reduceCurrentEvents,
 } from '../calendarLogic.mjs'
@@ -94,7 +92,8 @@ function mergeViewList(list, incoming) {
   }
 
   merge(incoming)
-  return merged
+  const sorted = merged.toSorted((x, y) => x.from.unix() - y.from.unix())
+  return sorted
 }
 
 function useSearchRange() {
@@ -144,19 +143,19 @@ function findViewAge(views, latest) {
     return undefined
   }
 
-  const sorted = overlaps.toSorted((x, y) => x.from.unix() - y.from.unix())
+  // const sorted = overlaps.toSorted((x, y) => x.from.unix() - y.from.unix())
 
   const display = `<DD>HH:mm`
   log('list of views overlapping current view:')
   log(
-    sorted.map(
+    overlaps.map(
       s => s.from.utc().format(display) + '–' + s.to.utc().format(display)
     )
   )
 
   let uncovered = 0
-  for (let i = 1; i < sorted.length; i++) {
-    const gap = sorted[i].from.diff(sorted[i - 1].to)
+  for (let i = 1; i < overlaps.length; i++) {
+    const gap = overlaps[i].from.diff(overlaps[i - 1].to)
     log(`difference #${i}:`, gap)
     if (gap > 1) {
       uncovered += gap
@@ -170,8 +169,8 @@ function findViewAge(views, latest) {
   // If the new view is wholly covered,
   // return the age of the oldest matching data.
   if (
-    !sorted[0].from.isAfter(latest.from) &&
-    !sorted[sorted.length - 1].to.isBefore(latest.to)
+    !overlaps[0].from.isAfter(latest.from) &&
+    !overlaps[overlaps.length - 1].to.isBefore(latest.to)
   ) {
     log(`earliest view match was:`, earliest)
     return earliest
@@ -188,11 +187,11 @@ function useViewQuery() {
 
   return useQuery({
     gcTime: 0,
-    staleTime: 10 * 1000,
+    staleTime: 3 * 60 * 1000,
     queryKey: ['views', id, { from: from.toISOString(), to: to.toISOString() }],
     initialData: () => {
       const cached = queryClient.getQueryData(['primary cache', id])
-      const viewAge = findViewAge(cached.viewed, { from, to })
+      const viewAge = findViewAge(cached.sortedViews, { from, to })
 
       if (viewAge) {
         const filtered = cached.stored.filter(e =>
@@ -207,7 +206,7 @@ function useViewQuery() {
     },
     initialDataUpdatedAt: () => {
       const cached = queryClient.getQueryData(['primary cache', id])
-      const viewAge = findViewAge(cached.viewed, { from, to })
+      const viewAge = findViewAge(cached.sortedViews, { from, to })
 
       return viewAge
     },
@@ -219,7 +218,7 @@ function useViewQuery() {
       const cached = queryClient.getQueryData(['primary cache', id])
       log('cached data from primary was:', cached)
 
-      if (cached.viewed === `debug placeholder false`) {
+      if (cached.sortedViews === `debug placeholder false`) {
         log(`can use stored data`)
         return cached.stored
       }
@@ -255,7 +254,7 @@ function useViewQuery() {
 
         return {
           stored: merged,
-          viewed: mergeViewList(cache.viewed, {
+          sortedViews: mergeViewList(cache.sortedViews, {
             from: dayjs(filters.from),
             to: dayjs(filters.to),
             at: Date.now(),
@@ -278,7 +277,7 @@ export const loader =
         return
       }
 
-      return { stored: [], viewed: [] }
+      return { stored: [], sortedViews: [] }
     })
     // const data = createSampleWeek(dayjs())
     return 'not yet implemented'
@@ -395,8 +394,7 @@ export function CalendarContents({ calendarId }) {
             zIndex: 3,
           }}
         >
-          {primaryCacheData.viewed
-            .toSorted((x, y) => x.from.unix() - y.from.unix())
+          {primaryCacheData.sortedViews
             .map((v, i) => (
               <div key={i}>
                 {v.from.utc().format('MMM-DD HH:mm:ss')}
