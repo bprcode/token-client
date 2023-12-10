@@ -164,8 +164,9 @@ function useSearchRange() {
       to = dayjs(currentDate).endOf('day')
       break
     default:
-      from = dayjs(currentDate).startOf('month')
-      to = dayjs(currentDate).endOf('month')
+      // Show edges of weeks overlapping current month grid
+      from = dayjs(currentDate).startOf('month').startOf('week')
+      to = dayjs(currentDate).endOf('month').endOf('week')
   }
 
   return { from, to }
@@ -186,14 +187,13 @@ function useCalendarQuery(setViewList) {
   )
 }
 
-function storeView(queryClient, id, range) {}
-
 function useViewQuery(viewList) {
   const { id } = useParams()
   const { from, to } = useSearchRange()
   const queryClient = useQueryClient()
 
   return useQuery({
+    gcTime: 0,
     queryKey: ['views', id, { from: from.toISOString(), to: to.toISOString() }],
     queryFn: async ({ queryKey }) => {
       // if the primary cache already has the answer, use it
@@ -224,10 +224,28 @@ function useViewQuery(viewList) {
         colorId: row.color_id,
       }))
 
-      queryClient.setQueryData(['primary cache', id], cache => ({
-        stored: cache.stored,
-        viewed: mergeViewList(cache.viewed, {from: dayjs(filters.from), to: dayjs(filters.to)}),
-      }))
+      queryClient.setQueryData(['primary cache', id], cache => {
+        const merged = []
+        const fetchedMap = new Map(parsed.map(f => [f.id, f]))
+        for(const c of cache.stored) {
+          if(!fetchedMap.has(c.id)) {
+            log(`${c.id} was not included in latest fetch`)
+            merged.push(c)
+          }
+        }
+        log(`${merged.length} events free-passed and ${parsed.length} events fetched`)
+        merged.push(...parsed)
+        log(`new cache store:`, merged)
+
+        return {
+        stored: merged,
+        viewed: mergeViewList(cache.viewed, {
+          from: dayjs(filters.from),
+          to: dayjs(filters.to),
+          at: Date.now(),
+        }),
+      }
+    })
 
       return parsed
     },
