@@ -144,6 +144,18 @@ export function WeeklyView({
         >
           <NavigateNextIcon />
         </IconButton>
+        <IconButton
+          aria-label="jump two weeks"
+          disableTouchRipple
+          onClick={() => onChange(date.add(2, 'weeks').startOf('week'))}
+          sx={{
+            '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
+            borderBottomLeftRadius: 0,
+            borderTopLeftRadius: 0,
+          }}
+        >
+          <NavigateNextIcon sx={{color:"secondary.main"}} />
+        </IconButton>
       </ViewHeader>
 
       <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />

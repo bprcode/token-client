@@ -1,5 +1,5 @@
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
-import { IconButton, Paper, Slide } from '@mui/material'
+import { CircularProgress, IconButton, Paper, Slide } from '@mui/material'
 import { useContext, useMemo, useReducer, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { PreferencesContext } from '../PreferencesContext.mjs'
@@ -121,6 +121,66 @@ function useSearchRange() {
   return { from, to }
 }
 
+/**
+ * If the latest view is fully covered by the cache,
+ * find the age of the most-outdated overlapping view.
+ * Otherwise, return undefined.
+ */
+function findViewAge(views, latest) {
+  let earliest = Infinity
+  const overlaps = []
+
+  for (const v of views) {
+    if (isOverlap(v.from, v.to, latest.from, latest.to)) {
+      if (v.at < earliest) {
+        earliest = v.at
+      }
+      overlaps.push(v)
+    }
+  }
+
+  if (overlaps.length === 0) {
+    log(`No overlaps. Cannot supply from cache.`)
+    return undefined
+  }
+
+  const sorted = overlaps.toSorted((x, y) => x.from.unix() - y.from.unix())
+
+  const display = `<DD>HH:mm`
+  log('list of views overlapping current view:')
+  log(
+    sorted.map(
+      s => s.from.utc().format(display) + '–' + s.to.utc().format(display)
+    )
+  )
+
+  let uncovered = 0
+  for (let i = 1; i < sorted.length; i++) {
+    const gap = sorted[i].from.diff(sorted[i - 1].to)
+    log(`difference #${i}:`, gap)
+    if (gap > 1) {
+      uncovered += gap
+    }
+  }
+  if (uncovered > 0) {
+    log(`views were not continuous`)
+    return undefined
+  }
+
+  // If the new view is wholly covered,
+  // return the age of the oldest matching data.
+  if (
+    !sorted[0].from.isAfter(latest.from) &&
+    !sorted[sorted.length - 1].to.isBefore(latest.to)
+  ) {
+    log(`earliest view match was:`, earliest)
+    return earliest
+  }
+
+  log(`cache partially matched, but not fully.`)
+  return undefined
+}
+
 function useViewQuery() {
   const { id } = useParams()
   const { from, to } = useSearchRange()
@@ -128,7 +188,29 @@ function useViewQuery() {
 
   return useQuery({
     gcTime: 0,
+    staleTime: 10 * 1000,
     queryKey: ['views', id, { from: from.toISOString(), to: to.toISOString() }],
+    initialData: () => {
+      const cached = queryClient.getQueryData(['primary cache', id])
+      const viewAge = findViewAge(cached.viewed, { from, to })
+
+      if (viewAge) {
+        const filtered = cached.stored.filter(e =>
+          isOverlap(e.startTime, e.endTime, from, to)
+        )
+        log(`👍 using events from cache... (${filtered.length})`)
+        return filtered
+      }
+
+      log(`🤷‍♂️ cache not available for this request. Fetching the hard way.`)
+      return undefined
+    },
+    initialDataUpdatedAt: () => {
+      const cached = queryClient.getQueryData(['primary cache', id])
+      const viewAge = findViewAge(cached.viewed, { from, to })
+
+      return viewAge
+    },
     queryFn: async ({ queryKey }) => {
       // if the primary cache already has the answer, use it
       // otherwise, pull down the new result, cache it, and expose it
@@ -161,24 +243,25 @@ function useViewQuery() {
       queryClient.setQueryData(['primary cache', id], cache => {
         const merged = []
         const fetchedMap = new Map(parsed.map(f => [f.id, f]))
-        log(`fetched map:`,fetchedMap)
-        for(const c of cache.stored) {
-          if(!fetchedMap.has(c.id)) {
+        for (const c of cache.stored) {
+          if (!fetchedMap.has(c.id)) {
             merged.push(c)
           }
         }
-        log(`${merged.length} events free-passed and ${parsed.length} events fetched`)
+        log(
+          `${merged.length} events free-passed and ${parsed.length} events fetched`
+        )
         merged.push(...parsed)
 
         return {
-        stored: merged,
-        viewed: mergeViewList(cache.viewed, {
-          from: dayjs(filters.from),
-          to: dayjs(filters.to),
-          at: Date.now(),
-        }),
-      }
-    })
+          stored: merged,
+          viewed: mergeViewList(cache.viewed, {
+            from: dayjs(filters.from),
+            to: dayjs(filters.to),
+            at: Date.now(),
+          }),
+        }
+      })
 
       return parsed
     },
@@ -224,7 +307,7 @@ export function Calendar() {
   return <CalendarContents key={params.id} calendarId={params.id} />
 }
 
-export function CalendarContents({calendarId}) {
+export function CalendarContents({ calendarId }) {
   const [showViewList, toggleViewList] = useReducer(on => !on, true)
 
   const { data: calendarData } = useViewQuery()
@@ -268,7 +351,17 @@ export function CalendarContents({calendarId}) {
   */
 
   if (!calendarData) {
-    return <div>Loading...</div>
+    return (
+      <div
+        style={{
+          display: 'grid',
+          height: '100%',
+          placeContent: 'center',
+        }}
+      >
+        <CircularProgress />
+      </div>
+    )
   }
 
   return (
