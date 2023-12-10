@@ -2,10 +2,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import { CircularProgress, IconButton, Paper, Slide } from '@mui/material'
 import { useContext, useMemo, useReducer, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import {
-  isOverlap,
-  reduceCurrentEvents,
-} from '../calendarLogic.mjs'
+import { isOverlap, reduceCurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
@@ -15,7 +12,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 const log = console.log.bind(console)
 
-function mergeViewList(list, incoming) {
+function mergeView(list, incoming) {
   const log = () => {}
   // const log = console.log.bind(console)
   const merged = []
@@ -143,15 +140,13 @@ function findViewAge(views, latest) {
     return undefined
   }
 
-  // const sorted = overlaps.toSorted((x, y) => x.from.unix() - y.from.unix())
-
-  const display = `<DD>HH:mm`
-  log('list of views overlapping current view:')
-  log(
-    overlaps.map(
-      s => s.from.utc().format(display) + '–' + s.to.utc().format(display)
-    )
-  )
+  // const display = `<DD>HH:mm`
+  // log('list of views overlapping current view:')
+  // log(
+  //   overlaps.map(
+  //     s => s.from.utc().format(display) + '–' + s.to.utc().format(display)
+  //   )
+  // )
 
   let uncovered = 0
   for (let i = 1; i < overlaps.length; i++) {
@@ -180,24 +175,34 @@ function findViewAge(views, latest) {
   return undefined
 }
 
+function serveFromCache(cache, from, to) {
+  return cache.filter(e => isOverlap(e.startTime, e.endTime, from, to))
+}
+
 function useViewQuery() {
   const { id } = useParams()
   const { from, to } = useSearchRange()
   const queryClient = useQueryClient()
 
+  const staleTime = 1 * 60 * 1000
+
   return useQuery({
     gcTime: 0,
-    staleTime: 3 * 60 * 1000,
+    staleTime,
     queryKey: ['views', id, { from: from.toISOString(), to: to.toISOString() }],
     initialData: () => {
       const cached = queryClient.getQueryData(['primary cache', id])
       const viewAge = findViewAge(cached.sortedViews, { from, to })
 
       if (viewAge) {
-        const filtered = cached.stored.filter(e =>
-          isOverlap(e.startTime, e.endTime, from, to)
+        const filtered = serveFromCache(cached.stored, from, to)
+        log(
+          `👍 using (${filtered.length}) events from cache, ` +
+            `data is ${(Date.now() - viewAge) / 1000} seconds old, ` +
+            `${Math.floor(
+              (100 * (Date.now() - viewAge)) / staleTime
+            )}% to stale.`
         )
-        log(`👍 using events from cache... (${filtered.length})`)
         return filtered
       }
 
@@ -211,18 +216,6 @@ function useViewQuery() {
       return viewAge
     },
     queryFn: async ({ queryKey }) => {
-      // if the primary cache already has the answer, use it
-      // otherwise, pull down the new result, cache it, and expose it
-      log(`👁️ view query running queryFn with key=`, queryKey)
-
-      const cached = queryClient.getQueryData(['primary cache', id])
-      log('cached data from primary was:', cached)
-
-      if (cached.sortedViews === `debug placeholder false`) {
-        log(`can use stored data`)
-        return cached.stored
-      }
-
       const [, calendar_id, filters = {}] = queryKey
       const endpoint = `calendars/${calendar_id}/events`
       const search = new URLSearchParams(filters).toString()
@@ -239,6 +232,7 @@ function useViewQuery() {
         colorId: row.color_id,
       }))
 
+      // Add the new data into the primary cache.
       queryClient.setQueryData(['primary cache', id], cache => {
         const merged = []
         const fetchedMap = new Map(parsed.map(f => [f.id, f]))
@@ -248,13 +242,14 @@ function useViewQuery() {
           }
         }
         log(
-          `${merged.length} events free-passed and ${parsed.length} events fetched`
+          `${merged.length} events free-passed and ` +
+            `${parsed.length} events fetched`
         )
         merged.push(...parsed)
 
         return {
           stored: merged,
-          sortedViews: mergeViewList(cache.sortedViews, {
+          sortedViews: mergeView(cache.sortedViews, {
             from: dayjs(filters.from),
             to: dayjs(filters.to),
             at: Date.now(),
@@ -289,16 +284,32 @@ export const loader =
     // })
   }
 
-function useCalendarDispatch() {
+function usePrimaryDispatch() {
   const queryClient = useQueryClient()
-  const params = useParams()
-  // debug -- if multiple queries are active, they generally don't share events
-  // the current reducer does not account for this
-  return action =>
-    queryClient.setQueriesData({ queryKey: ['calendars', params.id] }, data => {
-      console.log(`🧑‍🍳 reducing on`, data)
-      return reduceCurrentEvents(data, action)
-    })
+  const { id } = useParams()
+  return action => {
+    queryClient.setQueryData(['primary cache', id], data => ({
+        sortedViews: data.sortedViews,
+        stored: reduceCurrentEvents(data.stored, action),
+      })
+    )
+    const primaryCache = queryClient.getQueryData(['primary cache', id]).stored
+
+    // Retrieve the active view keys from the cache
+    queryClient
+      .getQueryCache()
+      .findAll({ queryKey: ['views', id] })
+      .forEach(q => {
+        queryClient.setQueryData(
+          q.queryKey,
+          serveFromCache(
+            primaryCache,
+            dayjs(q.queryKey[2].from),
+            dayjs(q.queryKey[2].to)
+          )
+        )
+      })
+  }
 }
 
 export function Calendar() {
@@ -320,7 +331,8 @@ export function CalendarContents({ calendarId }) {
   const view = searchParams.get('v') || 'month'
 
   // const [currentEvents, dispatchCurrentEvents] = useCurrentEvents(calendarData)
-  const dispatch = useCalendarDispatch()
+  // const dispatch = useCalendarDispatch()
+  const dispatch = usePrimaryDispatch()
 
   /*
   const [eventListHistory, dispatchEventListHistory] =
@@ -394,14 +406,13 @@ export function CalendarContents({ calendarId }) {
             zIndex: 3,
           }}
         >
-          {primaryCacheData.sortedViews
-            .map((v, i) => (
-              <div key={i}>
-                {v.from.utc().format('MMM-DD HH:mm:ss')}
-                &nbsp;to {v.to.utc().format('MMM-DD HH:mm:ss')}
-                &nbsp;at {Math.round((v.at / 1000) % 10000)}
-              </div>
-            ))}
+          {primaryCacheData.sortedViews.map((v, i) => (
+            <div key={i}>
+              {v.from.utc().format('MMM-DD HH:mm:ss')}
+              &nbsp;to {v.to.utc().format('MMM-DD HH:mm:ss')}
+              &nbsp;at {Math.round((v.at / 1000) % 10000)}
+            </div>
+          ))}
         </div>
       )}
       <Slide

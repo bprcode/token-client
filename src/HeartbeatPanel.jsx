@@ -48,6 +48,7 @@ export function HeartbeatPanel() {
   })
 
   const heartbeatResult = useQuery({
+    staleTime: 2 * 60 * 1000,
     queryKey: ['heartbeat'],
     queryFn: () =>
       goFetch('me').catch(e => {
