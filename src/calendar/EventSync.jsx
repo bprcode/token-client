@@ -26,7 +26,12 @@ function useEventBundleMutation(calendarId) {
     //   original: variables,
     //   queryClient,
     // }),
-    onError: (error, variables) => 'not implemented',
+    onError: (error, variables) =>
+      handleEventError(calendarId, {
+        error,
+        original: variables,
+        queryClient,
+      })
     // handleCalendarError({
     //   error,
     //   original: variables,
@@ -71,6 +76,24 @@ function useEventBundleMutation(calendarId) {
   })
 
   return bundleMutation
+}
+
+function handleEventError(calendarId, { error, original, queryClient }) {
+  // Tried to delete something that doesn't exist
+  if (original.isDeleting && error.status === 404) {
+    // Reflect the absence in the primary cache and active views
+    queryClient.setQueryData(['primary cache', calendarId], data =>
+      ({
+        ...data,
+        stored: data.stored.filter(e => e.id !== original.id)
+      })
+    )
+
+    queryClient.setQueriesData({queryKey: ['views']}, events =>
+      events.filter(e => e.id !== original.id))
+      
+    return
+  }
 }
 
 function makeEventFetch(calendarId, variables) {
