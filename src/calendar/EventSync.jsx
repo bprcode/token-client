@@ -1,5 +1,4 @@
 import UploadIcon from '@mui/icons-material/Upload'
-import SendIcon from '@mui/icons-material/Send'
 import { CircularProgress, IconButton, Typography } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -20,23 +19,25 @@ function useEventBundleMutation(calendarId) {
     mutationFn: variables => {
       return makeEventFetch(calendarId, variables)
     },
-    onSuccess: (data, variables) => 'not implemented',
+    onSuccess: (data, variables) =>
+      handleEventSuccess({
+        calendarId,
+        result: data,
+        original: variables,
+        queryClient,
+      }),
     // handleCalendarSuccess({
     //   result: data,
     //   original: variables,
     //   queryClient,
     // }),
     onError: (error, variables) =>
-      handleEventError(calendarId, {
+      handleEventError({
         error,
+        calendarId,
         original: variables,
         queryClient,
-      })
-    // handleCalendarError({
-    //   error,
-    //   original: variables,
-    //   queryClient,
-    // }),
+      }),
   })
 
   const bundleMutation = useMutation({
@@ -78,20 +79,123 @@ function useEventBundleMutation(calendarId) {
   return bundleMutation
 }
 
-function handleEventError(calendarId, { error, original, queryClient }) {
+function handleEventSuccess({ calendarId, result, original, queryClient }) {
+  log(`WIP/debug -- handling event mutation success on calendar ${calendarId}`)
+  log(`result was:`, result)
+  log('original was:', original)
+  log(`still need to implement create and delete success`)
+
+  const current = queryClient
+    .getQueryData(['primary cache', calendarId])
+    ?.stored.find(e => e.id === original.id)
+
+  // Update success
+  if (current.etag !== original.etag) {
+    return
+  }
+
+  let resolution = {}
+  if (current.unsaved === original.unsaved) {
+    resolution = {
+      id: original.id,
+      summary: result[0].summary,
+      description: result[0].description,
+      startTime: dayjs(result[0].start_time),
+      endTime: dayjs(result[0].end_time),
+      colorId: result[0].color_id,
+      etag: result[0].etag,
+
+      stableKey: current.stableKey,
+    }
+  } else {
+    resolution = {
+      ...current,
+      etag: result[0].etag,
+    }
+  }
+
+  queryClient.setQueryData(['primary cache', calendarId], data => ({
+    ...data,
+    stored: data.stored.map(e => (e.id === original.id ? resolution : e)),
+  }))
+  queryClient.setQueriesData({ queryKey: ['views'] }, events =>
+    events.map(e => (e.id === original.id ? resolution : e))
+  )
+  //
+  /*
+  const current = queryClient
+    .getQueryData(['catalog'])
+    .find(c => c.calendar_id === original.calendar_id)
+
+  // Creation success
+  if (original.etag === 'creating') {
+    // Retain any pending edits
+    const update = {
+      ...current,
+      primary_author_id: result.primary_author_id,
+      etag: result.etag,
+      created: result.created,
+      updated: result.updated,
+      calendar_id: result.calendar_id,
+    }
+
+    if (current?.unsaved === original.unsaved) {
+      delete update.unsaved
+    }
+
+    queryClient.setQueryData(['catalog'], catalog =>
+      catalog.map(c => (c.calendar_id === original.calendar_id ? update : c))
+    )
+
+    return
+  }
+
+  // Deletion success
+  if (original.isDeleting) {
+    queryClient.setQueryData(['catalog'], catalog =>
+      catalog.filter(c => c.calendar_id !== original.calendar_id)
+    )
+
+    return
+  }
+
+  // Update success
+  if (current.etag !== original.etag) {
+    return
+  }
+
+  let resolution = {}
+  if (current.unsaved === original.unsaved) {
+    resolution = {
+      ...result[0],
+      stableKey: current.stableKey,
+    }
+  } else {
+    resolution = {
+      ...current,
+      etag: result[0].etag,
+    }
+  }
+
+  queryClient.setQueryData(['catalog'], catalog =>
+    catalog.map(c => (c.calendar_id === original.calendar_id ? resolution : c))
+  )
+  */
+}
+
+function handleEventError({ calendarId, error, original, queryClient }) {
   // Tried to delete something that doesn't exist
   if (original.isDeleting && error.status === 404) {
     // Reflect the absence in the primary cache and active views
-    queryClient.setQueryData(['primary cache', calendarId], data =>
-      ({
-        ...data,
-        stored: data.stored.filter(e => e.id !== original.id)
-      })
+    queryClient.setQueryData(['primary cache', calendarId], data => ({
+      ...data,
+      stored: data.stored.filter(e => e.id !== original.id),
+    }))
+
+    queryClient.setQueriesData({ queryKey: ['views'] }, events =>
+      events.filter(e => e.id !== original.id)
     )
 
-    queryClient.setQueriesData({queryKey: ['views']}, events =>
-      events.filter(e => e.id !== original.id))
-      
     return
   }
 }
@@ -101,7 +205,7 @@ function makeEventFetch(calendarId, variables) {
   const timeout = 5000
   const signal = variables.signal
 
-  if(variables.isDeleting) {
+  if (variables.isDeleting) {
     return goFetch(`${endpoint}/events/${variables.id}`, {
       method: 'DELETE',
       body: {
@@ -141,7 +245,6 @@ function makeEventFetch(calendarId, variables) {
     timeout,
     signal,
   })
-
 }
 
 function useUploadMockEvents() {
