@@ -1,4 +1,5 @@
 const noop = () => {}
+
 export function reconcile({ localData, serverData, key, log = noop }) {
   const chillTime = 60 * 1000
   const merged = []
@@ -107,4 +108,16 @@ export function reconcile({ localData, serverData, key, log = noop }) {
   }
 
   return merged
+}
+
+export function touchList(records) {
+  const list = []
+
+  for (const c of records ?? []) {
+    if (c.unsaved || c.etag === 'creating') {
+      list.push(c)
+    }
+  }
+
+  return list
 }

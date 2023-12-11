@@ -11,6 +11,7 @@ import {
   hasDebounce,
 } from './debounce.mjs'
 import { CatalogMutationContext } from './CatalogMutationContext'
+import { touchList } from './calendar/reconcile.mjs'
 
 export function CatalogMutationProvider({ children }) {
   const abortRef = useRef(new AbortController())
@@ -74,20 +75,6 @@ export function CatalogMutationProvider({ children }) {
       {children}
     </CatalogMutationContext.Provider>
   )
-}
-
-export function touchList(queryClient) {
-  const catalog = queryClient.getQueryData(['catalog'])
-
-  const list = []
-
-  for (const c of catalog ?? []) {
-    if (c.unsaved || c.etag === 'creating') {
-      list.push(c)
-    }
-  }
-
-  return list
 }
 
 function useTouchList() {
@@ -234,10 +221,10 @@ export function CatalogAutosaver({log = noop}) {
       () => {
         countRef.current++
 
-        const list = touchList(queryClient)
+        const list = touchList(queryClient.getQueryData(['catalog']))
         if (list.length > 0) {
           log(`♻️ Autosaving... (check # ${countRef.current})`)
-          mutate(touchList(queryClient))
+          mutate(list)
         } else {
           log(`✅ Autosaver clean. (check # ${countRef.current})`)
         }
@@ -257,10 +244,10 @@ export function CatalogAutosaver({log = noop}) {
       leadingDebounce(
         `Catalog autosaver`,
         () => {
-          const list = touchList(queryClient)
+          const list = touchList(queryClient.getQueryData(['catalog']))
           if (list.length > 0) {
             log(`♻️👁️ Fetch sentinel syncing...`)
-            mutate(touchList(queryClient))
+            mutate(list)
           } else {
             log(`✅👁️ Fetch sentinel clean.`)
           }

@@ -1,12 +1,13 @@
 import UploadIcon from '@mui/icons-material/Upload'
 import SendIcon from '@mui/icons-material/Send';
 import { CircularProgress, IconButton, Typography } from '@mui/material'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { goFetch } from '../go-fetch'
 import { useRef } from 'react'
 import { createSampleWeek } from './calendarLogic.mjs'
 import dayjs from 'dayjs'
+import { touchList } from './reconcile.mjs';
 
 function useUploadMockEvents() {
   const [searchParams] = useSearchParams()
@@ -65,11 +66,17 @@ function useUploadMockEvents() {
 }
 
 export function EventSyncStatus() {
+  const {id} = useParams()
+  const { data: primaryCacheData } = useQuery({
+    queryKey: ['primary cache', id],
+    enabled: false,
+  })
   const { mutate, isPending } = useUploadMockEvents()
+  const touched = touchList(primaryCacheData?.stored)
 
   return (
     <Typography variant="subtitle2" color={'info.main'}>
-      Event sync placeholder
+      Events {touched.length ? `(${touched.length})` : `clean`}
       {isPending ? (
         <CircularProgress size="16px" sx={{ ml: 2 }} />
       ) : (
