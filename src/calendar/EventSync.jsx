@@ -83,11 +83,51 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
   log(`WIP/debug -- handling event mutation success on calendar ${calendarId}`)
   log(`result was:`, result)
   log('original was:', original)
-  log(`still need to implement create and delete success`)
+  log(`todo: test more here`)
 
   const current = queryClient
     .getQueryData(['primary cache', calendarId])
     ?.stored.find(e => e.id === original.id)
+
+  // Creation success
+  if (original.etag === 'creating') {
+    // Retain any pending edits
+    const update = {
+      ...current,
+      id: result.event_id,
+      etag: result.etag,
+      created: dayjs(result.created),
+    }
+
+    if (current?.unsaved === original.unsaved) {
+      delete update.unsaved
+    }
+
+    queryClient.setQueryData(['primary cache', calendarId], data => ({
+      ...data,
+      stored: data.stored.map(e => (e.id === original.id ? update : e)),
+    }))
+
+    queryClient.setQueriesData({ queryKey: ['views'] }, events =>
+      events.map(e => (e.id === original.id ? update : e))
+    )
+
+    return
+  }
+
+  // Deletion success
+  if (original.isDeleting) {
+    queryClient.setQueryData(['primary cache', calendarId], data => ({
+      ...data,
+      stored: data.stored.filter(e => e.id !== original.id),
+    }))
+
+    queryClient.setQueriesData({ queryKey: ['views'] }, events =>
+      events.filter(e => e.id !== original.id)
+    )
+
+    return
+  }
 
   // Update success
   if (current.etag !== original.etag) {
