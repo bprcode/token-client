@@ -1,5 +1,5 @@
 import UploadIcon from '@mui/icons-material/Upload'
-import SendIcon from '@mui/icons-material/Send';
+import SendIcon from '@mui/icons-material/Send'
 import { CircularProgress, IconButton, Typography } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams, useSearchParams } from 'react-router-dom'
@@ -7,7 +7,7 @@ import { goFetch } from '../go-fetch'
 import { useRef } from 'react'
 import { createSampleWeek } from './calendarLogic.mjs'
 import dayjs from 'dayjs'
-import { touchList } from './reconcile.mjs';
+import { touchList } from './reconcile.mjs'
 
 const log = console.log.bind(console)
 
@@ -18,23 +18,20 @@ function useEventBundleMutation(calendarId) {
 
   const itemMutation = useMutation({
     mutationFn: variables => {
-      return 'not implemented'
-      //return makeCalendarFetch(variables)
+      return makeEventFetch(calendarId, variables)
     },
-    onSuccess: (data, variables) =>
-      'not implemented',
-      // handleCalendarSuccess({
-      //   result: data,
-      //   original: variables,
-      //   queryClient,
-      // }),
-    onError: (error, variables) =>
-    'not implemented',
-      // handleCalendarError({
-      //   error,
-      //   original: variables,
-      //   queryClient,
-      // }),
+    onSuccess: (data, variables) => 'not implemented',
+    // handleCalendarSuccess({
+    //   result: data,
+    //   original: variables,
+    //   queryClient,
+    // }),
+    onError: (error, variables) => 'not implemented',
+    // handleCalendarError({
+    //   error,
+    //   original: variables,
+    //   queryClient,
+    // }),
   })
 
   const bundleMutation = useMutation({
@@ -44,7 +41,10 @@ function useEventBundleMutation(calendarId) {
       abortRef.current.abort()
       abortRef.current = new AbortController()
 
-      log(`🍢 should start bundle with events:`, variables.map(v => v.id).join(', '))
+      log(
+        `🍢 should start bundle with events:`,
+        variables.map(v => v.id).join(', ')
+      )
     },
     mutationFn: variables =>
       Promise.all(
@@ -71,6 +71,54 @@ function useEventBundleMutation(calendarId) {
   })
 
   return bundleMutation
+}
+
+function makeEventFetch(calendarId, variables) {
+  const endpoint = `calendars`
+  const timeout = 5000
+  const signal = variables.signal
+
+  if(variables.isDeleting) {
+    return goFetch(`${endpoint}/events/${variables.id}`, {
+      method: 'DELETE',
+      body: {
+        etag: variables.etag,
+      },
+      timeout,
+      signal,
+    })
+  }
+
+  if (variables.etag === 'creating') {
+    return goFetch(`${endpoint}/${calendarId}/events`, {
+      method: 'POST',
+      body: {
+        key: variables.id,
+        start_time: variables.startTime.toISOString(),
+        end_time: variables.endTime.toISOString(),
+        summary: variables.summary,
+        description: variables.description,
+        color_id: variables.colorId,
+      },
+      timeout,
+      signal,
+    })
+  }
+
+  return goFetch(`${endpoint}/events/${variables.id}`, {
+    method: 'PUT',
+    body: {
+      etag: variables.etag,
+      start_time: variables.startTime.toISOString(),
+      end_time: variables.endTime.toISOString(),
+      summary: variables.summary,
+      description: variables.description,
+      color_id: variables.colorId,
+    },
+    timeout,
+    signal,
+  })
+
 }
 
 function useUploadMockEvents() {
@@ -114,7 +162,7 @@ function useUploadMockEvents() {
   const mockEventBundle = useMutation({
     retry: 0,
     onMutate: variables => {
-      const d = searchParams.get('d')?.replaceAll('_',':')
+      const d = searchParams.get('d')?.replaceAll('_', ':')
       const day = dayjs(d ?? undefined)
       variables.mockEvents = createSampleWeek(day, 10)
     },
@@ -129,12 +177,12 @@ function useUploadMockEvents() {
   return mockEventBundle
 }
 
-function EventSyncContents({id}) {
+function EventSyncContents({ id }) {
+  const { mutate, isPending } = useEventBundleMutation(id)
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', id],
     enabled: false,
   })
-  const { mutate, isPending } = useUploadMockEvents()
   const touched = touchList(primaryCacheData?.stored)
 
   return (
@@ -143,22 +191,15 @@ function EventSyncContents({id}) {
       {isPending ? (
         <CircularProgress size="16px" sx={{ ml: 2 }} />
       ) : (
-        <IconButton onClick={() => console.log(`mutate placeholder:`,touched)}>
+        <IconButton onClick={() => mutate(touched)}>
           <UploadIcon />
         </IconButton>
       )}
-        <IconButton onClick={() => {
-          goFetch(`calendars/5j2VrWQK/events?from=2024-02-29T00:00:00.000Z&`+
-          `to=2024-03-29T00:00:00.000Z`)
-        }}>
-          <SendIcon />
-        </IconButton>
     </Typography>
   )
-
 }
 
 export function EventSyncStatus() {
-  const {id} = useParams()
+  const { id } = useParams()
   return id && <EventSyncContents id={id} />
 }

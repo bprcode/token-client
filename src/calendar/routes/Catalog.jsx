@@ -22,7 +22,7 @@ import {
 } from '@mui/material'
 import { alpha, keyframes } from '@mui/material/styles'
 import dayjs from 'dayjs'
-import { Link, Navigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { reconcile } from '../reconcile.mjs'
 
