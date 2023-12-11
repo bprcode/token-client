@@ -105,14 +105,14 @@ function mockDescription(summary) {
   }
 }
 
-export function createSampleEvent({ startTime, endTime, summary, colorId }) {
+export function createSampleEvent({ startTime, endTime, summary, colorId, id }) {
   const etag = Array(32)
     .fill(0)
     .map(() => Math.floor(Math.random() * 16).toString(16))
     .join('')
   return {
     // text
-    id: String(btoa((Math.random() * 1e6).toFixed())),
+    id: id ?? String(btoa((Math.random() * 1e6).toFixed())),
     // text
     etag: etag,
     // RFC3339-compatible datetime
@@ -372,8 +372,13 @@ export function useEventListHistory(initialList) {
 
 export function reduceCurrentEvents(eventList, action) {
   switch (action.type) {
-    case 'create':
-      return mergeEventIntoList(action.addition, eventList)
+    case 'create': {
+      const tags = {
+        etag: 'creating',
+        stableKey: action.addition.id,
+      }
+      return mergeEventIntoList({...action.addition, ...tags}, eventList)
+    }
 
     case 'update': {
       const prior = eventList.find(e => e.id === action.id)
@@ -381,7 +386,7 @@ export function reduceCurrentEvents(eventList, action) {
       const updated = {
         ...prior,
         ...action.updates,
-        etag: 'modified-' + prior.etag,
+        unsaved: Date.now(),
       }
 
       const omitted = eventList.filter(e => e.id !== action.id)
@@ -389,7 +394,9 @@ export function reduceCurrentEvents(eventList, action) {
     }
 
     case 'delete':
-      return eventList.filter(e => e.id !== action.id)
+      return eventList.map(e => e.id === action.id
+        ? {...e, isDeleting: true, unsaved: Date.now()}
+        : e)
 
     default:
       throw Error('Unhandled dispatch: ' + action.type)

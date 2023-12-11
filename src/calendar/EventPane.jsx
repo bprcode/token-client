@@ -171,12 +171,34 @@ export function EventPane({
         <br />
         {event.description && (
           <>
-            ID:{event.id}
-            <br />
-            colorId:{event.colorId}
-            <br />
-            {event.description}
-            <br />
+            <div>
+              ID: <span style={{ color: '#8ef' }}>{event.id}</span>
+            </div>
+            <div>
+              etag: <span style={{ color: '#fc4' }}>{event.etag}</span>
+            </div>
+            <div>colorId: {event.colorId}</div>
+            <div>{event.description}</div>
+            {event.unsaved && (
+              <div>
+                unsaved: <span style={{ color: '#0ef' }}>{event.unsaved}</span>
+              </div>
+            )}
+            {event.originTag && (
+              <div>
+                originTag:{' '}
+                <span style={{ color: '#fe0' }}>{event.originTag}</span>
+              </div>
+            )}
+            {event.isDeleting && (
+              <div style={{ color: '#f00' }}>isDeleting</div>
+            )}
+            {event.stableKey && (
+              <div>
+                stableKey:{' '}
+                <span style={{ color: '#08a' }}>{event.stableKey}</span>
+              </div>
+            )}
           </>
         )}
       </div>

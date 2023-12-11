@@ -140,14 +140,6 @@ function findViewAge(views, latest) {
     return undefined
   }
 
-  // const display = `<DD>HH:mm`
-  // log('list of views overlapping current view:')
-  // log(
-  //   overlaps.map(
-  //     s => s.from.utc().format(display) + '–' + s.to.utc().format(display)
-  //   )
-  // )
-
   let uncovered = 0
   for (let i = 1; i < overlaps.length; i++) {
     const gap = overlaps[i].from.diff(overlaps[i - 1].to)
@@ -234,21 +226,12 @@ function useViewQuery() {
 
       // Add the new data into the primary cache.
       queryClient.setQueryData(['primary cache', id], cache => {
-        const merged = []
-        const fetchedMap = new Map(parsed.map(f => [f.id, f]))
-        for (const c of cache.stored) {
-          if (!fetchedMap.has(c.id)) {
-            merged.push(c)
-          }
-        }
-        log(
-          `${merged.length} events free-passed and ` +
-            `${parsed.length} events fetched`
+        // Events not included in this range are persisted unchanged.
+        const unseen = cache.stored.filter(
+          e => !isOverlap(e.startTime, e.endTime, from, to)
         )
-        merged.push(...parsed)
-
         return {
-          stored: merged,
+          stored: [...unseen, ...parsed],
           sortedViews: mergeView(cache.sortedViews, {
             from: dayjs(filters.from),
             to: dayjs(filters.to),
@@ -289,10 +272,9 @@ function usePrimaryDispatch() {
   const { id } = useParams()
   return action => {
     queryClient.setQueryData(['primary cache', id], data => ({
-        sortedViews: data.sortedViews,
-        stored: reduceCurrentEvents(data.stored, action),
-      })
-    )
+      sortedViews: data.sortedViews,
+      stored: reduceCurrentEvents(data.stored, action),
+    }))
     const primaryCache = queryClient.getQueryData(['primary cache', id]).stored
 
     // Retrieve the active view keys from the cache
@@ -318,7 +300,7 @@ export function Calendar() {
 }
 
 export function CalendarContents({ calendarId }) {
-  const [showViewList, toggleViewList] = useReducer(on => !on, true)
+  const [showViewList, toggleViewList] = useReducer(on => !on, false)
 
   const { data: calendarData } = useViewQuery()
   const { data: primaryCacheData } = useQuery({
