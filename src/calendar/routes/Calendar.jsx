@@ -9,6 +9,7 @@ import { WeeklyView } from '../WeeklyView'
 import { DailyView } from '../DailyView'
 import { goFetch } from '../../go-fetch'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { reconcile } from '../reconcile.mjs'
 
 const log = console.log.bind(console)
 
@@ -224,6 +225,18 @@ function useViewQuery() {
         colorId: row.color_id,
       }))
 
+      // Reconcile conflicts between present state and fetched data
+      const local = queryClient
+        .getQueryData(['primary cache', id])
+        .stored.filter(e => isOverlap(e.startTime, e.endTime, from, to))
+      // const local = queryClient.getQueryData(queryKey) ?? []
+      const reconciled = reconcile({
+        localData: local,
+        serverData: parsed,
+        key: 'id',
+        log: console.log,
+      })
+
       // Add the new data into the primary cache.
       queryClient.setQueryData(['primary cache', id], cache => {
         // Events not included in this range are persisted unchanged.
@@ -231,7 +244,7 @@ function useViewQuery() {
           e => !isOverlap(e.startTime, e.endTime, from, to)
         )
         return {
-          stored: [...unseen, ...parsed],
+          stored: [...unseen, ...reconciled],
           sortedViews: mergeView(cache.sortedViews, {
             from: dayjs(filters.from),
             to: dayjs(filters.to),
@@ -240,7 +253,7 @@ function useViewQuery() {
         }
       })
 
-      return parsed
+      return reconciled
     },
   })
 }

@@ -256,7 +256,8 @@ export function EventPane({
       case 'delete':
         if (deleting) return
         console.log('handling deletion')
-        setDeleting(true)
+        // debug -- delete animation disabled for testing purposes
+        // setDeleting(true)
         setTimeout(() => onDelete(event.id), 350)
         return
       case 'edit':

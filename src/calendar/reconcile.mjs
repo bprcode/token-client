@@ -1,5 +1,5 @@
-export function reconcile({ localData, serverData, key }) {
-  const log = () => {}
+const noop = () => {}
+export function reconcile({ localData, serverData, key, log = noop }) {
   const chillTime = 60 * 1000
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
