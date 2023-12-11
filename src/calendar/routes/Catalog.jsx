@@ -362,7 +362,11 @@ export function Catalog() {
     </ViewHeader>
   )
 
-  if (catalog.isPending || (catalog.isError && catalog.isFetching)) {
+  if (
+    catalog.isPending ||
+    (catalog.isError && catalog.isFetching) ||
+    (!catalog.data && catalog.isFetching)
+  ) {
     return (
       <ViewContainer>
         {header}
