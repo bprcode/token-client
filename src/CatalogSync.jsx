@@ -3,17 +3,16 @@ import { Typography } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
-import { useContext, useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import {
   bounceEarly,
   backoff,
   leadingDebounce,
   hasDebounce,
 } from './debounce.mjs'
-import { CatalogMutationContext } from './CatalogMutationContext'
 import { touchList } from './calendar/reconcile.mjs'
 
-export function CatalogMutationProvider({ children }) {
+function useCatalogBundleMutation() {
   const abortRef = useRef(new AbortController())
 
   const queryClient = useQueryClient()
@@ -70,11 +69,7 @@ export function CatalogMutationProvider({ children }) {
     },
   })
 
-  return (
-    <CatalogMutationContext.Provider value={bundleMutation}>
-      {children}
-    </CatalogMutationContext.Provider>
-  )
+  return bundleMutation
 }
 
 function useTouchList() {
@@ -208,12 +203,11 @@ function makeCalendarFetch(variables) {
 }
 
 const noop = () => {}
-export function CatalogAutosaver({log = noop}) {
+export function CatalogAutosaver({mutate, log = noop}) {
   const countRef = useRef(1)
   const { data, isFetching, isError } = useCatalogQuery()
 
   const queryClient = useQueryClient()
-  const { mutate } = useContext(CatalogMutationContext)
 
   useEffect(() => {
     leadingDebounce(
@@ -266,7 +260,7 @@ export function CatalogAutosaver({log = noop}) {
 }
 
 export function CatalogSyncStatus() {
-  const bundleMutation = useContext(CatalogMutationContext)
+  const bundleMutation = useCatalogBundleMutation()
   const list = useTouchList()
   const isMutating = bundleMutation.isPending
 
@@ -284,7 +278,7 @@ export function CatalogSyncStatus() {
 
   return (
     <>
-      <CatalogAutosaver />
+      <CatalogAutosaver mutate={bundleMutation.mutate} />
       <div
         style={{
           display: 'flex',

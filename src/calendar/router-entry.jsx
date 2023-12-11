@@ -18,7 +18,6 @@ import { LoginPage } from './routes/Login'
 import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
-import { CatalogMutationProvider } from '../CatalogSync'
 
 const globalExpiryHandler = error => {
   console.log('🌍 global cache error handler:', error.status, error.message)
@@ -85,9 +84,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={digitalTheme}>
         <CssBaseline enableColorScheme>
-          <CatalogMutationProvider>
             <RouterProvider router={router} />
-          </CatalogMutationProvider>
         </CssBaseline>
       </ThemeProvider>
       <ReactQueryDevtools initialIsOpen={false} />
