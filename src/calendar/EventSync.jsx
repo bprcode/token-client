@@ -9,6 +9,70 @@ import { createSampleWeek } from './calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { touchList } from './reconcile.mjs';
 
+const log = console.log.bind(console)
+
+function useEventBundleMutation(calendarId) {
+  const abortRef = useRef(new AbortController())
+
+  const queryClient = useQueryClient()
+
+  const itemMutation = useMutation({
+    mutationFn: variables => {
+      return 'not implemented'
+      //return makeCalendarFetch(variables)
+    },
+    onSuccess: (data, variables) =>
+      'not implemented',
+      // handleCalendarSuccess({
+      //   result: data,
+      //   original: variables,
+      //   queryClient,
+      // }),
+    onError: (error, variables) =>
+    'not implemented',
+      // handleCalendarError({
+      //   error,
+      //   original: variables,
+      //   queryClient,
+      // }),
+  })
+
+  const bundleMutation = useMutation({
+    retry: 0,
+    mutationKey: ['event bundle', calendarId],
+    onMutate: variables => {
+      abortRef.current.abort()
+      abortRef.current = new AbortController()
+
+      log(`🍢 should start bundle with events:`, variables.map(v => v.id).join(', '))
+    },
+    mutationFn: variables =>
+      Promise.all(
+        variables.map(c =>
+          itemMutation.mutateAsync({
+            ...c,
+            signal: abortRef.current.signal,
+          })
+        )
+      ),
+    onError: error => {
+      if (error?.status === 409) {
+        console.log(
+          `⛔ Event bundle mutation resulted in ${error.status}. ` +
+            `No backoff-refetch implemented yet.`
+        )
+
+        // backoff(`catalog conflict refetch`, () => {
+        //   console.log(`⛔ Bundle refetching.`)
+        //   queryClient.refetchQueries({ queryKey: ['catalog'] })
+        // })
+      }
+    },
+  })
+
+  return bundleMutation
+}
+
 function useUploadMockEvents() {
   const [searchParams] = useSearchParams()
 
@@ -79,7 +143,7 @@ function EventSyncContents({id}) {
       {isPending ? (
         <CircularProgress size="16px" sx={{ ml: 2 }} />
       ) : (
-        <IconButton onClick={mutate}>
+        <IconButton onClick={() => console.log(`mutate placeholder:`,touched)}>
           <UploadIcon />
         </IconButton>
       )}

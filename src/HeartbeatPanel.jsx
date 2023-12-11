@@ -44,17 +44,26 @@ export function HeartbeatPanel() {
     onSuccess: data => {
       console.log('logout mutation yielded ', data)
       queryClient.setQueriesData({}, null)
+      navigate('/login')
     },
   })
 
   const heartbeatResult = useQuery({
     staleTime: 2 * 60 * 1000,
     queryKey: ['heartbeat'],
-    queryFn: () =>
-      goFetch('me').catch(e => {
+    queryFn: ({ signal }) =>
+      goFetch('me', { signal }).catch(e => {
+        console.log(
+          `🖤 rethrowing heartbeat query error:`,
+          e.message,
+          ' status=',
+          e.status
+        )
         if (e.message.includes('Awaiting login')) {
-          console.log('🔒 need login, redirecting')
+          console.log('🔒 need login, clearing data and redirecting')
+          queryClient.setQueriesData({}, null)
           navigate('/login')
+          return null
         }
         throw e
       }),

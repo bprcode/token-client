@@ -376,17 +376,13 @@ export function Catalog() {
     )
   }
 
-  if (catalog.error) {
+  if (catalog.error || !catalog.data) {
     return (
       <ViewContainer>
         {header}
         {loadingPane}
       </ViewContainer>
     )
-  }
-
-  if (!catalog.data) {
-    return <Navigate to="/login" />
   }
 
   let emptyPadding = []
