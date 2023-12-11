@@ -72,19 +72,6 @@ function useCatalogBundleMutation() {
   return bundleMutation
 }
 
-function useTouchList() {
-  const catalog = useCatalogQuery()
-  const list = []
-
-  for (const c of catalog.data ?? []) {
-    if (c.unsaved || c.etag === 'creating') {
-      list.push(c)
-    }
-  }
-
-  return list
-}
-
 function handleCalendarError({ error, original, queryClient }) {
   // Tried to delete something that doesn't exist yet
   if (original.isDeleting && error.status === 404) {
@@ -203,10 +190,14 @@ function makeCalendarFetch(variables) {
 }
 
 const noop = () => {}
-export function CatalogAutosaver({mutate, log = noop}) {
+export function CatalogAutosaver({
+  mutate,
+  data,
+  isFetching,
+  isError,
+  log = noop,
+}) {
   const countRef = useRef(1)
-  const { data, isFetching, isError } = useCatalogQuery()
-
   const queryClient = useQueryClient()
 
   useEffect(() => {
@@ -261,7 +252,8 @@ export function CatalogAutosaver({mutate, log = noop}) {
 
 export function CatalogSyncStatus() {
   const bundleMutation = useCatalogBundleMutation()
-  const list = useTouchList()
+  const { data, isFetching, isError } = useCatalogQuery()
+  const list = touchList(data)
   const isMutating = bundleMutation.isPending
 
   let color = 'success.main'
@@ -278,7 +270,12 @@ export function CatalogSyncStatus() {
 
   return (
     <>
-      <CatalogAutosaver mutate={bundleMutation.mutate} />
+      <CatalogAutosaver
+        mutate={bundleMutation.mutate}
+        isFetching={isFetching}
+        isError={isError}
+        data={data}
+      />
       <div
         style={{
           display: 'flex',

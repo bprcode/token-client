@@ -65,8 +65,7 @@ function useUploadMockEvents() {
   return mockEventBundle
 }
 
-export function EventSyncStatus() {
-  const {id} = useParams()
+function EventSyncContents({id}) {
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', id],
     enabled: false,
@@ -92,4 +91,10 @@ export function EventSyncStatus() {
         </IconButton>
     </Typography>
   )
+
+}
+
+export function EventSyncStatus() {
+  const {id} = useParams()
+  return id && <EventSyncContents id={id} />
 }
