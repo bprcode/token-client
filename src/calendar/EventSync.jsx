@@ -7,6 +7,7 @@ import { useRef } from 'react'
 import { createSampleWeek } from './calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { touchList } from './reconcile.mjs'
+import { resetViewsToCache } from './routes/Calendar'
 
 const log = console.log.bind(console)
 
@@ -79,6 +80,15 @@ function useEventBundleMutation(calendarId) {
   return bundleMutation
 }
 
+function updateStored(queryClient, calendarId, transform) {
+  queryClient.setQueryData(['primary cache', calendarId], data => ({
+    ...data,
+    stored: transform(data.stored),
+  }))
+
+  resetViewsToCache(queryClient, calendarId)
+}
+
 function handleEventSuccess({ calendarId, result, original, queryClient }) {
   log(`WIP/debug -- handling event mutation success on calendar ${calendarId}`)
   log(`result was:`, result)
@@ -103,13 +113,8 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
       delete update.unsaved
     }
 
-    queryClient.setQueryData(['primary cache', calendarId], data => ({
-      ...data,
-      stored: data.stored.map(e => (e.id === original.id ? update : e)),
-    }))
-
-    queryClient.setQueriesData({ queryKey: ['views'] }, events =>
-      events.map(e => (e.id === original.id ? update : e))
+    updateStored(queryClient, calendarId, stored =>
+      stored.map(e => (e.id === original.id ? update : e))
     )
 
     return
@@ -117,13 +122,8 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
 
   // Deletion success
   if (original.isDeleting) {
-    queryClient.setQueryData(['primary cache', calendarId], data => ({
-      ...data,
-      stored: data.stored.filter(e => e.id !== original.id),
-    }))
-
-    queryClient.setQueriesData({ queryKey: ['views'] }, events =>
-      events.filter(e => e.id !== original.id)
+    updateStored(queryClient, calendarId, stored =>
+      stored.filter(e => e.id !== original.id)
     )
 
     return
@@ -154,87 +154,17 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
     }
   }
 
-  queryClient.setQueryData(['primary cache', calendarId], data => ({
-    ...data,
-    stored: data.stored.map(e => (e.id === original.id ? resolution : e)),
-  }))
-  queryClient.setQueriesData({ queryKey: ['views'] }, events =>
-    events.map(e => (e.id === original.id ? resolution : e))
+  updateStored(queryClient, calendarId, stored =>
+    stored.map(e => (e.id === original.id ? resolution : e))
   )
-  //
-  /*
-  const current = queryClient
-    .getQueryData(['catalog'])
-    .find(c => c.calendar_id === original.calendar_id)
-
-  // Creation success
-  if (original.etag === 'creating') {
-    // Retain any pending edits
-    const update = {
-      ...current,
-      primary_author_id: result.primary_author_id,
-      etag: result.etag,
-      created: result.created,
-      updated: result.updated,
-      calendar_id: result.calendar_id,
-    }
-
-    if (current?.unsaved === original.unsaved) {
-      delete update.unsaved
-    }
-
-    queryClient.setQueryData(['catalog'], catalog =>
-      catalog.map(c => (c.calendar_id === original.calendar_id ? update : c))
-    )
-
-    return
-  }
-
-  // Deletion success
-  if (original.isDeleting) {
-    queryClient.setQueryData(['catalog'], catalog =>
-      catalog.filter(c => c.calendar_id !== original.calendar_id)
-    )
-
-    return
-  }
-
-  // Update success
-  if (current.etag !== original.etag) {
-    return
-  }
-
-  let resolution = {}
-  if (current.unsaved === original.unsaved) {
-    resolution = {
-      ...result[0],
-      stableKey: current.stableKey,
-    }
-  } else {
-    resolution = {
-      ...current,
-      etag: result[0].etag,
-    }
-  }
-
-  queryClient.setQueryData(['catalog'], catalog =>
-    catalog.map(c => (c.calendar_id === original.calendar_id ? resolution : c))
-  )
-  */
 }
 
 function handleEventError({ calendarId, error, original, queryClient }) {
   // Tried to delete something that doesn't exist
   if (original.isDeleting && error.status === 404) {
     // Reflect the absence in the primary cache and active views
-    queryClient.setQueryData(['primary cache', calendarId], data => ({
-      ...data,
-      stored: data.stored.filter(e => e.id !== original.id),
-    }))
-
-    queryClient.setQueriesData({ queryKey: ['views'] }, events =>
-      events.filter(e => e.id !== original.id)
-    )
+    updateStored(queryClient, calendarId, stored =>
+      stored.filter(e => e.id !== original.id))
 
     return
   }

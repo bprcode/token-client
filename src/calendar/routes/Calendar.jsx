@@ -184,6 +184,7 @@ function useViewQuery() {
     staleTime,
     queryKey: ['views', id, { from: from.toISOString(), to: to.toISOString() }],
     initialData: () => {
+      log(`🍗 initialData function`)
       const cached = queryClient.getQueryData(['primary cache', id])
       const viewAge = findViewAge(cached.sortedViews, { from, to })
 
@@ -210,6 +211,7 @@ function useViewQuery() {
     },
     queryFn: async ({ queryKey }) => {
       const [, calendar_id, filters = {}] = queryKey
+      log(`🦃 queryFn executing for view:`, queryKey)
       const endpoint = `calendars/${calendar_id}/events`
       const search = new URLSearchParams(filters).toString()
 
@@ -280,6 +282,27 @@ export const loader =
     // })
   }
 
+export function resetViewsToCache(queryClient, calendarId) {
+  const primaryCache = queryClient.getQueryData([
+    'primary cache',
+    calendarId,
+  ]).stored
+
+  queryClient
+    .getQueryCache()
+    .findAll({ queryKey: ['views', calendarId] })
+    .forEach(q => {
+      queryClient.setQueryData(
+        q.queryKey,
+        serveFromCache(
+          primaryCache,
+          dayjs(q.queryKey[2].from),
+          dayjs(q.queryKey[2].to)
+        )
+      )
+    })
+}
+
 function usePrimaryDispatch() {
   const queryClient = useQueryClient()
   const { id } = useParams()
@@ -288,22 +311,8 @@ function usePrimaryDispatch() {
       sortedViews: data.sortedViews,
       stored: reduceCurrentEvents(data.stored, action),
     }))
-    const primaryCache = queryClient.getQueryData(['primary cache', id]).stored
 
-    // Retrieve the active view keys from the cache
-    queryClient
-      .getQueryCache()
-      .findAll({ queryKey: ['views', id] })
-      .forEach(q => {
-        queryClient.setQueryData(
-          q.queryKey,
-          serveFromCache(
-            primaryCache,
-            dayjs(q.queryKey[2].from),
-            dayjs(q.queryKey[2].to)
-          )
-        )
-      })
+    resetViewsToCache(queryClient, id)
   }
 }
 
