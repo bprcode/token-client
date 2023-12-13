@@ -284,7 +284,7 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
           endTime: finalTime,
           summary: picks.summary,
           colorId: picks.colorId,
-          id: `<need idem key / ${Math.floor(Math.random()*1e4)}>`,
+          id: `idem ${Math.floor(Math.random()*1e9)}`,
         })
       )
     }

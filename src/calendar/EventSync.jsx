@@ -28,11 +28,6 @@ function useEventBundleMutation(calendarId) {
         original: variables,
         queryClient,
       }),
-    // handleCalendarSuccess({
-    //   result: data,
-    //   original: variables,
-    //   queryClient,
-    // }),
     onError: (error, variables) =>
       handleEventError({
         error,
@@ -95,6 +90,16 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
     .getQueryData(['primary cache', calendarId])
     ?.stored.find(e => e.id === original.id)
 
+  function hasSameContent(local, served) {
+    return (
+    local.colorId === served.color_id &&
+    local.summary === served.summary &&
+    local.description === served.description &&
+    local.startTime.toISOString() === served.start_time &&
+    local.endTime.toISOString() === served.end_time
+    )
+  }
+
   // Creation success
   if (original.etag === 'creating') {
     // Retain any pending edits
@@ -105,7 +110,7 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
       created: dayjs(result.created),
     }
 
-    if (current?.unsaved === original.unsaved) {
+    if (hasSameContent(current, result)) {
       delete update.unsaved
     }
 
