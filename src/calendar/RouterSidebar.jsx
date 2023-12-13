@@ -99,8 +99,9 @@ export default function RouterSidebar({ width = '240px', expand }) {
   const content = (
     <>
       <HourglassHeader />
-      <NavSection />
-      <HeartbeatPanel />
+      <HeartbeatPanel>
+        <NavSection />
+      </HeartbeatPanel>
     </>
   )
 

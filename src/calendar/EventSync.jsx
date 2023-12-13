@@ -3,11 +3,12 @@ import { CircularProgress, IconButton, Typography } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { goFetch } from '../go-fetch'
-import { useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import { createSampleWeek } from './calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { touchList } from './reconcile.mjs'
 import { resetViewsToCache } from './routes/Calendar'
+import { Autosaver } from '../Autosaver'
 
 const log = console.log.bind(console)
 
@@ -90,11 +91,6 @@ function updateStored(queryClient, calendarId, transform) {
 }
 
 function handleEventSuccess({ calendarId, result, original, queryClient }) {
-  log(`WIP/debug -- handling event mutation success on calendar ${calendarId}`)
-  log(`result was:`, result)
-  log('original was:', original)
-  log(`todo: test more here`)
-
   const current = queryClient
     .getQueryData(['primary cache', calendarId])
     ?.stored.find(e => e.id === original.id)
@@ -164,7 +160,8 @@ function handleEventError({ calendarId, error, original, queryClient }) {
   if (original.isDeleting && error.status === 404) {
     // Reflect the absence in the primary cache and active views
     updateStored(queryClient, calendarId, stored =>
-      stored.filter(e => e.id !== original.id))
+      stored.filter(e => e.id !== original.id)
+    )
 
     return
   }
@@ -273,29 +270,44 @@ function useUploadMockEvents() {
   return mockEventBundle
 }
 
-function EventSyncContents({ id }) {
-  const { mutate, isPending } = useEventBundleMutation(id)
+function MountedEventSync({ id }) {
+  const { mutate: mutateBundle, isPending } = useEventBundleMutation(id)
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', id],
     enabled: false,
   })
   const touched = touchList(primaryCacheData?.stored)
+  const getEventTouchList = useCallback(
+    queryClient =>
+      touchList(queryClient.getQueryData(['primary cache', id]).stored),
+    [id]
+  )
 
   return (
-    <Typography variant="subtitle2" color={'info.main'}>
-      Events {touched.length ? `(${touched.length})` : `clean`}
-      {isPending ? (
-        <CircularProgress size="16px" sx={{ ml: 2 }} />
-      ) : (
-        <IconButton onClick={() => mutate(touched)}>
-          <UploadIcon />
-        </IconButton>
-      )}
-    </Typography>
+    <>
+      {/* <Autosaver
+        debounceKey={`Event autosaver ${id}`}
+        mutate={mutateBundle}
+        isFetching={false} // debug -- need to read view state?
+        isError={false} // debug -- need to read view state?
+        data={false} // debug -- need to read view state?
+        getTouchList={getEventTouchList}
+      /> */}
+      <Typography variant="subtitle2" color={'info.main'}>
+        Events {touched.length ? `(${touched.length})` : `clean`}
+        {isPending ? (
+          <CircularProgress size="16px" sx={{ ml: 2 }} />
+        ) : (
+          <IconButton onClick={() => mutateBundle(touched)}>
+            <UploadIcon />
+          </IconButton>
+        )}
+      </Typography>
+    </>
   )
 }
 
 export function EventSyncStatus() {
   const { id } = useParams()
-  return id && <EventSyncContents id={id} />
+  return id && <MountedEventSync id={id} />
 }

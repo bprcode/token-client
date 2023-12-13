@@ -28,6 +28,7 @@ import { reconcile } from '../reconcile.mjs'
 
 function makeCatalogQuery(queryClient) {
   return {
+    staleTime: 1 * 60 * 1000,
     queryKey: ['catalog'],
     queryFn: async () => {
       const fetched = await goFetch('calendars')

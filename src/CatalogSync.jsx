@@ -3,14 +3,10 @@ import { Typography } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
-import { useEffect, useRef } from 'react'
-import {
-  bounceEarly,
-  backoff,
-  leadingDebounce,
-  hasDebounce,
-} from './debounce.mjs'
+import { useRef } from 'react'
+import { backoff } from './debounce.mjs'
 import { touchList } from './calendar/reconcile.mjs'
+import { Autosaver } from './Autosaver'
 
 function useCatalogBundleMutation() {
   const abortRef = useRef(new AbortController())
@@ -18,21 +14,33 @@ function useCatalogBundleMutation() {
   const queryClient = useQueryClient()
 
   const itemMutation = useMutation({
+    onMutate: variables => {
+      console.log(`initiating item mutation with variables=`, variables)
+      return { ...variables }
+    },
     mutationFn: variables => {
+      console.log(`fetching item mutation with unsaved=`, variables.unsaved)
       return makeCalendarFetch(variables)
     },
-    onSuccess: (data, variables) =>
+    onSuccess: (data, variables, context) => {
+      console.log(`item success, variables=`, variables)
+      console.log(`and context=`, context)
+
       handleCalendarSuccess({
         result: data,
         original: variables,
         queryClient,
-      }),
-    onError: (error, variables) =>
+      })
+    },
+    onError: (error, variables, context) => {
+      console.log(`item error, unsaved=`, variables.unsaved)
+      console.log(`and context=`, context)
       handleCalendarError({
         error,
         original: variables,
         queryClient,
-      }),
+      })
+    },
   })
 
   const bundleMutation = useMutation({
@@ -43,7 +51,9 @@ function useCatalogBundleMutation() {
       abortRef.current = new AbortController()
       console.log(
         `🟧 Starting bundle mutation with calendars (${variables.length})`,
-        variables.map(c => c.calendar_id).join(', ')
+        variables.map(c => c.calendar_id).join(', '),
+        `and variables=`,
+        ...variables
       )
     },
     mutationFn: variables =>
@@ -87,6 +97,10 @@ function handleCalendarSuccess({ result, original, queryClient }) {
     .getQueryData(['catalog'])
     .find(c => c.calendar_id === original.calendar_id)
 
+  function hasSameContent(a, b) {
+    return a.summary === b.summary
+  }
+
   // Creation success
   if (original.etag === 'creating') {
     // Retain any pending edits
@@ -99,8 +113,15 @@ function handleCalendarSuccess({ result, original, queryClient }) {
       calendar_id: result.calendar_id,
     }
 
-    if (current?.unsaved === original.unsaved) {
+    if (hasSameContent(result, current)) {
+      console.log('🔗 content equivalent, clearing unsaved:', original.unsaved)
       delete update.unsaved
+    } else {
+      console.log(
+        '✖️ content mismatch:',
+        current?.summary,
+        result.summary
+      )
     }
 
     queryClient.setQueryData(['catalog'], catalog =>
@@ -189,66 +210,8 @@ function makeCalendarFetch(variables) {
   })
 }
 
-const noop = () => {}
-export function CatalogAutosaver({
-  mutate,
-  data,
-  isFetching,
-  isError,
-  log = noop,
-}) {
-  const countRef = useRef(1)
-  const queryClient = useQueryClient()
-
-  useEffect(() => {
-    leadingDebounce(
-      `Catalog autosaver`,
-      () => {
-        countRef.current++
-
-        const list = touchList(queryClient.getQueryData(['catalog']))
-        if (list.length > 0) {
-          log(`♻️ Autosaving... (check # ${countRef.current})`)
-          mutate(list)
-        } else {
-          log(`✅ Autosaver clean. (check # ${countRef.current})`)
-        }
-      },
-      4000
-    )()
-  }, [data, queryClient, mutate, log])
-
-  useEffect(() => {
-    if (!isFetching && !isError) {
-      log(`👁️ fetch success. ${Math.floor(Math.random() * 1e9)}`)
-      if (hasDebounce(`Catalog autosaver`)) {
-        log(`Autosaver already ran or running.`)
-        return
-      }
-
-      leadingDebounce(
-        `Catalog autosaver`,
-        () => {
-          const list = touchList(queryClient.getQueryData(['catalog']))
-          if (list.length > 0) {
-            log(`♻️👁️ Fetch sentinel syncing...`)
-            mutate(list)
-          } else {
-            log(`✅👁️ Fetch sentinel clean.`)
-          }
-        },
-        4000
-      )()
-    }
-  }, [queryClient, mutate, isFetching, isError, log])
-
-  useEffect(() => {
-    return () => {
-      log('🫧 Unmounting autosave effect')
-      bounceEarly(`Catalog autosaver`)
-    }
-  }, [log])
-}
+const getCatalogTouchList = queryClient =>
+  touchList(queryClient.getQueryData(['catalog']))
 
 export function CatalogSyncStatus() {
   const bundleMutation = useCatalogBundleMutation()
@@ -270,11 +233,13 @@ export function CatalogSyncStatus() {
 
   return (
     <>
-      <CatalogAutosaver
+      <Autosaver
+        debounceKey="Catalog autosaver"
         mutate={bundleMutation.mutate}
         isFetching={isFetching}
         isError={isError}
         data={data}
+        getTouchList={getCatalogTouchList}
       />
       <div
         style={{
