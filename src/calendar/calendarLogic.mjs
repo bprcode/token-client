@@ -71,7 +71,7 @@ function mockDescription(summary) {
     'Play tennis',
     'Swim laps',
   ]
-  
+
   const workDescriptions = [
     'In-office',
     'WFH',
@@ -93,7 +93,7 @@ function mockDescription(summary) {
     'Catch a movie',
   ]
 
-  switch(summary) {
+  switch (summary) {
     case 'Exercise':
       return pickRandom(exerciseDescriptions)
     case 'Work':
@@ -105,7 +105,14 @@ function mockDescription(summary) {
   }
 }
 
-export function createSampleEvent({ startTime, endTime, summary, colorId, id }) {
+export function createEventObject({
+  startTime,
+  endTime,
+  summary,
+  description,
+  colorId,
+  id,
+}) {
   const etag = Array(32)
     .fill(0)
     .map(() => Math.floor(Math.random() * 16).toString(16))
@@ -120,7 +127,7 @@ export function createSampleEvent({ startTime, endTime, summary, colorId, id }) 
     // text
     summary: summary || 'Default Title',
     // text
-    description: mockDescription(summary),
+    description: description || mockDescription(summary),
     // RFC3339-compatible datetime
     startTime,
     // RFC3339-compatible datetime
@@ -143,7 +150,7 @@ export function createSampleWeek(aroundDate, quantity = 180) {
     const endTime = startTime.add(eventDuration, 'minutes')
     const summary = labels[Math.trunc(Math.random() * labels.length)]
 
-    sampleEvents.push(createSampleEvent({ startTime, endTime, summary }))
+    sampleEvents.push(createEventObject({ startTime, endTime, summary }))
   }
 
   return sampleEvents
@@ -268,16 +275,50 @@ export const mockStyles = new Map([
 
 function isSimilarEvent(a, b) {
   return (
-    isOverlap(
-      a.startTime,
-      a.endTime,
-      b.startTime,
-      b.endTime
-    ) &&
+    isOverlap(a.startTime, a.endTime, b.startTime, b.endTime) &&
     a.colorId === b.colorId &&
     a.summary === b.summary &&
     a.description === b.description
   )
+}
+
+/**
+ * Add an event to an event list, merging it with similar events,
+ * and marking previous overlaps for deletion.
+ */
+function mergeKeepDeletions(event, list) {
+  const disjoint = list.filter(e => !isSimilarEvent(e, event) || e.isDeleting)
+  const overlaps = list.filter(e => isSimilarEvent(e, event) && !e.isDeleting)
+
+  if (overlaps.length === 0) {
+    disjoint.push(event)
+    return disjoint
+  }
+
+  // Record which events should be deleted:
+  const now = Date.now()
+  const deletions = overlaps.map(e => ({...e, isDeleting: true, unsaved: now}))
+
+  // Find the range spanned by the overlapping events:
+  overlaps.push(event)
+
+  const earliest = overlaps.reduce((previous, current) =>
+    previous.startTime.isBefore(current.startTime) ? previous : current
+  )
+  const latest = overlaps.reduce((previous, current) =>
+    previous.endTime.isAfter(current.endTime) ? previous : current
+  )
+  const merged = {
+    ...event,
+    startTime: earliest.startTime,
+    endTime: latest.endTime,
+  }
+
+  // Recursively check for further overlaps, persisting deletions:
+  return mergeKeepDeletions(merged, [
+    ...disjoint,
+    ...deletions
+  ])
 }
 
 function mergeEventIntoList(event, list) {
@@ -293,9 +334,7 @@ function mergeEventIntoList(event, list) {
   overlaps.push(event)
 
   const earliest = overlaps.reduce((previous, current) =>
-    previous.startTime.isBefore(current.startTime)
-      ? previous
-      : current
+    previous.startTime.isBefore(current.startTime) ? previous : current
   )
   const latest = overlaps.reduce((previous, current) =>
     previous.endTime.isAfter(current.endTime) ? previous : current
@@ -377,7 +416,7 @@ export function reduceCurrentEvents(eventList, action) {
         etag: 'creating',
         stableKey: action.addition.id,
       }
-      return mergeEventIntoList({...action.addition, ...tags}, eventList)
+      return mergeKeepDeletions({ ...action.addition, ...tags }, eventList)
     }
 
     case 'update': {
@@ -390,13 +429,13 @@ export function reduceCurrentEvents(eventList, action) {
       }
 
       const omitted = eventList.filter(e => e.id !== action.id)
-      return mergeEventIntoList(updated, omitted)
+      return mergeKeepDeletions(updated, omitted)
     }
 
     case 'delete':
-      return eventList.map(e => e.id === action.id
-        ? {...e, isDeleting: true, unsaved: Date.now()}
-        : e)
+      return eventList.map(e =>
+        e.id === action.id ? { ...e, isDeleting: true, unsaved: Date.now() } : e
+      )
 
     default:
       throw Error('Unhandled dispatch: ' + action.type)

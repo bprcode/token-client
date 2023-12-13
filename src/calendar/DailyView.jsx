@@ -17,7 +17,7 @@ import { ActionContext, actionList } from './ActionContext.mjs'
 import { EventPicker } from './EventPicker'
 import {
   shorthandInterval,
-  createSampleEvent,
+  createEventObject,
   getAugmentedColor,
   usePalette,
 } from './calendarLogic.mjs'
@@ -279,12 +279,13 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
   function cleanup() {
     if (initialTime) {
       applyCreation(
-        createSampleEvent({
+        createEventObject({
           startTime: initialTime,
           endTime: finalTime,
           summary: picks.summary,
+          description: 'undescribed',
           colorId: picks.colorId,
-          id: `idem ${Math.floor(Math.random()*1e9)}`,
+          id: `idem ${Math.floor(Math.random() * 1e9)}`,
         })
       )
     }

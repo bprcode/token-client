@@ -366,7 +366,7 @@ export function EventPane({
             transition: transitions
               ? 'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out'
               : undefined,
-            opacity: ghost && 0.5,
+            opacity: !event.isDeleting ? (ghost && 0.5) : 0.15,
             userSelect: 'none',
             WebkitUserSelect: 'none',
           }}
