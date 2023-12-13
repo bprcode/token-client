@@ -17,6 +17,21 @@ export function isOverlap(firstStart, firstEnd, secondStart, secondEnd) {
   return true
 }
 
+/**
+ * Determine if two time intervals overlap.
+ * Count edge-only intersections as overlapping.
+ */
+export function isInclusiveOverlap(
+  firstStart,
+  firstEnd,
+  secondStart,
+  secondEnd
+) {
+  if (firstStart.isAfter(secondEnd)) return false
+  if (firstEnd.isBefore(secondStart)) return false
+  return true
+}
+
 export const weekdayAbbreviations = [
   'Sun',
   'Mon',
@@ -275,7 +290,7 @@ export const mockStyles = new Map([
 
 function isSimilarEvent(a, b) {
   return (
-    isOverlap(a.startTime, a.endTime, b.startTime, b.endTime) &&
+    isInclusiveOverlap(a.startTime, a.endTime, b.startTime, b.endTime) &&
     a.colorId === b.colorId &&
     a.summary === b.summary &&
     a.description === b.description
@@ -297,7 +312,11 @@ function mergeKeepDeletions(event, list) {
 
   // Record which events should be deleted:
   const now = Date.now()
-  const deletions = overlaps.map(e => ({...e, isDeleting: true, unsaved: now}))
+  const deletions = overlaps.map(e => ({
+    ...e,
+    isDeleting: true,
+    unsaved: now,
+  }))
 
   // Find the range spanned by the overlapping events:
   overlaps.push(event)
@@ -316,10 +335,7 @@ function mergeKeepDeletions(event, list) {
   }
 
   // Recursively check for further overlaps, persisting deletions:
-  return mergeKeepDeletions(merged, [
-    ...disjoint,
-    ...deletions
-  ])
+  return mergeKeepDeletions(merged, [...disjoint, ...deletions])
 }
 
 function mergeEventIntoList(event, list) {
