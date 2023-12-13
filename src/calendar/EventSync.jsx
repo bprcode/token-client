@@ -290,14 +290,14 @@ function MountedEventSync({ id }) {
 
   return (
     <>
-      {/* <Autosaver
+      <Autosaver
         debounceKey={`Event autosaver ${id}`}
         mutate={mutateBundle}
         isFetching={false} // debug -- need to read view state?
         isError={false} // debug -- need to read view state?
-        data={false} // debug -- need to read view state?
+        data={primaryCacheData}
         getTouchList={getEventTouchList}
-      /> */}
+      />
       <Typography variant="subtitle2" color={'info.main'}>
         Events {touched.length ? `(${touched.length})` : `clean`}
         {isPending ? (
