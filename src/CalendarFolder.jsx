@@ -13,7 +13,12 @@ import {
 import { alpha } from '@mui/material/styles'
 import { ToggleMenuContext } from './calendar/LayoutContext.mjs'
 import { useContext } from 'react'
-import { Link, useLocation, useNavigation } from 'react-router-dom'
+import {
+  Link,
+  useLocation,
+  useNavigation,
+  useSearchParams,
+} from 'react-router-dom'
 import { TopNavLink } from './TopNavLink'
 
 export const openColor = '#0116'
@@ -23,6 +28,8 @@ export function CalendarFolder({ route, title }) {
   const location = useLocation()
   const navigation = useNavigation()
   const theme = useTheme()
+  const [sp] = useSearchParams()
+  const dayQuery = sp.has('d') ? '&d=' + sp.get('d') : ''
 
   const isOpen =
     (location.pathname === route && !navigation.location) ||
@@ -55,13 +62,13 @@ export function CalendarFolder({ route, title }) {
         </TopNavLink>
         <Collapse in={isOpen} timeout={350} unmountOnExit>
           <List disablePadding>
-            <ViewLink to={`${route}?v=month`} label="Month">
+            <ViewLink to={`${route}?v=month${dayQuery}`} label="Month">
               <CalendarViewMonthIcon />
             </ViewLink>
-            <ViewLink to={`${route}?v=week`} label="Week">
+            <ViewLink to={`${route}?v=week${dayQuery}`} label="Week">
               <CalendarViewWeekIcon />
             </ViewLink>
-            <ViewLink to={`${route}?v=day`} label="Day">
+            <ViewLink to={`${route}?v=day${dayQuery}`} label="Day">
               <CalendarViewDayIcon />
             </ViewLink>
           </List>
