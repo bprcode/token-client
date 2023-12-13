@@ -312,6 +312,7 @@ function mergeKeepDeletions(event, list) {
     ...event,
     startTime: earliest.startTime,
     endTime: latest.endTime,
+    unsaved: now,
   }
 
   // Recursively check for further overlaps, persisting deletions:
