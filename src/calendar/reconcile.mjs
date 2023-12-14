@@ -1,6 +1,12 @@
 const noop = () => {}
 
-export function reconcile({ localData, serverData, key, log = noop }) {
+export function reconcile({
+  localData,
+  serverData,
+  key,
+  log = noop,
+  allowRevival = false,
+}) {
   const chillTime = 60 * 1000
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
@@ -52,13 +58,8 @@ export function reconcile({ localData, serverData, key, log = noop }) {
         )}s left)`
       )
 
-      // debug -- the following condition should be removed for
-      // event processing, to allow revival of deleted events,
-      // but yielding is necessary for calendar objects,
-      // due to broken, unretrievable calendar references.
-      if (!serverMap.has(local[key])) {
-        log('<calendar only> yielding to remote-delete despite recency 🚭')
-
+      if (!allowRevival && !serverMap.has(local[key])) {
+        log('yielding to remote-delete despite recency 🚭')
         continue
       }
 

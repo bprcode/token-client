@@ -60,8 +60,8 @@ function useEventBundleMutation(calendarId) {
         )
       ),
     onError: error => {
-      if (error?.status === 409) {
-        backoff(`event conflict refetch`, () => {
+      if (error?.status === 409 || error?.status === 404) {
+        backoff(`event error refetch`, () => {
           console.log(`🍒 event bundle error requesting refetch...`)
           queryClient.refetchQueries({queryKey: ['views', calendarId]})
         })

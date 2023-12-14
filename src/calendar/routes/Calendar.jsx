@@ -237,6 +237,7 @@ function useViewQuery() {
         serverData: parsed,
         key: 'id',
         log: console.log,
+        allowRevival: true,
       })
 
       // Add the new data into the primary cache.

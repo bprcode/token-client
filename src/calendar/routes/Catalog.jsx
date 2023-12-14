@@ -311,7 +311,7 @@ function CalendarCard({ calendar, children }) {
         <Button
           disabled={isCreating}
           component={Link}
-          to={`/calendars/${calendar.id}`}
+          to={`/calendars/${calendar.calendar_id}`}
         >
           Open
         </Button>
