@@ -8,7 +8,7 @@ import { createSampleWeek } from './calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { touchList } from './reconcile.mjs'
 import { resetViewsToCache } from './routes/Calendar'
-import { Autosaver } from '../Autosaver'
+import { Autosaver, AutosaverStatus } from '../Autosaver'
 import { backoff } from '../debounce.mjs'
 
 const log = console.log.bind(console)
@@ -63,7 +63,7 @@ function useEventBundleMutation(calendarId) {
       if (error?.status === 409 || error?.status === 404) {
         backoff(`event error refetch`, () => {
           console.log(`🍒 event bundle error requesting refetch...`)
-          queryClient.refetchQueries({queryKey: ['views', calendarId]})
+          queryClient.refetchQueries({ queryKey: ['views', calendarId] })
         })
       }
     },
@@ -298,16 +298,11 @@ function MountedEventSync({ id }) {
         data={primaryCacheData}
         getTouchList={getEventTouchList}
       />
-      <Typography variant="subtitle2" color={'info.main'}>
-        Events {touched.length ? `(${touched.length})` : `clean`}
-        {isPending ? (
-          <CircularProgress size="16px" sx={{ ml: 2 }} />
-        ) : (
-          <IconButton onClick={() => mutateBundle(touched)}>
-            <UploadIcon />
-          </IconButton>
-        )}
-      </Typography>
+      <AutosaverStatus
+        touchList={touched}
+        isPending={isPending}
+        label="Events"
+      />
     </>
   )
 }

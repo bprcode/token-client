@@ -7,12 +7,11 @@ export default function SyncStatus() {
   return (
         <Box
           sx={{
+            pointerEvents: 'none',
             zIndex: 4,
-            backgroundColor: '#520',
             position: 'absolute',
             right: 0,
             bottom: 0,
-            p: 1,
           }}
         >
           <CatalogSyncStatus />

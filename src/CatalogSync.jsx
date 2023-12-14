@@ -1,12 +1,10 @@
-import CircularProgress from '@mui/material/CircularProgress'
-import { Typography } from '@mui/material'
 import { useCatalogQuery } from './calendar/routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from './go-fetch'
 import { useRef } from 'react'
 import { backoff } from './debounce.mjs'
 import { touchList } from './calendar/reconcile.mjs'
-import { Autosaver } from './Autosaver'
+import { Autosaver, AutosaverStatus } from './Autosaver'
 
 function useCatalogBundleMutation() {
   const abortRef = useRef(new AbortController())
@@ -117,11 +115,7 @@ function handleCalendarSuccess({ result, original, queryClient }) {
       console.log('🔗 content equivalent, clearing unsaved:', original.unsaved)
       delete update.unsaved
     } else {
-      console.log(
-        '✖️ content mismatch:',
-        current?.summary,
-        result.summary
-      )
+      console.log('✖️ content mismatch:', current?.summary, result.summary)
     }
 
     queryClient.setQueryData(['catalog'], catalog =>
@@ -217,19 +211,6 @@ export function CatalogSyncStatus() {
   const bundleMutation = useCatalogBundleMutation()
   const { data, isFetching, isError } = useCatalogQuery()
   const list = touchList(data)
-  const isMutating = bundleMutation.isPending
-
-  let color = 'success.main'
-  let status = 'Saved.'
-
-  if (list.length > 0) {
-    color = 'info.main'
-    status = `Pending (${list.length})`
-  }
-  if (isMutating && list.length > 0) {
-    color = 'warning.main'
-    status = `Autosaving... (${list.length})`
-  }
 
   return (
     <>
@@ -241,20 +222,11 @@ export function CatalogSyncStatus() {
         data={data}
         getTouchList={getCatalogTouchList}
       />
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'end',
-          padding: '0.25rem 0.25rem',
-        }}
-      >
-        <Typography variant="subtitle2" color={color}>
-          {status}
-        </Typography>
-        {isMutating && (
-          <CircularProgress size="20px" sx={{ ml: '1rem', color }} />
-        )}
-      </div>
+      <AutosaverStatus
+        touchList={list}
+        isPending={bundleMutation.isPending}
+        label="Catalog"
+      />
     </>
   )
 }
