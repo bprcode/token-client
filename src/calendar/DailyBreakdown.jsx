@@ -8,8 +8,7 @@ export const DailyBreakdown = memo(Breakdown)
 
 function Breakdown({
   date,
-  unfilteredEvents,
-  filteredEvents,
+  events,
   style,
   selection,
   onSelect,
@@ -27,7 +26,7 @@ function Breakdown({
   const { blocking, columns, relevantEvents } = useMemo(() => {
     console.log(
       `📦 memoizing blocking, columns, relevantEvents (${
-        filteredEvents?.length || unfilteredEvents.length
+        events.length
       })`
     )
     setTimeout(() => logger('📦 memoizing blocking'), 1000)
@@ -35,8 +34,7 @@ function Breakdown({
     const startOfDay = date.startOf('day')
     const endOfDay = date.endOf('day')
     const relevantEvents =
-      filteredEvents ||
-      unfilteredEvents.filter(e =>
+      events.filter(e =>
         isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
       )
 
@@ -90,7 +88,7 @@ function Breakdown({
     }
 
     return { blocking, columns, relevantEvents }
-  }, [unfilteredEvents, filteredEvents, date, logger])
+  }, [events, date, logger])
 
   const margin =
     columns.length <= 2 && labels === 'detailed' ? '4.5rem' : undefined

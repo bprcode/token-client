@@ -24,6 +24,7 @@ import {
 import { ViewHeader } from './ViewHeader'
 import { useNarrowCheck } from './LayoutContext.mjs'
 import { useLogger } from './Logger'
+import { useViewQuery } from './routes/Calendar'
 
 const sectionStep = [1, 'hour']
 
@@ -35,9 +36,8 @@ export function DailyView({
   onUndo,
   canUndo,
   date,
-  unfilteredEvents,
-  filteredEvents,
 }) {
+  const { data: events } = useViewQuery()
   const isWide = useMediaQuery('(min-width: 600px)')
   const headerRef = useRef(null)
   const logger = useLogger()
@@ -145,8 +145,7 @@ export function DailyView({
         >
           <DailyBreakdown
             date={date}
-            unfilteredEvents={unfilteredEvents}
-            filteredEvents={filteredEvents}
+            events={events}
             selection={selection}
             onSelect={setSelection}
             onEdit={setEditing}
@@ -189,7 +188,7 @@ export function DailyView({
             }}
             onClose={() => setEditing(false)}
             onDelete={onDelete}
-            event={unfilteredEvents.find(e => e.id === selection)}
+            event={events.find(e => e.id === selection)}
           />
         )}
         <CreationDrawer

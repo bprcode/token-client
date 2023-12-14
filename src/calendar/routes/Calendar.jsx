@@ -172,7 +172,7 @@ function serveFromCache(cache, from, to) {
   return cache.filter(e => isOverlap(e.startTime, e.endTime, from, to))
 }
 
-function useViewQuery() {
+export function useViewQuery() {
   const { id } = useParams()
   const { from, to } = useSearchRange()
   const queryClient = useQueryClient()
@@ -324,6 +324,7 @@ export function Calendar() {
 
 export function CalendarContents({ calendarId }) {
   const [showViewList, toggleViewList] = useReducer(on => !on, false)
+  const dispatch = usePrimaryDispatch()
 
   const { data: calendarData } = useViewQuery()
   const { data: primaryCacheData } = useQuery({
@@ -334,37 +335,9 @@ export function CalendarContents({ calendarId }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const params = useParams()
   const view = searchParams.get('v') || 'month'
-
-  // const [currentEvents, dispatchCurrentEvents] = useCurrentEvents(calendarData)
-  // const dispatch = useCalendarDispatch()
-  const dispatch = usePrimaryDispatch()
-
-  /*
-  const [eventListHistory, dispatchEventListHistory] =
-    useEventListHistory(calendarData)
-  const eventList = eventListHistory[eventListHistory.length - 1]
-  const dispatchAction = dispatchEventListHistory
-  const canUndo = eventListHistory.length > 1
-  */
-
   const date = searchParams.has('d')
     ? dayjs(searchParams.get('d').replaceAll('_', ':'))
     : dayjs()
-
-  /*
-  const dayEvents = useMemo(() => {
-    console.log('memoizing day events')
-    if (view !== 'day') {
-      return null
-    }
-
-    const startOfDay = date.startOf('day')
-    const endOfDay = date.endOf('day')
-    return eventList.filter(e =>
-      isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
-    )
-  }, [view, eventList, date])
-  */
 
   if (!calendarData) {
     return (
@@ -439,7 +412,6 @@ export function CalendarContents({ calendarId }) {
           {view === 'month' && (
             <MonthlyView
               date={date}
-              unfilteredEvents={calendarData}
               onExpand={date => updateParams({ view: 'week', date })}
               onChange={date => updateParams({ date })}
             />
@@ -450,7 +422,6 @@ export function CalendarContents({ calendarId }) {
                 updateParams({ view: 'month' })
               }}
               date={date}
-              eventList={calendarData}
               onExpand={date => updateParams({ view: 'day', date })}
               onChange={date => updateParams({ date })}
             />
@@ -461,9 +432,6 @@ export function CalendarContents({ calendarId }) {
                 updateParams({ view: 'week' })
               }}
               date={date}
-              unfilteredEvents={calendarData}
-              // debug -- need refactoring --
-              // filteredEvents={calendarData/needs filtering}
               onCreate={addition =>
                 dispatch({
                   type: 'create',

@@ -22,6 +22,7 @@ import { weekdayAbbreviations } from './calendarLogic.mjs'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { ViewContainer } from './ViewContainer'
+import { useViewQuery } from './routes/Calendar'
 
 const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
@@ -88,7 +89,7 @@ function GridHeader() {
   )
 }
 
-function MonthGrid({ date, onExpand, unfilteredEvents }) {
+function MonthGrid({ date, onExpand, events }) {
   const activeDay = date.date()
   const activeMonth = date.month()
   const activeYear = date.year()
@@ -97,7 +98,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
     const date = dayjs().date(activeDay).month(activeMonth).year(activeYear)
     log(
       `🧮 (${(Math.random() * 1000).toFixed()}) memoizing grid calendar (${
-        unfilteredEvents.length
+        events.length
       })`
     )
 
@@ -175,7 +176,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
             {numbering}
             <AbbreviatedBreakdown
               day={day}
-              unfilteredEvents={unfilteredEvents}
+              unfilteredEvents={events}
             />
           </Box>
         )
@@ -205,7 +206,7 @@ function MonthGrid({ date, onExpand, unfilteredEvents }) {
         {rows}
       </div>
     )
-  }, [activeDay, activeMonth, activeYear, onExpand, unfilteredEvents])
+  }, [activeDay, activeMonth, activeYear, onExpand, events])
 }
 
 function MonthHeader({ date, onChange }) {
@@ -360,7 +361,9 @@ function MonthHeader({ date, onChange }) {
   )
 }
 
-export function MonthlyView({ date, onChange, onExpand, unfilteredEvents }) {
+export function MonthlyView({ date, onChange, onExpand }) {
+  const { data: events } = useViewQuery()
+
   return (
     <ViewContainer>
       <MonthHeader date={date} onChange={onChange} />
@@ -377,7 +380,7 @@ export function MonthlyView({ date, onChange, onExpand, unfilteredEvents }) {
         <GridHeader />
         <MonthGrid
           date={date}
-          unfilteredEvents={unfilteredEvents}
+          events={events}
           onExpand={onExpand}
         />
         </Box>

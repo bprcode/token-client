@@ -14,8 +14,9 @@ import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
 import { isOverlap } from './calendarLogic.mjs'
 import { ViewContainer } from './ViewContainer'
+import { useViewQuery } from './routes/Calendar'
 
-function CalendarBody({ date, eventList, onExpand }) {
+function WeekBody({ date, events, onExpand }) {
   const logger = useLogger()
   const benchStart = performance.now()
 
@@ -24,7 +25,7 @@ function CalendarBody({ date, eventList, onExpand }) {
     const startOfWeek = date.startOf('week')
     const endOfWeek = date.endOf('week')
 
-    const weekEvents = eventList.filter(e =>
+    const weekEvents = events.filter(e =>
       isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
     )
 
@@ -67,7 +68,7 @@ function CalendarBody({ date, eventList, onExpand }) {
 
             <DailyBreakdown
               date={d}
-              unfilteredEvents={weekEvents}
+              events={weekEvents}
               style={{ height: '350px' }}
               labels="none"
             />
@@ -75,7 +76,7 @@ function CalendarBody({ date, eventList, onExpand }) {
         ))}
       </div>
     )
-  }, [date, eventList, onExpand])
+  }, [date, events, onExpand])
 
   const benchEnd = performance.now()
   setTimeout(
@@ -91,8 +92,8 @@ export function WeeklyView({
   onBack,
   onExpand,
   onChange,
-  eventList = [],
 }) {
+  const { data: events } = useViewQuery()
   const logger = useLogger()
   const logId = Math.round(Math.random() * 1e6)
   console.time(logId + ' WeeklyCalendar rendered')
@@ -158,7 +159,7 @@ export function WeeklyView({
         </IconButton>
       </ViewHeader>
 
-      <CalendarBody date={date} eventList={eventList} onExpand={onExpand} />
+      <WeekBody date={date} events={events} onExpand={onExpand} />
     </ViewContainer>
   )
 
