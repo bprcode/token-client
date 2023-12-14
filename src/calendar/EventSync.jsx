@@ -9,6 +9,7 @@ import dayjs from 'dayjs'
 import { touchList } from './reconcile.mjs'
 import { resetViewsToCache } from './routes/Calendar'
 import { Autosaver } from '../Autosaver'
+import { backoff } from '../debounce.mjs'
 
 const log = console.log.bind(console)
 
@@ -60,15 +61,10 @@ function useEventBundleMutation(calendarId) {
       ),
     onError: error => {
       if (error?.status === 409) {
-        console.log(
-          `⛔ Event bundle mutation resulted in ${error.status}. ` +
-            `No backoff-refetch implemented yet.`
-        )
-
-        // backoff(`catalog conflict refetch`, () => {
-        //   console.log(`⛔ Bundle refetching.`)
-        //   queryClient.refetchQueries({ queryKey: ['catalog'] })
-        // })
+        backoff(`event conflict refetch`, () => {
+          console.log(`🍒 event bundle error requesting refetch...`)
+          queryClient.refetchQueries({queryKey: ['views', calendarId]})
+        })
       }
     },
   })
@@ -92,11 +88,11 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
 
   function hasSameContent(local, served) {
     return (
-    local.colorId === served.color_id &&
-    local.summary === served.summary &&
-    local.description === served.description &&
-    local.startTime.toISOString() === served.start_time &&
-    local.endTime.toISOString() === served.end_time
+      local.colorId === served.color_id &&
+      local.summary === served.summary &&
+      local.description === served.description &&
+      local.startTime.toISOString() === served.start_time &&
+      local.endTime.toISOString() === served.end_time
     )
   }
 
@@ -275,6 +271,9 @@ function useUploadMockEvents() {
   return mockEventBundle
 }
 
+const eventLogger = (...args) =>
+  console.log('%cEventSync>', 'color:orange', ...args)
+
 function MountedEventSync({ id }) {
   const { mutate: mutateBundle, isPending } = useEventBundleMutation(id)
   const { data: primaryCacheData } = useQuery({
@@ -293,8 +292,9 @@ function MountedEventSync({ id }) {
       <Autosaver
         debounceKey={`Event autosaver ${id}`}
         mutate={mutateBundle}
-        isFetching={false} // debug -- need to read view state?
-        isError={false} // debug -- need to read view state?
+        log={eventLogger}
+        // isFetching and isError props omitted since primaryCacheData
+        // does not maintain referential integrity on refetch anyway.
         data={primaryCacheData}
         getTouchList={getEventTouchList}
       />
