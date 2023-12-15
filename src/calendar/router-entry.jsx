@@ -9,7 +9,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
 import digitalTheme from '../blueDigitalTheme'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider, useNavigate } from 'react-router-dom'
 import RouterError from './RouterError'
 import { Root, loader as rootLoader } from './routes/Root'
 import { Catalog, loader as catalogLoader } from './routes/Catalog'
@@ -18,6 +18,7 @@ import { LoginPage } from './routes/Login'
 import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
+import { navigateTo } from './NavigationControl.mjs'
 
 const globalExpiryHandler = error => {
   console.log('🌍 global cache error handler:', error.status, error.message)
@@ -25,6 +26,7 @@ const globalExpiryHandler = error => {
     console.log('❔ No ID')
     queryClient.setQueryData(['heartbeat'], null)
     queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
+    navigateTo(`login`)
   }
 }
 

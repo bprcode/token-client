@@ -6,6 +6,7 @@ import { Outlet, useNavigation } from 'react-router-dom'
 import RouterSidebar from '../RouterSidebar'
 import { FetchDisplay } from '../../go-fetch'
 import SyncStatus from '../SyncStatus'
+import { useNavigationControl } from '../NavigationControl.mjs'
 
 export const loader = queryClient => async () => {
   return 'unused'
@@ -15,6 +16,7 @@ export function Root() {
   const isNarrow = useNarrowCheck()
   const [expand, setExpand] = useState(false)
   const navigation = useNavigation()
+  useNavigationControl()
 
   return (
     <ToggleMenuContext.Provider value={setExpand}>

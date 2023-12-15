@@ -21,21 +21,7 @@ export function useHeartbeatQuery() {
     staleTime: 2 * 60 * 1000,
     queryKey: ['heartbeat'],
     queryFn: ({ signal }) =>
-      goFetch('me', { signal }).catch(e => {
-        console.log(
-          `🖤 rethrowing heartbeat query error:`,
-          e.message,
-          ' status=',
-          e.status
-        )
-        if (e.message.includes('Awaiting login')) {
-          console.log('🔒 need login, clearing data and redirecting')
-          queryClient.setQueriesData({}, null)
-          navigate('/login')
-          return null
-        }
-        throw e
-      }),
+      goFetch('me', { signal }),
   })
 }
 
