@@ -14,7 +14,7 @@ import { useContext } from 'react'
 import hourglassPng from '../assets/hourglass2.png'
 
 import { CalendarFolder } from '../CalendarFolder'
-import { HeartbeatPanel } from '../HeartbeatPanel'
+import { HeartbeatPanel, useHeartbeatQuery } from '../HeartbeatPanel'
 import { TopNavLink } from '../TopNavLink'
 import { useCatalogQuery } from './routes/Catalog'
 

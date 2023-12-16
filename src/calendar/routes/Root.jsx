@@ -46,6 +46,8 @@ export function Root() {
               position: 'relative',
             }}
           >
+            {/* SyncStatus is kept mounted to allow autosave operations
+                to continue during navigation. */}
             <SyncStatus />
 
             {navigation.state === 'loading' && (

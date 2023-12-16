@@ -14,14 +14,10 @@ import { useNavigate } from 'react-router-dom'
 import { goFetch } from './go-fetch'
 
 export function useHeartbeatQuery() {
-  const queryClient = useQueryClient()
-  const navigate = useNavigate()
-
   return useQuery({
     staleTime: 2 * 60 * 1000,
     queryKey: ['heartbeat'],
-    queryFn: ({ signal }) =>
-      goFetch('me', { signal }),
+    queryFn: ({ signal }) => goFetch('me', { signal }),
   })
 }
 
@@ -31,18 +27,21 @@ export function HeartbeatPanel({ children }) {
   const theme = useTheme()
 
   const loginMutation = useMutation({
-    mutationFn: () =>
-      goFetch('login', {
+    mutationFn: () => {
+      queryClient.cancelQueries()
+
+      return goFetch('login', {
         timeout: 5000,
         method: 'POST',
         body: {
           email: 'Demo Account',
           password: '123',
         },
-      }),
+      })
+    },
     onSuccess: data => {
       console.log('mutation success with data: ', data)
-      queryClient.invalidateQueries({queryKey: ['catalog']})
+      queryClient.invalidateQueries({ queryKey: ['catalog'] })
       queryClient.setQueryData(['heartbeat'], data)
       navigate('/catalog')
     },
@@ -56,7 +55,8 @@ export function HeartbeatPanel({ children }) {
       }),
     onSuccess: data => {
       console.log('logout mutation yielded ', data)
-      queryClient.resetQueries()
+      queryClient.cancelQueries()
+      queryClient.setQueryData(['heartbeat'], null)
       navigate('/login')
     },
   })

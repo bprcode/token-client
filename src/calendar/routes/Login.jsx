@@ -12,11 +12,13 @@ import { useRef, useState } from 'react'
 import { ViewContainer } from '../ViewContainer'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { useHeartbeatQuery } from '../../HeartbeatPanel'
 
 function LoginSection() {
   const [email, setEmail] = useState('Demo Account')
   const [password, setPassword] = useState('123')
+  const { data: heartbeat } = useHeartbeatQuery()
 
   const navigate = useNavigate()
   const signInRef = useRef(null)
@@ -26,19 +28,26 @@ function LoginSection() {
 
   const queryClient = useQueryClient()
   const loginMutation = useMutation({
-    mutationFn: ({ email, password }) =>
-      goFetch('login', {
+    mutationFn: ({ email, password }) => {
+      queryClient.cancelQueries()
+
+      return goFetch('login', {
         timeout: 5000,
         method: 'POST',
         body: { email, password },
-      }),
+      })
+    },
     onSuccess: data => {
       console.log('mutation success with data: ', data)
-      queryClient.invalidateQueries({queryKey: ['catalog']})
+      queryClient.invalidateQueries({ queryKey: ['catalog'] })
       queryClient.setQueryData(['heartbeat'], data)
       navigate('/catalog')
     },
   })
+
+  if (heartbeat) {
+    return <Navigate to="/catalog" />
+  }
 
   return (
     <Paper
