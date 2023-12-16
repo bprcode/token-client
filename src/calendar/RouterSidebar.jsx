@@ -2,10 +2,12 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop'
 import HomeIcon from '@mui/icons-material/Home'
 import {
   Box,
+  CircularProgress,
   Divider,
   Drawer,
   List,
   Paper,
+  Skeleton,
   Typography,
   useTheme,
 } from '@mui/material'
@@ -14,12 +16,46 @@ import { useContext } from 'react'
 import hourglassPng from '../assets/hourglass2.png'
 
 import { CalendarFolder } from '../CalendarFolder'
-import { HeartbeatPanel, useHeartbeatQuery } from '../HeartbeatPanel'
+import { HeartbeatPanel } from '../HeartbeatPanel'
 import { TopNavLink } from '../TopNavLink'
 import { useCatalogQuery } from './routes/Catalog'
 
+function SkeletonFolders() {
+  const skeletons = Array(5).fill(0)
+
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
+      {skeletons.map((_,i) => 
+
+      <div key={i} style={{ display: 'flex', alignItems: 'center', height: '40px' }}>
+        <Skeleton
+          variant="rounded"
+          width={16}
+          height={16}
+          sx={{ display: 'inline-block', mr: 1 }}
+        />
+        <Skeleton sx={{ display: 'inline-block', flexGrow: 1 }} />
+      </div>
+      )}
+    </Box>
+  )
+}
+
 function NavSection() {
   const catalog = useCatalogQuery()
+
+  if (catalog.isPending) {
+    return <SkeletonFolders />
+  }
 
   return (
     <Box

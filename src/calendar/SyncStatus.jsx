@@ -9,8 +9,6 @@ export default function SyncStatus() {
   return (
     <Box
       sx={{
-        p: 5,
-        bgcolor: 'brown',
         pointerEvents: 'none',
         zIndex: 4,
         position: 'absolute',
