@@ -180,15 +180,21 @@ export function DailyView({
         {editing && selection && (
           <EventEditor
             onSave={updates => {
+              const current = events.find(
+                e => e.id === selection || e.stableKey === selection
+              )
+
               onUpdate({
                 ...updates,
-                id: selection,
+                id: current.id,
               })
               setSelection(null)
             }}
             onClose={() => setEditing(false)}
             onDelete={onDelete}
-            event={events.find(e => e.id === selection)}
+            event={events.find(
+              e => e.id === selection || e.stableKey === selection
+            )}
           />
         )}
         <CreationDrawer

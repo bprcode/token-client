@@ -2,7 +2,6 @@ import HourglassTopIcon from '@mui/icons-material/HourglassTop'
 import HomeIcon from '@mui/icons-material/Home'
 import {
   Box,
-  CircularProgress,
   Divider,
   Drawer,
   List,
@@ -34,18 +33,20 @@ function SkeletonFolders() {
         flexDirection: 'column',
       }}
     >
-      {skeletons.map((_,i) => 
-
-      <div key={i} style={{ display: 'flex', alignItems: 'center', height: '40px' }}>
-        <Skeleton
-          variant="rounded"
-          width={16}
-          height={16}
-          sx={{ display: 'inline-block', mr: 1 }}
-        />
-        <Skeleton sx={{ display: 'inline-block', flexGrow: 1 }} />
-      </div>
-      )}
+      {skeletons.map((_, i) => (
+        <div
+          key={i}
+          style={{ display: 'flex', alignItems: 'center', height: '40px' }}
+        >
+          <Skeleton
+            variant="rounded"
+            width={16}
+            height={16}
+            sx={{ display: 'inline-block', mr: 1 }}
+          />
+          <Skeleton sx={{ display: 'inline-block', flexGrow: 1 }} />
+        </div>
+      ))}
     </Box>
   )
 }
