@@ -10,6 +10,7 @@ import { DailyView } from '../DailyView'
 import { goFetch } from '../../go-fetch'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { reconcile } from '../reconcile.mjs'
+import { ConflictDisplay } from '../ConflictDisplay'
 
 const log = console.log.bind(console)
 
@@ -362,6 +363,7 @@ export function CalendarContents({ calendarId }) {
         position: 'relative',
       }}
     >
+      <ConflictDisplay />
       <IconButton
         onClick={toggleViewList}
         sx={{

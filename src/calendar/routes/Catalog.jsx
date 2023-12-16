@@ -25,6 +25,7 @@ import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { reconcile } from '../reconcile.mjs'
+import { ConflictDisplay } from '../ConflictDisplay'
 
 function makeCatalogQuery(queryClient) {
   return {
@@ -453,6 +454,7 @@ export function Catalog() {
         <CreationCard />
         {emptyPadding}
       </CatalogGrid>
+      <ConflictDisplay />
     </ViewContainer>
   )
 }

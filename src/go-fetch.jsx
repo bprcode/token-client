@@ -40,7 +40,7 @@ export function FetchDisplay() {
   }
 
   return (
-    <div style={{ zIndex: 4, position: 'fixed', top: 0, left: 0 }}>
+    <div style={{ zIndex: 4, position: 'fixed', top: 0, left: 0, pointerEvents: 'none' }}>
       {statusList.map((s, i) => (
         <div
           key={s.fid}
@@ -54,7 +54,7 @@ export function FetchDisplay() {
             paddingLeft: '0.25rem',
             paddingRight: '0.25rem',
             transition: 'background-color 0.5s, top 1s, opacity 1s',
-            opacity: s.fadeOut ? 0.0 : 1.0,
+            opacity: s.fadeOut ? 0.0 : 0.7,
           }}
         >
           {s.message}
