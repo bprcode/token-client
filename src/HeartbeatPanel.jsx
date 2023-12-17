@@ -112,13 +112,6 @@ export function HeartbeatPanel({ children }) {
     <>
       {heartbeatResult.data && children}
       <List disablePadding sx={{ mt: 'auto' }}>
-        {heartbeatResult.error && (
-          <ListItem sx={{ backgroundColor: 'red' }}>
-            error.message: {heartbeatResult.error?.message}
-            <br />
-            error.status: {heartbeatResult.error?.status}
-          </ListItem>
-        )}
         <ListItem
           sx={{
             backgroundColor: '#0002',

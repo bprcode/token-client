@@ -1,19 +1,12 @@
-import { Box, Stack } from '@mui/material'
-import { ViewHeader } from '../ViewHeader'
+import { useQueryClient } from '@tanstack/react-query'
+import { Navigate } from 'react-router-dom'
 
 export default function Index() {
-  return (
-    <Stack
-      direction="column"
-      sx={{
-        mx: 'auto',
-        width: '100%',
-        height: '100%',
-        overflowY: 'auto',
-      }}
-    >
-      <ViewHeader>Header for index</ViewHeader>
-      <Box sx={{ p: 3 }}>Body for index</Box>
-    </Stack>
-  )
+  const queryClient = useQueryClient()
+
+  if (queryClient.getQueryData(['heartbeat'])) {
+    return <Navigate to="/catalog" />
+  }
+
+  return <Navigate to="/login" />
 }
