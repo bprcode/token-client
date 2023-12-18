@@ -10,6 +10,7 @@ import { touchList } from './reconcile.mjs'
 import { resetViewsToCache } from './routes/Calendar'
 import { Autosaver, AutosaverStatus } from '../Autosaver'
 import { backoff } from '../debounce.mjs'
+import { updateCacheData } from './cacheTracker.mjs'
 
 const log = console.log.bind(console)
 
@@ -73,7 +74,7 @@ function useEventBundleMutation(calendarId) {
 }
 
 function updateStored(queryClient, calendarId, transform) {
-  queryClient.setQueryData(['primary cache', calendarId], data => ({
+  updateCacheData(queryClient, calendarId, data => ({
     ...data,
     stored: transform(data.stored),
   }))
@@ -274,7 +275,7 @@ function useUploadMockEvents() {
 const eventLogger = (...args) =>
   console.log('%cEventSync>', 'color:orange', ...args)
 
-function MountedEventSync({ id }) {
+export function EventSyncStatus({ id }) {
   const { mutate: mutateBundle, isPending } = useEventBundleMutation(id)
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', id],
@@ -289,6 +290,7 @@ function MountedEventSync({ id }) {
 
   return (
     <>
+      <div>Autosaver for {id}</div>
       <Autosaver
         debounceKey={`Event autosaver ${id}`}
         mutate={mutateBundle}
@@ -305,9 +307,4 @@ function MountedEventSync({ id }) {
       />
     </>
   )
-}
-
-export function EventSyncStatus() {
-  const { id } = useParams()
-  return id && <MountedEventSync id={id} />
 }

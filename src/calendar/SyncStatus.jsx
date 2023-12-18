@@ -2,9 +2,12 @@ import { Box } from '@mui/material'
 import { CatalogSyncStatus } from '../CatalogSync'
 import { EventSyncStatus } from './EventSync'
 import { useHeartbeatQuery } from '../HeartbeatPanel'
+import { useCacheList } from './cacheTracker.mjs'
 
 export default function SyncStatus() {
   const { data: heartbeat } = useHeartbeatQuery()
+  const cacheList = useCacheList()
+  console.log('cacheList was',cacheList)
 
   return (
     <Box
@@ -19,7 +22,7 @@ export default function SyncStatus() {
       {heartbeat && (
         <>
           <CatalogSyncStatus />
-          <EventSyncStatus />
+          {cacheList.map(c => <EventSyncStatus key={c} id={c} />)}
         </>
       )}
     </Box>

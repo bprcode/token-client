@@ -1,6 +1,6 @@
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import { CircularProgress, IconButton, Paper, Slide } from '@mui/material'
-import { useContext, useMemo, useReducer, useState } from 'react'
+import { useReducer } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { isOverlap, reduceCurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
@@ -11,6 +11,7 @@ import { goFetch } from '../../go-fetch'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { reconcile } from '../reconcile.mjs'
 import { ConflictDisplay } from '../ConflictDisplay'
+import { updateCacheData } from '../cacheTracker.mjs'
 
 const log = console.log.bind(console)
 
@@ -243,7 +244,7 @@ export function useViewQuery() {
       })
 
       // Add the new data into the primary cache.
-      queryClient.setQueryData(['primary cache', id], cache => {
+      updateCacheData(queryClient, id, cache => {
         // Events not included in this range are persisted unchanged.
         const unseen = cache.stored.filter(
           e => !isOverlap(e.startTime, e.endTime, from, to)
@@ -267,7 +268,7 @@ export const loader =
   queryClient =>
   ({ request, params }) => {
     console.log('🐜 debug / placeholder / working on centralizing cache')
-    queryClient.setQueryData(['primary cache', params.id], data => {
+    updateCacheData(queryClient, params.id, data => {
       if (data) {
         log(`🌙 primary cache already initialized`)
         return
@@ -310,7 +311,7 @@ function usePrimaryDispatch() {
   const queryClient = useQueryClient()
   const { id } = useParams()
   return action => {
-    queryClient.setQueryData(['primary cache', id], data => ({
+    updateCacheData(queryClient, id, data => ({
       sortedViews: data.sortedViews,
       stored: reduceCurrentEvents(data.stored, action),
     }))

@@ -44,7 +44,7 @@ export function ConflictDisplay({tag}) {
             variant="subtitle2"
             color={alpha(palette.text.primary, 0.85)}
           >
-            {`${tag} Updated with ${lastCount} ` +
+            {`Updated with ${lastCount} ` +
               `remote change${lastCount > 1 ? 's' : ''}.`}
           </Typography>
         </Paper>
