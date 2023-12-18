@@ -427,6 +427,7 @@ export function useEventListHistory(initialList) {
 }
 
 export function reduceCurrentEvents(eventList, action) {
+  console.log(`%creducing with action=`, 'color:cyan', action)
   switch (action.type) {
     case 'create': {
       const tags = {
@@ -437,7 +438,9 @@ export function reduceCurrentEvents(eventList, action) {
     }
 
     case 'update': {
-      const prior = eventList.find(e => e.id === action.id)
+      const prior = eventList.find(
+        e => action.id === e.id || action.id === e.stableKey
+      )
 
       const updated = {
         ...prior,
@@ -445,13 +448,17 @@ export function reduceCurrentEvents(eventList, action) {
         unsaved: Date.now(),
       }
 
-      const omitted = eventList.filter(e => e.id !== action.id)
+      const omitted = eventList.filter(
+        e => action.id !== e.id && action.id !== e.stableKey
+      )
       return mergeKeepDeletions(updated, omitted)
     }
 
     case 'delete':
       return eventList.map(e =>
-        e.id === action.id ? { ...e, isDeleting: true, unsaved: Date.now() } : e
+        action.id === e.id || action.id === e.stableKey
+          ? { ...e, isDeleting: true, unsaved: Date.now() }
+          : e
       )
 
     default:

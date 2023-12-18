@@ -106,7 +106,7 @@ function Breakdown({
     >
       {relevantEvents.map(r => (
         <EventPane
-          key={r.id}
+          key={r.stableKey ?? r.id}
           initial={startOfDay}
           final={startOfNextDay}
           event={r}

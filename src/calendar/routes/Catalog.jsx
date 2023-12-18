@@ -404,7 +404,7 @@ export function Catalog() {
     <ViewContainer>
       {header}
       <CatalogGrid>
-        {catalog.data?.map?.((c, i) => (
+        {catalog.data?.map?.(c => (
           <CalendarCard key={c.stableKey ?? c.calendar_id} calendar={c}>
             <Typography variant="body2" sx={{ opacity: 0.5 }}>
               Created: {dayjs(c.created).from(now)}

@@ -75,14 +75,14 @@ function GridHeader() {
         borderTop: '1px solid #aaf3',
       }}
     >
-      {weekdayAbbreviations.map((a, j) => (
+      {weekdayAbbreviations.map((abbr, j) => (
         <div
-          key={a}
+          key={abbr}
           style={{
             backgroundColor: alternatingShades(j - 1, 0.6),
           }}
         >
-          <Box sx={{ ml: ['1px', 1], opacity: 0.85 }}>{a}</Box>
+          <Box sx={{ ml: ['1px', 1], opacity: 0.85 }}>{abbr}</Box>
         </div>
       ))}
     </Box>

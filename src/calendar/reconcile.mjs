@@ -124,7 +124,7 @@ export function reconcile({
       }
 
       if (newTag === 'creating') {
-        overwrite.stableKey = local.stableKey ?? local.calendar_id
+        overwrite.stableKey = local.stableKey ?? local[key]
         log('>> applying stableKey=', overwrite.stableKey)
       }
 
@@ -178,7 +178,7 @@ export function touchList(records) {
   const list = []
 
   for (const c of records ?? []) {
-    if (c.unsaved || c.etag === 'creating') {
+    if (c.unsaved || c.etag === 'creating' || c.isDeleting) {
       list.push(c)
     }
   }
