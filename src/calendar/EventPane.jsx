@@ -320,13 +320,12 @@ export function EventPane({
             : ghostSnapEnd
 
           const updates = {
-            id: event.id,
             ...(overflowBefore || ghostTop !== 0
               ? { startTime: newStart }
               : {}),
             ...(overflowAfter || ghostBottom !== 0 ? { endTime: newEnd } : {}),
           }
-          onUpdate(updates)
+          onUpdate(event.stableKey ?? event.id, updates)
           return
         }
 
@@ -366,7 +365,7 @@ export function EventPane({
             transition: transitions
               ? 'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out'
               : undefined,
-            opacity: !event.isDeleting ? (ghost && 0.5) : 0.15,
+            opacity: !event.isDeleting ? ghost && 0.5 : 0.15,
             userSelect: 'none',
             WebkitUserSelect: 'none',
           }}
@@ -419,14 +418,13 @@ export function EventPane({
                 onGhostEnd={() => {
                   setSliding(false)
                   const updates = {
-                    id: event.id,
                     ...(ghostTop !== 0 ? { startTime: ghostSnapStart } : {}),
                     ...(ghostBottom !== 0 ? { endTime: ghostSnapEnd } : {}),
                   }
                   setGhost(false)
                   setGhostTop(0)
                   setGhostBottom(0)
-                  onUpdate(updates)
+                  onUpdate(event.stableKey ?? event.id, updates)
                 }}
                 onAdjustBottom={offset => {
                   setGhostBottom(offset)

@@ -63,8 +63,8 @@ export function DailyView({
   const [action, setAction] = useState(actionList[0])
 
   const applyUpdates = useCallback(
-    updates => {
-      onUpdate(updates)
+    (id, updates) => {
+      onUpdate(id, updates)
       setSelection(null)
     },
     [onUpdate]
@@ -180,11 +180,7 @@ export function DailyView({
         {editing && selection && (
           <EventEditor
             onSave={updates => {
-              console.log(`selection=`,selection,`, applying update`)
-              onUpdate({
-                ...updates,
-                id: selection,
-              })
+              onUpdate(selection, updates)
               setSelection(null)
             }}
             onClose={() => setEditing(false)}
@@ -236,7 +232,6 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
   event.preventDefault()
 
   const augmentedColor = getAugmentedColor(picks.colorId)
-  console.log('acquired color: ', augmentedColor)
   const minimumWidth = 90
   const startOfDay = date.startOf('day')
 
@@ -276,7 +271,6 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
 
   ct.onpointermove = handleMove
   ct.onpointerup = cleanup
-  ct.onpointercancel = () => console.log('cancel')
 
   function cleanup() {
     if (initialTime) {
@@ -298,7 +292,6 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
   }
 
   function handleMove(move) {
-    console.log('meep')
     move.preventDefault()
     move.stopPropagation()
     const x2 = move.clientX - outputBounds.left

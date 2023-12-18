@@ -451,6 +451,9 @@ export function reduceCurrentEvents(eventList, action) {
       const omitted = eventList.filter(
         e => action.id !== e.id && action.id !== e.stableKey
       )
+
+      console.log(`updated=`,updated)
+      console.log(`length of eventList=`,eventList.length, `length of omitted=`,omitted.length)
       return mergeKeepDeletions(updated, omitted)
     }
 

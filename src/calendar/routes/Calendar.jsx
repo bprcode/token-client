@@ -440,17 +440,17 @@ export function CalendarContents({ calendarId }) {
                   addition,
                 })
               }
-              onUpdate={updates =>
+              onUpdate={(id, updates) =>
                 dispatch({
                   type: 'update',
-                  id: updates.id,
+                  id,
                   updates,
                 })
               }
               onDelete={id =>
                 dispatch({
                   type: 'delete',
-                  id: id,
+                  id,
                 })
               }
               onUndo={() => console.log(`debug: not implemented.`)}
