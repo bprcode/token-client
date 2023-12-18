@@ -237,6 +237,7 @@ export function useViewQuery() {
         localData: local,
         serverData: parsed,
         key: 'id',
+        tag: 'views',
         log: console.log,
         allowRevival: true,
       })
@@ -363,7 +364,7 @@ export function CalendarContents({ calendarId }) {
         position: 'relative',
       }}
     >
-      <ConflictDisplay />
+      <ConflictDisplay tag="views" />
       <IconButton
         onClick={toggleViewList}
         sx={{

@@ -39,6 +39,7 @@ function makeCatalogQuery(queryClient) {
         localData: local,
         serverData: fetched,
         key: 'calendar_id',
+        tag: 'calendars',
       })
     },
   }
@@ -454,7 +455,7 @@ export function Catalog() {
         <CreationCard />
         {emptyPadding}
       </CatalogGrid>
-      <ConflictDisplay />
+      <ConflictDisplay tag="calendars" />
     </ViewContainer>
   )
 }

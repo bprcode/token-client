@@ -2,44 +2,52 @@ import { useEffect, useState } from 'react'
 
 const noop = () => {}
 
-const listeners = new Set()
-const conflicts = []
+const listeners = new Map()
+const conflicts = new Map()
 let lastId = 0
 
-export function clearConflicts() {
-  conflicts.length = 0
-  onConflict()
+export function clearConflicts(tag) {
+  conflicts.set(tag, [])
+  onConflict(tag)
 }
 
-function onConflict(...latest) {
+function onConflict(tag, ...latest) {
   const maxLength = 100
+  const list = conflicts.get(tag) ?? []
 
   if (latest.length) {
-    conflicts.push({
+    list.push({
       id: lastId++,
       timestamp: Date.now(),
-      message: latest.map(a => a.toString()).join(''),
+      message: tag + '>> ' + latest.map(a => a.toString()).join(''),
+
     })
-    if (conflicts.length > maxLength) {
-      conflicts.shift()
+
+    if (list.length > maxLength) {
+      list.shift()
     }
+
+    conflicts.set(tag, list)
   }
 
-  for (const f of listeners) {
-    f([...conflicts])
+  for (const [callback, t] of listeners) {
+    if(t === tag) {
+      callback([...list])
+    }
   }
 }
 
-export function useConflictList() {
-  const [list, setList] = useState(() => [...conflicts])
+export function useConflictList(tag = 'default') {
+  const [list, setList] = useState(() => conflicts.get(tag) ?? []
+  )
 
   useEffect(() => {
-    listeners.add(setList)
+    listeners.set(setList, tag)
 
     return () => {
       listeners.delete(setList)
     }
-  }, [])
+  }, [tag])
 
   return list
 }
@@ -48,6 +56,7 @@ export function reconcile({
   localData,
   serverData,
   key,
+  tag = 'default',
   log = noop,
   allowRevival = false,
 }) {
@@ -109,7 +118,7 @@ export function reconcile({
       if (!allowRevival && !serverMap.has(local[key])) {
         // ... despite priority, yield to a remotely-deleted record
         // (optional -- allows revival of deleted records.)
-        onConflict('yielding to remote-delete despite recency 🚭')
+        onConflict(tag, 'yielding to remote-delete despite recency 🚭')
         log('yielding to remote-delete despite recency 🚭')
         continue
       }
@@ -141,14 +150,14 @@ export function reconcile({
 
     if (!serverMap.has(local[key])) {
       // Record was deleted remotely; omit it.
-      onConflict(pre, '... yielding to remote-delete ✖️')
+      onConflict(tag, pre, '... yielding to remote-delete ✖️')
       log(pre, '... yielding to remote-delete ✖️')
 
       continue
     }
 
     // etags do not match; yield to the server state.
-    onConflict(
+    onConflict(tag, 
       pre,
       `...etag mismatch (${originTag} / ${remote.etag}). ` +
         `Yielding to server copy.`
@@ -165,7 +174,7 @@ export function reconcile({
     if (!localMap.has(remote[key])) {
       // Local state was missing a remote record. Add it.
       // debug -- not generally a conflict, just testing notifier
-      onConflict('local state was missing ', remote[key], ' -- adding.')
+      onConflict(tag, 'local state was missing ', remote[key], ' -- adding.')
       log('local state was missing ', remote[key], ' -- adding.')
       merged.push(remote)
     }

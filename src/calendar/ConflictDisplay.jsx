@@ -3,21 +3,21 @@ import { clearConflicts, useConflictList } from './reconcile.mjs'
 import { useEffect, useState } from 'react'
 import { alpha } from '@mui/material/styles'
 
-export function ConflictDisplay() {
+export function ConflictDisplay({tag}) {
   const { palette } = useTheme()
   const [open, setOpen] = useState(false)
   const [lastCount, setLastCount] = useState(0)
   const [key, setKey] = useState(0)
-  const conflicts = useConflictList()
+  const conflicts = useConflictList(tag)
 
   useEffect(() => {
     if (conflicts.length) {
       setOpen(true)
       setKey(Math.random())
       setLastCount(conflicts.length)
-      clearConflicts()
+      clearConflicts(tag)
     }
-  }, [conflicts])
+  }, [conflicts, tag])
 
   return (
       <Snackbar
@@ -44,7 +44,7 @@ export function ConflictDisplay() {
             variant="subtitle2"
             color={alpha(palette.text.primary, 0.85)}
           >
-            {`Updated with ${lastCount} ` +
+            {`${tag} Updated with ${lastCount} ` +
               `remote change${lastCount > 1 ? 's' : ''}.`}
           </Typography>
         </Paper>
