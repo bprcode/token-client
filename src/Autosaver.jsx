@@ -60,12 +60,6 @@ export function Autosaver({
     }
   }, [queryClient, mutate, isFetching, isError, log, getTouchList, debounceKey])
 
-  useEffect(() => {
-    return () => {
-      log('🫧 Unmounting autosave effect')
-      bounceEarly(debounceKey)
-    }
-  }, [log, debounceKey])
 }
 
 const saveAnimation = keyframes`

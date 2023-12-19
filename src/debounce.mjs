@@ -29,12 +29,12 @@ export function leadingDebounce(key, fn, delay = 1000) {
         // Unlock this key
         timeouts.delete(key)
       }, delay)
-
+      
       timeouts.set(key, lockout)
       // Immediately invoke callback
       return fn.apply(this, stuff)
     }
-
+    
     // If a timeout is running, debounce it:
     clearTimeout(timeouts.get(key))
     const tid = setTimeout(() => {

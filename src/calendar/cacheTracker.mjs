@@ -4,8 +4,8 @@ import { touchList } from './reconcile.mjs'
 
 const lastUpdated = new Map()
 const listeners = new Set()
-const gcTime = 10000
-const tidyTime = 5000
+const gcTime = 20 * 1000
+const tidyTime = 10 * 1000
 
 function readList() {
   return [...lastUpdated.keys()]
