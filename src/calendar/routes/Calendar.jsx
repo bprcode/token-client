@@ -352,7 +352,7 @@ export function CalendarContents({ calendarId }) {
           placeContent: 'center',
         }}
       >
-        <LoadingHourglass sx={{backgroundColor: 'orange'}} />
+        <LoadingHourglass />
       </div>
     )
   }

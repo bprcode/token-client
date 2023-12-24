@@ -173,8 +173,6 @@ export function reconcile({
   for (const remote of serverData) {
     if (!localMap.has(remote[key])) {
       // Local state was missing a remote record. Add it.
-      // debug -- not generally a conflict, just testing notifier
-      onConflict(tag, 'local state was missing ', remote[key], ' -- adding.')
       log('local state was missing ', remote[key], ' -- adding.')
       merged.push(remote)
     }

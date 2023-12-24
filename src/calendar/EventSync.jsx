@@ -290,7 +290,6 @@ export function EventSyncStatus({ id }) {
 
   return (
     <>
-      <div>Autosaver for {id}</div>
       <Autosaver
         debounceKey={`Event autosaver ${id}`}
         mutate={mutateBundle}
