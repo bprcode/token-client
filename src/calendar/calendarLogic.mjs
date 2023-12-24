@@ -427,7 +427,6 @@ export function useEventListHistory(initialList) {
 }
 
 export function reduceCurrentEvents(eventList, action) {
-  console.log(`%creducing with action=`, 'color:cyan', action)
   switch (action.type) {
     case 'create': {
       const tags = {
@@ -452,8 +451,6 @@ export function reduceCurrentEvents(eventList, action) {
         e => action.id !== e.id && action.id !== e.stableKey
       )
 
-      console.log(`updated=`,updated)
-      console.log(`length of eventList=`,eventList.length, `length of omitted=`,omitted.length)
       return mergeKeepDeletions(updated, omitted)
     }
 

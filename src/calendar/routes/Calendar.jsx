@@ -12,6 +12,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { reconcile } from '../reconcile.mjs'
 import { ConflictDisplay } from '../ConflictDisplay'
 import { updateCacheData } from '../cacheTracker.mjs'
+import { LoadingHourglass } from '../LoadingHourglass'
 
 const log = console.log.bind(console)
 
@@ -351,7 +352,7 @@ export function CalendarContents({ calendarId }) {
           placeContent: 'center',
         }}
       >
-        <CircularProgress />
+        <LoadingHourglass sx={{backgroundColor: 'orange'}} />
       </div>
     )
   }
