@@ -1,6 +1,7 @@
 import {
   Button,
   CircularProgress,
+  Collapse,
   Container,
   Divider,
   Paper,
@@ -14,19 +15,31 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { Navigate, useNavigate } from 'react-router-dom'
 import { useHeartbeatQuery } from '../../HeartbeatPanel'
+import { useTheme } from '@emotion/react'
 
 function LoginSection() {
+  const spacing = 4
+
+  const theme = useTheme()
   const [email, setEmail] = useState('Demo Account')
+  const [displayName, setDisplayName] = useState(' ')
+  const [invalid, setInvalid] = useState(false)
   const [password, setPassword] = useState('123')
+  const [showRegister, setShowRegister] = useState(false)
   const { data: heartbeat } = useHeartbeatQuery()
 
   const navigate = useNavigate()
   const signInRef = useRef(null)
-  const newUser = false
   const sending = false
-  const invalid = false
 
   const queryClient = useQueryClient()
+  const onLoginSuccess = data => {
+    console.log('mutation success with data: ', data)
+    queryClient.invalidateQueries({ queryKey: ['catalog'] })
+    queryClient.setQueryData(['heartbeat'], data)
+    navigate('/catalog')
+  }
+
   const loginMutation = useMutation({
     mutationFn: ({ email, password }) => {
       queryClient.cancelQueries()
@@ -34,14 +47,32 @@ function LoginSection() {
       return goFetch('login', {
         timeout: 5000,
         method: 'POST',
-        body: { email, password },
+        body: { email: email.trim(), password },
       })
     },
-    onSuccess: data => {
-      console.log('mutation success with data: ', data)
-      queryClient.invalidateQueries({ queryKey: ['catalog'] })
-      queryClient.setQueryData(['heartbeat'], data)
-      navigate('/catalog')
+    onSuccess: onLoginSuccess,
+    onError: error => {
+      if (error.status === 403) {
+        setInvalid(true)
+      }
+    },
+  })
+
+  const registerMutation = useMutation({
+    mutationFn: ({ email, password, name }) => {
+      queryClient.cancelQueries()
+
+      return goFetch('register', {
+        timeout: 5000,
+        method: 'POST',
+        body: { email: email.trim(), password, name: name.trim() },
+      })
+    },
+    onSuccess: onLoginSuccess,
+    onError: error => {
+      if (error.status === 403) {
+        setInvalid(true)
+      }
     },
   })
 
@@ -55,10 +86,9 @@ function LoginSection() {
       sx={{
         py: 6,
         px: 2,
-        flexGrow: 1,
+        // flexGrow: 1,
         minWidth: [240, 300],
         maxWidth: 450,
-        maxHeight: 500,
         ml: 'auto',
         mr: 'auto',
         mt: [0, 6],
@@ -68,54 +98,97 @@ function LoginSection() {
       <form onSubmit={e => e.preventDefault()}>
         <Container>
           <Typography variant="h4" component="h2" sx={{ mb: 1 }}>
-            {newUser ? 'Register' : 'Sign In'}
+            {showRegister ? 'Register' : 'Sign In'}
           </Typography>
-          <Divider sx={{ mb: 6 }} />
-          <Stack spacing={6}>
+          <Divider sx={{ mb: spacing }} />
+          <Stack>
             <TextField
+              sx={{ mb: spacing }}
               inputRef={signInRef}
               label="email"
-              helperText={invalid && newUser ? 'Already in use.' : ' '}
+              helperText={invalid && showRegister ? 'Already in use.' : ' '}
               variant="standard"
               disabled={sending}
               error={invalid}
               defaultValue={email}
               onChange={e => {
                 setEmail(e.target.value)
-                // setInvalid(false)
+                setInvalid(false)
               }}
             />
+
             <TextField
+              sx={{ mb: spacing }}
               label="password"
               variant="standard"
               type="password"
               helperText={
-                invalid && !newUser ? 'Invalid email or password.' : ' '
+                invalid && !showRegister ? 'Invalid email or password.' : ' '
               }
               disabled={sending}
               error={invalid}
               defaultValue={password}
               onChange={e => {
                 setPassword(e.target.value)
-                // setInvalid(false)
+                setInvalid(false)
               }}
             />
-            {/* {newUser && (
-          <FocusingName {...{ name, setName, sending, invalid }} />
-        )} */}
+            <Collapse in={showRegister}>
+              <TextField
+                sx={{ mb: spacing, width: '100%' }}
+                label="display name"
+                variant="standard"
+                disabled={sending}
+                error={invalid}
+                defaultValue={displayName}
+                onChange={e => {
+                  setDisplayName(e.target.value)
+                }}
+              />
+            </Collapse>
 
-            {/* {buttons} */}
-            <Button
-              disabled={loginMutation.isPending}
-              onClick={() => loginMutation.mutate({ email, password })}
-              variant="outlined"
-            >
-              {loginMutation.isPending ? (
-                <CircularProgress size="1.5rem" />
-              ) : (
-                'Sign In'
-              )}
-            </Button>
+            <Stack spacing={3}>
+              <Button
+                disabled={loginMutation.isPending}
+                onClick={() => {
+                  if (showRegister) {
+                    return registerMutation.mutate({
+                      email,
+                      password,
+                      name: displayName,
+                    })
+                  }
+                  loginMutation.mutate({ email, password })
+                }}
+                variant={showRegister ? 'contained' : 'outlined'}
+              >
+                {loginMutation.isPending ? (
+                  <CircularProgress size="1.5rem" />
+                ) : showRegister ? (
+                  'Sign Up'
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+
+              <Divider sx={{ mb: 3, mt: 3, color: theme.palette.divider }}>
+                OR
+              </Divider>
+              <Button
+                variant={showRegister ? 'outlined' : 'contained'}
+                disabled={sending}
+                color={showRegister ? 'primary' : 'secondary'}
+                onClick={() => {
+                  if (!showRegister) {
+                    signInRef.current.focus()
+                  }
+                  setShowRegister(s => !s)
+                  setInvalid(false)
+                }}
+              >
+                {showRegister ? 'Back' : 'Register'}
+              </Button>
+            </Stack>
           </Stack>
         </Container>
       </form>
