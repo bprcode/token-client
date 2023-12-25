@@ -3,8 +3,10 @@ import { CatalogSyncStatus } from '../CatalogSync'
 import { EventSyncStatus } from './EventSync'
 import { useHeartbeatQuery } from '../HeartbeatPanel'
 import { useCacheList } from './cacheTracker.mjs'
+import { useNarrowCheck } from './LayoutContext.mjs'
 
 export default function SyncStatus() {
+  const isNarrow = useNarrowCheck()
   const { data: heartbeat } = useHeartbeatQuery()
   const cacheList = useCacheList()
   console.log('cacheList was',cacheList)
@@ -14,9 +16,11 @@ export default function SyncStatus() {
       sx={{
         pointerEvents: 'none',
         zIndex: 4,
-        position: 'absolute',
+        position: isNarrow ? 'fixed' : 'absolute',
         right: 0,
         bottom: 0,
+        mb: isNarrow ? '4rem' : undefined,
+        
       }}
     >
       {heartbeat && (

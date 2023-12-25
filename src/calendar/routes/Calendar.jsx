@@ -327,7 +327,6 @@ export function Calendar() {
 }
 
 export function CalendarContents({ calendarId }) {
-  const [showViewList, toggleViewList] = useReducer(on => !on, false)
   const dispatch = usePrimaryDispatch()
 
   const { data: calendarData } = useViewQuery()
@@ -365,39 +364,7 @@ export function CalendarContents({ calendarId }) {
         width: '100%',
         position: 'relative',
       }}
-    >
-      <ConflictDisplay tag="views" />
-      <IconButton
-        onClick={toggleViewList}
-        sx={{
-          position: 'absolute',
-          bottom: 0,
-          zIndex: 4,
-        }}
-      >
-        <FormatListBulletedIcon />
-      </IconButton>
-      {showViewList && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            backgroundColor: '#0af4',
-            width: '40ch',
-            height: '12rem',
-            overflowY: 'auto',
-            zIndex: 3,
-          }}
-        >
-          {primaryCacheData.sortedViews.map((v, i) => (
-            <div key={i}>
-              {v.from.utc().format('MMM-DD HH:mm:ss')}
-              &nbsp;to {v.to.utc().format('MMM-DD HH:mm:ss')}
-              &nbsp;at {Math.round((v.at / 1000) % 10000)}
-            </div>
-          ))}
-        </div>
-      )}
+    >      
       <Slide
         key={params.id}
         timeout={350}

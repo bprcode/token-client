@@ -7,6 +7,7 @@ import RouterSidebar from '../RouterSidebar'
 import { FetchDisplay } from '../../go-fetch'
 import SyncStatus from '../SyncStatus'
 import { useNavigationControl } from '../NavigationControl.mjs'
+import { ConflictDisplay } from '../ConflictDisplay'
 
 export const loader = queryClient => async () => {
   return 'unused'
@@ -49,6 +50,7 @@ export function Root() {
             {/* SyncStatus is kept mounted to allow autosave operations
                 to continue during navigation. */}
             <SyncStatus />
+            <ConflictDisplay tag="views" />
 
             {navigation.state === 'loading' && (
               <div

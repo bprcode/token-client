@@ -33,7 +33,7 @@ export function LoadingHourglass({ sx }) {
     <Box
       sx={{
         transform: spin === spin2 ? 'rotate(0deg)' : 'rotate(180deg)',
-        animation: `${spin} 1.25s cubic-bezier(.6,-0.43,.19,1.01)`,
+        animation: `${spin} 1s cubic-bezier(.6,-0.43,.19,1.01)`,
         ...sx,
       }}
     >
