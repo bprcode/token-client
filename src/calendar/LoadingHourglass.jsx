@@ -8,16 +8,16 @@ const spin1 = keyframes`
     transform: rotate(0deg);
   }
   to {
-    transform: rotate(-180deg);
+    transform: rotate(180deg);
   }
 `
 
 const spin2 = keyframes`
   from {
-    transform: rotate(-180deg);
+    transform: rotate(180deg);
   }
   to {
-    transform: rotate(-360deg);
+    transform: rotate(360deg);
   }
 `
 
@@ -32,7 +32,7 @@ export function LoadingHourglass({ sx }) {
   return (
     <Box
       sx={{
-        transform: spin === spin2 ? 'rotate(0deg)' : 'rotate(-180deg)',
+        transform: spin === spin2 ? 'rotate(0deg)' : 'rotate(180deg)',
         animation: `${spin} 1s cubic-bezier(.6,-0.43,.19,1.01)`,
         ...sx,
       }}

@@ -365,14 +365,14 @@ export function CalendarContents({ calendarId }) {
         position: 'relative',
       }}
     >      
-      <Slide
+      {/* <Slide
         key={params.id}
         timeout={350}
         in={true}
         direction="left"
         mountOnEnter
         unmountOnExit
-      >
+      > */}
         <div
           style={{
             position: 'absolute',
@@ -428,7 +428,7 @@ export function CalendarContents({ calendarId }) {
             />
           )}
         </div>
-      </Slide>
+      {/* </Slide> */}
     </Paper>
   )
 
