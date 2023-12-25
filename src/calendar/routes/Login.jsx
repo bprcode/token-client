@@ -70,7 +70,7 @@ function LoginSection() {
     },
     onSuccess: onLoginSuccess,
     onError: error => {
-      if (error.status === 403) {
+      if (error.status === 403 || error.status === 409) {
         setInvalid(true)
       }
     },
@@ -149,7 +149,7 @@ function LoginSection() {
 
             <Stack spacing={3}>
               <Button
-                disabled={loginMutation.isPending}
+                disabled={loginMutation.isPending || registerMutation.isPending}
                 onClick={() => {
                   if (showRegister) {
                     return registerMutation.mutate({
@@ -160,9 +160,13 @@ function LoginSection() {
                   }
                   loginMutation.mutate({ email, password })
                 }}
-                variant={showRegister ? 'contained' : 'outlined'}
+                variant={
+                  showRegister
+                    ? 'contained'
+                    : 'outlined'
+                }
               >
-                {loginMutation.isPending ? (
+                {loginMutation.isPending || registerMutation.isPending ? (
                   <CircularProgress size="1.5rem" />
                 ) : showRegister ? (
                   'Sign Up'
