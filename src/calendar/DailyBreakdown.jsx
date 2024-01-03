@@ -90,8 +90,8 @@ function Breakdown({
     return { blocking, columns, relevantEvents }
   }, [events, date, logger])
 
-  const margin =
-    columns.length <= 2 && labels === 'detailed' ? '4.5rem' : undefined
+  const isSparse = columns.length <= 2 && labels === 'detailed'
+  const margin = isSparse ? '4.5rem' : undefined
 
   const minTouch = '48px'
 
@@ -104,6 +104,7 @@ function Breakdown({
         position: 'relative',
         marginLeft: [margin, margin || '0.5rem'],
         marginRight: [minTouch, margin || '0.5rem'],
+        maxWidth: columns.length === 1 ? '60ch' : undefined,
       }}
     >
       {relevantEvents.map(r => (

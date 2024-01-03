@@ -3,6 +3,7 @@ import DoubleDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown'
 import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
+import DeleteIcon from '@mui/icons-material/Delete'
 import {
   mockStyles,
   getAugmentedColor,
@@ -106,7 +107,9 @@ export function EventPane({
 
   const accentColor = augmentedColors.main
   const shadeColor = augmentedColors.dark
-  const verboseBackground = selected && selectable ? '#6e2a08' : '#222233'
+  const deleteWarning = action === 'delete' ? '#4f190e' : undefined
+  const verboseBackground =
+    deleteWarning ?? (selected && selectable ? '#6e2a08' : '#222233')
 
   let borderColor = accentColor
   if (selected) borderColor = theme.palette.secondary.light
@@ -256,8 +259,7 @@ export function EventPane({
       case 'delete':
         if (deleting) return
         console.log('handling deletion')
-        // debug -- delete animation disabled for testing purposes
-        // setDeleting(true)
+        setDeleting(true)
         setTimeout(() => onDelete(event.id), 350)
         return
       case 'edit':
@@ -356,6 +358,12 @@ export function EventPane({
           }}
           style={{
             touchAction: 'none',
+            cursor:
+              action === 'delete'
+                ? 'crosshair'
+                : selected && selectable
+                ? 'pointer'
+                : 'grab',
             position: 'absolute',
             top: (topOffset / intervalSize) * 100 + '%',
             left: indent * (100 / columns) + '%',
@@ -449,6 +457,35 @@ export function EventPane({
               >
                 {details}
 
+                {/* Only shown while deleting: */}
+                {action === 'delete' && (
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      zIndex: 1,
+                      padding: 0,
+                      margin: 0,
+                    }}
+                  >
+                    <DeleteIcon
+                      fontSize="large"
+                      sx={{
+                        color: '#ff6b6b',
+                        borderRadius: '50%',
+                        padding: '0.625rem',
+                        scale: '2.5',
+                        backgroundImage:
+                          'radial-gradient' +
+                          '(closest-side, #ff6b6b20 5%, #ff6b6b00)',
+                      }}
+                    />
+                  </IconButton>
+                )}
+
+                {/* Icon for opening detailed edit mode: */}
                 {selected && roomForIcon && !ghost && (
                   <IconButton
                     sx={{
