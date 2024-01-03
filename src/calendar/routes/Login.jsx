@@ -86,13 +86,11 @@ function LoginSection() {
       sx={{
         py: 6,
         px: 2,
-        // flexGrow: 1,
         minWidth: [240, 300],
         maxWidth: 450,
         ml: 'auto',
         mr: 'auto',
-        mt: [0, 6],
-        // mr: ['auto', 0],
+        mt: [2, 6],
       }}
     >
       <form onSubmit={e => e.preventDefault()}>

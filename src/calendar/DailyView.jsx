@@ -279,7 +279,7 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
           startTime: initialTime,
           endTime: finalTime,
           summary: picks.summary,
-          description: 'undescribed',
+          description: ' ',
           colorId: picks.colorId,
           id: `idem ${Math.floor(Math.random() * 1e9)}`,
         })

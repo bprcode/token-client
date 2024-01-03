@@ -147,7 +147,7 @@ function useCreateOptimistic() {
 
   return () => {
     const temporary = {
-      summary: 'Temporary Calendar',
+      summary: 'New Calendar',
       etag: 'creating',
       calendar_id: idemKey,
       stableKey: idemKey,
@@ -412,43 +412,6 @@ export function Catalog() {
               <br />
               Updated: {dayjs(c.updated).from(now)}
               <br />
-              <span
-                style={{ color: c.etag === 'creating' ? 'green' : undefined }}
-              >
-                etag: {c.etag}
-              </span>
-              <br />
-              &ldquo;{c.summary}&rdquo;
-            </Typography>
-            <Typography variant="body2">
-              {c.unsaved && (
-                <>
-                  <span style={{ color: '#88f' }}>Unsaved: {c.unsaved}</span>
-                  <br />
-                </>
-              )}
-              {c.isDeleting && (
-                <>
-                  <span style={{ color: 'red' }}>isDeleting</span>
-                  <br />
-                </>
-              )}
-              {c.originTag && (
-                <>
-                  <span style={{ color: 'orange' }}>
-                    originTag: {c.originTag}
-                  </span>
-                  <br />
-                </>
-              )}
-              {c.stableKey && (
-                <>
-                  <span style={{ color: 'thistle' }}>
-                    stableKey: {c.stableKey}
-                  </span>
-                  <br />
-                </>
-              )}
             </Typography>
           </CalendarCard>
         ))}

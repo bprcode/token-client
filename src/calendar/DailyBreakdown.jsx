@@ -93,6 +93,8 @@ function Breakdown({
   const margin =
     columns.length <= 2 && labels === 'detailed' ? '4.5rem' : undefined
 
+  const minTouch = '48px'
+
   // Render the event cards
   const rendered = (
     <Box
@@ -101,7 +103,7 @@ function Breakdown({
         ...style,
         position: 'relative',
         marginLeft: [margin, margin || '0.5rem'],
-        marginRight: [0, margin || '0.5rem'],
+        marginRight: [minTouch, margin || '0.5rem'],
       }}
     >
       {relevantEvents.map(r => (

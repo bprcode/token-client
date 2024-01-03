@@ -4,6 +4,7 @@ import CalendarViewDayIcon from '@mui/icons-material/CalendarViewDay'
 import {
   Box,
   Collapse,
+  Divider,
   List,
   ListItem,
   ListItemButton,
@@ -49,6 +50,7 @@ export function CalendarFolder({ route, title }) {
         }}
         aria-label={`Nested folder ${route}`}
       >
+        {isOpen && <Divider />}
         <TopNavLink route={route}>
           <Box
             sx={{
