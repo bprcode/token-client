@@ -19,11 +19,13 @@ export function ActionButtons({ onBehavior, canUndo }) {
   ]
 
   const alignment = { p: 0.5, ml: 1 }
-  const undo = (
-    <IconButton disabled={!canUndo} onClick={() => onBehavior('undo')}>
-      <UndoIcon fontSize="large" />
-    </IconButton>
-  )
+  // undo functionality not yet implemented in a concurrency-tolerant form:
+  const undo = <></>
+  // const undo = (
+  //   <IconButton disabled={!canUndo} onClick={() => onBehavior('undo')}>
+  //     <UndoIcon fontSize="large" />
+  //   </IconButton>
+  // )
 
   const buttons = interactions.map(i => (
     <IconButton

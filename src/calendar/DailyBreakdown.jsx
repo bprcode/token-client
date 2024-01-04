@@ -36,6 +36,7 @@ function Breakdown({
     const relevantEvents =
       events.filter(e =>
         isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
+        && !e.isDeleting
       )
 
     const blocking = new WeakMap()

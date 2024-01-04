@@ -9,7 +9,6 @@ export default function SyncStatus() {
   const isNarrow = useNarrowCheck()
   const { data: heartbeat } = useHeartbeatQuery()
   const cacheList = useCacheList()
-  console.log('cacheList was',cacheList)
 
   return (
     <Box

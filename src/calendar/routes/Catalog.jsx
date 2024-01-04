@@ -220,12 +220,12 @@ function CalendarCard({ calendar, children }) {
 
   const theme = useTheme()
   const [isEditing, setIsEditing] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const isCreating = calendar.etag === 'creating'
   const inputRef = useRef(null)
 
   const now = dayjs()
   const isNew = now.diff(calendar.created) < 1000
-  const isErasing = calendar.isDeleting && calendar.unsaved - Date.now() < 1000
 
   useEffect(() => {
     if (isEditing) {
@@ -238,8 +238,8 @@ function CalendarCard({ calendar, children }) {
   if (isNew) {
     animation = `${initialGlow} 1s ease`
   }
-  if (isErasing) {
-    animation = `${fadeOut} 1s ease`
+  if (isDeleting) {
+    animation = `${fadeOut} 0.5s ease`
   }
 
   return (
@@ -338,7 +338,10 @@ function CalendarCard({ calendar, children }) {
           <IconButton
             aria-label="Delete"
             disabled={calendar.isDeleting}
-            onClick={() => deleteOptimistic(calendar.calendar_id)}
+            onClick={() => {
+              setIsDeleting(true)
+              setTimeout(() => deleteOptimistic(calendar.calendar_id), 500)
+            }}
           >
             <DeleteIcon sx={{ opacity: 0.9 }} />
           </IconButton>

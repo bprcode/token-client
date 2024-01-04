@@ -426,7 +426,7 @@ export function useEventListHistory(initialList) {
   ])
 }
 
-export function reduceCurrentEvents(eventList, action) {
+export function reduceConcurrentEvents(eventList, action) {
   switch (action.type) {
     case 'create': {
       const tags = {

@@ -55,7 +55,7 @@ export function EventPane({
   const [ghost, setGhost] = useState(false)
   const [ghostTop, setGhostTop] = useState(0)
   const [ghostBottom, setGhostBottom] = useState(0)
-  const [deleting, setDeleting] = useState(false)
+  const [isFading, setIsFading] = useState(false)
 
   const duration = event.endTime.diff(event.startTime) / 1000 / 60
 
@@ -174,15 +174,15 @@ export function EventPane({
         <br />
         {event.description && (
           <>
-            {/* <div>
+            <div>
               ID: <span style={{ color: '#8ef' }}>{event.id}</span>
             </div>
             <div>
               etag: <span style={{ color: '#fc4' }}>{event.etag}</span>
             </div>
-            <div>colorId: {event.colorId}</div> */}
+            <div>colorId: {event.colorId}</div>
             <div>{event.description}</div>
-            {/* {event.unsaved && (
+            {event.unsaved && (
               <div>
                 unsaved: <span style={{ color: '#0ef' }}>{event.unsaved}</span>
               </div>
@@ -193,15 +193,17 @@ export function EventPane({
                 <span style={{ color: '#fe0' }}>{event.originTag}</span>
               </div>
             )}
+           
             {event.isDeleting && (
               <div style={{ color: '#f00' }}>isDeleting</div>
             )}
+            
             {event.stableKey && (
               <div>
                 stableKey:{' '}
                 <span style={{ color: '#08a' }}>{event.stableKey}</span>
               </div>
-            )} */}
+            )}
           </>
         )}
       </div>
@@ -237,6 +239,8 @@ export function EventPane({
 
   // Interaction handlers:
   function handlePointerDown(e) {
+    if(e.buttons !== 1) return
+
     let tickSize = 24
     try {
       const inner = e.currentTarget.closest('.section-inner')
@@ -257,9 +261,11 @@ export function EventPane({
 
     switch (action) {
       case 'delete':
-        if (deleting) return
-        console.log('handling deletion')
-        setDeleting(true)
+        if (isFading) {
+          return
+        }
+
+        setIsFading(true)
         setTimeout(() => onDelete(event.id), 350)
         return
       case 'edit':
@@ -344,7 +350,7 @@ export function EventPane({
   // Assembled component:
   return (
     <>
-      <Zoom in={!deleting} appear={false} timeout={250}>
+      <Zoom in={!isFading} appear={false} timeout={250}>
         <div
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
@@ -457,7 +463,7 @@ export function EventPane({
               >
                 {details}
 
-                {/* Only shown while deleting: */}
+                {/* Only shown while in delete mode: */}
                 {action === 'delete' && (
                   <IconButton
                     sx={{
@@ -566,7 +572,7 @@ export function EventPane({
       )}
 
       {/* drop shadow mock pseudo-element for correct z-indexing: */}
-      {!hideShadows && !deleting && (
+      {!hideShadows && !isFading && (
         <div
           style={{
             position: 'absolute',
@@ -662,6 +668,7 @@ function PaneControls({
             transform: `translate(-50%, -100%)`,
           }}
           onPointerDown={e => {
+            if(e.buttons !== 1) return
             logger('top tab down, t=' + e.target.classList[0])
             beginTabDrag()
             handleTabDrag(e, onAdjustTop, intervalSize, logger)
@@ -708,6 +715,7 @@ function PaneControls({
             transform: `translate(-50%, 0%)`,
           }}
           onPointerDown={e => {
+            if(e.buttons !== 1) return
             logger('bottom tab down')
             beginTabDrag()
             handleTabDrag(e, onAdjustBottom, intervalSize, logger)

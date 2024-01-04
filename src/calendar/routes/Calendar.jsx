@@ -2,7 +2,7 @@ import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
 import { CircularProgress, IconButton, Paper, Slide } from '@mui/material'
 import { useReducer } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
-import { isOverlap, reduceCurrentEvents } from '../calendarLogic.mjs'
+import { isOverlap, reduceConcurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
@@ -314,7 +314,7 @@ function usePrimaryDispatch() {
   return action => {
     updateCacheData(queryClient, id, data => ({
       sortedViews: data.sortedViews,
-      stored: reduceCurrentEvents(data.stored, action),
+      stored: reduceConcurrentEvents(data.stored, action),
     }))
 
     resetViewsToCache(queryClient, id)
@@ -364,7 +364,7 @@ export function CalendarContents({ calendarId }) {
         width: '100%',
         position: 'relative',
       }}
-    >      
+    >
       {/* <Slide
         key={params.id}
         timeout={350}
@@ -373,61 +373,61 @@ export function CalendarContents({ calendarId }) {
         mountOnEnter
         unmountOnExit
       > */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            width: '100%',
-            height: '100%',
-          }}
-        >
-          {view === 'month' && (
-            <MonthlyView
-              date={date}
-              onExpand={date => updateParams({ view: 'week', date })}
-              onChange={date => updateParams({ date })}
-            />
-          )}
-          {view === 'week' && (
-            <WeeklyView
-              onBack={() => {
-                updateParams({ view: 'month' })
-              }}
-              date={date}
-              onExpand={date => updateParams({ view: 'day', date })}
-              onChange={date => updateParams({ date })}
-            />
-          )}
-          {view === 'day' && (
-            <DailyView
-              onBack={() => {
-                updateParams({ view: 'week' })
-              }}
-              date={date}
-              onCreate={addition =>
-                dispatch({
-                  type: 'create',
-                  addition,
-                })
-              }
-              onUpdate={(id, updates) =>
-                dispatch({
-                  type: 'update',
-                  id,
-                  updates,
-                })
-              }
-              onDelete={id =>
-                dispatch({
-                  type: 'delete',
-                  id,
-                })
-              }
-              onUndo={() => console.log(`debug: not implemented.`)}
-              canUndo={false}
-            />
-          )}
-        </div>
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          width: '100%',
+          height: '100%',
+        }}
+      >
+        {view === 'month' && (
+          <MonthlyView
+            date={date}
+            onExpand={date => updateParams({ view: 'week', date })}
+            onChange={date => updateParams({ date })}
+          />
+        )}
+        {view === 'week' && (
+          <WeeklyView
+            onBack={() => {
+              updateParams({ view: 'month' })
+            }}
+            date={date}
+            onExpand={date => updateParams({ view: 'day', date })}
+            onChange={date => updateParams({ date })}
+          />
+        )}
+        {view === 'day' && (
+          <DailyView
+            onBack={() => {
+              updateParams({ view: 'week' })
+            }}
+            date={date}
+            onCreate={addition =>
+              dispatch({
+                type: 'create',
+                addition,
+              })
+            }
+            onUpdate={(id, updates) =>
+              dispatch({
+                type: 'update',
+                id,
+                updates,
+              })
+            }
+            onDelete={id =>
+              dispatch({
+                type: 'delete',
+                id,
+              })
+            }
+            onUndo={() => console.log(`debug: not implemented.`)}
+            canUndo={false}
+          />
+        )}
+      </div>
       {/* </Slide> */}
     </Paper>
   )
