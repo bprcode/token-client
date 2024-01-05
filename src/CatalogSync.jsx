@@ -99,6 +99,15 @@ function handleCalendarSuccess({ result, original, queryClient }) {
     return a.summary === b.summary
   }
 
+  // Deletion success
+  if (original.isDeleting) {
+    queryClient.setQueryData(['catalog'], catalog =>
+      catalog.filter(c => c.calendar_id !== original.calendar_id)
+    )
+
+    return
+  }
+
   // Creation success
   if (original.etag === 'creating') {
     // Retain any pending edits
@@ -120,15 +129,6 @@ function handleCalendarSuccess({ result, original, queryClient }) {
 
     queryClient.setQueryData(['catalog'], catalog =>
       catalog.map(c => (c.calendar_id === original.calendar_id ? update : c))
-    )
-
-    return
-  }
-
-  // Deletion success
-  if (original.isDeleting) {
-    queryClient.setQueryData(['catalog'], catalog =>
-      catalog.filter(c => c.calendar_id !== original.calendar_id)
     )
 
     return

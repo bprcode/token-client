@@ -1,10 +1,6 @@
-import UploadIcon from '@mui/icons-material/Upload'
-import { CircularProgress, IconButton, Typography } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useParams, useSearchParams } from 'react-router-dom'
 import { goFetch } from '../go-fetch'
 import { useCallback, useRef } from 'react'
-import { createSampleWeek } from './calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { touchList } from './reconcile.mjs'
 import { resetViewsToCache } from './routes/Calendar'
@@ -97,6 +93,15 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
     )
   }
 
+  // Deletion success
+  if (original.isDeleting) {
+    updateStored(queryClient, calendarId, stored =>
+      stored.filter(e => e.id !== original.id)
+    )
+
+    return
+  }
+
   // Creation success
   if (original.etag === 'creating') {
     // Retain any pending edits
@@ -113,15 +118,6 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
 
     updateStored(queryClient, calendarId, stored =>
       stored.map(e => (e.id === original.id ? update : e))
-    )
-
-    return
-  }
-
-  // Deletion success
-  if (original.isDeleting) {
-    updateStored(queryClient, calendarId, stored =>
-      stored.filter(e => e.id !== original.id)
     )
 
     return
@@ -214,62 +210,6 @@ function makeEventFetch(calendarId, variables) {
     timeout,
     signal,
   })
-}
-
-function useUploadMockEvents() {
-  const [searchParams] = useSearchParams()
-
-  function randomIdemKey() {
-    return String(Math.floor(Math.random() * 1e9))
-  }
-
-  const idemKey = useRef(null)
-  const timeout = 5000
-  const { id } = useParams()
-  const endpoint = `calendars/${id}/events`
-
-  const mockEventMutation = useMutation({
-    onMutate: variables => {
-      idemKey.current = randomIdemKey()
-      variables.key = idemKey.current
-
-      // console.log('🟩 mock mutation had variables:', variables)
-    },
-    mutationFn: variables => {
-      const datum = variables
-      // console.log('key for mutation:', variables.key)
-      return goFetch(endpoint, {
-        method: 'POST',
-        body: {
-          summary: datum.summary,
-          description: datum.description,
-          start_time: datum.startTime,
-          end_time: datum.endTime,
-          color_id: datum.colorId,
-          key: variables.key,
-        },
-        timeout,
-        // signal,
-      })
-    },
-  })
-
-  const mockEventBundle = useMutation({
-    retry: 0,
-    onMutate: variables => {
-      const d = searchParams.get('d')?.replaceAll('_', ':')
-      const day = dayjs(d ?? undefined)
-      variables.mockEvents = createSampleWeek(day, 10)
-    },
-    mutationFn: variables => {
-      console.log('bundle mockEvents = ', variables.mockEvents)
-      return Promise.all(
-        variables.mockEvents.map(e => mockEventMutation.mutateAsync({ ...e }))
-      )
-    },
-  })
-
-  return mockEventBundle
 }
 
 const eventLogger = (...args) =>
