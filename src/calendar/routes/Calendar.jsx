@@ -1,7 +1,5 @@
-import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted'
-import { CircularProgress, IconButton, Paper, Slide } from '@mui/material'
-import { useReducer } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { Alert, AlertTitle, Button, Paper, Slide } from '@mui/material'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { isOverlap, reduceConcurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
@@ -10,9 +8,12 @@ import { DailyView } from '../DailyView'
 import { goFetch } from '../../go-fetch'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { reconcile } from '../reconcile.mjs'
-import { ConflictDisplay } from '../ConflictDisplay'
 import { updateCacheData } from '../cacheTracker.mjs'
 import { LoadingHourglass } from '../LoadingHourglass'
+import { ViewContainer } from '../ViewContainer'
+import { ViewHeader } from '../ViewHeader'
+import { useTheme } from '@emotion/react'
+import { alpha } from '@mui/material/styles'
 
 const log = console.log.bind(console)
 
@@ -328,31 +329,67 @@ export function Calendar() {
 
 export function CalendarContents({ calendarId }) {
   const dispatch = usePrimaryDispatch()
+  const navigate = useNavigate()
+  const theme = useTheme()
 
-  const { data: calendarData } = useViewQuery()
+  const { data: calendarData, error: viewError } = useViewQuery()
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', calendarId],
     enabled: false,
   })
 
   const [searchParams, setSearchParams] = useSearchParams()
-  const params = useParams()
   const view = searchParams.get('v') || 'month'
   const date = searchParams.has('d')
     ? dayjs(searchParams.get('d').replaceAll('_', ':'))
     : dayjs()
 
+  if (viewError) {
+    return (
+      <ViewContainer>
+        <ViewHeader />
+        <div
+          style={{
+            display: 'grid',
+            height: '100%',
+            placeContent: 'center',
+          }}
+        >
+          <Alert
+            severity="error"
+            sx={
+              {
+                border: '1px solid ' + alpha(theme.palette.error.main, 0.08),
+              }
+            }
+            action={
+              <Button sx={{ mt: 'auto' }} onClick={() => navigate(-1)}>
+                Back
+              </Button>
+            }
+          >
+            <AlertTitle>Error</AlertTitle>
+            Error loading view: {viewError.message}
+          </Alert>
+        </div>
+      </ViewContainer>
+    )
+  }
+
   if (!calendarData) {
     return (
-      <div
-        style={{
-          display: 'grid',
-          height: '100%',
-          placeContent: 'center',
-        }}
-      >
-        <LoadingHourglass />
-      </div>
+      <ViewContainer>
+        <ViewHeader />
+        <div
+          style={{
+            display: 'grid',
+            height: '100%',
+            placeContent: 'center',
+          }}
+        >
+          <LoadingHourglass />
+        </div>
+      </ViewContainer>
     )
   }
 

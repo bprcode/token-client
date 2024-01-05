@@ -25,19 +25,16 @@ function Breakdown({
 
   const { blocking, columns, relevantEvents } = useMemo(() => {
     console.log(
-      `📦 memoizing blocking, columns, relevantEvents (${
-        events.length
-      })`
+      `📦 memoizing blocking, columns, relevantEvents (${events.length})`
     )
     setTimeout(() => logger('📦 memoizing blocking'), 1000)
 
     const startOfDay = date.startOf('day')
     const endOfDay = date.endOf('day')
-    const relevantEvents =
-      events.filter(e =>
-        isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
-        && !e.isDeleting
-      )
+    const relevantEvents = events.filter(
+      e =>
+        isOverlap(startOfDay, endOfDay, e.startTime, e.endTime) && !e.isDeleting
+    )
 
     const blocking = new WeakMap()
     for (const r of relevantEvents) blocking.set(r, 0)
@@ -56,12 +53,7 @@ function Breakdown({
         // the column is unavailable.
         for (const entry of column) {
           if (
-            isOverlap(
-              entry.startTime,
-              entry.endTime,
-              e.startTime,
-              e.endTime
-            )
+            isOverlap(entry.startTime, entry.endTime, e.startTime, e.endTime)
           ) {
             available = false
             break
@@ -104,7 +96,10 @@ function Breakdown({
         ...style,
         position: 'relative',
         marginLeft: [margin, margin || '0.5rem'],
-        marginRight: [minTouch, margin || '0.5rem'],
+        marginRight: [
+          labels === 'detailed' ? minTouch : margin,
+          margin || '0.5rem',
+        ],
         maxWidth: columns.length === 1 ? '60ch' : undefined,
       }}
     >
