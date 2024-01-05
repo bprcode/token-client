@@ -18,7 +18,7 @@ import { LoginPage } from './routes/Login'
 import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
-import { navigateTo } from './NavigationControl.mjs'
+import { navigateTo } from './NavigationControl.jsx'
 
 const globalExpiryHandler = error => {
   console.log('🌍 global cache error handler:', error.status, error.message)
@@ -86,7 +86,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={digitalTheme}>
         <CssBaseline enableColorScheme>
-            <RouterProvider router={router} />
+          <RouterProvider router={router} />
         </CssBaseline>
       </ThemeProvider>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}

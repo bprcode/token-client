@@ -13,9 +13,8 @@ import { useRef, useState } from 'react'
 import { ViewContainer } from '../ViewContainer'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { useHeartbeatQuery } from '../../HeartbeatPanel'
 import { useTheme } from '@emotion/react'
+import { resumeOrNavigateTo } from '../NavigationControl.jsx'
 
 function LoginSection() {
   const spacing = 4
@@ -26,9 +25,7 @@ function LoginSection() {
   const [invalid, setInvalid] = useState(false)
   const [password, setPassword] = useState('123')
   const [showRegister, setShowRegister] = useState(false)
-  const { data: heartbeat } = useHeartbeatQuery()
 
-  const navigate = useNavigate()
   const signInRef = useRef(null)
   const sending = false
 
@@ -37,7 +34,7 @@ function LoginSection() {
     console.log('mutation success with data: ', data)
     queryClient.invalidateQueries({ queryKey: ['catalog'] })
     queryClient.setQueryData(['heartbeat'], data)
-    navigate('/catalog')
+    resumeOrNavigateTo('/catalog')
   }
 
   const loginMutation = useMutation({
@@ -75,10 +72,6 @@ function LoginSection() {
       }
     },
   })
-
-  if (heartbeat) {
-    return <Navigate to="/catalog" />
-  }
 
   return (
     <Paper
@@ -158,11 +151,7 @@ function LoginSection() {
                   }
                   loginMutation.mutate({ email, password })
                 }}
-                variant={
-                  showRegister
-                    ? 'contained'
-                    : 'outlined'
-                }
+                variant={showRegister ? 'contained' : 'outlined'}
               >
                 {loginMutation.isPending || registerMutation.isPending ? (
                   <CircularProgress size="1.5rem" />

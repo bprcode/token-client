@@ -22,7 +22,6 @@ const tidyUp = (queryClient, id) => () => {
     return
   }
 
-  console.log(`should gc now`)
   lastUpdated.delete(id)
   const arrayed = readList()
 

@@ -6,7 +6,7 @@ import { Outlet, useNavigation } from 'react-router-dom'
 import RouterSidebar from '../RouterSidebar'
 import { FetchDisplay } from '../../go-fetch'
 import SyncStatus from '../SyncStatus'
-import { useNavigationControl } from '../NavigationControl.mjs'
+import { useNavigationControl } from '../NavigationControl.jsx'
 import { ConflictDisplay } from '../ConflictDisplay'
 
 export const loader = queryClient => async () => {
