@@ -25,8 +25,11 @@ function Breakdown({
 
   const { blocking, columns, relevantEvents } = useMemo(() => {
     console.log(
-      `📦 memoizing blocking, columns, relevantEvents (${events.length})` + 
-      ` from event list:`, events
+      // `📦 memoizing blocking, columns, relevantEvents (${events.length})`,
+      `%c(${events.reduce((p, c) => p + (!c.isDeleting ? 1 : 0), 0)} active)`,
+      `color:orange`,
+      ` from event list:`,
+      events
     )
 
     const startOfDay = date.startOf('day')
@@ -35,7 +38,7 @@ function Breakdown({
       e =>
         // debug -- show isDeleting events for debugging purposes
         isOverlap(startOfDay, endOfDay, e.startTime, e.endTime)
-        // isOverlap(startOfDay, endOfDay, e.startTime, e.endTime) && !e.isDeleting
+      // isOverlap(startOfDay, endOfDay, e.startTime, e.endTime) && !e.isDeleting
     )
 
     const blocking = new WeakMap()

@@ -57,6 +57,7 @@ export function reconcile({
   serverData,
   key,
   tag = 'default',
+  isDuplicate = noop,
   log = noop,
   allowRevival = false,
 }) {
@@ -64,10 +65,11 @@ export function reconcile({
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
   const localMap = new Map(localData.map(data => [data[key], data]))
+  
+  const creations = localData.filter(data => data.etag === 'creating')
 
   log('mapified local:', localMap)
   log('mapified server:', serverMap)
-  log('outbound: ', localData.filter(data => data.etag === 'creating'))
 
   const now = Date.now()
 
@@ -175,6 +177,21 @@ export function reconcile({
 
   for (const remote of serverData) {
     if (!localMap.has(remote[key])) {
+      let skip = false
+      // The record with this ID is locally unknown.
+      // However, it must still be de-duplicated,
+      // since this information may have arrived
+      // before its original POST resolved:
+      for (const unsent of creations) {
+        if (isDuplicate(unsent, remote)) {
+          log('🩵🩵🩵 Skipping duplicate:', unsent, remote)
+          skip = true
+          break
+        }
+      }
+
+      if(skip) { continue }
+
       // Local state was missing a remote record. Add it.
       log('local state was missing ', remote[key], ' -- adding.')
       merged.push(remote)

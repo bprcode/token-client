@@ -56,6 +56,9 @@ function useEventBundleMutation(calendarId) {
           })
         )
       ),
+    onSuccess: () => {
+      log('check??')
+    },
     onError: error => {
       if (error?.status === 409 || error?.status === 404) {
         backoff(`event error refetch`, () => {
@@ -78,20 +81,38 @@ function updateStored(queryClient, calendarId, transform) {
   resetViewsToCache(queryClient, calendarId)
 }
 
+export function eventIsDuplicate(local, remote) {
+  return (
+    local.colorId === remote.colorId &&
+    local.summary === remote.summary &&
+    local.description === remote.description &&
+    local.startTime.toISOString() === remote.startTime.toISOString() &&
+    local.endTime.toISOString() === remote.endTime.toISOString()
+  )
+}
+
 function handleEventSuccess({ calendarId, result, original, queryClient }) {
   const current = queryClient
     .getQueryData(['primary cache', calendarId])
     ?.stored.find(e => e.id === original.id)
 
   function hasSameContent(local, served) {
-    return (
-      local.colorId === served.color_id &&
-      local.summary === served.summary &&
-      local.description === served.description &&
-      local.startTime.toISOString() === served.start_time &&
-      local.endTime.toISOString() === served.end_time
-    )
+    return eventIsDuplicate(
+      local,
+      {...served,
+      colorId: served.color_id,
+      startTime: dayjs(served.start_time),
+      endTime: dayjs(served.end_time)})
   }
+  // function hasSameContent(local, served) {
+  //   return (
+  //     local.colorId === served.color_id &&
+  //     local.summary === served.summary &&
+  //     local.description === served.description &&
+  //     local.startTime.toISOString() === served.start_time &&
+  //     local.endTime.toISOString() === served.end_time
+  //   )
+  // }
 
   // Creation success
   if (original.etag === 'creating') {

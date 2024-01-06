@@ -14,6 +14,7 @@ import { ViewContainer } from '../ViewContainer'
 import { ViewHeader } from '../ViewHeader'
 import { useTheme } from '@emotion/react'
 import { alpha } from '@mui/material/styles'
+import { eventIsDuplicate } from '../EventSync'
 
 const log = console.log.bind(console)
 
@@ -245,6 +246,7 @@ export function useViewQuery() {
         key: 'id',
         tag: 'views',
         log: viewReconcileLog,
+        isDuplicate: eventIsDuplicate,
         allowRevival: true,
       })
 
