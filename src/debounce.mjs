@@ -61,6 +61,9 @@ export function bounceEarly(key) {
 
 const schedule = new Map()
 
+/**
+ * Apply exponential rate-limiting to a callback function.
+ */
 export function backoff(key, callback) {
   const resetTime = 10 * 1000
   const now = Date.now()

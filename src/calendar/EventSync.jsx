@@ -56,15 +56,16 @@ function useEventBundleMutation(calendarId) {
           })
         )
       ),
-    onSuccess: () => {
-      log('check??')
-    },
     onError: error => {
       if (error?.status === 409 || error?.status === 404) {
-        backoff(`event error refetch`, () => {
-          log(`🍒 event bundle error requesting refetch...`)
-          queryClient.refetchQueries({ queryKey: ['views', calendarId] })
-        })
+        // Delay slightly to encourage pending requests to resolve
+        // before a refetch, for smoother conflict resolution.
+        setTimeout(() => {
+          backoff(`event error refetch`, () => {
+            log(`🍒 event bundle error requesting refetch...`)
+            queryClient.refetchQueries({ queryKey: ['views', calendarId] })
+          })
+        }, 500)
       }
     },
   })
