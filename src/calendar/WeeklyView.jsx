@@ -1,12 +1,7 @@
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
-import {
-  IconButton,
-  Typography,
-  Box,
-  useMediaQuery,
-} from '@mui/material'
+import { IconButton, Typography, Box, useMediaQuery } from '@mui/material'
 import { useMemo } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
@@ -15,10 +10,15 @@ import { useLogger } from './Logger'
 import { isOverlap } from './calendarLogic.mjs'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
+import { SectionedInterval } from './SectionedInterval'
+
+const innerLeftPadding = '0rem'
+const innerRightPadding = '0rem'
 
 function WeekBody({ date, events, onExpand }) {
   const logger = useLogger()
   const benchStart = performance.now()
+  const displayHeight = '520px'
 
   const rv = useMemo(() => {
     const days = []
@@ -60,18 +60,32 @@ function WeekBody({ date, events, onExpand }) {
             <Box
               align="center"
               key={d.format('D')}
-              sx={{ pl: [0, 1], pr: [0, 1], pb: 3 }}
+              sx={{ pl: [0, 1], pr: [0, 1], pb: 1 }}
             >
               <Typography variant="caption">{d.format('ddd')}</Typography>
               <Typography variant="h5">{d.format('D')}</Typography>
             </Box>
 
-            <DailyBreakdown
-              date={d}
-              events={weekEvents}
-              style={{ height: '350px' }}
-              labels="none"
-            />
+            <SectionedInterval
+              initial={d.startOf('day')}
+              final={d.endOf('day')}
+              step={[1, 'hour']}
+              outsideHeight="100%"
+              insideHeight={displayHeight}
+              innerLeftPadding={innerLeftPadding}
+              innerRightPadding={innerRightPadding}
+              labelEvery={6}
+              endMargin={'0rem'}
+              action={null}
+              header={null}
+            >
+              <DailyBreakdown
+                date={d}
+                events={weekEvents}
+                style={{ height: displayHeight }}
+                labels="none"
+              />
+            </SectionedInterval>
           </HoverableBox>
         ))}
       </div>
@@ -87,12 +101,7 @@ function WeekBody({ date, events, onExpand }) {
   return rv
 }
 
-export function WeeklyView({
-  date,
-  onBack,
-  onExpand,
-  onChange,
-}) {
+export function WeeklyView({ date, onBack, onExpand, onChange }) {
   const { data: events } = useViewQuery()
   const logger = useLogger()
   const logId = Math.round(Math.random() * 1e6)

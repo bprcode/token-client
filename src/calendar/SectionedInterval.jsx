@@ -4,6 +4,9 @@ import { useLogger } from './Logger'
 import { useEffect, useMemo, useRef } from 'react'
 import { useNarrowCheck } from './LayoutContext.mjs'
 
+const defaultLeftPadding = ['0.5rem', '5rem']
+const defaultRightPadding = '0.5rem'
+
 export function SectionedInterval({
   initial,
   final,
@@ -11,6 +14,9 @@ export function SectionedInterval({
   children,
   outsideHeight,
   insideHeight,
+  innerLeftPadding = defaultLeftPadding,
+  innerRightPadding = defaultRightPadding,
+  labelEvery = 1,
   onClick,
   onPointerDown,
   onPointerUp,
@@ -75,6 +81,7 @@ export function SectionedInterval({
         >
           <span
             style={{
+              display: j % labelEvery ? 'none' : 'inline',
               paddingLeft: '0.5rem',
               fontSize: '0.875em',
             }}
@@ -124,8 +131,8 @@ export function SectionedInterval({
             zIndex: 1,
             position: 'relative',
             height: insideHeight,
-            paddingLeft: ['0.5rem', '5rem'],
-            paddingRight: '0.5rem',
+            paddingLeft: innerLeftPadding,
+            paddingRight: innerRightPadding,
           }}
         >
           {children}
