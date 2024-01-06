@@ -8,7 +8,7 @@ import { Autosaver, AutosaverStatus } from '../Autosaver'
 import { backoff } from '../debounce.mjs'
 import { updateCacheData } from './cacheTracker.mjs'
 
-const log = console.log.bind(console)
+const log = (...args) => console.log('%cEventSync>', 'color:silver', ...args)
 
 function useEventBundleMutation(calendarId) {
   const abortRef = useRef(new AbortController())
@@ -43,7 +43,7 @@ function useEventBundleMutation(calendarId) {
       abortRef.current = new AbortController()
 
       log(
-        `🍢 should start bundle with events:`,
+        `🍢 should start bundle with events (${variables.length}):`,
         variables.map(v => v.id).join(', ')
       )
     },
@@ -59,7 +59,7 @@ function useEventBundleMutation(calendarId) {
     onError: error => {
       if (error?.status === 409 || error?.status === 404) {
         backoff(`event error refetch`, () => {
-          console.log(`🍒 event bundle error requesting refetch...`)
+          log(`🍒 event bundle error requesting refetch...`)
           queryClient.refetchQueries({ queryKey: ['views', calendarId] })
         })
       }
@@ -93,17 +93,10 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
     )
   }
 
-  // Deletion success
-  if (original.isDeleting) {
-    updateStored(queryClient, calendarId, stored =>
-      stored.filter(e => e.id !== original.id)
-    )
-
-    return
-  }
-
   // Creation success
   if (original.etag === 'creating') {
+    log(`🩶 Handling create success ${result.event_id}, original=`, original)
+
     // Retain any pending edits
     const update = {
       ...current,
@@ -123,7 +116,18 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
     return
   }
 
+  // Deletion success
+  if (original.isDeleting) {
+    log('🩶 Handling delete success, original=', original)
+    updateStored(queryClient, calendarId, stored =>
+      stored.filter(e => e.id !== original.id)
+    )
+
+    return
+  }
+
   // Update success
+  log('🩶 Handling update success, original=', original)
   if (current.etag !== original.etag) {
     return
   }
@@ -156,6 +160,7 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
 function handleEventError({ calendarId, error, original, queryClient }) {
   // Tried to delete something that doesn't exist
   if (original.isDeleting && error.status === 404) {
+    log('🩶✖️ Handling delete 404, original=', original)
     // Reflect the absence in the primary cache and active views
     updateStored(queryClient, calendarId, stored =>
       stored.filter(e => e.id !== original.id)
@@ -170,17 +175,6 @@ function makeEventFetch(calendarId, variables) {
   const timeout = 5000
   const signal = variables.signal
 
-  if (variables.isDeleting) {
-    return goFetch(`${endpoint}/events/${variables.id}`, {
-      method: 'DELETE',
-      body: {
-        etag: variables.etag,
-      },
-      timeout,
-      signal,
-    })
-  }
-
   if (variables.etag === 'creating') {
     return goFetch(`${endpoint}/${calendarId}/events`, {
       method: 'POST',
@@ -191,6 +185,17 @@ function makeEventFetch(calendarId, variables) {
         summary: variables.summary,
         description: variables.description,
         color_id: variables.colorId,
+      },
+      timeout,
+      signal,
+    })
+  }
+
+  if (variables.isDeleting) {
+    return goFetch(`${endpoint}/events/${variables.id}`, {
+      method: 'DELETE',
+      body: {
+        etag: variables.etag,
       },
       timeout,
       signal,
@@ -212,8 +217,8 @@ function makeEventFetch(calendarId, variables) {
   })
 }
 
-const eventLogger = (...args) =>
-  console.log('%cEventSync>', 'color:orange', ...args)
+const autosaveLogger = (...args) =>
+  console.log('%cEvent Autosaver>', 'color:orange', ...args)
 
 export function EventSyncStatus({ id }) {
   const { mutate: mutateBundle, isPending } = useEventBundleMutation(id)
@@ -233,7 +238,7 @@ export function EventSyncStatus({ id }) {
       <Autosaver
         debounceKey={`Event autosaver ${id}`}
         mutate={mutateBundle}
-        log={eventLogger}
+        log={autosaveLogger}
         // isFetching and isError props omitted since primaryCacheData
         // does not maintain referential integrity on refetch anyway.
         data={primaryCacheData}

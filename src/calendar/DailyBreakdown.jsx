@@ -25,9 +25,9 @@ function Breakdown({
 
   const { blocking, columns, relevantEvents } = useMemo(() => {
     console.log(
-      `📦 memoizing blocking, columns, relevantEvents (${events.length})`
+      `📦 memoizing blocking, columns, relevantEvents (${events.length})` + 
+      ` from event list:`, events
     )
-    setTimeout(() => logger('📦 memoizing blocking'), 1000)
 
     const startOfDay = date.startOf('day')
     const endOfDay = date.endOf('day')

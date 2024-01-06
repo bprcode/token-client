@@ -67,6 +67,7 @@ export function reconcile({
 
   log('mapified local:', localMap)
   log('mapified server:', serverMap)
+  log('outbound: ', localData.filter(data => data.etag === 'creating'))
 
   const now = Date.now()
 
@@ -121,6 +122,8 @@ export function reconcile({
         onConflict(tag, 'yielding to remote-delete despite recency 🚭')
         log('yielding to remote-delete despite recency 🚭')
         continue
+      } else if(!serverMap.has(local[key])) {
+        log('bypassing yield due to allowRevival 🪧')
       }
 
       // etag could be missing if the record was deleted remotely

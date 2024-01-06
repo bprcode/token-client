@@ -176,6 +176,9 @@ function serveFromCache(cache, from, to) {
   return cache.filter(e => isOverlap(e.startTime, e.endTime, from, to))
 }
 
+const viewReconcileLog = (...args) =>
+  console.log(`%cView Reconciler>`, `color:darkslategray`, ...args)
+
 export function useViewQuery() {
   const { id } = useParams()
   const { from, to } = useSearchRange()
@@ -235,13 +238,13 @@ export function useViewQuery() {
       const local = queryClient
         .getQueryData(['primary cache', id])
         .stored.filter(e => isOverlap(e.startTime, e.endTime, from, to))
-      // const local = queryClient.getQueryData(queryKey) ?? []
+
       const reconciled = reconcile({
         localData: local,
         serverData: parsed,
         key: 'id',
         tag: 'views',
-        log: console.log,
+        log: viewReconcileLog,
         allowRevival: true,
       })
 
@@ -357,11 +360,9 @@ export function CalendarContents({ calendarId }) {
         >
           <Alert
             severity="error"
-            sx={
-              {
-                border: '1px solid ' + alpha(theme.palette.error.main, 0.08),
-              }
-            }
+            sx={{
+              border: '1px solid ' + alpha(theme.palette.error.main, 0.08),
+            }}
             action={
               <Button sx={{ mt: 'auto' }} onClick={() => navigate(-1)}>
                 Back
