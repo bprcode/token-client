@@ -26,6 +26,7 @@ import { Link } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { reconcile } from '../reconcile.mjs'
 import { ConflictDisplay } from '../ConflictDisplay'
+import { isCalendarDuplicate } from '../../CatalogSync'
 
 function makeCatalogQuery(queryClient) {
   return {
@@ -40,6 +41,7 @@ function makeCatalogQuery(queryClient) {
         serverData: fetched,
         key: 'calendar_id',
         tag: 'calendars',
+        isDuplicate: isCalendarDuplicate,
       })
     },
   }

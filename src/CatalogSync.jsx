@@ -90,14 +90,16 @@ function handleCalendarError({ error, original, queryClient }) {
   }
 }
 
+export function isCalendarDuplicate(a, b) {
+  return a.summary === b.summary
+}
+
 function handleCalendarSuccess({ result, original, queryClient }) {
   const current = queryClient
     .getQueryData(['catalog'])
     .find(c => c.calendar_id === original.calendar_id)
 
-  function hasSameContent(a, b) {
-    return a.summary === b.summary
-  }
+  const hasSameContent = isCalendarDuplicate
 
   // Creation success
   if (original.etag === 'creating') {

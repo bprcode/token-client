@@ -81,7 +81,7 @@ function updateStored(queryClient, calendarId, transform) {
   resetViewsToCache(queryClient, calendarId)
 }
 
-export function eventIsDuplicate(local, remote) {
+export function isEventDuplicate(local, remote) {
   return (
     local.colorId === remote.colorId &&
     local.summary === remote.summary &&
@@ -97,12 +97,12 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
     ?.stored.find(e => e.id === original.id)
 
   function hasSameContent(local, served) {
-    return eventIsDuplicate(
-      local,
-      {...served,
+    return isEventDuplicate(local, {
+      ...served,
       colorId: served.color_id,
       startTime: dayjs(served.start_time),
-      endTime: dayjs(served.end_time)})
+      endTime: dayjs(served.end_time),
+    })
   }
   // function hasSameContent(local, served) {
   //   return (
