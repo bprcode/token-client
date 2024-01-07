@@ -59,7 +59,6 @@ export function Autosaver({
       )()
     }
   }, [queryClient, mutate, isFetching, isError, log, getTouchList, debounceKey])
-
 }
 
 const saveAnimation = keyframes`
@@ -120,7 +119,7 @@ export function AutosaverStatus({ touchList, isPending, label }) {
       <Typography variant="subtitle2" color={color}>
         {status}
       </Typography>
-      {isPending && (
+      {isPending && touchList.length !== 0 && (
         <CircularProgress
           size="18px"
           sx={{ ml: '1rem', color, alignSelf: 'center' }}
