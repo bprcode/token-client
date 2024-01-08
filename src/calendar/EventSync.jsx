@@ -105,15 +105,6 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
       endTime: dayjs(served.end_time),
     })
   }
-  // function hasSameContent(local, served) {
-  //   return (
-  //     local.colorId === served.color_id &&
-  //     local.summary === served.summary &&
-  //     local.description === served.description &&
-  //     local.startTime.toISOString() === served.start_time &&
-  //     local.endTime.toISOString() === served.end_time
-  //   )
-  // }
 
   // Creation success
   if (original.etag === 'creating') {
@@ -158,19 +149,19 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
   if (current.unsaved === original.unsaved) {
     resolution = {
       id: original.id,
-      summary: result[0].summary,
-      description: result[0].description,
-      startTime: dayjs(result[0].start_time),
-      endTime: dayjs(result[0].end_time),
-      colorId: result[0].color_id,
-      etag: result[0].etag,
+      summary: result.summary,
+      description: result.description,
+      startTime: dayjs(result.start_time),
+      endTime: dayjs(result.end_time),
+      colorId: result.color_id,
+      etag: result.etag,
 
       stableKey: current.stableKey,
     }
   } else {
     resolution = {
       ...current,
-      etag: result[0].etag,
+      etag: result.etag,
     }
   }
 
