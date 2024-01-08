@@ -54,7 +54,8 @@ function WeekBody({ date, events, onExpand }) {
             sx={{
               px: '0.25rem',
               pb: '1.5rem',
-              backgroundColor: alternatingShades(j),
+              backgroundColor: 'rgb(23, 27, 28)',
+              borderLeft: '1px solid #fff1',
             }}
           >
             <Box

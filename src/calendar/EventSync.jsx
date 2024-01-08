@@ -10,6 +10,65 @@ import { updateCacheData } from './cacheTracker.mjs'
 
 const log = (...args) => console.log('%cEventSync>', 'color:silver', ...args)
 
+function useEventBatchMutation(calendarId) {
+  const abortRef = useRef(new AbortController())
+
+  const batchMutation = useMutation({
+    mutationKey: ['batched event updates', calendarId],
+    onMutate: () => {
+      abortRef.current.abort()
+      abortRef.current = new AbortController()
+    },
+    mutationFn: variables => {
+      log('placeholder mutationFn with variables:', variables)
+    },
+  })
+
+  const mutate = list => {
+    const batch = list.map(e => {
+      if (e.etag === 'creating') {
+        return {
+          action: 'POST',
+          body: {
+            key: e.id,
+            start_time: e.startTime.toISOString(),
+            end_time: e.endTime.toISOString(),
+            summary: e.summary,
+            description: e.description,
+            color_id: e.colorId,
+          },
+        }
+      }
+      if (e.isDeleting) {
+        return {
+          action: 'DELETE',
+          event_id: e.id,
+          body: {
+            etag: e.etag,
+          },
+        }
+      }
+
+      return {
+        action: 'PUT',
+        event_id: e.id,
+        body: {
+          etag: e.etag,
+          start_time: e.startTime.toISOString(),
+          end_time: e.endTime.toISOString(),
+          summary: e.summary,
+          description: e.description,
+          color_id: e.colorId,
+        },
+      }
+    })
+
+    log('constructed mutation batch:', batch)
+  }
+
+  return { mutate, isPending: batchMutation.isPending }
+}
+
 function useEventBundleMutation(calendarId) {
   const abortRef = useRef(new AbortController())
 
@@ -234,6 +293,8 @@ const autosaveLogger = (...args) =>
   console.log('%cEvent Autosaver>', 'color:orange', ...args)
 
 export function EventSyncStatus({ id }) {
+  const { mutate: mutateBatch, isPending: isBatchPending } =
+    useEventBatchMutation(id)
   const { mutate: mutateBundle, isPending } = useEventBundleMutation(id)
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', id],
@@ -250,7 +311,11 @@ export function EventSyncStatus({ id }) {
     <>
       <Autosaver
         debounceKey={`Event autosaver ${id}`}
-        mutate={mutateBundle}
+        // mutate={mutateBundle}
+        mutate={(...args) => {
+          mutateBundle(...args)
+          mutateBatch(...args)
+        }}
         log={autosaveLogger}
         // isFetching and isError props omitted since primaryCacheData
         // does not maintain referential integrity on refetch anyway.
