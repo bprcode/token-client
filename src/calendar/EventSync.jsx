@@ -24,7 +24,7 @@ function useEventBatchMutation(calendarId) {
     },
   })
 
-  const mutate = list => {
+  const mutate = useCallback(list => {
     const batch = list.map(e => {
       if (e.etag === 'creating') {
         return {
@@ -63,8 +63,8 @@ function useEventBatchMutation(calendarId) {
       }
     })
 
-    log('constructed mutation batch:', batch)
-  }
+    log('🏰 constructed mutation batch:', batch)
+  }, [])
 
   return { mutate, isPending: batchMutation.isPending }
 }
@@ -307,15 +307,18 @@ export function EventSyncStatus({ id }) {
     [id]
   )
 
+  const testMutate = useCallback((...args) => {
+    mutateBundle(...args)
+    mutateBatch(...args)
+  }, [mutateBundle, mutateBatch])
+  // }, [mutateBatch, mutateBundle])
+
   return (
     <>
       <Autosaver
         debounceKey={`Event autosaver ${id}`}
         // mutate={mutateBundle}
-        mutate={(...args) => {
-          mutateBundle(...args)
-          mutateBatch(...args)
-        }}
+        mutate={testMutate}
         log={autosaveLogger}
         // isFetching and isError props omitted since primaryCacheData
         // does not maintain referential integrity on refetch anyway.

@@ -37,7 +37,8 @@ export function Autosaver({
 
   useEffect(() => {
     if (!isFetching && !isError) {
-      log(`👁️ fetch success. ${Math.floor(Math.random() * 1000000000)}`)
+      log(`👁️ Sentinel effect: fetch success?`
+        +` ${Math.floor(Math.random() * 1000000000)}`)
       if (hasDebounce(debounceKey)) {
         log(`Autosaver already ran or running.`)
         return

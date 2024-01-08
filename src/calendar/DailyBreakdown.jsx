@@ -24,13 +24,12 @@ function Breakdown({
   const startOfNextDay = date.add(1, 'day').startOf('day')
 
   const { blocking, columns, relevantEvents } = useMemo(() => {
-    console.log(
-      // `📦 memoizing blocking, columns, relevantEvents (${events.length})`,
-      `%c(${events.reduce((p, c) => p + (!c.isDeleting ? 1 : 0), 0)} active)`,
-      `color:orange`,
-      ` from event list:`,
-      events
-    )
+    // console.log(
+    //   `%c(${events.reduce((p, c) => p + (!c.isDeleting ? 1 : 0), 0)} active)`,
+    //   `color:orange`,
+    //   ` from event list:`,
+    //   events
+    // )
 
     const startOfDay = date.startOf('day')
     const endOfDay = date.endOf('day')
