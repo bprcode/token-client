@@ -65,7 +65,7 @@ function useEventBatchMutation(calendarId) {
       return goFetch(`calendars/${calendarId}/events:batchUpdate`, {
         method: 'POST',
         body: variables.batch,
-        timeout: 4000,
+        timeout: 5000,
         signal: variables.signal,
       })
     },
@@ -113,75 +113,17 @@ function useEventBatchMutation(calendarId) {
       }
     },
     onError: error => {
-      log('🤒 batch error handler placeholder, message=', error.message)
+      if (error.status === 'timed out') {
+        backoff(`event error refetch`, () => {
+          log(`🍒 event bundle error requesting refetch...`)
+          queryClient.refetchQueries({ queryKey: ['views', calendarId] })
+        })
+      }
     },
   })
 
   return { mutate: batchMutation.mutate, isPending: batchMutation.isPending }
 }
-
-// function useEventBundleMutation(calendarId) {
-//   const abortRef = useRef(new AbortController())
-
-//   const queryClient = useQueryClient()
-
-//   const itemMutation = useMutation({
-//     mutationFn: variables => {
-//       return makeEventFetch(calendarId, variables)
-//     },
-//     onSuccess: (data, variables) =>
-//       handleEventSuccess({
-//         calendarId,
-//         result: data,
-//         original: variables,
-//         queryClient,
-//       }),
-//     onError: (error, variables) =>
-//       handleEventError({
-//         error,
-//         calendarId,
-//         original: variables,
-//         queryClient,
-//       }),
-//   })
-
-//   const bundleMutation = useMutation({
-//     retry: 0,
-//     mutationKey: ['event bundle', calendarId],
-//     onMutate: variables => {
-//       abortRef.current.abort()
-//       abortRef.current = new AbortController()
-
-//       log(
-//         `🍢 should start bundle with events (${variables.length}):`,
-//         variables.map(v => v.id).join(', ')
-//       )
-//     },
-//     mutationFn: variables =>
-//       Promise.all(
-//         variables.map(c =>
-//           itemMutation.mutateAsync({
-//             ...c,
-//             signal: abortRef.current.signal,
-//           })
-//         )
-//       ),
-//     onError: error => {
-//       if (error?.status === 409 || error?.status === 404) {
-//         // Delay slightly to encourage pending requests to resolve
-//         // before a refetch, for smoother conflict resolution.
-//         setTimeout(() => {
-//           backoff(`event error refetch`, () => {
-//             log(`🍒 event bundle error requesting refetch...`)
-//             queryClient.refetchQueries({ queryKey: ['views', calendarId] })
-//           })
-//         }, 500)
-//       }
-//     },
-//   })
-
-//   return bundleMutation
-// }
 
 function updateStored(queryClient, calendarId, transform) {
   updateCacheData(queryClient, calendarId, data => ({
@@ -334,53 +276,6 @@ function handleEventError({ calendarId, error, original, queryClient }) {
     return
   }
 }
-
-// function makeEventFetch(calendarId, variables) {
-//   const endpoint = `calendars`
-//   const timeout = 5000
-//   const signal = variables.signal
-
-//   if (variables.etag === 'creating') {
-//     return goFetch(`${endpoint}/${calendarId}/events`, {
-//       method: 'POST',
-//       body: {
-//         key: variables.id,
-//         start_time: variables.startTime.toISOString(),
-//         end_time: variables.endTime.toISOString(),
-//         summary: variables.summary,
-//         description: variables.description,
-//         color_id: variables.colorId,
-//       },
-//       timeout,
-//       signal,
-//     })
-//   }
-
-//   if (variables.isDeleting) {
-//     return goFetch(`${endpoint}/events/${variables.id}`, {
-//       method: 'DELETE',
-//       body: {
-//         etag: variables.etag,
-//       },
-//       timeout,
-//       signal,
-//     })
-//   }
-
-//   return goFetch(`${endpoint}/events/${variables.id}`, {
-//     method: 'PUT',
-//     body: {
-//       etag: variables.etag,
-//       start_time: variables.startTime.toISOString(),
-//       end_time: variables.endTime.toISOString(),
-//       summary: variables.summary,
-//       description: variables.description,
-//       color_id: variables.colorId,
-//     },
-//     timeout,
-//     signal,
-//   })
-// }
 
 const autosaveLogger = (...args) =>
   console.log('%cEvent Autosaver>', 'color:orange', ...args)
