@@ -65,7 +65,7 @@ function useEventBatchMutation(calendarId) {
       return goFetch(`calendars/${calendarId}/events:batchUpdate`, {
         method: 'POST',
         body: variables.batch,
-        timeout: 5000,
+        timeout: 4000,
         signal: variables.signal,
       })
     },
@@ -95,6 +95,7 @@ function useEventBatchMutation(calendarId) {
             error: {
               message: reply[i].error,
               status,
+              conflict: reply[i].conflict,
             },
             calendarId,
             original: variables[i],
@@ -111,73 +112,76 @@ function useEventBatchMutation(calendarId) {
         })
       }
     },
+    onError: error => {
+      log('🤒 batch error handler placeholder, message=', error.message)
+    },
   })
 
   return { mutate: batchMutation.mutate, isPending: batchMutation.isPending }
 }
 
-function useEventBundleMutation(calendarId) {
-  const abortRef = useRef(new AbortController())
+// function useEventBundleMutation(calendarId) {
+//   const abortRef = useRef(new AbortController())
 
-  const queryClient = useQueryClient()
+//   const queryClient = useQueryClient()
 
-  const itemMutation = useMutation({
-    mutationFn: variables => {
-      return makeEventFetch(calendarId, variables)
-    },
-    onSuccess: (data, variables) =>
-      handleEventSuccess({
-        calendarId,
-        result: data,
-        original: variables,
-        queryClient,
-      }),
-    onError: (error, variables) =>
-      handleEventError({
-        error,
-        calendarId,
-        original: variables,
-        queryClient,
-      }),
-  })
+//   const itemMutation = useMutation({
+//     mutationFn: variables => {
+//       return makeEventFetch(calendarId, variables)
+//     },
+//     onSuccess: (data, variables) =>
+//       handleEventSuccess({
+//         calendarId,
+//         result: data,
+//         original: variables,
+//         queryClient,
+//       }),
+//     onError: (error, variables) =>
+//       handleEventError({
+//         error,
+//         calendarId,
+//         original: variables,
+//         queryClient,
+//       }),
+//   })
 
-  const bundleMutation = useMutation({
-    retry: 0,
-    mutationKey: ['event bundle', calendarId],
-    onMutate: variables => {
-      abortRef.current.abort()
-      abortRef.current = new AbortController()
+//   const bundleMutation = useMutation({
+//     retry: 0,
+//     mutationKey: ['event bundle', calendarId],
+//     onMutate: variables => {
+//       abortRef.current.abort()
+//       abortRef.current = new AbortController()
 
-      log(
-        `🍢 should start bundle with events (${variables.length}):`,
-        variables.map(v => v.id).join(', ')
-      )
-    },
-    mutationFn: variables =>
-      Promise.all(
-        variables.map(c =>
-          itemMutation.mutateAsync({
-            ...c,
-            signal: abortRef.current.signal,
-          })
-        )
-      ),
-    onError: error => {
-      if (error?.status === 409 || error?.status === 404) {
-        // Delay slightly to encourage pending requests to resolve
-        // before a refetch, for smoother conflict resolution.
-        setTimeout(() => {
-          backoff(`event error refetch`, () => {
-            log(`🍒 event bundle error requesting refetch...`)
-            queryClient.refetchQueries({ queryKey: ['views', calendarId] })
-          })
-        }, 500)
-      }
-    },
-  })
+//       log(
+//         `🍢 should start bundle with events (${variables.length}):`,
+//         variables.map(v => v.id).join(', ')
+//       )
+//     },
+//     mutationFn: variables =>
+//       Promise.all(
+//         variables.map(c =>
+//           itemMutation.mutateAsync({
+//             ...c,
+//             signal: abortRef.current.signal,
+//           })
+//         )
+//       ),
+//     onError: error => {
+//       if (error?.status === 409 || error?.status === 404) {
+//         // Delay slightly to encourage pending requests to resolve
+//         // before a refetch, for smoother conflict resolution.
+//         setTimeout(() => {
+//           backoff(`event error refetch`, () => {
+//             log(`🍒 event bundle error requesting refetch...`)
+//             queryClient.refetchQueries({ queryKey: ['views', calendarId] })
+//           })
+//         }, 500)
+//       }
+//     },
+//   })
 
-  return bundleMutation
-}
+//   return bundleMutation
+// }
 
 function updateStored(queryClient, calendarId, transform) {
   updateCacheData(queryClient, calendarId, data => ({
@@ -198,19 +202,23 @@ export function isEventDuplicate(local, remote) {
   )
 }
 
+function reviveServedEvent(served) {
+  return {
+    ...served,
+    colorId: served.color_id,
+    startTime: dayjs(served.start_time),
+    endTime: dayjs(served.end_time),
+  }
+}
+
+function hasSameContent(local, served) {
+  return isEventDuplicate(local, reviveServedEvent(served))
+}
+
 function handleEventSuccess({ calendarId, result, original, queryClient }) {
   const current = queryClient
     .getQueryData(['primary cache', calendarId])
     ?.stored.find(e => e.id === original.id)
-
-  function hasSameContent(local, served) {
-    return isEventDuplicate(local, {
-      ...served,
-      colorId: served.color_id,
-      startTime: dayjs(served.start_time),
-      endTime: dayjs(served.end_time),
-    })
-  }
 
   // Creation success
   if (original.etag === 'creating') {
@@ -279,7 +287,30 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
 function handleEventError({ calendarId, error, original, queryClient }) {
   log('handleEventError acting on error:', error, 'and original:', original)
   if (error.status === 409) {
+    const conflict = error.conflict && reviveServedEvent(error.conflict)
     log('🩶⚔️ Handling 409, original=', original)
+    log('and conflict=', conflict)
+
+    // If etags mismatched, but the server state reflects the local
+    // desired changes, resolve the conflict locally.
+    if (conflict && isEventDuplicate(original, conflict)) {
+      log('💛💛 409, but content matched anyway. Resolving...')
+
+      const resolution = {
+        ...conflict,
+        id: original.id,
+        stableKey: original.stableKey,
+      }
+
+      updateStored(queryClient, calendarId, stored =>
+        stored.map(e => (e.id === original.id ? resolution : e))
+      )
+
+      return
+    }
+
+    // If the 409 represents a true content mismatch,
+    // refetch and let the reconciler to decide how to proceed.
     debounce(
       'refetch views',
       () =>
@@ -304,52 +335,52 @@ function handleEventError({ calendarId, error, original, queryClient }) {
   }
 }
 
-function makeEventFetch(calendarId, variables) {
-  const endpoint = `calendars`
-  const timeout = 5000
-  const signal = variables.signal
+// function makeEventFetch(calendarId, variables) {
+//   const endpoint = `calendars`
+//   const timeout = 5000
+//   const signal = variables.signal
 
-  if (variables.etag === 'creating') {
-    return goFetch(`${endpoint}/${calendarId}/events`, {
-      method: 'POST',
-      body: {
-        key: variables.id,
-        start_time: variables.startTime.toISOString(),
-        end_time: variables.endTime.toISOString(),
-        summary: variables.summary,
-        description: variables.description,
-        color_id: variables.colorId,
-      },
-      timeout,
-      signal,
-    })
-  }
+//   if (variables.etag === 'creating') {
+//     return goFetch(`${endpoint}/${calendarId}/events`, {
+//       method: 'POST',
+//       body: {
+//         key: variables.id,
+//         start_time: variables.startTime.toISOString(),
+//         end_time: variables.endTime.toISOString(),
+//         summary: variables.summary,
+//         description: variables.description,
+//         color_id: variables.colorId,
+//       },
+//       timeout,
+//       signal,
+//     })
+//   }
 
-  if (variables.isDeleting) {
-    return goFetch(`${endpoint}/events/${variables.id}`, {
-      method: 'DELETE',
-      body: {
-        etag: variables.etag,
-      },
-      timeout,
-      signal,
-    })
-  }
+//   if (variables.isDeleting) {
+//     return goFetch(`${endpoint}/events/${variables.id}`, {
+//       method: 'DELETE',
+//       body: {
+//         etag: variables.etag,
+//       },
+//       timeout,
+//       signal,
+//     })
+//   }
 
-  return goFetch(`${endpoint}/events/${variables.id}`, {
-    method: 'PUT',
-    body: {
-      etag: variables.etag,
-      start_time: variables.startTime.toISOString(),
-      end_time: variables.endTime.toISOString(),
-      summary: variables.summary,
-      description: variables.description,
-      color_id: variables.colorId,
-    },
-    timeout,
-    signal,
-  })
-}
+//   return goFetch(`${endpoint}/events/${variables.id}`, {
+//     method: 'PUT',
+//     body: {
+//       etag: variables.etag,
+//       start_time: variables.startTime.toISOString(),
+//       end_time: variables.endTime.toISOString(),
+//       summary: variables.summary,
+//       description: variables.description,
+//       color_id: variables.colorId,
+//     },
+//     timeout,
+//     signal,
+//   })
+// }
 
 const autosaveLogger = (...args) =>
   console.log('%cEvent Autosaver>', 'color:orange', ...args)
@@ -357,7 +388,7 @@ const autosaveLogger = (...args) =>
 export function EventSyncStatus({ id }) {
   const { mutate: mutateBatch, isPending: isBatchPending } =
     useEventBatchMutation(id)
-  const { mutate: mutateBundle, isPending } = useEventBundleMutation(id)
+  // const { mutate: mutateBundle, isPending } = useEventBundleMutation(id)
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', id],
     enabled: false,
@@ -382,7 +413,7 @@ export function EventSyncStatus({ id }) {
       />
       <AutosaverStatus
         touchList={touched}
-        isPending={isPending}
+        isPending={isBatchPending}
         label="Events"
       />
     </>
