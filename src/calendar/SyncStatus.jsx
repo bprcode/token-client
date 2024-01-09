@@ -19,16 +19,17 @@ export default function SyncStatus() {
         right: 0,
         bottom: 0,
         mb: isNarrow ? '4rem' : undefined,
-        
       }}
     >
       {heartbeat && (
         <>
           <CatalogSyncStatus />
-          {cacheList.map((c,i) => <>
-          Mounted EventSyncStatus ({i+1} of {cacheList.length})
-            <EventSyncStatus key={c} id={c} />
-          </>)}
+          {cacheList.map((c, i) => (
+            <div key={c}>
+              Mounted EventSyncStatus ({i + 1} of {cacheList.length})
+              <EventSyncStatus key={c} id={c} />
+            </div>
+          ))}
         </>
       )}
     </Box>

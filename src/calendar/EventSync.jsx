@@ -5,68 +5,115 @@ import dayjs from 'dayjs'
 import { touchList } from './reconcile.mjs'
 import { resetViewsToCache } from './routes/Calendar'
 import { Autosaver, AutosaverStatus } from '../Autosaver'
-import { backoff } from '../debounce.mjs'
+import { backoff, debounce } from '../debounce.mjs'
 import { updateCacheData } from './cacheTracker.mjs'
 
 const log = (...args) => console.log('%cEventSync>', 'color:silver', ...args)
 
+function makeBatchEntry(event) {
+  if (event.etag === 'creating') {
+    return {
+      action: 'POST',
+      body: {
+        key: event.id,
+        start_time: event.startTime.toISOString(),
+        end_time: event.endTime.toISOString(),
+        summary: event.summary,
+        description: event.description,
+        color_id: event.colorId,
+      },
+    }
+  }
+  if (event.isDeleting) {
+    return {
+      action: 'DELETE',
+      event_id: event.id,
+      body: {
+        etag: event.etag,
+      },
+    }
+  }
+
+  return {
+    action: 'PUT',
+    event_id: event.id,
+    body: {
+      etag: event.etag,
+      start_time: event.startTime.toISOString(),
+      end_time: event.endTime.toISOString(),
+      summary: event.summary,
+      description: event.description,
+      color_id: event.colorId,
+    },
+  }
+}
+
 function useEventBatchMutation(calendarId) {
+  const queryClient = useQueryClient()
   const abortRef = useRef(new AbortController())
 
   const batchMutation = useMutation({
     mutationKey: ['batched event updates', calendarId],
-    onMutate: () => {
+    onMutate: variables => {
       abortRef.current.abort()
       abortRef.current = new AbortController()
+
+      variables.batch = variables.map(makeBatchEntry)
+      variables.signal = abortRef.current.signal
     },
     mutationFn: variables => {
-      log('placeholder mutationFn with variables:', variables)
+      return goFetch(`calendars/${calendarId}/events:batchUpdate`, {
+        method: 'POST',
+        body: variables.batch,
+        timeout: 5000,
+        signal: variables.signal,
+      })
+    },
+    onSuccess: (reply, variables) => {
+      log('batch update success:', reply)
+
+      if (variables.length !== reply.length) {
+        log('🛑 Batch result did not match request size.')
+        return backoff(`event error refetch`, () => {
+          log(`🍒 event bundle error requesting refetch...`)
+          queryClient.refetchQueries({ queryKey: ['views', calendarId] })
+        })
+      }
+
+      for (let i = 0; i < reply.length; i++) {
+        if (reply[i].error) {
+          log('⭐ Handling entry error:', reply[i].error)
+          log('Variable entry was:', variables[i])
+          let status = undefined
+          if (reply[i].error === 'No resource matched request.') {
+            status = 404
+          }
+          if (reply[i].error === 'etag mismatch.') {
+            status = 409
+          }
+          handleEventError({
+            error: {
+              message: reply[i].error,
+              status,
+            },
+            calendarId,
+            original: variables[i],
+            queryClient,
+          })
+
+          continue
+        }
+        handleEventSuccess({
+          calendarId,
+          result: reply[i],
+          original: variables[i],
+          queryClient,
+        })
+      }
     },
   })
 
-  const mutate = useCallback(list => {
-    const batch = list.map(e => {
-      if (e.etag === 'creating') {
-        return {
-          action: 'POST',
-          body: {
-            key: e.id,
-            start_time: e.startTime.toISOString(),
-            end_time: e.endTime.toISOString(),
-            summary: e.summary,
-            description: e.description,
-            color_id: e.colorId,
-          },
-        }
-      }
-      if (e.isDeleting) {
-        return {
-          action: 'DELETE',
-          event_id: e.id,
-          body: {
-            etag: e.etag,
-          },
-        }
-      }
-
-      return {
-        action: 'PUT',
-        event_id: e.id,
-        body: {
-          etag: e.etag,
-          start_time: e.startTime.toISOString(),
-          end_time: e.endTime.toISOString(),
-          summary: e.summary,
-          description: e.description,
-          color_id: e.colorId,
-        },
-      }
-    })
-
-    log('🏰 constructed mutation batch:', batch)
-  }, [])
-
-  return { mutate, isPending: batchMutation.isPending }
+  return { mutate: batchMutation.mutate, isPending: batchMutation.isPending }
 }
 
 function useEventBundleMutation(calendarId) {
@@ -230,6 +277,21 @@ function handleEventSuccess({ calendarId, result, original, queryClient }) {
 }
 
 function handleEventError({ calendarId, error, original, queryClient }) {
+  log('handleEventError acting on error:', error, 'and original:', original)
+  if (error.status === 409) {
+    log('🩶⚔️ Handling 409, original=', original)
+    debounce(
+      'refetch views',
+      () =>
+        backoff(`event error refetch`, () => {
+          log(`🍒 event bundle error requesting refetch...`)
+          queryClient.refetchQueries({ queryKey: ['views', calendarId] })
+        }),
+
+      1000
+    )()
+    return
+  }
   // Tried to delete something that doesn't exist
   if (original.isDeleting && error.status === 404) {
     log('🩶✖️ Handling delete 404, original=', original)
@@ -307,18 +369,11 @@ export function EventSyncStatus({ id }) {
     [id]
   )
 
-  const testMutate = useCallback((...args) => {
-    mutateBundle(...args)
-    mutateBatch(...args)
-  }, [mutateBundle, mutateBatch])
-  // }, [mutateBatch, mutateBundle])
-
   return (
     <>
       <Autosaver
         debounceKey={`Event autosaver ${id}`}
-        // mutate={mutateBundle}
-        mutate={testMutate}
+        mutate={mutateBatch}
         log={autosaveLogger}
         // isFetching and isError props omitted since primaryCacheData
         // does not maintain referential integrity on refetch anyway.

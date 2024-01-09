@@ -42,7 +42,7 @@ function LoginSection() {
       queryClient.cancelQueries()
 
       return goFetch('login', {
-        timeout: 5000,
+        timeout: 7000,
         method: 'POST',
         body: { email: email.trim(), password },
       })

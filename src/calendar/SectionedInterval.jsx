@@ -48,7 +48,7 @@ export function SectionedInterval({
         return
       }
       logger('observer callback' + Math.random())
-      viewHeader.scrollIntoView()
+      viewHeader?.scrollIntoView()
     }
 
     return () => {
