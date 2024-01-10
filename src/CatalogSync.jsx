@@ -71,11 +71,11 @@ function useCatalogBundleMutation() {
     onError: error => {
       if (error?.status === 409) {
         const touched = getCatalogTouchList(queryClient)
-        if(touched.length === 0) {
+        if (touched.length === 0) {
           console.log('Bundle got 409, but no touched records; no refetch.')
           return
         }
-        
+
         console.log(`Had outstanding changes; refetching.`)
         backoff(`catalog conflict refetch`, () => {
           console.log(`⛔ Bundle refetching.`)
@@ -235,7 +235,7 @@ function makeCalendarFetch(variables) {
 const getCatalogTouchList = queryClient =>
   touchList(queryClient.getQueryData(['catalog']))
 
-export function CatalogSyncStatus() {
+export function CatalogSyncMonitor() {
   const bundleMutation = useCatalogBundleMutation()
   const { data, isFetching, isError } = useCatalogQuery()
   const list = touchList(data)

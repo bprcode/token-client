@@ -6,18 +6,22 @@ const defaultNav = {
 }
 
 const control = { current: defaultNav }
+const ignoreList = ['/login']
 
 let redirectedFrom = ''
 
 export function navigateTo(route) {
-  redirectedFrom = window.location.pathname + window.location.search
+  const current = window.location.pathname + window.location.search
+  if (!ignoreList.includes(current)) {
+    redirectedFrom = current
+  }
 
   return control.current.navigate(route)
 }
 
 export function resumeOrNavigateTo(route) {
   console.log('🏡 resumeOrNavigateTo had redirectedFrom = ', redirectedFrom)
-  if(redirectedFrom) {
+  if (redirectedFrom) {
     control.current.navigate(redirectedFrom)
     redirectedFrom = ''
     return

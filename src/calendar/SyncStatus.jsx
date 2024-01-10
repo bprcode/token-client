@@ -1,6 +1,6 @@
 import { Box } from '@mui/material'
-import { CatalogSyncStatus } from '../CatalogSync'
-import { EventSyncStatus } from './EventSync'
+import { CatalogSyncMonitor } from '../CatalogSync'
+import { EventSyncMonitor } from './EventSync'
 import { useHeartbeatQuery } from '../HeartbeatPanel'
 import { useCacheList } from './cacheTracker.mjs'
 import { useNarrowCheck } from './LayoutContext.mjs'
@@ -23,9 +23,9 @@ export default function SyncStatus() {
     >
       {heartbeat && (
         <>
-          <CatalogSyncStatus />
+          <CatalogSyncMonitor />
           {cacheList.map(c => (
-            <EventSyncStatus key={c} id={c} />
+            <EventSyncMonitor key={c} id={c} />
           ))}
         </>
       )}

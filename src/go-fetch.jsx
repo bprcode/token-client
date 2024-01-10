@@ -40,7 +40,15 @@ export function FetchDisplay() {
   }
 
   return (
-    <div style={{ zIndex: 4, position: 'fixed', top: 0, left: 0, pointerEvents: 'none' }}>
+    <div
+      style={{
+        zIndex: 4,
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        pointerEvents: 'none',
+      }}
+    >
       {statusList.map((s, i) => (
         <div
           key={s.fid}
@@ -141,7 +149,6 @@ export function loggedFetch(resource, options = {}) {
     controller.abort(Error('Request timed out.'))
   }, options.timeout || defaultTimeout)
 
-
   const abortListener = () => {
     updateStatus(fid, tag + ' aborted', 'aborted')
     controller.abort(options.signal.reason ?? Error('No reason specified.'))
@@ -149,11 +156,9 @@ export function loggedFetch(resource, options = {}) {
   }
 
   if (options.signal) {
-    options.signal.addEventListener(
-      'abort',
-      abortListener,
-      { signal: controller.signal }
-    )
+    options.signal.addEventListener('abort', abortListener, {
+      signal: controller.signal,
+    })
   }
 
   return fetch(resource, { ...options, signal: controller.signal })
@@ -164,19 +169,12 @@ export function loggedFetch(resource, options = {}) {
     .catch(e => {
       const isTimeout = e.message.endsWith('timed out.')
       const statusString = isTimeout ? 'timed out' : 'failed'
-      updateStatus(
-        fid,
-        tag + ' ' + e.message,
-        statusString
-      )
+      updateStatus(fid, tag + ' ' + e.message, statusString)
       throw new StatusError(e.message, statusString)
     })
     .finally(() => {
-      if(options.signal) {
-        options.signal.removeEventListener(
-          'abort',
-          abortListener
-        )
+      if (options.signal) {
+        options.signal.removeEventListener('abort', abortListener)
       }
 
       expireStatus(fid, tag)
@@ -191,7 +189,6 @@ class StatusError extends Error {
     this.conflict = conflict
   }
 }
-
 
 export async function goFetch(resource, options) {
   const response = await loggedFetch(resource, options)
@@ -214,7 +211,7 @@ export async function goFetch(resource, options) {
     throw new StatusError(
       json.error ?? json.notice ?? 'Server responded with error.',
       response.status,
-      json.conflict,
+      json.conflict
     )
   }
 
@@ -231,7 +228,7 @@ export function retryCheck(failureCount, error) {
     'and status: ',
     error.status
   )
-  if(error.status === 'aborted') {
+  if (error.status === 'aborted') {
     log('🟨 Fetch aborted. Will not retry.')
     return false
   }

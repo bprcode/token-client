@@ -257,7 +257,7 @@ function handleEventError({ calendarId, error, original, queryClient }) {
       'refetch views',
       () =>
         backoff(`event error refetch`, () => {
-          log(`🍒 event bundle error requesting refetch...`)
+          log(`🍒 specific event requesting refetch...`)
           queryClient.refetchQueries({ queryKey: ['views', calendarId] })
         }),
 
@@ -280,7 +280,7 @@ function handleEventError({ calendarId, error, original, queryClient }) {
 const autosaveLogger = (...args) =>
   console.log('%cEvent Autosaver>', 'color:orange', ...args)
 
-export function EventSyncStatus({ id }) {
+export function EventSyncMonitor({ id }) {
   const { mutate, isPending } =
     useEventBatchMutation(id)
   const { data: primaryCacheData } = useQuery({
@@ -291,7 +291,7 @@ export function EventSyncStatus({ id }) {
   const getEventTouchList = useCallback(
     queryClient =>
       touchList(queryClient.getQueryData(['primary cache', id]).stored)
-      .slice(0,50), // limit maximum size in enormous edge case
+      .slice(0,50), // heed server size limit in enormous edge case
     [id]
   )
 
