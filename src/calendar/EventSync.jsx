@@ -281,9 +281,8 @@ const autosaveLogger = (...args) =>
   console.log('%cEvent Autosaver>', 'color:orange', ...args)
 
 export function EventSyncStatus({ id }) {
-  const { mutate: mutateBatch, isPending: isBatchPending } =
+  const { mutate, isPending } =
     useEventBatchMutation(id)
-  // const { mutate: mutateBundle, isPending } = useEventBundleMutation(id)
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', id],
     enabled: false,
@@ -291,7 +290,8 @@ export function EventSyncStatus({ id }) {
   const touched = touchList(primaryCacheData?.stored)
   const getEventTouchList = useCallback(
     queryClient =>
-      touchList(queryClient.getQueryData(['primary cache', id]).stored),
+      touchList(queryClient.getQueryData(['primary cache', id]).stored)
+      .slice(0,50), // limit maximum size in enormous edge case
     [id]
   )
 
@@ -299,7 +299,7 @@ export function EventSyncStatus({ id }) {
     <>
       <Autosaver
         debounceKey={`Event autosaver ${id}`}
-        mutate={mutateBatch}
+        mutate={mutate}
         log={autosaveLogger}
         // isFetching and isError props omitted since primaryCacheData
         // does not maintain referential integrity on refetch anyway.
@@ -308,7 +308,7 @@ export function EventSyncStatus({ id }) {
       />
       <AutosaverStatus
         touchList={touched}
-        isPending={isBatchPending}
+        isPending={isPending}
         label="Events"
       />
     </>
