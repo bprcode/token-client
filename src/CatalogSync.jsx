@@ -31,8 +31,13 @@ function useCatalogBundleMutation() {
       })
     },
     onError: (error, variables, context) => {
-      console.log(`item error, unsaved=`, variables.unsaved)
-      console.log(`and context=`, context)
+      console.log('fields were:', Reflect.ownKeys(error))
+      console.log(
+        'error fields were:',
+        error.message,
+        error.status,
+        error.conflict
+      )
       handleCalendarError({
         error,
         original: variables,
@@ -65,10 +70,13 @@ function useCatalogBundleMutation() {
       ),
     onError: error => {
       if (error?.status === 409) {
-        console.log(
-          `⛔ Bundle mutation resulted in ${error.status}. ` +
-            `Backoff-refetching...`
-        )
+        const touched = getCatalogTouchList(queryClient)
+        if(touched.length === 0) {
+          console.log('Bundle got 409, but no touched records; no refetch.')
+          return
+        }
+        
+        console.log(`Had outstanding changes; refetching.`)
         backoff(`catalog conflict refetch`, () => {
           console.log(`⛔ Bundle refetching.`)
           queryClient.refetchQueries({ queryKey: ['catalog'] })
@@ -81,6 +89,24 @@ function useCatalogBundleMutation() {
 }
 
 function handleCalendarError({ error, original, queryClient }) {
+  if (error.status === 409) {
+    const conflict = error.conflict
+    console.log('comparing original/conflict:', original, conflict)
+    if (conflict && isCalendarDuplicate(original, conflict)) {
+      console.log('🔰 should self-resolve 409 here')
+      const resolution = {
+        ...original,
+        etag: conflict.etag,
+      }
+      delete resolution.unsaved
+      queryClient.setQueryData(['catalog'], catalog =>
+        catalog.map(c =>
+          c.calendar_id === original.calendar_id ? resolution : c
+        )
+      )
+      return
+    }
+  }
   // Tried to delete something that doesn't exist yet
   if (original.isDeleting && error.status === 404) {
     queryClient.setQueryData(['catalog'], catalog =>
@@ -161,7 +187,7 @@ function handleCalendarSuccess({ result, original, queryClient }) {
 
 function makeCalendarFetch(variables) {
   const endpoint = 'calendars'
-  const timeout = 5000
+  const timeout = 4000 // debug -- unreasonably low to test
   const signal = variables.signal
 
   // Omit local fields not needed by the server

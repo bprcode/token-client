@@ -185,9 +185,10 @@ export function loggedFetch(resource, options = {}) {
 }
 
 class StatusError extends Error {
-  constructor(message, status) {
+  constructor(message, status, conflict) {
     super(message)
     this.status = status
+    this.conflict = conflict
   }
 }
 
@@ -212,7 +213,8 @@ export async function goFetch(resource, options) {
   if (!response.ok) {
     throw new StatusError(
       json.error ?? json.notice ?? 'Server responded with error.',
-      response.status
+      response.status,
+      json.conflict,
     )
   }
 
