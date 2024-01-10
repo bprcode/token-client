@@ -142,7 +142,7 @@ export function SectionedInterval({
         <div
           className="ending-box"
           style={{
-            backgroundColor: 'hsl(300deg 7% 8.5%)',
+            backgroundColor: 'hsla(300deg, 7%, 8.5%, 0.25)',
             height: endMargin,
             width: '100%',
           }}

@@ -93,8 +93,7 @@ export function DailyView({
 
   return (
     <ActionContext.Provider value={action}>
-      <Paper
-        elevation={1}
+      <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
@@ -103,6 +102,7 @@ export function DailyView({
           px: 0,
           py: 0,
           position: 'relative',
+          backgroundColor: 'transparent',
         }}
       >
         {!isWide && <MobileBar>{actionButtons}</MobileBar>}
@@ -195,7 +195,7 @@ export function DailyView({
           picks={picks}
           onPick={setPicks}
         />
-      </Paper>
+      </Box>
     </ActionContext.Provider>
   )
 }

@@ -174,10 +174,7 @@ function MonthGrid({ date, onExpand, events }) {
             }}
           >
             {numbering}
-            <AbbreviatedBreakdown
-              day={day}
-              unfilteredEvents={events}
-            />
+            <AbbreviatedBreakdown day={day} unfilteredEvents={events} />
           </Box>
         )
       }
@@ -200,7 +197,6 @@ function MonthGrid({ date, onExpand, events }) {
         style={{
           display: 'grid',
           gridAutoRows: '6rem',
-          boxShadow: '1rem 1.5rem 2rem #0114',
         }}
       >
         {rows}
@@ -369,20 +365,25 @@ export function MonthlyView({ date, onChange, onExpand }) {
       <MonthHeader date={date} onChange={onChange} />
       <Stack
         direction="column"
-        sx={{ mt: [0, 1], px: [1, 2], mb: 4, flexGrow: 1,
-        alignItems: 'center',
-       }}
+        sx={{
+          mt: [0, 1],
+          px: [1, 2],
+          mb: 4,
+          flexGrow: 1,
+          alignItems: 'center',
+        }}
       >
-        <Box sx={{
-          width: '100%',
-          maxWidth: '800px',
-        }}>
-        <GridHeader />
-        <MonthGrid
-          date={date}
-          events={events}
-          onExpand={onExpand}
-        />
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: '800px',
+            boxShadow: '0.75rem 1.625rem 1.25rem #00081190',
+            borderBottom: '1px solid #0009',
+            borderRight: '1px solid #0009',
+          }}
+        >
+          <GridHeader />
+          <MonthGrid date={date} events={events} onExpand={onExpand} />
         </Box>
       </Stack>
     </ViewContainer>

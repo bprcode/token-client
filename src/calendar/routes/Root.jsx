@@ -8,9 +8,23 @@ import { FetchDisplay } from '../../go-fetch'
 import SyncStatus from '../SyncStatus'
 import { useNavigationControl } from '../NavigationControl.jsx'
 import { ConflictDisplay } from '../ConflictDisplay'
+import bokehImage from '../../assets/bokeh.png'
 
 export const loader = queryClient => async () => {
   return 'unused'
+}
+
+function Background() {
+  return <Box sx={{
+    zIndex: -9,
+    position: 'absolute',
+    width: '100vw',
+    height: '100vh',
+    backgroundImage: `url(${bokehImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    opacity: 0.5,
+  }}/>
 }
 
 export function Root() {
@@ -22,6 +36,7 @@ export function Root() {
   return (
     <ToggleMenuContext.Provider value={setExpand}>
       <FetchDisplay />
+      <Background />
       <Container
         className="root-container"
         maxWidth="lg"

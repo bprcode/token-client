@@ -97,12 +97,20 @@ function CatalogGrid({ children }) {
 }
 
 function CardOuter({ sx, children }) {
+  const theme = useTheme()
+  const fillColor = theme.palette.background.paper
+  // Firefox has a rendering bug which applies the filter inconsistently:
+  const disableBlur =
+    navigator.userAgent.includes('Firefox')
+
   return (
     <Card
       sx={{
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0.25rem 0.25rem 0.35rem #0006',
+        backgroundColor: disableBlur ? fillColor : alpha(fillColor, 0.4),
+        backdropFilter: disableBlur ? undefined : 'blur(24px)',
         ...sx,
       }}
     >

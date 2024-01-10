@@ -18,7 +18,7 @@ export const ViewHeader = forwardRef(function ViewHeader({ children }, ref) {
       sx={{
         boxShadow: 'none',
         borderBottom: `1px solid #0127`,
-        backgroundColor: disableBlur ? '#1f292be1' : '#1f292bc1',
+        backgroundColor: disableBlur ? '#1f292be1' : '#1f292b81',
         backgroundImage: 'none',
         zIndex: 3,
       }}

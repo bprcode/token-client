@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Button, Paper, Slide } from '@mui/material'
+import { Alert, AlertTitle, Box, Button, Paper, Slide } from '@mui/material'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { isOverlap, reduceConcurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
@@ -395,14 +395,15 @@ export function CalendarContents({ calendarId }) {
       </ViewContainer>
     )
   }
-
+  
   return (
     <Paper
-      elevation={1}
+      elevation={0}
       sx={{
         height: '100%',
         width: '100%',
         position: 'relative',
+        backgroundColor: alpha(theme.palette.background.paper, 0.4),
       }}
     >
       {/* <Slide

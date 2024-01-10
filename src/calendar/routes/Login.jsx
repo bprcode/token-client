@@ -84,6 +84,9 @@ function LoginSection() {
         ml: 'auto',
         mr: 'auto',
         mt: [2, 6],
+        boxShadow: '0.75rem 1.625rem 1.25rem #00081190',
+        borderBottom: '1px solid #0009',
+        borderRight: '1px solid #0009',
       }}
     >
       <form onSubmit={e => e.preventDefault()}>
