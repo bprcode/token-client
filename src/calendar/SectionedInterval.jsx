@@ -94,7 +94,7 @@ export function SectionedInterval({
       n++
     }
     return sections
-  }, [initial, final, step])
+  }, [initial, final, step, labelEvery])
 
   return (
     <div
@@ -104,6 +104,7 @@ export function SectionedInterval({
         width: '100%',
         overflowY: isNarrow ? undefined : 'auto',
         touchAction: action === 'create' ? 'none' : undefined,
+        cursor: action === 'create' ? 'cell' : undefined,
       }}
     >
       {header}

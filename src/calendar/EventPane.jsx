@@ -193,11 +193,11 @@ export function EventPane({
                 <span style={{ color: '#fe0' }}>{event.originTag}</span>
               </div>
             )}
-           
+
             {event.isDeleting && (
               <div style={{ color: '#f00' }}>isDeleting</div>
             )}
-            
+
             {event.stableKey && (
               <div>
                 stableKey:{' '}
@@ -239,7 +239,7 @@ export function EventPane({
 
   // Interaction handlers:
   function handlePointerDown(e) {
-    if(e.buttons !== 1) return
+    if (e.buttons !== 1) return
 
     let tickSize = 24
     try {
@@ -365,7 +365,9 @@ export function EventPane({
           style={{
             touchAction: 'none',
             cursor:
-              action === 'delete'
+              action === 'create'
+                ? 'cell'
+                : action === 'delete'
                 ? 'crosshair'
                 : selected && selectable
                 ? 'pointer'
@@ -668,7 +670,7 @@ function PaneControls({
             transform: `translate(-50%, -100%)`,
           }}
           onPointerDown={e => {
-            if(e.buttons !== 1) return
+            if (e.buttons !== 1) return
             logger('top tab down, t=' + e.target.classList[0])
             beginTabDrag()
             handleTabDrag(e, onAdjustTop, intervalSize, logger)
@@ -715,7 +717,7 @@ function PaneControls({
             transform: `translate(-50%, 0%)`,
           }}
           onPointerDown={e => {
-            if(e.buttons !== 1) return
+            if (e.buttons !== 1) return
             logger('bottom tab down')
             beginTabDrag()
             handleTabDrag(e, onAdjustBottom, intervalSize, logger)
