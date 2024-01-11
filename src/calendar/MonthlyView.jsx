@@ -366,7 +366,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
       <Stack
         direction="column"
         sx={{
-          mt: [0, 1],
+          mt: [0, 2],
           px: [1, 2],
           mb: 4,
           flexGrow: 1,

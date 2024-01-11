@@ -352,7 +352,7 @@ const DayHeader = forwardRef(function DayHeader(
     : date.format('dddd, MMMM D')
 
   return (
-    <ViewHeader ref={ref}>
+    <ViewHeader ref={ref} gradient={null}>
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"

@@ -122,7 +122,7 @@ export function WeeklyView({ date, onBack, onExpand, onChange }) {
 
   const rv = (
     <ViewContainer>
-      <ViewHeader>
+      <ViewHeader gradient={null}>
         <IconButton aria-label="back to monthly view" onClick={onBack}>
           <CalendarViewMonthIcon />
         </IconButton>
