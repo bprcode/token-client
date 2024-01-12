@@ -14,6 +14,11 @@ import {
   CardActionArea,
   CardActions,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   IconButton,
   Skeleton,
   TextField,
@@ -23,7 +28,7 @@ import {
 import { alpha, keyframes } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { reconcile } from '../reconcile.mjs'
 import { ConflictDisplay } from '../ConflictDisplay'
 import { isCalendarDuplicate } from '../../CatalogSync'
@@ -208,6 +213,34 @@ function useUpdateOptimistic(id) {
   }
 }
 
+function DeleteConfirmDialog({ open, onClose, onDelete }) {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      aria-labelledby="alert-dialog-title"
+      aria-describedby="alert-dialog-description"
+    >
+      <DialogTitle id="alert-dialog-title">
+        Delete calendar?
+      </DialogTitle>
+      <DialogContent>
+        <DialogContentText id="alert-dialog-description">
+          All calendar contents will be deleted.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions sx={{ px: 2, pt: 2, pb: 3, justifyContent: 'center' }}>
+        <Button variant="contained" color="warning" sx={{ mr: 2 }} onClick={onDelete}>
+          Delete
+        </Button>
+        <Button variant="outlined" onClick={onClose} >
+          Cancel
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
 const initialGlow = keyframes`
   from {
     box-shadow: 0 0 3rem #afff inset;
@@ -228,6 +261,8 @@ to {
 }
 `
 
+const toggle = x => !x
+
 function CalendarCard({ calendar, children }) {
   const deleteOptimistic = useDeleteOptimistic(calendar.calendar_id)
   const updateOptimistic = useUpdateOptimistic(calendar.calendar_id)
@@ -235,6 +270,8 @@ function CalendarCard({ calendar, children }) {
   const theme = useTheme()
   const [isEditing, setIsEditing] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showConfirmation, toggleConfirmation] = useReducer(toggle, false)
+
   const isCreating = calendar.etag === 'creating'
   const inputRef = useRef(null)
 
@@ -352,14 +389,20 @@ function CalendarCard({ calendar, children }) {
           <IconButton
             aria-label="Delete"
             disabled={calendar.isDeleting}
-            onClick={() => {
-              setIsDeleting(true)
-              setTimeout(() => deleteOptimistic(calendar.calendar_id), 500)
-            }}
+            onClick={toggleConfirmation}
           >
             <DeleteIcon sx={{ opacity: 0.9 }} />
           </IconButton>
         </Box>
+        <DeleteConfirmDialog
+          open={showConfirmation}
+          onClose={toggleConfirmation}
+          onDelete={() => {
+            toggleConfirmation()
+            setIsDeleting(true)
+            setTimeout(() => deleteOptimistic(calendar.calendar_id), 500)
+          }}
+        />
       </CardActions>
     </CardOuter>
   )

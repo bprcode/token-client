@@ -8,6 +8,9 @@ const theme = createTheme({
     secondary: {
       main: '#ff9b00',
     },
+    warning: {
+      main: '#ff7f33',
+    },
     background: {
       default: '#091116',
       paper: '#182629',
@@ -17,16 +20,6 @@ const theme = createTheme({
       primary: '#f0feff',
     },
   },
-
-  // components: {
-  //   MuiButtonBase: {
-  //     styleOverrides: {
-  //       root: {
-  //         '&.MuiButton-root': { textTransform: 'none' },
-  //       },
-  //     },
-  //   },
-  // },
 })
 
 const barTheme = createTheme({
