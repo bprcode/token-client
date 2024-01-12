@@ -96,12 +96,13 @@ function CatalogGrid({ children }) {
   )
 }
 
+const fallbackGradient =
+  'linear-gradient(65deg, #151a1ccf -50%, #343d3ecc 55%, #6a868659 90%)'
 function CardOuter({ sx, children }) {
   const theme = useTheme()
-  const fillColor = theme.palette.background.paper
+  const fillColor = alpha(theme.palette.background.paper, 0.8)
   // Firefox has a rendering bug which applies the filter inconsistently:
-  const disableBlur =
-    navigator.userAgent.includes('Firefox')
+  const disableBlur = navigator.userAgent.includes('Firefox')
 
   return (
     <Card
@@ -109,8 +110,11 @@ function CardOuter({ sx, children }) {
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0.25rem 0.25rem 0.35rem #0006',
-        backgroundColor: disableBlur ? fillColor : alpha(fillColor, 0.4),
+        backgroundColor: disableBlur
+          ? 'rgba(2, 3, 3, 0.68)'
+          : alpha(fillColor, 0.4),
         backdropFilter: disableBlur ? undefined : 'blur(24px)',
+        backgroundImage: disableBlur ? fallbackGradient : undefined,
         ...sx,
       }}
     >
@@ -387,10 +391,10 @@ export function Catalog() {
       <ViewContainer>
         {header}
         <CatalogGrid>
-          <CardSkeleton sx={{ opacity: 0.8 }} />
+          <CardSkeleton sx={{ opacity: 0.9 }} />
+          <CardSkeleton sx={{ opacity: 0.65 }} />
           <CardSkeleton sx={{ opacity: 0.45 }} />
-          <CardSkeleton sx={{ opacity: 0.225 }} />
-          <CardSkeleton sx={{ opacity: 0.1 }} />
+          <CardSkeleton sx={{ opacity: 0.2 }} />
         </CatalogGrid>
       </ViewContainer>
     )
