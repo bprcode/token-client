@@ -9,7 +9,7 @@ import {
   getAugmentedColor,
   shorthandInterval as calculateShorthand,
 } from './calendarLogic.mjs'
-import { IconButton, Zoom, useTheme } from '@mui/material'
+import { Box, IconButton, Zoom, useTheme, styled } from '@mui/material'
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
 import { useLogger } from './Logger'
@@ -25,6 +25,12 @@ function snap15Minute(time, steps) {
   const offset = steps < 0 && m % 15 !== 0 ? steps + 1 : steps
   return time.minute(floor.minute() + offset * 15)
 }
+
+const BrightHoverBox = styled(Box)({
+  '&:hover': {
+    filter: 'brightness(120%) saturate(120%)',
+  }
+})
 
 export function EventPane({
   initial,
@@ -351,7 +357,8 @@ export function EventPane({
   return (
     <>
       <Zoom in={!isFading} appear={false} timeout={250}>
-        <div
+        <BrightHoverBox
+          className="event-pane"
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
           onPointerCancel={() => {
@@ -539,7 +546,7 @@ export function EventPane({
               </div>
             )}
           </div>
-        </div>
+        </BrightHoverBox>
       </Zoom>
 
       {/* event outline ghost, displayed during drag-resizing: */}

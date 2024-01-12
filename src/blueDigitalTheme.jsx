@@ -77,6 +77,13 @@ export const HoverableBox = styled(Box)(({ theme }) => ({
   '&:active::after': {
     backgroundColor: theme.palette.action.selected,
   },
+  '&:hover .section-inner': {
+    filter: 'brightness(140%)',
+  },
+  '&:hover .event-pane': {
+    // stacks with the parent brightness filter -- still slightly brightened:
+    filter: 'brightness(85%) saturate(120%)',
+  },
 }))
 
 export { barTheme }
