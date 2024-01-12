@@ -221,19 +221,22 @@ function DeleteConfirmDialog({ open, onClose, onDelete }) {
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">
-        Delete calendar?
-      </DialogTitle>
+      <DialogTitle id="alert-dialog-title">Delete calendar?</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
           All calendar contents will be deleted.
         </DialogContentText>
       </DialogContent>
       <DialogActions sx={{ px: 2, pt: 2, pb: 3, justifyContent: 'center' }}>
-        <Button variant="contained" color="warning" sx={{ mr: 2 }} onClick={onDelete}>
+        <Button
+          variant="contained"
+          color="warning"
+          sx={{ mr: 2 }}
+          onClick={onDelete}
+        >
           Delete
         </Button>
-        <Button variant="outlined" onClick={onClose} >
+        <Button variant="outlined" onClick={onClose}>
           Cancel
         </Button>
       </DialogActions>

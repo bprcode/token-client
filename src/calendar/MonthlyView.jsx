@@ -70,7 +70,6 @@ function GridHeader() {
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         paddingTop: '0.0rem',
-        marginTop: [1, 2],
         paddingBottom: '0rem',
         borderTop: '1px solid #aaf3',
       }}
@@ -376,9 +375,10 @@ export function MonthlyView({ date, onChange, onExpand }) {
         <Box
           sx={{
             width: '100%',
-            maxWidth: '800px',
-            boxShadow: '0.75rem 1.625rem 1.25rem #00081190',
-            borderBottom: '1px solid #0009',
+            maxWidth: '864px',
+            marginTop: [1, 2],
+            boxShadow: '0.75rem 1.25rem 1.5rem #00081190',
+            borderBottom: '1px solid #000a',
             borderRight: '1px solid #0009',
           }}
         >

@@ -395,15 +395,16 @@ export function CalendarContents({ calendarId }) {
       </ViewContainer>
     )
   }
-  
+
   return (
-    <Paper
-      elevation={0}
+    <Box
       sx={{
         height: '100%',
         width: '100%',
         position: 'relative',
-        backgroundColor: alpha(theme.palette.background.paper, 0.4),
+        backgroundColor: 'transparent',
+        backgroundImage:
+          'linear-gradient(110deg, #111b20f0 25%, #1d5c1400 70%)',
       }}
     >
       {/* <Slide
@@ -470,7 +471,7 @@ export function CalendarContents({ calendarId }) {
         )}
       </div>
       {/* </Slide> */}
-    </Paper>
+    </Box>
   )
 
   function updateParams({ view, date }) {
