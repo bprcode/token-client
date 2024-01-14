@@ -28,7 +28,7 @@ function snap15Minute(time, steps) {
 
 const BrightHoverBox = styled(Box)({
   '&:hover': {
-    filter: 'brightness(120%) saturate(120%)',
+    filter: 'brightness(110%) saturate(110%)',
   },
 })
 
@@ -95,7 +95,7 @@ function BriefPane({
     <>
       <BrightHoverBox
         className="event-pane"
-        style={{
+        sx={{
           touchAction: 'none',
           cursor: 'grab',
           ...positioning,
@@ -117,8 +117,6 @@ function BriefPane({
           style={{
             boxShadow: `0px 0px 1rem ${shadeColor} inset`,
             ...borderStyles,
-            borderRight: `1px solid ${shadeColor}`,
-            borderBottom: `1px solid ${shadeColor}`,
             ...referenceStyle,
             backgroundColor: accentColor,
 
@@ -129,8 +127,7 @@ function BriefPane({
             flexDirection: 'column',
             transition: 'background-color 0.2s ease-out',
 
-            paddingTop: '4px',
-
+            paddingTop: '3px',
           }}
         >
           {/* pane header */}
@@ -262,7 +259,7 @@ export function EventPane({
   const roomForIcon = fragmentEnd.diff(fragmentStart) / (60 * 1000) > 45
 
   const borderStyles =
-    label !== 'none'
+    label === 'detailed'
       ? {
           borderLeft: `0.125rem ${borderColor} solid`,
           borderRight: `0.125rem ${borderColor} solid`,
@@ -271,35 +268,40 @@ export function EventPane({
           borderBottom:
             `0.125rem ${borderColor} ` + (overflowAfter ? 'dashed' : 'solid'),
         }
-      : {}
+      : {
+          borderLeft: `0.125rem ${borderColor} solid`,
+          borderTop:
+            `0.125rem ${borderColor} ` + (overflowBefore ? 'dashed' : 'solid'),
+          borderRight: `1px solid ${shadeColor}`,
+          borderBottom: `1px solid ${shadeColor}`,
+        }
 
   // Assemble content elements:
   let header = null
   let details = null
 
   if (label === 'brief') {
-    header = (
-      <div
-        style={{
-          display: 'flex',
-          // Hide wrapped child if it causes the header to overflow:
-          flexWrap: 'wrap',
+    header = duration > 60 && (
+      <Box
+        sx={{
           overflow: 'hidden',
-          maxHeight: '1.25rem',
-          justifyContent: 'space-between',
+          whiteSpace: 'nowrap',
+          textOverflow: 'ellipsis',
         }}
       >
-        <span>{event.summary}</span>
-      </div>
+        {event.summary}
+        {/* <span>{event.summary}</span> */}
+      </Box>
     )
-    details = (
+    details = duration > 120 && (
       <div
         style={{
           paddingLeft: '0.25rem',
         }}
       >
         {shorthandInterval.split('–')[0]}
-        {' – '}
+        <wbr />
+        {'–'}
         {shorthandInterval.split('–')[1]}
       </div>
     )
