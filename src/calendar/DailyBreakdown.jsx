@@ -24,7 +24,6 @@ function Breakdown({
   const startOfNextDay = date.add(1, 'day').startOf('day')
 
   const { blocking, columns, relevantEvents } = useMemo(() => {
-
     const startOfDay = date.startOf('day')
     const endOfDay = date.endOf('day')
     const relevantEvents = events.filter(
@@ -79,7 +78,7 @@ function Breakdown({
     }
 
     return { blocking, columns, relevantEvents }
-  }, [events, date, logger])
+  }, [events, date])
 
   const isSparse = columns.length <= 2 && labels === 'detailed'
   const margin = isSparse ? '4.5rem' : undefined
@@ -109,7 +108,13 @@ function Breakdown({
           event={r}
           columns={columns.length}
           indent={blocking.get(r)}
-          label={labels}
+          label={
+            labels === 'detailed'
+              ? labels
+              : columns.length <= 2
+              ? labels
+              : 'none'
+          }
           selected={selection === r.id}
           onSelect={onSelect}
           onEdit={onEdit}

@@ -84,6 +84,7 @@ function BriefPane({
   overflowAfter,
   borderStyles,
   accentColor,
+  shadeColor,
   augmentedColors,
   referenceStyle,
   hideShadows,
@@ -114,8 +115,10 @@ function BriefPane({
         <div
           className="pane-inner"
           style={{
-            // boxShadow: `0px 0px 0.75rem ${shadeColor} inset`,
+            boxShadow: `0px 0px 1rem ${shadeColor} inset`,
             ...borderStyles,
+            borderRight: `1px solid ${shadeColor}`,
+            borderBottom: `1px solid ${shadeColor}`,
             ...referenceStyle,
             backgroundColor: accentColor,
 
@@ -125,6 +128,9 @@ function BriefPane({
             display: 'flex',
             flexDirection: 'column',
             transition: 'background-color 0.2s ease-out',
+
+            paddingTop: '4px',
+
           }}
         >
           {/* pane header */}
@@ -132,12 +138,11 @@ function BriefPane({
             style={{
               touchAction: 'none',
               pointerEvents: 'none',
-              backgroundColor: accentColor,
-              color: augmentedColors.contrastText,
-              paddingLeft: '0.25rem',
+              paddingLeft: '4px',
               paddingRight: '0.25rem',
               whiteSpace: 'nowrap',
               position: 'relative',
+              color: augmentedColors.contrastText,
             }}
           >
             {header}
@@ -285,16 +290,6 @@ export function EventPane({
         }}
       >
         <span>{event.summary}</span>
-        <span
-          style={{
-            paddingLeft: '1rem',
-            flexGrow: 1,
-            flexShrink: 1,
-            textAlign: 'right',
-          }}
-        >
-          {shorthandInterval}
-        </span>
       </div>
     )
     details = (
