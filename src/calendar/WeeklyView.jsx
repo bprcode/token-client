@@ -38,8 +38,7 @@ function WeekBody({ date, events, onExpand }) {
     return (
       <div
         style={{
-          paddingLeft: '0.5rem',
-          paddingRight: '0.5rem',
+          paddingLeft: '1px',
           display: 'grid',
           gridTemplateColumns: 'repeat(7, 1fr)',
           width: '100%',
@@ -84,7 +83,7 @@ function WeekBody({ date, events, onExpand }) {
                 date={d}
                 events={weekEvents}
                 style={{ height: displayHeight }}
-                labels="none"
+                labels="brief"
               />
             </SectionedInterval>
           </HoverableBox>

@@ -29,8 +29,133 @@ function snap15Minute(time, steps) {
 const BrightHoverBox = styled(Box)({
   '&:hover': {
     filter: 'brightness(120%) saturate(120%)',
-  }
+  },
 })
+
+function OverflowArrows({ before, after, accentColor }) {
+  return (
+    <>
+      {before && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 'calc(50% - 8px)',
+            top: -24,
+          }}
+        >
+          <DoubleUpIcon sx={{ fontSize: 16, mb: -0.5, color: accentColor }} />
+        </div>
+      )}
+      {after && (
+        <div
+          style={{
+            position: 'absolute',
+            left: 'calc(50% - 8px)',
+            top: '100%',
+          }}
+        >
+          <DoubleDownIcon sx={{ fontSize: 16, mb: -0.5, color: accentColor }} />
+        </div>
+      )}
+    </>
+  )
+}
+
+// drop shadow mock pseudo-element for correct z-indexing:
+function AccentShadow({ hide, positioning }) {
+  if (hide) return
+
+  return (
+    <div
+      style={{
+        ...positioning,
+        boxShadow: '0.25rem 0.5rem 1.5rem #0008',
+        transition:
+          'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out',
+        zIndex: 1,
+      }}
+    />
+  )
+}
+
+function BriefPane({
+  positioning,
+  overflowBefore,
+  overflowAfter,
+  borderStyles,
+  accentColor,
+  augmentedColors,
+  referenceStyle,
+  hideShadows,
+  header,
+  children,
+}) {
+  return (
+    <>
+      <BrightHoverBox
+        className="event-pane"
+        style={{
+          touchAction: 'none',
+          cursor: 'grab',
+          ...positioning,
+          zIndex: 2,
+          transition:
+            'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+        }}
+      >
+        <OverflowArrows
+          before={overflowBefore}
+          after={overflowAfter}
+          accentColor={accentColor}
+        />
+        {/* Inner container -- overflow hidden */}
+        <div
+          className="pane-inner"
+          style={{
+            // boxShadow: `0px 0px 0.75rem ${shadeColor} inset`,
+            ...borderStyles,
+            ...referenceStyle,
+            backgroundColor: accentColor,
+
+            overflow: 'hidden',
+            height: '100%',
+            width: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            transition: 'background-color 0.2s ease-out',
+          }}
+        >
+          {/* pane header */}
+          <div
+            style={{
+              touchAction: 'none',
+              pointerEvents: 'none',
+              backgroundColor: accentColor,
+              color: augmentedColors.contrastText,
+              paddingLeft: '0.25rem',
+              paddingRight: '0.25rem',
+              whiteSpace: 'nowrap',
+              position: 'relative',
+            }}
+          >
+            {header}
+          </div>
+          <div
+            style={{
+              height: '100%',
+              color: augmentedColors.contrastText,
+            }}
+          >
+            {children}
+          </div>
+        </div>
+      </BrightHoverBox>
+      <AccentShadow hide={hideShadows} positioning={positioning} />
+    </>
+  )
+}
 
 export function EventPane({
   initial,
@@ -40,7 +165,6 @@ export function EventPane({
   columns = 1,
   label = 'detailed',
   selected,
-  transitions,
   onSelect = noop,
   onEdit = noop,
   onUpdate = noop,
@@ -48,7 +172,7 @@ export function EventPane({
 }) {
   const action = useContext(ActionContext)
   const theme = useTheme()
-  const selectable = label === 'detailed'
+  const isSelectable = label === 'detailed'
 
   const logger = useLogger()
 
@@ -74,6 +198,15 @@ export function EventPane({
   const topOffset = fragmentStart.diff(initial)
   const windowLength = fragmentEnd.diff(fragmentStart)
   const intervalSize = final.diff(initial)
+
+  // Calculated CSS properties:
+  const positioning = {
+    position: 'absolute',
+    top: (topOffset / intervalSize) * 100 + '%',
+    left: indent * (100 / columns) + '%',
+    height: (windowLength / intervalSize) * 100 + '%',
+    width: 100 / columns + '%',
+  }
 
   // Perform bounds checking on drag actions:
   const earliestStart = initial
@@ -115,7 +248,7 @@ export function EventPane({
   const shadeColor = augmentedColors.dark
   const deleteWarning = action === 'delete' ? '#4f190e' : undefined
   const verboseBackground =
-    deleteWarning ?? (selected && selectable ? '#6e2a08' : '#222233')
+    deleteWarning ?? (selected && isSelectable ? '#6e2a08' : '#222233')
 
   let borderColor = accentColor
   if (selected) borderColor = theme.palette.secondary.light
@@ -135,12 +268,46 @@ export function EventPane({
         }
       : {}
 
-  // Build content elements:
+  // Assemble content elements:
   let header = null
   let details = null
 
   if (label === 'brief') {
-    header = event.summary
+    header = (
+      <div
+        style={{
+          display: 'flex',
+          // Hide wrapped child if it causes the header to overflow:
+          flexWrap: 'wrap',
+          overflow: 'hidden',
+          maxHeight: '1.25rem',
+          justifyContent: 'space-between',
+        }}
+      >
+        <span>{event.summary}</span>
+        <span
+          style={{
+            paddingLeft: '1rem',
+            flexGrow: 1,
+            flexShrink: 1,
+            textAlign: 'right',
+          }}
+        >
+          {shorthandInterval}
+        </span>
+      </div>
+    )
+    details = (
+      <div
+        style={{
+          paddingLeft: '0.25rem',
+        }}
+      >
+        {shorthandInterval.split('–')[0]}
+        {' – '}
+        {shorthandInterval.split('–')[1]}
+      </div>
+    )
   }
 
   if (label === 'detailed') {
@@ -215,33 +382,6 @@ export function EventPane({
       </div>
     )
   }
-
-  const overflowArrows = (
-    <>
-      {overflowBefore && (
-        <div
-          style={{
-            position: 'absolute',
-            left: 'calc(50% - 8px)',
-            top: -24,
-          }}
-        >
-          <DoubleUpIcon sx={{ fontSize: 16, mb: -0.5, color: accentColor }} />
-        </div>
-      )}
-      {overflowAfter && (
-        <div
-          style={{
-            position: 'absolute',
-            left: 'calc(50% - 8px)',
-            top: '100%',
-          }}
-        >
-          <DoubleDownIcon sx={{ fontSize: 16, mb: -0.5, color: accentColor }} />
-        </div>
-      )}
-    </>
-  )
 
   // Interaction handlers:
   function handlePointerDown(e) {
@@ -353,6 +493,27 @@ export function EventPane({
     }
   }
 
+  if (label === 'brief') {
+    return (
+      <BriefPane
+        {...{
+          positioning,
+          overflowBefore,
+          overflowAfter,
+          borderStyles,
+          accentColor,
+          shadeColor,
+          augmentedColors,
+          referenceStyle,
+          hideShadows,
+          header,
+        }}
+      >
+        {details}
+      </BriefPane>
+    )
+  }
+
   // Assembled component:
   return (
     <>
@@ -376,24 +537,23 @@ export function EventPane({
                 ? 'cell'
                 : action === 'delete'
                 ? 'crosshair'
-                : selected && selectable
+                : selected && isSelectable
                 ? 'pointer'
                 : 'grab',
-            position: 'absolute',
-            top: (topOffset / intervalSize) * 100 + '%',
-            left: indent * (100 / columns) + '%',
-            height: (windowLength / intervalSize) * 100 + '%',
-            width: 100 / columns + '%',
+            ...positioning,
             zIndex: selected ? 3 : 2,
-            transition: transitions
-              ? 'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out'
-              : undefined,
+            transition:
+              'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out',
             opacity: !event.isDeleting ? ghost && 0.5 : 0.15,
             userSelect: 'none',
             WebkitUserSelect: 'none',
           }}
         >
-          {overflowArrows}
+          <OverflowArrows
+            before={overflowBefore}
+            after={overflowAfter}
+            accentColor={accentColor}
+          />
 
           {/* Inner container -- overflow hidden */}
           <div
@@ -467,7 +627,10 @@ export function EventPane({
                   flexGrow: 1,
                   overflow: 'hidden',
                   position: 'relative',
-                  color: selected && '#aaa',
+                  color:
+                    label === 'brief'
+                      ? augmentedColors.contrastText
+                      : selected && '#aaa',
                 }}
               >
                 {details}
@@ -528,7 +691,7 @@ export function EventPane({
                   </IconButton>
                 )}
 
-                {event.description && (
+                {event.description && label === 'detailed' && (
                   // fade-out overlay to indicate possible overflowing text:
                   <div
                     style={{
@@ -553,12 +716,9 @@ export function EventPane({
       {ghost && (
         <div
           style={{
-            // touchAction: 'none',
-            position: 'absolute',
+            ...positioning,
             top: (ghostTopOffset / intervalSize) * 100 + '%',
-            left: indent * (100 / columns) + '%',
             height: (ghostWindowLength / intervalSize) * 100 + '%',
-            width: 100 / columns + '%',
 
             borderLeft: `3px dashed ${augmentedColors.light}`,
             borderRight: `3px dashed ${augmentedColors.light}`,
@@ -580,23 +740,7 @@ export function EventPane({
         ></div>
       )}
 
-      {/* drop shadow mock pseudo-element for correct z-indexing: */}
-      {!hideShadows && !isFading && (
-        <div
-          style={{
-            position: 'absolute',
-            top: (topOffset / intervalSize) * 100 + '%',
-            left: indent * (100 / columns) + '%',
-            height: (windowLength / intervalSize) * 100 + '%',
-            width: 100 / columns + '%',
-            boxShadow: !selected && '0.25rem 0.5rem 1.5rem #0008',
-            transition: transitions
-              ? 'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out'
-              : undefined,
-            zIndex: 1,
-          }}
-        />
-      )}
+      <AccentShadow hide={hideShadows} positioning={positioning} />
     </>
   )
 }
