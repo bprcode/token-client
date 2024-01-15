@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import { Box, useMediaQuery } from '@mui/material'
 import { gradualShades } from '../blueDigitalTheme'
 import { useLogger } from './Logger'
 import { useEffect, useMemo, useRef } from 'react'
@@ -57,6 +57,7 @@ export function SectionedInterval({
     }
   }, [logger])
 
+  const canFitTimes = useMediaQuery('(min-width: 400px)')
   const sections = useMemo(() => {
     const sections = []
     let t = initial
@@ -79,22 +80,22 @@ export function SectionedInterval({
             backgroundColor: gradualShades(j),
           }}
         >
-          <span
-            style={{
+          <Box
+            sx={{
               display: j % labelEvery ? 'none' : 'inline',
-              paddingLeft: '0.5rem',
+              paddingLeft: ['1px','0.25rem'],
               fontSize: '0.875em',
             }}
           >
-            {t.format('h:mm A')}
-          </span>
+            {canFitTimes ? t.format('h:mm A') : t.format('h A')}
+          </Box>
         </div>
       )
       t = t.add(...step)
       n++
     }
     return sections
-  }, [initial, final, step, labelEvery])
+  }, [initial, final, step, labelEvery, canFitTimes])
 
   return (
     <div

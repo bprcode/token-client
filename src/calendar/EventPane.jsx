@@ -112,9 +112,9 @@ function BriefPane({
           accentColor={accentColor}
         />
         {/* Inner container -- overflow hidden */}
-        <div
+        <Box
           className="pane-inner"
-          style={{
+          sx={{
             boxShadow: `0px 0px 1rem ${shadeColor} inset`,
             ...borderStyles,
             ...referenceStyle,
@@ -127,15 +127,15 @@ function BriefPane({
             flexDirection: 'column',
             transition: 'background-color 0.2s ease-out',
 
-            paddingTop: '3px',
+            paddingTop: ['0px', '4px'],
           }}
         >
           {/* pane header */}
-          <div
-            style={{
+          <Box
+            sx={{
               touchAction: 'none',
               pointerEvents: 'none',
-              paddingLeft: '4px',
+              paddingLeft: ['1px', '4px'],
               paddingRight: '0.25rem',
               whiteSpace: 'nowrap',
               position: 'relative',
@@ -143,16 +143,17 @@ function BriefPane({
             }}
           >
             {header}
-          </div>
-          <div
-            style={{
+          </Box>
+          <Box
+            sx={{
               height: '100%',
               color: augmentedColors.contrastText,
+              paddingLeft: ['1px', '4px'],
             }}
           >
             {children}
-          </div>
-        </div>
+          </Box>
+        </Box>
       </BrightHoverBox>
       <AccentShadow hide={hideShadows} positioning={positioning} />
     </>
@@ -294,14 +295,11 @@ export function EventPane({
       </Box>
     )
     details = duration > 120 && (
-      <div
-        style={{
-          paddingLeft: '0.25rem',
-        }}
-      >
+      <div>
         {shorthandInterval.split('–')[0]}
         <wbr />
         {'–'}
+        <wbr />
         {shorthandInterval.split('–')[1]}
       </div>
     )

@@ -226,7 +226,6 @@ export const mockPalette = [
   '#942911',
   '#d46239',
   '#d99830',
-  '#228223',
   '#b5dead',
   '#45aeb0',
   '#518ed0',

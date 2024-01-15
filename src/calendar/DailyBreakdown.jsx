@@ -1,4 +1,4 @@
-import { Box } from '@mui/material'
+import { Box, useMediaQuery } from '@mui/material'
 import { EventPane } from './EventPane'
 import { isOverlap } from './calendarLogic.mjs'
 import { memo, useMemo } from 'react'
@@ -84,6 +84,8 @@ function Breakdown({
   const margin = isSparse ? '4.5rem' : undefined
 
   const minTouch = '48px'
+  const isWide = useMediaQuery(`(min-width:1100px)`)
+  const maxDetailedColumns = isWide ? 2 : 1
 
   // Render the event cards
   const rendered = (
@@ -111,7 +113,7 @@ function Breakdown({
           label={
             labels === 'detailed'
               ? labels
-              : columns.length <= 2
+              : columns.length <= maxDetailedColumns
               ? labels
               : 'none'
           }

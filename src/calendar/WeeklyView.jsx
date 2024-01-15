@@ -37,6 +37,11 @@ function WeekBody({ date, events, onExpand }) {
 
     return (
       <div
+        onPointerDown={e => {
+          console.log('debug placeholder -- weekly pointer capture')
+          console.log('current target:', e.currentTarget)
+          console.log('target:', e.target)
+        }}
         style={{
           paddingLeft: '1px',
           display: 'grid',
@@ -109,11 +114,14 @@ export function WeeklyView({ date, onBack, onExpand, onChange }) {
 
   const benchStart = performance.now()
   const isSmall = useMediaQuery('(max-width: 600px)')
+  const isReallySmall = useMediaQuery('(max-width: 320px)')
 
   const sunday = date.startOf('week')
   const saturday = sunday.add(6, 'days')
   const isRollover = sunday.month() !== saturday.month()
-  const weekDescription = isSmall
+  const weekDescription = isReallySmall
+    ? sunday.format('M/D') + ' – ' + saturday.format(isRollover ? 'M/D' : 'D')
+    : isSmall
     ? sunday.format('MMM D') +
       ' – ' +
       saturday.format(isRollover ? 'MMM D' : 'D')
