@@ -2,9 +2,9 @@ import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import { IconButton, Typography, Box, useMediaQuery } from '@mui/material'
-import { useMemo } from 'react'
+import { forwardRef, useMemo, useRef, useState } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
-import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
+import { HoverableBox } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
 import { isOverlap } from './calendarLogic.mjs'
@@ -15,10 +15,31 @@ import { SectionedInterval } from './SectionedInterval'
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
 
+const DragGhost = forwardRef(function DragGhost({ show }, ref) {
+  return (
+    <Box
+      ref={ref}
+      sx={{
+        display: show ? 'block' : 'none',
+        pointerEvents: 'none',
+        position: 'absolute',
+        backgroundColor: '#f004',
+        border: '2px dashed orange',
+        zIndex: 3,
+        filter: 'brightness(130%) saturate(110%)',
+      }}
+    ></Box>
+  )
+})
+
 function WeekBody({ date, events, onExpand }) {
   const logger = useLogger()
   const benchStart = performance.now()
   const displayHeight = '520px'
+
+  const ghostElementRef = useRef(null)
+  const dragRef = useRef(null)
+  const [showGhost, setShowGhost] = useState(false)
 
   const rv = useMemo(() => {
     const days = []
@@ -29,6 +50,17 @@ function WeekBody({ date, events, onExpand }) {
       isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
     )
 
+    function snapDay(clientX) {
+      const xFraction =
+        (clientX - dragRef.current.bounds.clientLeft) /
+        dragRef.current.bounds.clientWidth
+      return Math.round((xFraction - (xFraction % (1 / 7))) * 7)
+    }
+
+    function snapLeft(clientX) {
+      return (snapDay(clientX) * dragRef.current.bounds.clientWidth) / 7 + 4
+    }
+
     let d = startOfWeek
     while (d.isBefore(endOfWeek)) {
       days.push(d)
@@ -37,10 +69,103 @@ function WeekBody({ date, events, onExpand }) {
 
     return (
       <div
+        onPointerUp={() => setShowGhost(false)}
+        onPointerLeave={() => setShowGhost(false)}
         onPointerDown={e => {
-          console.log('debug placeholder -- weekly pointer capture')
-          console.log('current target:', e.currentTarget)
-          console.log('target:', e.target)
+          const ep = e.target.closest('.event-pane')
+          // If the event did not occur within an eventPane,
+          // allow the individual day container to handle it.
+          if (!ep) {
+            return
+          }
+
+          const pickedColor = getComputedStyle(
+            ep.querySelector('.pane-inner')
+          ).backgroundColor
+          const rect = ep.getBoundingClientRect()
+          const wb = e.target.closest('.view-container')
+          const innerSections = wb.querySelectorAll('.section-inner')
+          const firstDayBounds = innerSections[0].getBoundingClientRect()
+          const lastDayBounds =
+            innerSections[innerSections.length - 1].getBoundingClientRect()
+
+          const container = wb.getBoundingClientRect()
+          dragRef.current = {
+            initialLeft: rect.left - container.left,
+            initialTop: rect.top - container.top,
+            initialClientX: e.clientX,
+            initialClientY: e.clientY,
+            width: Math.round(container.width / 7) - 8,
+            height: rect.height,
+            bounds: {
+              left: 0,
+              top: lastDayBounds.top,
+              right: lastDayBounds.right - firstDayBounds.left,
+              bottom: lastDayBounds.bottom,
+              clientLeft: container.left,
+              clientWidth: container.width,
+            },
+          }
+          console.log('trying bounds:', dragRef.current.bounds)
+
+          ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
+          ghostElementRef.current.style.top = rect.top - container.top + 'px'
+          ghostElementRef.current.style.width = dragRef.current.width + 'px'
+          ghostElementRef.current.style.height = rect.height + 'px'
+          console.log('pickedcolor:', pickedColor.match(/([^)]*)/))
+          // extract the comma-separated argument to rgb(r,g,b):
+          const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
+          ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.5)`
+          ghostElementRef.current.style.border = `3px dashed rgb(${rgb})`
+
+          setShowGhost(true)
+        }}
+        onPointerMove={e => {
+          try {
+            // const left = Math.min(
+            //   dragRef.current.bounds.right - dragRef.current.width,
+            //   Math.max(
+            //     dragRef.current.bounds.left,
+            //     e.clientX -
+            //       dragRef.current.initialClientX +
+            //       dragRef.current.initialLeft
+            //   )
+            // )
+
+            // Constrain the drag action to its parent bounds
+            const top = Math.min(
+              dragRef.current.bounds.bottom - dragRef.current.height,
+              Math.max(
+                dragRef.current.bounds.top,
+                e.clientY -
+                  dragRef.current.initialClientY +
+                  dragRef.current.initialTop
+              )
+            )
+
+            const yFraction =
+              (top - dragRef.current.bounds.top) /
+              (dragRef.current.bounds.bottom - dragRef.current.bounds.top)
+
+            // Snap to the closest 15-minute increment:
+            const snappedMinute = Math.round(
+              (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
+            )
+
+            // Use the snapped values to place the element
+            ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
+            ghostElementRef.current.style.top =
+              dragRef.current.bounds.top +
+              (snappedMinute / (24 * 4 * 15)) *
+                (dragRef.current.bounds.bottom - dragRef.current.bounds.top) +
+              'px'
+
+            ghostElementRef.current.textContent = startOfWeek
+              .add(snappedMinute, 'minutes')
+              .format('h:mm a')
+          } catch (e) {
+            console.log('ref unavailable')
+          }
         }}
         style={{
           paddingLeft: '1px',
@@ -51,10 +176,18 @@ function WeekBody({ date, events, onExpand }) {
           boxShadow: '1rem 1.5rem 2rem #0114',
         }}
       >
-        {days.map((d, j) => (
+        {days.map(d => (
           <HoverableBox
+            className="weekday-box"
             key={d.format('MM D')}
-            onClick={() => onExpand(d)}
+            onClick={e => {
+              const ep = e.target.closest('.event-pane')
+              // If the event did not occur within an eventPane,
+              // expand the day view.
+              if (!ep) {
+                return onExpand(d)
+              }
+            }}
             sx={{
               px: '0.25rem',
               pb: '1.5rem',
@@ -103,7 +236,12 @@ function WeekBody({ date, events, onExpand }) {
     1000
   )
 
-  return rv
+  return (
+    <>
+      {rv}
+      <DragGhost show={showGhost} ref={ghostElementRef} />
+    </>
+  )
 }
 
 export function WeeklyView({ date, onBack, onExpand, onChange }) {

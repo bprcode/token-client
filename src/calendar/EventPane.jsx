@@ -509,22 +509,27 @@ export function EventPane({
     )
   }
 
+  const eventHandlers =
+    label === 'detailed'
+      ? {
+          onPointerDown: handlePointerDown,
+          onPointerUp: handlePointerUp,
+          onPointerCancel: () => {
+            setSliding(false)
+            setGhost(false)
+            logger('interaction cancelled')
+          },
+          onClick: e => e.stopPropagation(),
+        }
+      : {}
+
   // Assembled component:
   return (
     <>
       <Zoom in={!isFading} appear={false} timeout={250}>
         <BrightHoverBox
           className="event-pane"
-          onPointerDown={handlePointerDown}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={() => {
-            setSliding(false)
-            setGhost(false)
-            logger('interaction cancelled')
-          }}
-          onClick={e => {
-            if (label === 'detailed') e.stopPropagation()
-          }}
+          {...eventHandlers}
           style={{
             touchAction: 'none',
             cursor:
