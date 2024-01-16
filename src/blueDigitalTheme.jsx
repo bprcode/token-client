@@ -11,6 +11,9 @@ const theme = createTheme({
     warning: {
       main: '#ff7f33',
     },
+    success: {
+      main: '#36c26c',
+    },
     background: {
       default: '#091116',
       paper: '#182629',

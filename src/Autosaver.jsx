@@ -96,11 +96,11 @@ export function AutosaverStatus({ touchList, isPending, label }) {
   let status = `${label} saved.`
 
   if (touchList.length > 0) {
-    color = 'info.main'
+    color = 'warning.main'
     status = `Unsaved (${touchList.length})`
   }
   if (isPending && touchList.length > 0) {
-    color = 'warning.main'
+    color = 'info.main'
     status = `Saving... (${touchList.length})`
   }
 
