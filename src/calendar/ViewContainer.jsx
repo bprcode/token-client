@@ -1,13 +1,13 @@
 import { Stack } from '@mui/material'
 
-export function ViewContainer({ children }) {
+export function ViewContainer({ children, containOverflow = true }) {
   return (
     <Stack
       direction="column"
       className="view-container"
       sx={{
-        height: '100%',
-        overflowY: 'auto',
+        height: containOverflow ? '100%' : undefined,
+        overflowY: containOverflow ? 'auto' : undefined,
       }}
     >
       {children}

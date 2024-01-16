@@ -21,7 +21,7 @@ import {
   usePalette,
 } from './calendarLogic.mjs'
 import { ViewHeader } from './ViewHeader'
-import { useNarrowCheck } from './LayoutContext.mjs'
+import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { useLogger } from './Logger'
 import { useViewQuery } from './routes/Calendar'
 
@@ -37,7 +37,7 @@ export function DailyView({
   date,
 }) {
   const { data: events } = useViewQuery()
-  const isWide = useMediaQuery('(min-width: 600px)')
+  const needMobileBar = useMobileBarCheck()
   const headerRef = useRef(null)
   const logger = useLogger()
   const theme = useTheme()
@@ -104,7 +104,7 @@ export function DailyView({
           backgroundColor: 'transparent',
         }}
       >
-        {!isWide && <MobileBar>{actionButtons}</MobileBar>}
+        {needMobileBar && <MobileBar>{actionButtons}</MobileBar>}
         <SectionedInterval
           initial={startOfDay}
           final={endOfDay}
@@ -138,7 +138,7 @@ export function DailyView({
               onBack={onBack}
               date={date}
               ref={headerRef}
-              actionButtons={isWide && actionButtons}
+              actionButtons={!needMobileBar && actionButtons}
             />
           }
         >

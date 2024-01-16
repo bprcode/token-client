@@ -44,7 +44,7 @@ export function Root() {
         sx={{
           height: '100vh',
           // N.B. overflowX: hidden causes a persistent address bar
-          // on mobile Y-scrolling in the DayPage component.
+          // on mobile Y-scrolling.
           overflowX: isNarrow ? undefined : 'hidden',
         }}
       >
