@@ -7,7 +7,7 @@ import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
-import { isOverlap } from './calendarLogic.mjs'
+import { isOverlap, shorthandInterval } from './calendarLogic.mjs'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { SectionedInterval } from './SectionedInterval'
@@ -27,6 +27,7 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
         border: '2px dashed orange',
         zIndex: 3,
         filter: 'brightness(130%) saturate(110%)',
+        textAlign: 'center',
       }}
     ></Box>
   )
@@ -38,7 +39,7 @@ function WeekBody({ date, events, onExpand }) {
   const displayHeight = '520px'
 
   const ghostElementRef = useRef(null)
-  const dragRef = useRef(null)
+  const dragRef = useRef({})
   const [showGhost, setShowGhost] = useState(false)
 
   const rv = useMemo(() => {
@@ -61,6 +62,26 @@ function WeekBody({ date, events, onExpand }) {
       return (snapDay(clientX) * dragRef.current.bounds.clientWidth) / 7 + 4
     }
 
+    function snapMinute(clientY) {
+      // Constrain the drag action to its parent bounds
+      const top = Math.min(
+        dragRef.current.bounds.bottom - dragRef.current.height,
+        Math.max(
+          dragRef.current.bounds.top,
+          clientY - dragRef.current.initialClientY + dragRef.current.initialTop
+        )
+      )
+
+      const yFraction =
+        (top - dragRef.current.bounds.top) /
+        (dragRef.current.bounds.bottom - dragRef.current.bounds.top)
+
+      // Snap to the closest 15-minute increment:
+      return Math.round(
+        (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
+      )
+    }
+
     let d = startOfWeek
     while (d.isBefore(endOfWeek)) {
       days.push(d)
@@ -69,13 +90,27 @@ function WeekBody({ date, events, onExpand }) {
 
     return (
       <div
-        onPointerUp={() => setShowGhost(false)}
-        onPointerLeave={() => setShowGhost(false)}
+        onClick={() => {
+          console.log('container click')
+          dragRef.current.lockClick = false
+        }}
+        onPointerUp={() => {
+          console.log('container pointer up')
+          setShowGhost(false)
+          if (dragRef.current.event) {
+            dragRef.current.event = null
+          }
+        }}
+        onPointerLeave={() => {
+          setShowGhost(false)
+          dragRef.current.event = null
+        }}
         onPointerDown={e => {
           const ep = e.target.closest('.event-pane')
           // If the event did not occur within an eventPane,
           // allow the individual day container to handle it.
           if (!ep) {
+            dragRef.current.eventPane = null
             return
           }
 
@@ -91,6 +126,10 @@ function WeekBody({ date, events, onExpand }) {
 
           const container = wb.getBoundingClientRect()
           dragRef.current = {
+            event: events.find(
+              e => e.stableKey === ep.dataset.id || e.id === ep.dataset.id
+            ),
+            eventPane: ep,
             initialLeft: rect.left - container.left,
             initialTop: rect.top - container.top,
             initialClientX: e.clientX,
@@ -106,22 +145,24 @@ function WeekBody({ date, events, onExpand }) {
               clientWidth: container.width,
             },
           }
-          console.log('trying bounds:', dragRef.current.bounds)
 
           ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
           ghostElementRef.current.style.top = rect.top - container.top + 'px'
           ghostElementRef.current.style.width = dragRef.current.width + 'px'
           ghostElementRef.current.style.height = rect.height + 'px'
-          console.log('pickedcolor:', pickedColor.match(/([^)]*)/))
           // extract the comma-separated argument to rgb(r,g,b):
           const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
-          ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.5)`
+          ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.75)`
           ghostElementRef.current.style.border = `3px dashed rgb(${rgb})`
+          ghostElementRef.current.textContent = ''
 
           setShowGhost(true)
         }}
         onPointerMove={e => {
           try {
+            if (!dragRef.current.event) {
+              return
+            }
             // const left = Math.min(
             //   dragRef.current.bounds.right - dragRef.current.width,
             //   Math.max(
@@ -132,25 +173,7 @@ function WeekBody({ date, events, onExpand }) {
             //   )
             // )
 
-            // Constrain the drag action to its parent bounds
-            const top = Math.min(
-              dragRef.current.bounds.bottom - dragRef.current.height,
-              Math.max(
-                dragRef.current.bounds.top,
-                e.clientY -
-                  dragRef.current.initialClientY +
-                  dragRef.current.initialTop
-              )
-            )
-
-            const yFraction =
-              (top - dragRef.current.bounds.top) /
-              (dragRef.current.bounds.bottom - dragRef.current.bounds.top)
-
-            // Snap to the closest 15-minute increment:
-            const snappedMinute = Math.round(
-              (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
-            )
+            const snappedMinute = snapMinute(e.clientY)
 
             // Use the snapped values to place the element
             ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
@@ -160,11 +183,25 @@ function WeekBody({ date, events, onExpand }) {
                 (dragRef.current.bounds.bottom - dragRef.current.bounds.top) +
               'px'
 
-            ghostElementRef.current.textContent = startOfWeek
+            const startFormat = startOfWeek
               .add(snappedMinute, 'minutes')
-              .format('h:mm a')
+              .format('h:mma')
+              .replace('m', '')
+            const endFormat = startOfWeek
+              .add(
+                snappedMinute +
+                  dragRef.current.event.endTime.diff(
+                    dragRef.current.event.startTime,
+                    'minutes'
+                  ),
+                'minutes'
+              )
+              .format('h:mma')
+              .replace('m', '')
+
+            ghostElementRef.current.textContent = startFormat + '–' + endFormat
           } catch (e) {
-            console.log('ref unavailable')
+            console.log(e.message)
           }
         }}
         style={{
@@ -180,13 +217,14 @@ function WeekBody({ date, events, onExpand }) {
           <HoverableBox
             className="weekday-box"
             key={d.format('MM D')}
-            onClick={e => {
-              const ep = e.target.closest('.event-pane')
-              // If the event did not occur within an eventPane,
-              // expand the day view.
-              if (!ep) {
-                return onExpand(d)
+            onClick={() => {
+              if (dragRef.current.eventPane) {
+                // click initiated on an event, do not expand
+                return
               }
+
+              // expand the daily view.
+              return onExpand(d)
             }}
             sx={{
               px: '0.25rem',

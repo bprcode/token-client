@@ -274,7 +274,7 @@ export function useViewQuery() {
 export const loader =
   queryClient =>
   ({ request, params }) => {
-    console.log('🐜 debug / placeholder / working on centralizing cache')
+    console.log('🐜 debug / no cache local/route loader implemented.')
     updateCacheData(queryClient, params.id, data => {
       if (data) {
         log(`🌙 primary cache already initialized`)

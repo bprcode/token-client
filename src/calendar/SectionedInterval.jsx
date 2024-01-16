@@ -7,6 +7,7 @@ import { useNarrowCheck } from './LayoutContext.mjs'
 const defaultLeftPadding = ['0.5rem', '5rem']
 const defaultRightPadding = '0.5rem'
 
+const noop = () => {}
 export function SectionedInterval({
   initial,
   final,
@@ -17,9 +18,9 @@ export function SectionedInterval({
   innerLeftPadding = defaultLeftPadding,
   innerRightPadding = defaultRightPadding,
   labelEvery = 1,
-  onClick,
-  onPointerDown,
-  onPointerUp,
+  onClick = noop,
+  onPointerDown = noop,
+  onPointerUp = noop,
   endMargin = '8rem',
   action,
   header,

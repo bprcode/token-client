@@ -89,12 +89,14 @@ function BriefPane({
   referenceStyle,
   hideShadows,
   header,
+  event,
   children,
 }) {
   return (
     <>
       <BrightHoverBox
         className="event-pane"
+        data-id={event.stableKey ?? event.id}
         sx={{
           touchAction: 'none',
           cursor: 'grab',
@@ -501,6 +503,7 @@ export function EventPane({
           augmentedColors,
           referenceStyle,
           hideShadows,
+          event,
           header,
         }}
       >
@@ -527,9 +530,10 @@ export function EventPane({
   return (
     <>
       <Zoom in={!isFading} appear={false} timeout={250}>
-        <BrightHoverBox
+        <div
           className="event-pane"
           {...eventHandlers}
+          data-id={event.stableKey ?? event.id}
           style={{
             touchAction: 'none',
             cursor:
@@ -709,7 +713,7 @@ export function EventPane({
               </div>
             )}
           </div>
-        </BrightHoverBox>
+        </div>
       </Zoom>
 
       {/* event outline ghost, displayed during drag-resizing: */}
