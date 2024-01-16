@@ -11,6 +11,7 @@ import { isOverlap } from './calendarLogic.mjs'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { SectionedInterval } from './SectionedInterval'
+import { useTheme } from '@emotion/react'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
@@ -28,12 +29,14 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
         zIndex: 3,
         filter: 'brightness(130%) saturate(110%)',
         textAlign: 'center',
+        paddingTop: '0.125rem',
       }}
     ></Box>
   )
 })
 
 function WeekBody({ date, events, onExpand, onUpdate }) {
+  const theme = useTheme()
   const logger = useLogger()
   const benchStart = performance.now()
   const displayHeight = '520px'
@@ -96,6 +99,9 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
         }}
         onPointerUp={e => {
           setShowGhost(false)
+          if (dragRef.current.eventPane) {
+            dragRef.current.eventPane.style.filter = ''
+          }
           if (dragRef.current.event) {
             const snappedMinute = snapMinute(e.clientY)
             const snappedDay = snapDay(e.clientX)
@@ -122,6 +128,9 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
         onPointerLeave={() => {
           setShowGhost(false)
           dragRef.current.event = null
+          if (dragRef.current.eventPane) {
+            dragRef.current.eventPane.style.filter = ''
+          }
         }}
         onPointerDown={e => {
           const ep = e.target.closest('.event-pane')
@@ -172,9 +181,14 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
           const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
           ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.75)`
           ghostElementRef.current.style.border = `3px dashed rgb(${rgb})`
+          ghostElementRef.current.style.color = theme.palette.augmentColor({
+            color: { main: `rgb(${rgb})` },
+          }).contrastText
           ghostElementRef.current.textContent = ''
 
           setShowGhost(true)
+          dragRef.current.eventPane.style.filter =
+            'brightness(40%) saturate(30%)'
         }}
         onPointerMove={e => {
           try {
@@ -284,7 +298,7 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
         ))}
       </div>
     )
-  }, [date, events, onExpand, onUpdate])
+  }, [date, events, theme, onExpand, onUpdate])
 
   const benchEnd = performance.now()
   setTimeout(

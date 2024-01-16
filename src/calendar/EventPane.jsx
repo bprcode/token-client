@@ -106,6 +106,7 @@ function BriefPane({
             'top 0.35s ease-out, height 0.35s ease-out, left 0.35s ease-out',
           userSelect: 'none',
           WebkitUserSelect: 'none',
+          opacity: event.isDeleting ? 0.3 : 1.0,
         }}
       >
         <OverflowArrows
