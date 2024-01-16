@@ -7,7 +7,7 @@ import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
-import { isOverlap, shorthandInterval } from './calendarLogic.mjs'
+import { isOverlap } from './calendarLogic.mjs'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { SectionedInterval } from './SectionedInterval'
@@ -33,7 +33,7 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
   )
 })
 
-function WeekBody({ date, events, onExpand }) {
+function WeekBody({ date, events, onExpand, onUpdate }) {
   const logger = useLogger()
   const benchStart = performance.now()
   const displayHeight = '520px'
@@ -94,10 +94,28 @@ function WeekBody({ date, events, onExpand }) {
           console.log('container click')
           dragRef.current.lockClick = false
         }}
-        onPointerUp={() => {
-          console.log('container pointer up')
+        onPointerUp={e => {
           setShowGhost(false)
           if (dragRef.current.event) {
+            const snappedMinute = snapMinute(e.clientY)
+            const snappedDay = snapDay(e.clientX)
+            const snappedStart = startOfWeek
+              .add(snappedDay, 'days')
+              .add(snappedMinute, 'minutes')
+            onUpdate(
+              dragRef.current.event.stableKey ?? dragRef.current.event.id,
+              {
+                startTime: snappedStart,
+                endTime: snappedStart.add(
+                  dragRef.current.event.endTime.diff(
+                    dragRef.current.event.startTime,
+                    'minutes'
+                  ),
+                  'minutes'
+                ),
+              }
+            )
+
             dragRef.current.event = null
           }
         }}
@@ -266,7 +284,7 @@ function WeekBody({ date, events, onExpand }) {
         ))}
       </div>
     )
-  }, [date, events, onExpand])
+  }, [date, events, onExpand, onUpdate])
 
   const benchEnd = performance.now()
   setTimeout(
@@ -282,7 +300,7 @@ function WeekBody({ date, events, onExpand }) {
   )
 }
 
-export function WeeklyView({ date, onBack, onExpand, onChange }) {
+export function WeeklyView({ date, onBack, onExpand, onChange, onUpdate }) {
   const { data: events } = useViewQuery()
   const logger = useLogger()
   const logId = Math.round(Math.random() * 1e6)
@@ -340,7 +358,12 @@ export function WeeklyView({ date, onBack, onExpand, onChange }) {
         </IconButton>
       </ViewHeader>
 
-      <WeekBody date={date} events={events} onExpand={onExpand} />
+      <WeekBody
+        date={date}
+        events={events}
+        onExpand={onExpand}
+        onUpdate={onUpdate}
+      />
     </ViewContainer>
   )
 

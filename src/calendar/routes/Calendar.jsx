@@ -349,6 +349,25 @@ export function CalendarContents({ calendarId }) {
     ? dayjs(searchParams.get('d').replaceAll('_', ':'))
     : dayjs()
 
+  const updaters = {
+    onCreate: addition =>
+      dispatch({
+        type: 'create',
+        addition,
+      }),
+    onUpdate: (id, updates) =>
+      dispatch({
+        type: 'update',
+        id,
+        updates,
+      }),
+    onDelete: id =>
+      dispatch({
+        type: 'delete',
+        id,
+      }),
+  }
+
   if (viewError) {
     return (
       <ViewContainer>
@@ -436,6 +455,7 @@ export function CalendarContents({ calendarId }) {
               updateParams({ view: 'month' })
             }}
             date={date}
+            {...updaters}
             onExpand={date => updateParams({ view: 'day', date })}
             onChange={date => updateParams({ date })}
           />
@@ -446,25 +466,7 @@ export function CalendarContents({ calendarId }) {
               updateParams({ view: 'week' })
             }}
             date={date}
-            onCreate={addition =>
-              dispatch({
-                type: 'create',
-                addition,
-              })
-            }
-            onUpdate={(id, updates) =>
-              dispatch({
-                type: 'update',
-                id,
-                updates,
-              })
-            }
-            onDelete={id =>
-              dispatch({
-                type: 'delete',
-                id,
-              })
-            }
+            {...updaters}
             onUndo={() => console.log(`debug: not implemented.`)}
             canUndo={false}
           />
