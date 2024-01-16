@@ -2,7 +2,7 @@ import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import { IconButton, Typography, Box, useMediaQuery } from '@mui/material'
-import { forwardRef, useMemo, useRef, useState } from 'react'
+import { forwardRef, useContext, useMemo, useRef, useState } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
@@ -12,6 +12,8 @@ import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { SectionedInterval } from './SectionedInterval'
 import { useTheme } from '@emotion/react'
+import { ActionButtons } from './ActionDisplay'
+import { ActionContext, actionList } from './ActionContext.mjs'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
@@ -35,15 +37,16 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
   )
 })
 
-function WeekBody({ date, events, onExpand, onUpdate }) {
+function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
   const theme = useTheme()
   const logger = useLogger()
   const benchStart = performance.now()
   const displayHeight = '520px'
 
   const ghostElementRef = useRef(null)
-  const dragRef = useRef({})
+  const touchRef = useRef({})
   const [showGhost, setShowGhost] = useState(false)
+  const action = useContext(ActionContext)
 
   const rv = useMemo(() => {
     const days = []
@@ -56,28 +59,30 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
 
     function snapDay(clientX) {
       const xFraction =
-        (clientX - dragRef.current.bounds.clientLeft) /
-        dragRef.current.bounds.clientWidth
+        (clientX - touchRef.current.bounds.clientLeft) /
+        touchRef.current.bounds.clientWidth
       return Math.round((xFraction - (xFraction % (1 / 7))) * 7)
     }
 
     function snapLeft(clientX) {
-      return (snapDay(clientX) * dragRef.current.bounds.clientWidth) / 7 + 4
+      return (snapDay(clientX) * touchRef.current.bounds.clientWidth) / 7 + 4
     }
 
     function snapMinute(clientY) {
       // Constrain the drag action to its parent bounds
       const top = Math.min(
-        dragRef.current.bounds.bottom - dragRef.current.height,
+        touchRef.current.bounds.bottom - touchRef.current.height,
         Math.max(
-          dragRef.current.bounds.top,
-          clientY - dragRef.current.initialClientY + dragRef.current.initialTop
+          touchRef.current.bounds.top,
+          clientY -
+            touchRef.current.initialClientY +
+            touchRef.current.initialTop
         )
       )
 
       const yFraction =
-        (top - dragRef.current.bounds.top) /
-        (dragRef.current.bounds.bottom - dragRef.current.bounds.top)
+        (top - touchRef.current.bounds.top) /
+        (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
 
       // Snap to the closest 15-minute increment:
       return Math.round(
@@ -93,28 +98,32 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
 
     return (
       <div
-        onClick={() => {
-          console.log('container click')
-          dragRef.current.lockClick = false
+        onClick={e => {
+          if (action === 'delete') {
+            const ep = e.target.closest('.event-pane')
+            if (ep) {
+              onDelete(ep.dataset.id)
+            }
+          }
         }}
         onPointerUp={e => {
           setShowGhost(false)
-          if (dragRef.current.eventPane) {
-            dragRef.current.eventPane.style.filter = ''
+          if (touchRef.current.eventPane) {
+            touchRef.current.eventPane.style.filter = ''
           }
-          if (dragRef.current.event) {
+          if (touchRef.current.event) {
             const snappedMinute = snapMinute(e.clientY)
             const snappedDay = snapDay(e.clientX)
             const snappedStart = startOfWeek
               .add(snappedDay, 'days')
               .add(snappedMinute, 'minutes')
             onUpdate(
-              dragRef.current.event.stableKey ?? dragRef.current.event.id,
+              touchRef.current.event.stableKey ?? touchRef.current.event.id,
               {
                 startTime: snappedStart,
                 endTime: snappedStart.add(
-                  dragRef.current.event.endTime.diff(
-                    dragRef.current.event.startTime,
+                  touchRef.current.event.endTime.diff(
+                    touchRef.current.event.startTime,
                     'minutes'
                   ),
                   'minutes'
@@ -122,22 +131,26 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
               }
             )
 
-            dragRef.current.event = null
+            touchRef.current.event = null
           }
         }}
         onPointerLeave={() => {
           setShowGhost(false)
-          dragRef.current.event = null
-          if (dragRef.current.eventPane) {
-            dragRef.current.eventPane.style.filter = ''
+          touchRef.current.event = null
+          if (touchRef.current.eventPane) {
+            touchRef.current.eventPane.style.filter = ''
           }
         }}
         onPointerDown={e => {
+          if(action === 'delete') {
+            return
+          }
+
           const ep = e.target.closest('.event-pane')
           // If the event did not occur within an eventPane,
           // allow the individual day container to handle it.
           if (!ep) {
-            dragRef.current.eventPane = null
+            touchRef.current.eventPane = null
             return
           }
 
@@ -152,7 +165,7 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
             innerSections[innerSections.length - 1].getBoundingClientRect()
 
           const container = wb.getBoundingClientRect()
-          dragRef.current = {
+          touchRef.current = {
             event: events.find(
               e => e.stableKey === ep.dataset.id || e.id === ep.dataset.id
             ),
@@ -175,7 +188,7 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
 
           ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
           ghostElementRef.current.style.top = rect.top - container.top + 'px'
-          ghostElementRef.current.style.width = dragRef.current.width + 'px'
+          ghostElementRef.current.style.width = touchRef.current.width + 'px'
           ghostElementRef.current.style.height = rect.height + 'px'
           // extract the comma-separated argument to rgb(r,g,b):
           const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
@@ -187,12 +200,12 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
           ghostElementRef.current.textContent = ''
 
           setShowGhost(true)
-          dragRef.current.eventPane.style.filter =
+          touchRef.current.eventPane.style.filter =
             'brightness(40%) saturate(30%)'
         }}
         onPointerMove={e => {
           try {
-            if (!dragRef.current.event) {
+            if (!touchRef.current.event) {
               return
             }
             // const left = Math.min(
@@ -210,9 +223,9 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
             // Use the snapped values to place the element
             ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
             ghostElementRef.current.style.top =
-              dragRef.current.bounds.top +
+              touchRef.current.bounds.top +
               (snappedMinute / (24 * 4 * 15)) *
-                (dragRef.current.bounds.bottom - dragRef.current.bounds.top) +
+                (touchRef.current.bounds.bottom - touchRef.current.bounds.top) +
               'px'
 
             const startFormat = startOfWeek
@@ -222,8 +235,8 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
             const endFormat = startOfWeek
               .add(
                 snappedMinute +
-                  dragRef.current.event.endTime.diff(
-                    dragRef.current.event.startTime,
+                  touchRef.current.event.endTime.diff(
+                    touchRef.current.event.startTime,
                     'minutes'
                   ),
                 'minutes'
@@ -249,9 +262,11 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
           <HoverableBox
             className="weekday-box"
             key={d.format('MM D')}
-            onClick={() => {
-              if (dragRef.current.eventPane) {
-                // click initiated on an event, do not expand
+            onClick={e => {
+              const ep = e.target.closest('.event-pane')
+              // click was on, or initiated on, an event pane:
+              if (ep || touchRef.current.eventPane) {
+                // Do not expand.
                 return
               }
 
@@ -285,7 +300,6 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
               labelEvery={6}
               endMargin={'0rem'}
               action={null}
-              header={null}
             >
               <DailyBreakdown
                 date={d}
@@ -298,7 +312,7 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
         ))}
       </div>
     )
-  }, [date, events, theme, onExpand, onUpdate])
+  }, [date, events, theme, onExpand, onUpdate, onDelete, action])
 
   const benchEnd = performance.now()
   setTimeout(
@@ -314,7 +328,14 @@ function WeekBody({ date, events, onExpand, onUpdate }) {
   )
 }
 
-export function WeeklyView({ date, onBack, onExpand, onChange, onUpdate }) {
+export function WeeklyView({
+  date,
+  onBack,
+  onExpand,
+  onChange,
+  onUpdate,
+  onDelete,
+}) {
   const { data: events } = useViewQuery()
   const logger = useLogger()
   const logId = Math.round(Math.random() * 1e6)
@@ -335,50 +356,58 @@ export function WeeklyView({ date, onBack, onExpand, onChange, onUpdate }) {
       saturday.format(isRollover ? 'MMM D' : 'D')
     : 'Week of ' + sunday.format('MMMM D, YYYY')
 
+  const [action, setAction] = useState(actionList[0])
+
   const rv = (
-    <ViewContainer>
-      <ViewHeader gradient={null}>
-        <IconButton aria-label="back to monthly view" onClick={onBack}>
-          <CalendarViewMonthIcon />
-        </IconButton>
-        <IconButton
-          aria-label="previous week"
-          disableTouchRipple
-          onClick={() => onChange(date.subtract(1, 'week').startOf('week'))}
-          sx={{
-            '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
-            borderTopRightRadius: 0,
-            borderBottomRightRadius: 0,
-          }}
-        >
-          <NavigateBeforeIcon />
-        </IconButton>
+    <ActionContext.Provider value={action}>
+      <ViewContainer>
+        <ViewHeader gradient={null}>
+          <IconButton aria-label="back to monthly view" onClick={onBack}>
+            <CalendarViewMonthIcon />
+          </IconButton>
+          <IconButton
+            aria-label="previous week"
+            disableTouchRipple
+            onClick={() => onChange(date.subtract(1, 'week').startOf('week'))}
+            sx={{
+              '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
+              borderTopRightRadius: 0,
+              borderBottomRightRadius: 0,
+            }}
+          >
+            <NavigateBeforeIcon />
+          </IconButton>
 
-        <Typography variant="h6" component="span">
-          {weekDescription}
-        </Typography>
+          <Typography variant="h6" component="span">
+            {weekDescription}
+          </Typography>
 
-        <IconButton
-          aria-label="next week"
-          disableTouchRipple
-          onClick={() => onChange(date.add(1, 'week').startOf('week'))}
-          sx={{
-            '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
-            borderBottomLeftRadius: 0,
-            borderTopLeftRadius: 0,
-          }}
-        >
-          <NavigateNextIcon />
-        </IconButton>
-      </ViewHeader>
+          <IconButton
+            aria-label="next week"
+            disableTouchRipple
+            onClick={() => onChange(date.add(1, 'week').startOf('week'))}
+            sx={{
+              mr: 'auto',
+              '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
+              borderBottomLeftRadius: 0,
+              borderTopLeftRadius: 0,
+            }}
+          >
+            <NavigateNextIcon />
+          </IconButton>
 
-      <WeekBody
-        date={date}
-        events={events}
-        onExpand={onExpand}
-        onUpdate={onUpdate}
-      />
-    </ViewContainer>
+          <ActionButtons onBehavior={b => setAction(b)} />
+        </ViewHeader>
+
+        <WeekBody
+          date={date}
+          events={events}
+          onExpand={onExpand}
+          onUpdate={onUpdate}
+          onDelete={onDelete}
+        />
+      </ViewContainer>
+    </ActionContext.Provider>
   )
 
   console.timeEnd(logId + ' WeeklyCalendar rendered')

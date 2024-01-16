@@ -1,6 +1,5 @@
 import {
   IconButton,
-  Paper,
   Typography,
   Collapse,
   useMediaQuery,
