@@ -42,7 +42,11 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
         overflowX: 'hidden',
         fontSize: '0.75em',
       }}
-    ></Box>
+    >
+      <span className="start-element"></span>
+      <wbr />–<wbr />
+      <span className="end-element" />
+    </Box>
   )
 })
 
@@ -138,9 +142,7 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
       const top = Math.min(
         touchRef.current.bounds.bottom +
           document.documentElement.scrollTop -
-          // +1 required for some mobile interactions:
-          touchRef.current.height +
-          1,
+          touchRef.current.height,
         Math.max(
           touchRef.current.bounds.top + document.documentElement.scrollTop,
           y - touchRef.current.initialClientY + touchRef.current.initialTop
@@ -148,14 +150,56 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
       )
 
       const yFraction =
-        (top -
+        (top +
+          // +1 fixes slight inaccuracy when scrolled:
+          1 -
           (touchRef.current.bounds.top + document.documentElement.scrollTop)) /
         (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
+
+      console.log('yFraction:', yFraction)
+      console.log(
+        'after mod:',
+        (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
+      )
 
       // Snap to the closest 15-minute increment:
       return Math.round(
         (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
       )
+    }
+
+    function updateGhost(clientX, clientY) {
+      const snappedMinute = snapMinute(
+        clientY + document.documentElement.scrollTop
+      )
+
+      // Use the snapped values to place the element
+      ghostElementRef.current.style.left = snapLeft(clientX) + 'px'
+      ghostElementRef.current.style.top =
+        touchRef.current.bounds.top +
+        document.documentElement.scrollTop +
+        (snappedMinute / (24 * 4 * 15)) *
+          (touchRef.current.bounds.bottom - touchRef.current.bounds.top) +
+        'px'
+
+      const formattedStart = startOfWeek
+        .add(snappedMinute, 'minutes')
+        .format('h:mma')
+        .replace('m', '')
+      const formattedEnd = startOfWeek
+        .add(
+          snappedMinute +
+            touchRef.current.event.endTime.diff(
+              touchRef.current.event.startTime,
+              'minutes'
+            ),
+          'minutes'
+        )
+        .format('h:mma')
+        .replace('m', '')
+
+      touchRef.current.startElement.textContent = formattedStart
+      touchRef.current.endElement.textContent = formattedEnd
     }
 
     let d = startOfWeek
@@ -181,6 +225,10 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
               touchRef.current.eventPane.style.filter = ''
             }
             if (touchRef.current.event) {
+              console.log(
+                'using scrollTop:',
+                document.documentElement.scrollTop
+              )
               const snappedMinute = snapMinute(
                 e.clientY + document.documentElement.scrollTop
               )
@@ -255,10 +303,13 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
                 clientLeft: container.left,
                 clientWidth: container.width,
               },
+              startElement:
+                ghostElementRef.current.querySelector('.start-element'),
+              endElement: ghostElementRef.current.querySelector('.end-element'),
             }
 
-            ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
-            ghostElementRef.current.style.top = rect.top - container.top + 'px'
+            // ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
+            // ghostElementRef.current.style.top = rect.top - container.top + 'px'
             ghostElementRef.current.style.width = touchRef.current.width + 'px'
             ghostElementRef.current.style.height = rect.height + 'px'
             // extract the comma-separated argument to rgb(r,g,b):
@@ -268,7 +319,11 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
             ghostElementRef.current.style.color = theme.palette.augmentColor({
               color: { main: `rgb(${rgb})` },
             }).contrastText
-            ghostElementRef.current.textContent = ''
+
+            // touchRef.current.startElement.textContent = ''
+            // touchRef.current.endElement.textContent = ''
+
+            updateGhost(e.clientX, e.clientY)
 
             setShowGhost(true)
             touchRef.current.eventPane.style.filter =
@@ -280,38 +335,7 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
                 return
               }
 
-              const snappedMinute = snapMinute(
-                e.clientY + document.documentElement.scrollTop
-              )
-
-              // Use the snapped values to place the element
-              ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
-              ghostElementRef.current.style.top =
-                touchRef.current.bounds.top +
-                document.documentElement.scrollTop +
-                (snappedMinute / (24 * 4 * 15)) *
-                  (touchRef.current.bounds.bottom -
-                    touchRef.current.bounds.top) +
-                'px'
-
-              const startFormat = startOfWeek
-                .add(snappedMinute, 'minutes')
-                .format('h:mma')
-                .replace('m', '')
-              const endFormat = startOfWeek
-                .add(
-                  snappedMinute +
-                    touchRef.current.event.endTime.diff(
-                      touchRef.current.event.startTime,
-                      'minutes'
-                    ),
-                  'minutes'
-                )
-                .format('h:mma')
-                .replace('m', '')
-
-              ghostElementRef.current.textContent =
-                startFormat + '–' + endFormat
+              updateGhost(e.clientX, e.clientY)
             } catch (e) {
               console.log(e.message)
             }
@@ -323,7 +347,6 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
             width: '100%',
             borderTop: '1px solid #aaf3',
             boxShadow: '1rem 1.5rem 2rem #0114',
-            // marginBottom: needMobileBar ? '7rem' : undefined,
           }}
         >
           {days.map(day => (
