@@ -68,7 +68,7 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
       }}
       sx={{
         px: '0.25rem',
-        pb: '1.5rem',
+        pb: '0.5rem',
         backgroundColor: 'rgb(23, 27, 28)',
         borderLeft: '1px solid #fff1',
       }}
@@ -359,9 +359,8 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
           <div
             style={{
               borderTop: '1px solid #1c1c1c',
-              backgroundColor: 'transparent',
-              // backgroundColor: 'hsla(192, 10%, 8%, 0.05)',
-              height: '8rem',
+              backgroundColor: 'hsla(192, 10%, 8%, 0.75)',
+              height: '7rem',
             }}
           />
         )}
@@ -410,7 +409,9 @@ function CreationDrawer({ open }) {
         <div
           style={{
             height: '7rem',
-            backgroundColor: '#00f4',
+            backgroundColor: '#222b',
+            borderTop: '1px solid #fff4',
+            padding: '0.25rem',
           }}
         >
           placeholder creation content
