@@ -19,7 +19,7 @@ function Background() {
   className="background-box"
   sx={{
     zIndex: -9,
-    position: 'absolute',
+    position: 'fixed',
     // Do not use 100vw; causes Chrome horizontal scroll issues:
     width: '100%',
     height: '100vh',
@@ -31,7 +31,6 @@ function Background() {
 }
 
 export function Root() {
-  const isNarrow = useNarrowCheck()
   const [expand, setExpand] = useState(false)
   const navigation = useNavigation()
   useNavigationControl()
@@ -46,9 +45,6 @@ export function Root() {
         disableGutters
         sx={{
           height: '100vh',
-          // N.B. overflowX: hidden causes a persistent address bar
-          // on mobile Y-scrolling.
-          // overflowX: isNarrow ? undefined : 'hidden',
         }}
       >
       

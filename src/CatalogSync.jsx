@@ -30,7 +30,7 @@ function useCatalogBundleMutation() {
         queryClient,
       })
     },
-    onError: (error, variables, context) => {
+    onError: (error, variables) => {
       console.log('fields were:', Reflect.ownKeys(error))
       console.log(
         'error fields were:',

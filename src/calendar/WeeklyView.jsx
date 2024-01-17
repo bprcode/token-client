@@ -308,8 +308,6 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
               endElement: ghostElementRef.current.querySelector('.end-element'),
             }
 
-            // ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
-            // ghostElementRef.current.style.top = rect.top - container.top + 'px'
             ghostElementRef.current.style.width = touchRef.current.width + 'px'
             ghostElementRef.current.style.height = rect.height + 'px'
             // extract the comma-separated argument to rgb(r,g,b):
@@ -319,9 +317,6 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
             ghostElementRef.current.style.color = theme.palette.augmentColor({
               color: { main: `rgb(${rgb})` },
             }).contrastText
-
-            // touchRef.current.startElement.textContent = ''
-            // touchRef.current.endElement.textContent = ''
 
             updateGhost(e.clientX, e.clientY)
 
@@ -364,7 +359,8 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
           <div
             style={{
               borderTop: '1px solid #1c1c1c',
-              backgroundColor: 'hsla(192, 10%, 8%, 0.05)',
+              backgroundColor: 'transparent',
+              // backgroundColor: 'hsla(192, 10%, 8%, 0.05)',
               height: '8rem',
             }}
           />
