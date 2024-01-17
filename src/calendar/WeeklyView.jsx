@@ -35,10 +35,12 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
         position: 'absolute',
         backgroundColor: '#f004',
         border: '2px dashed orange',
-        zIndex: 3,
+        zIndex: 2,
         filter: 'brightness(130%) saturate(110%)',
         textAlign: 'center',
         paddingTop: '0.125rem',
+        overflowX: 'hidden',
+        fontSize: '0.75em',
       }}
     ></Box>
   )
@@ -131,20 +133,23 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
       return (snapDay(clientX) * touchRef.current.bounds.clientWidth) / 7 + 4
     }
 
-    function snapMinute(clientY) {
+    function snapMinute(y) {
       // Constrain the drag action to its parent bounds
       const top = Math.min(
-        touchRef.current.bounds.bottom - touchRef.current.height,
+        touchRef.current.bounds.bottom +
+          document.documentElement.scrollTop -
+          // +1 required for some mobile interactions:
+          touchRef.current.height +
+          1,
         Math.max(
-          touchRef.current.bounds.top,
-          clientY -
-            touchRef.current.initialClientY +
-            touchRef.current.initialTop
+          touchRef.current.bounds.top + document.documentElement.scrollTop,
+          y - touchRef.current.initialClientY + touchRef.current.initialTop
         )
       )
 
       const yFraction =
-        (top - touchRef.current.bounds.top) /
+        (top -
+          (touchRef.current.bounds.top + document.documentElement.scrollTop)) /
         (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
 
       // Snap to the closest 15-minute increment:
@@ -176,7 +181,9 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
               touchRef.current.eventPane.style.filter = ''
             }
             if (touchRef.current.event) {
-              const snappedMinute = snapMinute(e.clientY)
+              const snappedMinute = snapMinute(
+                e.clientY + document.documentElement.scrollTop
+              )
               const snappedDay = snapDay(e.clientX)
               const snappedStart = startOfWeek
                 .add(snappedDay, 'days')
@@ -237,7 +244,7 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
               initialLeft: rect.left - container.left,
               initialTop: rect.top - container.top,
               initialClientX: e.clientX,
-              initialClientY: e.clientY,
+              initialClientY: e.clientY + document.documentElement.scrollTop,
               width: Math.round(container.width / 7) - 8,
               height: rect.height,
               bounds: {
@@ -273,12 +280,15 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
                 return
               }
 
-              const snappedMinute = snapMinute(e.clientY)
+              const snappedMinute = snapMinute(
+                e.clientY + document.documentElement.scrollTop
+              )
 
               // Use the snapped values to place the element
               ghostElementRef.current.style.left = snapLeft(e.clientX) + 'px'
               ghostElementRef.current.style.top =
                 touchRef.current.bounds.top +
+                document.documentElement.scrollTop +
                 (snappedMinute / (24 * 4 * 15)) *
                   (touchRef.current.bounds.bottom -
                     touchRef.current.bounds.top) +
@@ -409,9 +419,6 @@ export function WeeklyView({
   const isReallySmall = useMediaQuery('(max-width: 320px)')
   const isNarrow = useNarrowCheck()
   const needMobileBar = useMobileBarCheck()
-  // DEBUG -- containment switching in view container fixes
-  // address bar hiding but breaks drag position handling. Likely
-  // need to include scroll position?
 
   const sunday = date.startOf('week')
   const saturday = sunday.add(6, 'days')

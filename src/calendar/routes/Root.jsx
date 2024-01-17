@@ -15,10 +15,13 @@ export const loader = queryClient => async () => {
 }
 
 function Background() {
-  return <Box sx={{
+  return <Box 
+  className="background-box"
+  sx={{
     zIndex: -9,
     position: 'absolute',
-    width: '100vw',
+    // Do not use 100vw; causes Chrome horizontal scroll issues:
+    width: '100%',
     height: '100vh',
     backgroundImage: `url(${bokehImage})`,
     backgroundSize: 'cover',
@@ -45,9 +48,11 @@ export function Root() {
           height: '100vh',
           // N.B. overflowX: hidden causes a persistent address bar
           // on mobile Y-scrolling.
-          overflowX: isNarrow ? undefined : 'hidden',
+          // overflowX: isNarrow ? undefined : 'hidden',
         }}
       >
+      
+
         <Box
           sx={{
             height: '100%',
