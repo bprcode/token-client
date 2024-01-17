@@ -1,6 +1,6 @@
 import CircularProgress from '@mui/material/CircularProgress'
 import { useState } from 'react'
-import { ToggleMenuContext, useNarrowCheck } from '../LayoutContext.mjs'
+import { ToggleMenuContext } from '../LayoutContext.mjs'
 import { Box, Container } from '@mui/material'
 import { Outlet, useNavigation } from 'react-router-dom'
 import RouterSidebar from '../RouterSidebar'

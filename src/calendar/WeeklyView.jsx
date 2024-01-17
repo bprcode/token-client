@@ -21,6 +21,7 @@ import { useTheme } from '@emotion/react'
 import { ActionButtons, MobileBar } from './ActionDisplay'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
+import { CreationPicker } from './CreationPicker'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
@@ -359,7 +360,7 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
           <div
             style={{
               borderTop: '1px solid #1c1c1c',
-              backgroundColor: 'hsla(192, 10%, 8%, 0.75)',
+              backgroundColor: 'hsla(192, 10%, 8%, 0.5)',
               height: '7rem',
             }}
           />
@@ -406,16 +407,7 @@ function CreationDrawer({ open }) {
       }}
     >
       <Collapse in={open}>
-        <div
-          style={{
-            height: '7rem',
-            backgroundColor: '#222b',
-            borderTop: '1px solid #fff4',
-            padding: '0.25rem',
-          }}
-        >
-          placeholder creation content
-        </div>
+        <CreationPicker />
       </Collapse>
     </div>
   )
