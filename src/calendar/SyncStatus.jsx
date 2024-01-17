@@ -3,10 +3,11 @@ import { CatalogSyncMonitor } from '../CatalogSync'
 import { EventSyncMonitor } from './EventSync'
 import { useHeartbeatQuery } from '../HeartbeatPanel'
 import { useCacheList } from './cacheTracker.mjs'
-import { useNarrowCheck } from './LayoutContext.mjs'
+import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 
 export default function SyncStatus() {
   const isNarrow = useNarrowCheck()
+  const needMobileBar = useMobileBarCheck()
   const { data: heartbeat } = useHeartbeatQuery()
   const cacheList = useCacheList()
 
@@ -18,7 +19,7 @@ export default function SyncStatus() {
         position: isNarrow ? 'fixed' : 'absolute',
         right: 0,
         bottom: 0,
-        mb: isNarrow ? '4rem' : undefined,
+        mb: needMobileBar ? '3.5rem' : undefined,
       }}
     >
       {heartbeat && (

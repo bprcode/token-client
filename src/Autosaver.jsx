@@ -112,8 +112,8 @@ export function AutosaverStatus({ touchList, isPending, label }) {
         display: show ? 'flex' : 'none',
         justifyContent: 'end',
         padding: '0.5rem 0.75rem',
-        mr: 2,
-        mb: 2,
+        mr: 1,
+        mb: 1,
         animation: isSaved && `${saveAnimation} 2s ease 2s`,
       }}
     >

@@ -364,8 +364,8 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
           <div
             style={{
               borderTop: '1px solid #1c1c1c',
-              backgroundColor: 'rgb(23, 27, 28)',
-              height: '9rem',
+              backgroundColor: 'hsla(192, 10%, 8%, 0.05)',
+              height: '8rem',
             }}
           />
         )}

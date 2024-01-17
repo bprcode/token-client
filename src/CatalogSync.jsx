@@ -187,7 +187,7 @@ function handleCalendarSuccess({ result, original, queryClient }) {
 
 function makeCalendarFetch(variables) {
   const endpoint = 'calendars'
-  const timeout = 4000 // debug -- unreasonably low to test
+  const timeout = 4000
   const signal = variables.signal
 
   // Omit local fields not needed by the server
