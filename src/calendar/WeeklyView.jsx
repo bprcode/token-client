@@ -495,7 +495,7 @@ export function WeeklyView({
           onDelete={onDelete}
         />
       </ViewContainer>
-      {needMobileBar && <MobileBar>{actionButtons}</MobileBar>}
+      {needMobileBar && <MobileBar transparent={action === 'create'}>{actionButtons}</MobileBar>}
       <CreationDrawer open={action === 'create'} />
     </ActionContext.Provider>
   )

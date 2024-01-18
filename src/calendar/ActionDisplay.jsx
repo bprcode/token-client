@@ -56,7 +56,7 @@ export function ActionButtons({ onBehavior, canUndo }) {
   )
 }
 
-export function MobileBar({ children }) {
+export function MobileBar({ transparent, children }) {
   const disableBlur =
     navigator.userAgent.includes('Mobile') &&
     navigator.userAgent.includes('Firefox')
@@ -67,9 +67,20 @@ export function MobileBar({ children }) {
       sx={{
         top: 'auto',
         bottom: 0,
-        borderTop: '1px solid #fff2',
-        backgroundColor: disableBlur ? '#000c' : '#0007',
-        backdropFilter: disableBlur ? undefined : 'blur(3px)',
+        backgroundImage: 'none',
+        boxShadow: transparent ? 'none' : undefined,
+        borderTop: transparent ? undefined : '1px solid #fff2',
+        backgroundColor: transparent
+          ? 'transparent'
+          : disableBlur
+          ? '#222a'
+          : '#2229',
+        backdropFilter: transparent
+          ? undefined
+          : disableBlur
+          ? undefined
+          : 'blur(3px)',
+        transition: 'background-color 1s ease-out',
       }}
     >
       <Toolbar>
