@@ -129,6 +129,7 @@ function WeekBody({
     const days = []
     const startOfWeek = date.startOf('week')
     const endOfWeek = date.endOf('week')
+    const snapGap = 4
 
     const weekEvents = events.filter(e =>
       isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
@@ -142,12 +143,15 @@ function WeekBody({
     }
 
     function snapLeft(pageX) {
-      return (snapDay(pageX) * touchRef.current.bounds.containerWidth) / 7 + 4
+      return (
+        (snapDay(pageX) * touchRef.current.bounds.containerWidth) / 7 + snapGap
+      )
     }
 
     function snapXCeil(pageX) {
       return (
-        ((snapDay(pageX) + 1) * touchRef.current.bounds.containerWidth) / 7 - 4
+        ((snapDay(pageX) + 1) * touchRef.current.bounds.containerWidth) / 7 -
+        snapGap
       )
     }
 
@@ -215,11 +219,30 @@ function WeekBody({
     }
 
     function updateDragCreation(pageX, pageY) {
-      const initialMinute = snapMinute(touchRef.current.flooredY)
-      const currentMinute = snapMinute(pageY)
+      const pressedMinute = snapMinute(touchRef.current.flooredY)
+      const draggedMinute = snapMinute(pageY)
 
-      const startMinute = Math.min(initialMinute, currentMinute)
-      const endMinute = Math.max(initialMinute, currentMinute)
+      const lowMinute = Math.min(pressedMinute, draggedMinute)
+      const highMinute = Math.max(pressedMinute, draggedMinute)
+
+      const finalMinute =
+        // If the user is dragging down...
+        draggedMinute > pressedMinute
+          ? // ... then ensure a minimum interval size
+            highMinute - lowMinute > 60
+            ? highMinute
+            : pressedMinute + 60
+          : // Otherwise, use the end of the initial click region
+            pressedMinute + 60
+      const startMinute =
+        // If the user is dragging down...
+        draggedMinute > pressedMinute
+          ? // ... then start at the initial touch point
+            pressedMinute
+          : // Otherwise, ensure a minimum interval size
+          highMinute - lowMinute > 60
+          ? lowMinute
+          : Math.max(0, highMinute - 60)
 
       const leftmost = Math.min(pageX, touchRef.current.initialPageX)
       const rightmost = Math.max(pageX, touchRef.current.initialPageX)
@@ -232,12 +255,24 @@ function WeekBody({
         'px'
 
       ghostElementRef.current.style.height =
-        ((endMinute - startMinute) / (24 * 4 * 15)) *
+        ((finalMinute - startMinute) / (24 * 4 * 15)) *
           (touchRef.current.bounds.bottom - touchRef.current.bounds.top) +
         'px'
 
       ghostElementRef.current.style.width =
         snapXCeil(rightmost) - snapLeft(leftmost) + 'px'
+
+      const formattedStart = startOfWeek
+        .add(startMinute, 'minutes')
+        .format('h:mma')
+        .replace('m', '')
+      const formattedEnd = startOfWeek
+        .add(finalMinute, 'minutes')
+        .format('h:mma')
+        .replace('m', '')
+
+      touchRef.current.startElement.textContent = formattedStart
+      touchRef.current.endElement.textContent = formattedEnd
     }
 
     function updateDragMove(pageX, pageY) {
@@ -290,7 +325,8 @@ function WeekBody({
           }}
           onPointerUp={e => {
             setShowGhost(false)
-
+            touchRef.current.isDragCreating = false
+            
             if (action === 'create') {
               console.log('create placeholder')
               return
@@ -325,6 +361,7 @@ function WeekBody({
           onPointerLeave={() => {
             setShowGhost(false)
             touchRef.current.event = null
+            touchRef.current.isDragCreating = false
             if (touchRef.current.eventPane) {
               touchRef.current.eventPane.style.filter = ''
             }
@@ -342,6 +379,7 @@ function WeekBody({
               const flooredHour = 24 * (yFraction - (yFraction % (1 / 24)))
 
               Object.assign(touchRef.current, {
+                isDragCreating: true,
                 initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
                 initialTop: e.pageY - window.scrollY,
                 flooredY:
@@ -353,11 +391,10 @@ function WeekBody({
 
                 width:
                   Math.round(touchRef.current.bounds.containerWidth / 7) - 8,
-                height:
-                  (touchRef.current.bounds.bottom -
-                    touchRef.current.bounds.top) /
-                  (24 * 4),
+                height: 0,
               })
+
+              updateDragCreation(e.pageX, e.pageY)
               return
             }
 
@@ -412,7 +449,7 @@ function WeekBody({
           }}
           onPointerMove={e => {
             try {
-              if (action === 'create') {
+              if (action === 'create' && touchRef.current.isDragCreating) {
                 updateDragCreation(e.pageX, e.pageY)
                 return
               }
