@@ -41,6 +41,7 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
         textAlign: 'center',
         paddingTop: '0.125rem',
         overflowX: 'hidden',
+        overflowY: 'hidden',
         fontSize: '0.75em',
       }}
     >
@@ -324,6 +325,7 @@ function WeekBody({
             }
           }}
           onPointerUp={e => {
+            console.log('⬆️ week pointer up')
             setShowGhost(false)
             touchRef.current.isDragCreating = false
             
@@ -359,6 +361,7 @@ function WeekBody({
             }
           }}
           onPointerLeave={() => {
+            console.log('👋 week pointer leave')
             setShowGhost(false)
             touchRef.current.event = null
             touchRef.current.isDragCreating = false
@@ -366,7 +369,9 @@ function WeekBody({
               touchRef.current.eventPane.style.filter = ''
             }
           }}
+          
           onPointerDown={e => {
+            console.log('🔽 week pointer down')
             if (action === 'create') {
               onHideDrawer()
               updateTouchBounds(e)
@@ -464,6 +469,7 @@ function WeekBody({
             }
           }}
           style={{
+            touchAction: action === 'create' ? 'none' : undefined,
             paddingLeft: '1px',
             display: 'grid',
             gridTemplateColumns: 'repeat(7, 1fr)',
