@@ -106,7 +106,14 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
   )
 }
 
-function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
+function WeekBody({
+  date,
+  events,
+  onExpand,
+  onUpdate,
+  onDelete,
+  onHideDrawer,
+}) {
   const theme = useTheme()
   const needMobileBar = useMobileBarCheck()
   const logger = useLogger()
@@ -138,7 +145,7 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
       return (snapDay(clientX) * touchRef.current.bounds.clientWidth) / 7 + 4
     }
 
-    function snapMinute(y) {
+    function snapMinute(pageY) {
       // Constrain the drag action to its parent bounds
       const top = Math.min(
         touchRef.current.bounds.bottom +
@@ -146,7 +153,7 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
           touchRef.current.height,
         Math.max(
           touchRef.current.bounds.top + document.documentElement.scrollTop,
-          y - touchRef.current.initialClientY + touchRef.current.initialTop
+          pageY - touchRef.current.initialPageY + touchRef.current.initialTop
         )
       )
 
@@ -157,25 +164,17 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
           (touchRef.current.bounds.top + document.documentElement.scrollTop)) /
         (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
 
-      console.log('yFraction:', yFraction)
-      console.log(
-        'after mod:',
-        (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
-      )
-
       // Snap to the closest 15-minute increment:
       return Math.round(
         (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
       )
     }
 
-    function updateGhost(clientX, clientY) {
-      const snappedMinute = snapMinute(
-        clientY + document.documentElement.scrollTop
-      )
+    function updateGhost(pageX, pageY) {
+      const snappedMinute = snapMinute(pageY)
 
       // Use the snapped values to place the element
-      ghostElementRef.current.style.left = snapLeft(clientX) + 'px'
+      ghostElementRef.current.style.left = snapLeft(pageX) + 'px'
       ghostElementRef.current.style.top =
         touchRef.current.bounds.top +
         document.documentElement.scrollTop +
@@ -222,16 +221,18 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
           }}
           onPointerUp={e => {
             setShowGhost(false)
+
+            if(action === 'create') {
+              console.log('create placeholder')
+              return
+            }
+
             if (touchRef.current.eventPane) {
               touchRef.current.eventPane.style.filter = ''
             }
             if (touchRef.current.event) {
-              console.log(
-                'using scrollTop:',
-                document.documentElement.scrollTop
-              )
               const snappedMinute = snapMinute(
-                e.clientY + document.documentElement.scrollTop
+                e.pageY
               )
               const snappedDay = snapDay(e.clientX)
               const snappedStart = startOfWeek
@@ -262,6 +263,21 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
             }
           }}
           onPointerDown={e => {
+            if (action === 'create') {
+              onHideDrawer()
+
+              touchRef.current = {
+                initialPageX: e.pageX,
+                initialPageY: e.pageY,
+                startElement:
+                ghostElementRef.current.querySelector('.start-element'),
+                endElement: ghostElementRef.current.querySelector('.end-element'),
+              }
+              setShowGhost(true)
+
+              return
+            }
+
             if (action === 'delete') {
               return
             }
@@ -292,8 +308,8 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
               eventPane: ep,
               initialLeft: rect.left - container.left,
               initialTop: rect.top - container.top,
-              initialClientX: e.clientX,
-              initialClientY: e.clientY + document.documentElement.scrollTop,
+              initialPageX: e.pageX,
+              initialPageY: e.pageY,
               width: Math.round(container.width / 7) - 8,
               height: rect.height,
               bounds: {
@@ -319,7 +335,7 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
               color: { main: `rgb(${rgb})` },
             }).contrastText
 
-            updateGhost(e.clientX, e.clientY)
+            updateGhost(e.pageX, e.pageY)
 
             setShowGhost(true)
             touchRef.current.eventPane.style.filter =
@@ -327,11 +343,15 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
           }}
           onPointerMove={e => {
             try {
+              if (action === 'create') {
+                return
+              }
+
               if (!touchRef.current.event) {
                 return
               }
 
-              updateGhost(e.clientX, e.clientY)
+              updateGhost(e.pageX, e.pageY)
             } catch (e) {
               console.log(e.message)
             }
@@ -349,7 +369,11 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
             <WeekdayBox
               key={day.format('MM D')}
               touchRef={touchRef}
-              onExpand={onExpand}
+              onExpand={() => {
+                if (action !== 'create') {
+                  onExpand()
+                }
+              }}
               day={day}
               displayHeight={displayHeight}
               weekEvents={weekEvents}
@@ -367,7 +391,17 @@ function WeekBody({ date, events, onExpand, onUpdate, onDelete }) {
         )}
       </div>
     )
-  }, [date, events, theme, onExpand, onUpdate, onDelete, action, needMobileBar])
+  }, [
+    date,
+    events,
+    theme,
+    onExpand,
+    onUpdate,
+    onDelete,
+    onHideDrawer,
+    action,
+    needMobileBar,
+  ])
 
   const benchEnd = performance.now()
   setTimeout(
@@ -389,7 +423,7 @@ function old_CreationDrawer({ action, picks, onPick }) {
   return (
     <div style={{ zIndex: 2, position, bottom: 0, width: '100%' }}>
       <Collapse in={action === 'create'}>
-        <EventPicker picks={picks} onPick={onPick} />
+        {/* <EventPicker picks={picks} onPick={onPick} /> */}
       </Collapse>
     </div>
   )
@@ -444,7 +478,17 @@ export function WeeklyView({
     : 'Week of ' + sunday.format('MMMM D, YYYY')
 
   const [action, setAction] = useState(actionList[0])
-  const actionButtons = <ActionButtons onBehavior={b => setAction(b)} />
+  const [showDrawer, setShowDrawer] = useState(false)
+  const actionButtons = (
+    <ActionButtons
+      onBehavior={b => {
+        setAction(b)
+        if (b === 'create') {
+          setShowDrawer(true)
+        }
+      }}
+    />
+  )
 
   const rv = (
     <ActionContext.Provider value={action}>
@@ -493,10 +537,13 @@ export function WeeklyView({
           onExpand={onExpand}
           onUpdate={onUpdate}
           onDelete={onDelete}
+          onHideDrawer={() => setShowDrawer(false)}
         />
       </ViewContainer>
-      {needMobileBar && <MobileBar transparent={action === 'create'}>{actionButtons}</MobileBar>}
-      <CreationDrawer open={action === 'create'} />
+      {needMobileBar && (
+        <MobileBar transparent={showDrawer}>{actionButtons}</MobileBar>
+      )}
+      <CreationDrawer open={showDrawer} />
     </ActionContext.Provider>
   )
 

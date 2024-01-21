@@ -65,7 +65,7 @@ export function CreationPicker() {
     <div
       style={{
         height: '7rem',
-        backgroundColor: '#222222f8',
+        backgroundColor: '#212121f0',
         borderTop: '1px solid #fff4',
         padding: '0.25rem',
         display: 'flex',
