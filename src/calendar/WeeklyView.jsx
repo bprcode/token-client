@@ -134,25 +134,28 @@ function WeekBody({
       isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
     )
 
-    function snapDay(clientX) {
+    function snapDay(pageX) {
       const xFraction =
-        (clientX - touchRef.current.bounds.clientLeft) /
-        touchRef.current.bounds.clientWidth
+        (pageX - touchRef.current.bounds.containerLeft) /
+        touchRef.current.bounds.containerWidth
       return Math.round((xFraction - (xFraction % (1 / 7))) * 7)
     }
 
-    function snapLeft(clientX) {
-      return (snapDay(clientX) * touchRef.current.bounds.clientWidth) / 7 + 4
+    function snapLeft(pageX) {
+      return (snapDay(pageX) * touchRef.current.bounds.containerWidth) / 7 + 4
     }
 
     function snapMinute(pageY) {
       // Constrain the drag action to its parent bounds
       const top = Math.min(
+        // Bottom bound:
         touchRef.current.bounds.bottom +
-          document.documentElement.scrollTop -
+          window.scrollY -
           touchRef.current.height,
         Math.max(
-          touchRef.current.bounds.top + document.documentElement.scrollTop,
+          // Top bound:
+          touchRef.current.bounds.top + window.scrollY,
+          // Current position:
           pageY - touchRef.current.initialPageY + touchRef.current.initialTop
         )
       )
@@ -161,7 +164,7 @@ function WeekBody({
         (top +
           // +1 fixes slight inaccuracy when scrolled:
           1 -
-          (touchRef.current.bounds.top + document.documentElement.scrollTop)) /
+          (touchRef.current.bounds.top + window.scrollY)) /
         (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
 
       // Snap to the closest 15-minute increment:
@@ -170,14 +173,41 @@ function WeekBody({
       )
     }
 
-    function updateGhost(pageX, pageY) {
+    function updateTouchBounds(e) {
+      const viewContainer = e.target.closest('.view-container')
+
+      const innerSections = viewContainer.querySelectorAll('.section-inner')
+      const firstDayBounds = innerSections[0].getBoundingClientRect()
+      const lastDayBounds =
+        innerSections[innerSections.length - 1].getBoundingClientRect()
+
+      const container = viewContainer.getBoundingClientRect()
+
+      Object.assign(touchRef.current, {
+        initialPageX: e.pageX,
+        initialPageY: e.pageY,
+        bounds: {
+          left: firstDayBounds.left,// - window.scrollX,
+          top: lastDayBounds.top,// - window.scrollY,
+          right: lastDayBounds.right,// - window.scrollX,
+          bottom: lastDayBounds.bottom,// - window.scrollY,
+          containerLeft: container.left,// - window.scrollX,
+          containerWidth: container.width,
+          containerTop: container.top,// - window.scrollY,
+        },
+        startElement: ghostElementRef.current.querySelector('.start-element'),
+        endElement: ghostElementRef.current.querySelector('.end-element'),
+      })
+    }
+
+    function updateDrag(pageX, pageY) {
       const snappedMinute = snapMinute(pageY)
 
       // Use the snapped values to place the element
       ghostElementRef.current.style.left = snapLeft(pageX) + 'px'
       ghostElementRef.current.style.top =
         touchRef.current.bounds.top +
-        document.documentElement.scrollTop +
+        window.scrollY +
         (snappedMinute / (24 * 4 * 15)) *
           (touchRef.current.bounds.bottom - touchRef.current.bounds.top) +
         'px'
@@ -222,7 +252,7 @@ function WeekBody({
           onPointerUp={e => {
             setShowGhost(false)
 
-            if(action === 'create') {
+            if (action === 'create') {
               console.log('create placeholder')
               return
             }
@@ -231,10 +261,8 @@ function WeekBody({
               touchRef.current.eventPane.style.filter = ''
             }
             if (touchRef.current.event) {
-              const snappedMinute = snapMinute(
-                e.pageY
-              )
-              const snappedDay = snapDay(e.clientX)
+              const snappedMinute = snapMinute(e.pageY)
+              const snappedDay = snapDay(e.pageX)
               const snappedStart = startOfWeek
                 .add(snappedDay, 'days')
                 .add(snappedMinute, 'minutes')
@@ -265,16 +293,20 @@ function WeekBody({
           onPointerDown={e => {
             if (action === 'create') {
               onHideDrawer()
-
-              touchRef.current = {
-                initialPageX: e.pageX,
-                initialPageY: e.pageY,
-                startElement:
-                ghostElementRef.current.querySelector('.start-element'),
-                endElement: ghostElementRef.current.querySelector('.end-element'),
-              }
+              updateTouchBounds(e)
               setShowGhost(true)
 
+              Object.assign(touchRef.current, {
+                initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
+                initialTop: e.pageY - touchRef.current.bounds.containerTop,
+
+                width:
+                  Math.round(touchRef.current.bounds.containerWidth / 7) - 8,
+                height:
+                  (touchRef.current.bounds.bottom -
+                    touchRef.current.bounds.top) /
+                  (24 * 4),
+              })
               return
             }
 
@@ -293,40 +325,26 @@ function WeekBody({
             const pickedColor = getComputedStyle(
               ep.querySelector('.pane-inner')
             ).backgroundColor
-            const rect = ep.getBoundingClientRect()
-            const wb = e.target.closest('.view-container')
-            const innerSections = wb.querySelectorAll('.section-inner')
-            const firstDayBounds = innerSections[0].getBoundingClientRect()
-            const lastDayBounds =
-              innerSections[innerSections.length - 1].getBoundingClientRect()
+            const eventRect = ep.getBoundingClientRect()
 
-            const container = wb.getBoundingClientRect()
-            touchRef.current = {
+            touchRef.current = {}
+
+            updateTouchBounds(e)
+            Object.assign(touchRef.current, {
               event: events.find(
                 e => e.stableKey === ep.dataset.id || e.id === ep.dataset.id
               ),
               eventPane: ep,
-              initialLeft: rect.left - container.left,
-              initialTop: rect.top - container.top,
-              initialPageX: e.pageX,
-              initialPageY: e.pageY,
-              width: Math.round(container.width / 7) - 8,
-              height: rect.height,
-              bounds: {
-                left: 0,
-                top: lastDayBounds.top,
-                right: lastDayBounds.right - firstDayBounds.left,
-                bottom: lastDayBounds.bottom,
-                clientLeft: container.left,
-                clientWidth: container.width,
-              },
-              startElement:
-                ghostElementRef.current.querySelector('.start-element'),
-              endElement: ghostElementRef.current.querySelector('.end-element'),
-            }
+              initialLeft:
+                eventRect.left - touchRef.current.bounds.containerLeft,
+              initialTop: eventRect.top - touchRef.current.bounds.containerTop,
+
+              width: Math.round(touchRef.current.bounds.containerWidth / 7) - 8,
+              height: eventRect.height,
+            })
 
             ghostElementRef.current.style.width = touchRef.current.width + 'px'
-            ghostElementRef.current.style.height = rect.height + 'px'
+            ghostElementRef.current.style.height = eventRect.height + 'px'
             // extract the comma-separated argument to rgb(r,g,b):
             const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
             ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.75)`
@@ -335,7 +353,7 @@ function WeekBody({
               color: { main: `rgb(${rgb})` },
             }).contrastText
 
-            updateGhost(e.pageX, e.pageY)
+            updateDrag(e.pageX, e.pageY)
 
             setShowGhost(true)
             touchRef.current.eventPane.style.filter =
@@ -344,6 +362,7 @@ function WeekBody({
           onPointerMove={e => {
             try {
               if (action === 'create') {
+                console.log(e.pageY, 'snaps to', snapMinute(e.pageY))
                 return
               }
 
@@ -351,9 +370,9 @@ function WeekBody({
                 return
               }
 
-              updateGhost(e.pageX, e.pageY)
+              updateDrag(e.pageX, e.pageY)
             } catch (e) {
-              console.log(e.message)
+              console.warn(e.message)
             }
           }}
           style={{
