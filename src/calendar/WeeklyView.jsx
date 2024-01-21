@@ -149,22 +149,20 @@ function WeekBody({
       // Constrain the drag action to its parent bounds
       const top = Math.min(
         // Bottom bound:
-        touchRef.current.bounds.bottom +
-          window.scrollY -
+        touchRef.current.bounds.bottom -
           touchRef.current.height,
         Math.max(
           // Top bound:
-          touchRef.current.bounds.top + window.scrollY,
-          // Current position:
-          pageY - touchRef.current.initialPageY + touchRef.current.initialTop
+          touchRef.current.bounds.top,
+          // Current relative position:
+          pageY + window.scrollY 
+          - touchRef.current.initialPageY + touchRef.current.initialTop
         )
       )
 
       const yFraction =
-        (top +
-          // +1 fixes slight inaccuracy when scrolled:
-          1 -
-          (touchRef.current.bounds.top + window.scrollY)) /
+        (top + 1 // +1 fixes slight inaccuracy when scrolled:
+          - touchRef.current.bounds.top) /
         (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
 
       // Snap to the closest 15-minute increment:
@@ -186,14 +184,15 @@ function WeekBody({
       Object.assign(touchRef.current, {
         initialPageX: e.pageX,
         initialPageY: e.pageY,
+        initialClientY: e.clientY,
         bounds: {
-          left: firstDayBounds.left,// - window.scrollX,
-          top: lastDayBounds.top,// - window.scrollY,
-          right: lastDayBounds.right,// - window.scrollX,
-          bottom: lastDayBounds.bottom,// - window.scrollY,
-          containerLeft: container.left,// - window.scrollX,
+          left: firstDayBounds.left + window.scrollX,
+          top: lastDayBounds.top + window.scrollY,
+          right: lastDayBounds.right + window.scrollX,
+          bottom: lastDayBounds.bottom + window.scrollY,
+          containerLeft: container.left + window.scrollX,
           containerWidth: container.width,
-          containerTop: container.top,// - window.scrollY,
+          containerTop: container.top + window.scrollY,
         },
         startElement: ghostElementRef.current.querySelector('.start-element'),
         endElement: ghostElementRef.current.querySelector('.end-element'),
@@ -207,7 +206,6 @@ function WeekBody({
       ghostElementRef.current.style.left = snapLeft(pageX) + 'px'
       ghostElementRef.current.style.top =
         touchRef.current.bounds.top +
-        window.scrollY +
         (snappedMinute / (24 * 4 * 15)) *
           (touchRef.current.bounds.bottom - touchRef.current.bounds.top) +
         'px'
