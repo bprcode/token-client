@@ -7,6 +7,7 @@ import {
   Box,
   useMediaQuery,
   Collapse,
+  createTheme,
 } from '@mui/material'
 import { forwardRef, useContext, useMemo, useRef, useState } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
@@ -25,8 +26,60 @@ import { CreationPicker } from './CreationPicker'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
+const snapGapPixels = 4
+
+function GhostDay() {
+  return (
+    <Box
+      sx={{
+        marginLeft: [snapGapPixels / 2 + 'px', 2 * snapGapPixels + 1 + 'px'],
+        marginRight: [
+          2 * snapGapPixels - 1 + 'px',
+          4 * snapGapPixels - 2 + 'px',
+        ],
+        height: '100%',
+      }}
+    >
+      <div
+        className="ghost-pane"
+        style={{
+          backgroundColor: '#04f',
+          boxShadow: `0px 0px 1rem ${'#0008'} inset`,
+          borderTop: '0.125rem solid #04f',
+          borderLeft: '0.125rem solid #04f',
+          borderRight: '0.125rem solid #000c',
+          borderBottom: '0.125rem solid #000c',
+          height: '100%',
+          transition: 'background-color 350ms ease-out',
+        }}
+      >
+        ex.
+      </div>
+    </Box>
+  )
+}
+function GhostWeek({ show }) {
+  return (
+    <Box
+      className="ghost-week"
+      sx={{
+        display: show ? 'grid' : 'none',
+        height: '100%',
+      }}
+    >
+      <GhostDay />
+      <GhostDay />
+      <GhostDay />
+      <GhostDay />
+      <GhostDay />
+      <GhostDay />
+      <GhostDay />
+    </Box>
+  )
+}
 
 const DragGhost = forwardRef(function DragGhost({ show }, ref) {
+  const isCreating = show === 'creating'
   return (
     <Box
       ref={ref}
@@ -35,19 +88,21 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
         pointerEvents: 'none',
         position: 'absolute',
         backgroundColor: '#f004',
-        border: '2px dashed orange',
         zIndex: 2,
         filter: 'brightness(130%) saturate(110%)',
         textAlign: 'center',
-        paddingTop: '0.125rem',
         overflowX: 'hidden',
         overflowY: 'hidden',
         fontSize: '0.75em',
       }}
     >
-      <span className="start-element"></span>
-      <wbr />–<wbr />
-      <span className="end-element" />
+      <div style={{ display: isCreating ? 'none' : 'block' }}>
+        <span className="start-element"></span>
+        <wbr />–<wbr />
+        <span className="end-element" />
+      </div>
+
+      <GhostWeek show={isCreating ? true : false} />
     </Box>
   )
 })
@@ -115,7 +170,9 @@ function WeekBody({
   onDelete,
   onHideDrawer,
 }) {
-  const theme = useTheme()
+  const colorizerTheme = createTheme({
+    palette: { tonalOffset: 0.3 },
+  })
   const needMobileBar = useMobileBarCheck()
   const logger = useLogger()
   const benchStart = performance.now()
@@ -130,7 +187,6 @@ function WeekBody({
     const days = []
     const startOfWeek = date.startOf('week')
     const endOfWeek = date.endOf('week')
-    const snapGap = 4
 
     const weekEvents = events.filter(e =>
       isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
@@ -145,26 +201,19 @@ function WeekBody({
 
     function snapLeft(pageX) {
       return (
-        (snapDay(pageX) * touchRef.current.bounds.containerWidth) / 7 + snapGap
+        (snapDay(pageX) * touchRef.current.bounds.containerWidth) / 7 +
+        snapGapPixels
       )
     }
 
     function snapXCeil(pageX) {
       return (
         ((snapDay(pageX) + 1) * touchRef.current.bounds.containerWidth) / 7 -
-        snapGap
+        snapGapPixels
       )
     }
 
     function snapMinute(pageY) {
-      // console.log(
-      //   touchRef.current.bounds.top, '<',
-      //   pageY +
-      //       window.scrollY -
-      //       touchRef.current.initialPageY +
-      //       touchRef.current.initialTop, '<',
-      //   touchRef.current.bounds.bottom - touchRef.current.height)
-
       // Constrain the drag action to its parent bounds
       const top = Math.min(
         // Bottom bound:
@@ -190,6 +239,21 @@ function WeekBody({
       return Math.round(
         (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
       )
+    }
+
+    function setGhostWeekColor(newColor) {
+      const augmented = colorizerTheme.palette.augmentColor({
+        color: { main: newColor },
+      })
+      const panes = ghostElementRef.current.querySelectorAll('.ghost-pane')
+      for (const p of panes) {
+        p.style.backgroundColor = augmented.main
+        p.style.boxShadow = `0px 0px 1rem ${augmented.dark} inset`
+        p.style.borderTop = `0.125rem solid ${augmented.main}`
+        p.style.borderLeft = `0.125rem solid ${augmented.main}`
+        p.style.borderRight = `0.125rem solid ${augmented.dark}`
+        p.style.borderBottom = `0.125rem solid ${augmented.dark}`
+      }
     }
 
     function updateTouchBounds(e) {
@@ -261,7 +325,10 @@ function WeekBody({
         'px'
 
       ghostElementRef.current.style.width =
-        snapXCeil(rightmost) - snapLeft(leftmost) + 'px'
+        snapXCeil(rightmost) - snapLeft(leftmost) + 1 + 'px'
+
+      const latestDayCount = (snapXCeil(rightmost) - snapLeft(leftmost))/(touchRef.current.bounds.right- touchRef.current.bounds.left)
+      console.log('ldc?', Math.round(latestDayCount *7))
 
       const formattedStart = startOfWeek
         .add(startMinute, 'minutes')
@@ -325,10 +392,10 @@ function WeekBody({
             }
           }}
           onPointerUp={e => {
-            console.log('⬆️ week pointer up')
             setShowGhost(false)
+            setGhostWeekColor('#eef0')
             touchRef.current.isDragCreating = false
-            
+
             if (action === 'create') {
               console.log('create placeholder')
               return
@@ -361,7 +428,6 @@ function WeekBody({
             }
           }}
           onPointerLeave={() => {
-            console.log('👋 week pointer leave')
             setShowGhost(false)
             touchRef.current.event = null
             touchRef.current.isDragCreating = false
@@ -369,13 +435,11 @@ function WeekBody({
               touchRef.current.eventPane.style.filter = ''
             }
           }}
-          
           onPointerDown={e => {
-            console.log('🔽 week pointer down')
             if (action === 'create') {
               onHideDrawer()
               updateTouchBounds(e)
-              setShowGhost(true)
+              setShowGhost('creating')
 
               // discretize and round down interval to start of hour:
               const yFraction =
@@ -385,6 +449,7 @@ function WeekBody({
 
               Object.assign(touchRef.current, {
                 isDragCreating: true,
+                creatingDayCount: 0,
                 initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
                 initialTop: e.pageY - window.scrollY,
                 flooredY:
@@ -395,11 +460,22 @@ function WeekBody({
                     24,
 
                 width:
-                  Math.round(touchRef.current.bounds.containerWidth / 7) - 8,
+                  Math.round(touchRef.current.bounds.containerWidth / 7) -
+                  2 * snapGapPixels,
                 height: 0,
               })
 
               updateDragCreation(e.pageX, e.pageY)
+              ghostElementRef.current.style.backgroundColor = 'transparent'
+              ghostElementRef.current.style.border = 'none'
+              const ghostWeek =
+                ghostElementRef.current.querySelector('.ghost-week')
+              ghostWeek.style.gridTemplateColumns = `repeat(7, ${
+                (touchRef.current.bounds.containerWidth - snapGapPixels / 2) /
+                  7 +
+                'px'
+              })`
+              setTimeout(() => setGhostWeekColor('#635ac9'), 100)
               return
             }
 
@@ -442,9 +518,10 @@ function WeekBody({
             const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
             ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.75)`
             ghostElementRef.current.style.border = `3px dashed rgb(${rgb})`
-            ghostElementRef.current.style.color = theme.palette.augmentColor({
-              color: { main: `rgb(${rgb})` },
-            }).contrastText
+            ghostElementRef.current.style.color =
+              colorizerTheme.palette.augmentColor({
+                color: { main: `rgb(${rgb})` },
+              }).contrastText
 
             updateDragMove(e.pageX, e.pageY)
 
@@ -507,7 +584,7 @@ function WeekBody({
   }, [
     date,
     events,
-    theme,
+    colorizerTheme,
     onExpand,
     onUpdate,
     onDelete,
