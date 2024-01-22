@@ -76,9 +76,9 @@ export const HoverableBox = styled(Box)(({ theme }) => ({
   '&:hover .section-inner': {
     filter: 'brightness(140%)',
   },
+  // Cancel the section-inner brightness filter for event panes:
   '&:hover .event-pane': {
-    // Compensates the parent brightness filter -- still slightly brightened:
-    filter: 'brightness(75%)',
+    filter: 'brightness(71%)',
   },
 }))
 

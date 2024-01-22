@@ -184,6 +184,10 @@ export function CreationPicker({ touchRef }) {
           label="Title"
           variant="standard"
           defaultValue="Event"
+          onFocus={e => {
+            titleRef.current.select()
+
+          }}
           onBlur={e => {
             touchRef.current.creationTitle = e.target.value
           }}

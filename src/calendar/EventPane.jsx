@@ -27,8 +27,9 @@ function snap15Minute(time, steps) {
 }
 
 const BrightHoverBox = styled(Box)({
-  '&:hover': {
-    filter: 'brightness(110%) saturate(110%)',
+  '&&:hover': {
+    // Brightness is multiplicative with parent hover filter:
+    filter: 'brightness(95%) saturate(80%)',
   },
 })
 

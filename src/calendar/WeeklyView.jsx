@@ -37,7 +37,6 @@ function GhostDay() {
           2 * snapGapPixels - 1 + 'px',
           4 * snapGapPixels - 2 + 'px',
         ],
-        height: '100%',
       }}
     >
       <div
@@ -91,7 +90,9 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
         position: 'absolute',
         backgroundColor: '#f004',
         zIndex: 2,
-        filter: 'brightness(120%) saturate(110%)',
+        filter: isCreating
+          ? 'brightness(130%) saturate(90%)'
+          : 'brightness(120%) saturate(120%)',
         textAlign: 'center',
         overflowX: 'hidden',
         overflowY: 'hidden',
@@ -250,6 +251,7 @@ function WeekBody({
 
     function setAugmentedPaneColor(paneElement, augmentedColor) {
       paneElement.style.backgroundColor = augmentedColor.main
+      paneElement.style.color = augmentedColor.contrastText
       paneElement.style.boxShadow = `0px 0px 1rem ${augmentedColor.dark} inset`
       paneElement.style.borderTop = `0.125rem solid ${augmentedColor.main}`
       paneElement.style.borderLeft = `0.125rem solid ${augmentedColor.main}`
@@ -568,6 +570,8 @@ function WeekBody({
                 height: 0,
               })
 
+              setGhostWeekColor(touchRef.current.augmentedGhostColor.main)
+
               updateDragCreation(e.pageX, e.pageY)
               ghostElementRef.current.style.backgroundColor = 'transparent'
               ghostElementRef.current.style.border = 'none'
@@ -618,7 +622,7 @@ function WeekBody({
             // extract the comma-separated argument to rgb(r,g,b):
             const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
             ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.75)`
-            ghostElementRef.current.style.border = `3px dashed rgb(${rgb})`
+            ghostElementRef.current.style.border = `0.125rem solid rgb(${rgb})`
             ghostElementRef.current.style.color =
               colorizerTheme.palette.augmentColor({
                 color: { main: `rgb(${rgb})` },
