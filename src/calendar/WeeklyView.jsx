@@ -18,7 +18,6 @@ import { isOverlap } from './calendarLogic.mjs'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { SectionedInterval } from './SectionedInterval'
-import { useTheme } from '@emotion/react'
 import { ActionButtons, MobileBar } from './ActionDisplay'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
@@ -27,6 +26,7 @@ import { CreationPicker } from './CreationPicker'
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
 const snapGapPixels = 4
+const ghostFadeInColor = '#eef0'
 
 function GhostDay() {
   return (
@@ -184,6 +184,9 @@ function WeekBody({
   const action = useContext(ActionContext)
 
   const rv = useMemo(() => {
+    const augmentedResetColor = colorizerTheme.palette.augmentColor({
+      color: { main: ghostFadeInColor },
+    })
     const days = []
     const startOfWeek = date.startOf('week')
     const endOfWeek = date.endOf('week')
@@ -241,18 +244,22 @@ function WeekBody({
       )
     }
 
+    function setAugmentedPaneColor(paneElement, augmentedColor) {
+      paneElement.style.backgroundColor = augmentedColor.main
+      paneElement.style.boxShadow = `0px 0px 1rem ${augmentedColor.dark} inset`
+      paneElement.style.borderTop = `0.125rem solid ${augmentedColor.main}`
+      paneElement.style.borderLeft = `0.125rem solid ${augmentedColor.main}`
+      paneElement.style.borderRight = `0.125rem solid ${augmentedColor.dark}`
+      paneElement.style.borderBottom = `0.125rem solid ${augmentedColor.dark}`
+    }
+
     function setGhostWeekColor(newColor) {
       const augmented = colorizerTheme.palette.augmentColor({
         color: { main: newColor },
       })
       const panes = ghostElementRef.current.querySelectorAll('.ghost-pane')
       for (const p of panes) {
-        p.style.backgroundColor = augmented.main
-        p.style.boxShadow = `0px 0px 1rem ${augmented.dark} inset`
-        p.style.borderTop = `0.125rem solid ${augmented.main}`
-        p.style.borderLeft = `0.125rem solid ${augmented.main}`
-        p.style.borderRight = `0.125rem solid ${augmented.dark}`
-        p.style.borderBottom = `0.125rem solid ${augmented.dark}`
+        setAugmentedPaneColor(p, augmented)
       }
     }
 
@@ -327,8 +334,47 @@ function WeekBody({
       ghostElementRef.current.style.width =
         snapXCeil(rightmost) - snapLeft(leftmost) + 1 + 'px'
 
-      const latestDayCount = (snapXCeil(rightmost) - snapLeft(leftmost))/(touchRef.current.bounds.right- touchRef.current.bounds.left)
-      console.log('ldc?', Math.round(latestDayCount *7))
+      const currentDayCount = Math.round(
+        (7 * (snapXCeil(rightmost) - snapLeft(leftmost))) /
+          (touchRef.current.bounds.right - touchRef.current.bounds.left)
+      )
+      if (currentDayCount !== touchRef.current.creatingDayCount) {
+        clearTimeout(touchRef.current.fadeTimeout)
+        console.log('cdc', currentDayCount)
+        const activeColor = touchRef.current.augmentedGhostColor
+        const ghostPaneArray = [
+          ...ghostElementRef.current.querySelectorAll('.ghost-pane'),
+        ]
+
+        // When dragging right...
+        if (pageX > touchRef.current.initialPageX) {
+          for (let i = 0; i < ghostPaneArray.length; i++) {
+            if (i < currentDayCount) {
+              // console.log(i,'on')
+              setAugmentedPaneColor(ghostPaneArray[i], activeColor)
+            } else {
+              // console.log(i,'off')
+              setAugmentedPaneColor(ghostPaneArray[i], augmentedResetColor)
+            }
+          }
+        } else if (currentDayCount > touchRef.current.creatingDayCount) {
+          // When extending left...
+          ghostPaneArray[0].style.transition = ''
+          setAugmentedPaneColor(ghostPaneArray[0], augmentedResetColor)
+          ghostPaneArray[0].offsetHeight
+          touchRef.current.fadeTimeout = setTimeout(() => {
+            ghostPaneArray[0].style.transition =
+              'background-color 350ms ease-out'
+            setAugmentedPaneColor(ghostPaneArray[0], activeColor)
+          }, 50)
+
+          for (let i = 1; i < ghostPaneArray.length; i++) {
+            setAugmentedPaneColor(ghostPaneArray[i], activeColor)
+          }
+        }
+
+        touchRef.current.creatingDayCount = currentDayCount
+      }
 
       const formattedStart = startOfWeek
         .add(startMinute, 'minutes')
@@ -393,7 +439,7 @@ function WeekBody({
           }}
           onPointerUp={e => {
             setShowGhost(false)
-            setGhostWeekColor('#eef0')
+            setGhostWeekColor(ghostFadeInColor)
             touchRef.current.isDragCreating = false
 
             if (action === 'create') {
@@ -450,6 +496,9 @@ function WeekBody({
               Object.assign(touchRef.current, {
                 isDragCreating: true,
                 creatingDayCount: 0,
+                augmentedGhostColor: colorizerTheme.palette.augmentColor({
+                  color: { main: '#635ac9' },
+                }),
                 initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
                 initialTop: e.pageY - window.scrollY,
                 flooredY:
@@ -475,7 +524,7 @@ function WeekBody({
                   7 +
                 'px'
               })`
-              setTimeout(() => setGhostWeekColor('#635ac9'), 100)
+              setGhostWeekColor('#635ac9')
               return
             }
 
