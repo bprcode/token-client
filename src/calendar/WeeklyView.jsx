@@ -182,7 +182,7 @@ function WeekBody({
   const displayHeight = '520px'
 
   const ghostElementRef = useRef(null)
-  
+
   const [showGhost, setShowGhost] = useState(false)
   const action = useContext(ActionContext)
 
@@ -536,7 +536,7 @@ function WeekBody({
                   7 +
                 'px'
               })`
-              
+
               return
             }
 
@@ -556,7 +556,6 @@ function WeekBody({
               ep.querySelector('.pane-inner')
             ).backgroundColor
             const eventRect = ep.getBoundingClientRect()
-
 
             updateTouchBounds(e)
             Object.assign(touchRef.current, {
@@ -613,6 +612,7 @@ function WeekBody({
             width: '100%',
             borderTop: '1px solid #aaf3',
             boxShadow: '1rem 1.5rem 2rem #0114',
+            filter: showGhost ? 'brightness(85%) saturate(80%)' : undefined,
           }}
         >
           {days.map(day => (
@@ -652,6 +652,7 @@ function WeekBody({
     action,
     needMobileBar,
     touchRef,
+    showGhost,
   ])
 
   const benchEnd = performance.now()
@@ -699,7 +700,7 @@ function CreationDrawer({ open, touchRef }) {
 }
 
 const defaultTouchState = {
-  creationColor: resolveColor('Work')
+  creationColor: resolveColor('Work'),
 }
 
 export function WeeklyView({
@@ -788,7 +789,7 @@ export function WeeklyView({
         </ViewHeader>
 
         <WeekBody
-        touchRef={touchRef}
+          touchRef={touchRef}
           date={date}
           events={events}
           onExpand={onExpand}
