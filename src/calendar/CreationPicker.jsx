@@ -48,7 +48,7 @@ const styledMenuProps = {
   },
 }
 
-export function CreationPicker() {
+export function CreationPicker({touchRef}) {
   const theme = useTheme()
   const eventStyles = useEventStyles()
   const typeList = [...eventStyles.keys()]
@@ -83,7 +83,11 @@ export function CreationPicker() {
           <Select
             labelId="event-type-label"
             value={type}
-            onChange={e => setType(e.target.value)}
+            onChange={e => {
+              setType(e.target.value)
+              touchRef.current.creationType = e.target.value
+              touchRef.current.creationColor = resolveColor(e.target.value)
+            }}
             MenuProps={styledMenuProps}
           >
             {typeList.map(t => (
@@ -125,7 +129,10 @@ export function CreationPicker() {
               <Select
                 labelId="color-label"
                 value={selectedColor}
-                onChange={e => setSelectedColor(e.target.value)}
+                onChange={e => {
+                  setSelectedColor(e.target.value)
+                  touchRef.current.creationColor = e.target.value
+                }}
                 MenuProps={styledMenuProps}
                 sx={{
                   '& .palette-block': {
@@ -170,6 +177,9 @@ export function CreationPicker() {
               label="Title"
               variant="standard"
               defaultValue="Event"
+              onBlur={e => {
+                touchRef.current.creationTitle = e.target.value
+              }}
               sx={{
                 maxWidth: '14ch',
               }}

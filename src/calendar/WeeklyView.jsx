@@ -14,7 +14,7 @@ import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
-import { isOverlap } from './calendarLogic.mjs'
+import { isOverlap, resolveColor } from './calendarLogic.mjs'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { SectionedInterval } from './SectionedInterval'
@@ -26,7 +26,7 @@ import { CreationPicker } from './CreationPicker'
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
 const snapGapPixels = 4
-const ghostFadeInColor = '#eef0'
+const ghostFadeInColor = '#0000'
 
 function GhostDay() {
   return (
@@ -91,7 +91,7 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
         position: 'absolute',
         backgroundColor: '#f004',
         zIndex: 2,
-        filter: 'brightness(130%) saturate(110%)',
+        filter: 'brightness(120%) saturate(110%)',
         textAlign: 'center',
         overflowX: 'hidden',
         overflowY: 'hidden',
@@ -165,6 +165,7 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
 }
 
 function WeekBody({
+  touchRef,
   date,
   events,
   onExpand,
@@ -181,7 +182,7 @@ function WeekBody({
   const displayHeight = '520px'
 
   const ghostElementRef = useRef(null)
-  const touchRef = useRef({})
+  
   const [showGhost, setShowGhost] = useState(false)
   const action = useContext(ActionContext)
 
@@ -342,7 +343,6 @@ function WeekBody({
       )
       if (currentDayCount !== touchRef.current.creatingDayCount) {
         clearTimeout(touchRef.current.fadeTimeout)
-        console.log('cdc', currentDayCount)
         const activeColor = touchRef.current.augmentedGhostColor
         const ghostPaneArray = [
           ...ghostElementRef.current.querySelectorAll('.ghost-pane'),
@@ -509,7 +509,7 @@ function WeekBody({
                   ...ghostElementRef.current.querySelectorAll('.end-element'),
                 ],
                 augmentedGhostColor: colorizerTheme.palette.augmentColor({
-                  color: { main: '#635ac9' },
+                  color: { main: touchRef.current.creationColor },
                 }),
                 initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
                 initialTop: e.pageY - window.scrollY,
@@ -536,7 +536,7 @@ function WeekBody({
                   7 +
                 'px'
               })`
-              setGhostWeekColor('#635ac9')
+              
               return
             }
 
@@ -557,7 +557,6 @@ function WeekBody({
             ).backgroundColor
             const eventRect = ep.getBoundingClientRect()
 
-            touchRef.current = {}
 
             updateTouchBounds(e)
             Object.assign(touchRef.current, {
@@ -652,6 +651,7 @@ function WeekBody({
     onHideDrawer,
     action,
     needMobileBar,
+    touchRef,
   ])
 
   const benchEnd = performance.now()
@@ -680,7 +680,7 @@ function old_CreationDrawer({ action, picks, onPick }) {
   )
 }
 
-function CreationDrawer({ open }) {
+function CreationDrawer({ open, touchRef }) {
   const anchorBottom = useMobileBarCheck()
   return (
     <div
@@ -692,10 +692,14 @@ function CreationDrawer({ open }) {
       }}
     >
       <Collapse in={open}>
-        <CreationPicker />
+        <CreationPicker touchRef={touchRef} />
       </Collapse>
     </div>
   )
+}
+
+const defaultTouchState = {
+  creationColor: resolveColor('Work')
 }
 
 export function WeeklyView({
@@ -706,6 +710,7 @@ export function WeeklyView({
   onUpdate,
   onDelete,
 }) {
+  const touchRef = useRef(defaultTouchState)
   const { data: events } = useViewQuery()
   const logger = useLogger()
   const logId = Math.round(Math.random() * 1e6)
@@ -783,6 +788,7 @@ export function WeeklyView({
         </ViewHeader>
 
         <WeekBody
+        touchRef={touchRef}
           date={date}
           events={events}
           onExpand={onExpand}
@@ -794,7 +800,7 @@ export function WeeklyView({
       {needMobileBar && (
         <MobileBar transparent={showDrawer}>{actionButtons}</MobileBar>
       )}
-      <CreationDrawer open={showDrawer} />
+      <CreationDrawer open={showDrawer} touchRef={touchRef} />
     </ActionContext.Provider>
   )
 
