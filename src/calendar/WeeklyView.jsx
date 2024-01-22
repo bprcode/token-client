@@ -53,7 +53,9 @@ function GhostDay() {
           transition: 'background-color 350ms ease-out',
         }}
       >
-        ex.
+        <span className="start-element"></span>
+        <wbr />–<wbr />
+        <span className="end-element" />
       </div>
     </Box>
   )
@@ -385,8 +387,12 @@ function WeekBody({
         .format('h:mma')
         .replace('m', '')
 
-      touchRef.current.startElement.textContent = formattedStart
-      touchRef.current.endElement.textContent = formattedEnd
+      for (const e of touchRef.current.startLabels) {
+        e.textContent = formattedStart
+      }
+      for (const e of touchRef.current.endLabels) {
+        e.textContent = formattedEnd
+      }
     }
 
     function updateDragMove(pageX, pageY) {
@@ -496,6 +502,12 @@ function WeekBody({
               Object.assign(touchRef.current, {
                 isDragCreating: true,
                 creatingDayCount: 0,
+                startLabels: [
+                  ...ghostElementRef.current.querySelectorAll('.start-element'),
+                ],
+                endLabels: [
+                  ...ghostElementRef.current.querySelectorAll('.end-element'),
+                ],
                 augmentedGhostColor: colorizerTheme.palette.augmentColor({
                   color: { main: '#635ac9' },
                 }),
