@@ -14,7 +14,7 @@ import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
-import { isOverlap, resolveColor } from './calendarLogic.mjs'
+import { createEventObject, isOverlap, resolveColor } from './calendarLogic.mjs'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { SectionedInterval } from './SectionedInterval'
@@ -169,6 +169,7 @@ function WeekBody({
   date,
   events,
   onExpand,
+  onCreate,
   onUpdate,
   onDelete,
   onHideDrawer,
@@ -378,6 +379,11 @@ function WeekBody({
         touchRef.current.creatingDayCount = currentDayCount
       }
 
+      touchRef.current.creationStartDay = snapDay(leftmost)
+      touchRef.current.creationFinalDay = snapDay(rightmost)
+      touchRef.current.creationStartMinute = startMinute
+      touchRef.current.creationFinalMinute = finalMinute
+
       const formattedStart = startOfWeek
         .add(startMinute, 'minutes')
         .format('h:mma')
@@ -449,7 +455,39 @@ function WeekBody({
             touchRef.current.isDragCreating = false
 
             if (action === 'create') {
-              console.log('create placeholder')
+              console.log(
+                'create placeholder:',
+                touchRef.current.creationStartMinute,
+                touchRef.current.creationFinalMinute,
+                touchRef.current.creationStartDay,
+                touchRef.current.creationFinalDay
+              )
+              console.log('should create events:')
+              for (
+                let day = touchRef.current.creationStartDay;
+                day <= touchRef.current.creationFinalDay;
+                day++
+              ) {
+                const initialTime = startOfWeek
+                  .add(day, 'days')
+                  .add(touchRef.current.creationStartMinute, 'minutes')
+                const finalTime = startOfWeek
+                  .add(day, 'days')
+                  .add(touchRef.current.creationFinalMinute, 'minutes')
+
+                console.log(touchRef.current.creationColor)
+
+                onCreate(
+                  createEventObject({
+                    startTime: initialTime,
+                    endTime: finalTime,
+                    summary: touchRef.current.creationTitle,
+                    description: ' ',
+                    colorId: touchRef.current.creationColor,
+                    id: `idem ${Math.floor(Math.random() * 1e9)}`,
+                  })
+                )
+              }
               return
             }
 
@@ -499,6 +537,10 @@ function WeekBody({
                 (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
               const flooredHour = 24 * (yFraction - (yFraction % (1 / 24)))
 
+              console.log(
+                'color resolved to:',
+                resolveColor(touchRef.current.creationColor)
+              )
               Object.assign(touchRef.current, {
                 isDragCreating: true,
                 creatingDayCount: 0,
@@ -509,7 +551,7 @@ function WeekBody({
                   ...ghostElementRef.current.querySelectorAll('.end-element'),
                 ],
                 augmentedGhostColor: colorizerTheme.palette.augmentColor({
-                  color: { main: touchRef.current.creationColor },
+                  color: { main: resolveColor(touchRef.current.creationColor) },
                 }),
                 initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
                 initialTop: e.pageY - window.scrollY,
@@ -646,6 +688,7 @@ function WeekBody({
     events,
     colorizerTheme,
     onExpand,
+    onCreate,
     onUpdate,
     onDelete,
     onHideDrawer,
@@ -700,7 +743,8 @@ function CreationDrawer({ open, touchRef }) {
 }
 
 const defaultTouchState = {
-  creationColor: resolveColor('Work'),
+  creationColor: 'Work',
+  creationTitle: 'Work',
 }
 
 export function WeeklyView({
@@ -708,6 +752,7 @@ export function WeeklyView({
   onBack,
   onExpand,
   onChange,
+  onCreate,
   onUpdate,
   onDelete,
 }) {
@@ -742,6 +787,8 @@ export function WeeklyView({
         setAction(b)
         if (b === 'create') {
           setShowDrawer(true)
+        } else {
+          setShowDrawer(false)
         }
       }}
     />
@@ -792,6 +839,7 @@ export function WeeklyView({
           touchRef={touchRef}
           date={date}
           events={events}
+          onCreate={onCreate}
           onExpand={onExpand}
           onUpdate={onUpdate}
           onDelete={onDelete}

@@ -7,7 +7,7 @@ import {
   TextField,
   useTheme,
 } from '@mui/material'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { mockPalette, resolveColor, useEventStyles } from './calendarLogic.mjs'
 
 const styledMenuProps = {
@@ -48,7 +48,8 @@ const styledMenuProps = {
   },
 }
 
-export function CreationPicker({touchRef}) {
+export function CreationPicker({ touchRef }) {
+  const titleRef = useRef(null)
   const theme = useTheme()
   const eventStyles = useEventStyles()
   const typeList = [...eventStyles.keys()]
@@ -86,7 +87,12 @@ export function CreationPicker({touchRef}) {
             onChange={e => {
               setType(e.target.value)
               touchRef.current.creationType = e.target.value
-              touchRef.current.creationColor = resolveColor(e.target.value)
+              touchRef.current.creationColor =
+                e.target.value === 'Default' ? selectedColor : e.target.value
+              touchRef.current.creationTitle =
+                e.target.value === 'Default'
+                  ? titleRef.current.value
+                  : e.target.value
             }}
             MenuProps={styledMenuProps}
           >
@@ -123,69 +129,69 @@ export function CreationPicker({touchRef}) {
         )}
 
         {type === 'Default' && (
-          <>
-            <FormControl variant="standard" sx={{ mr: rightMargin }}>
-              <InputLabel id="color-label">Color</InputLabel>
-              <Select
-                labelId="color-label"
-                value={selectedColor}
-                onChange={e => {
-                  setSelectedColor(e.target.value)
-                  touchRef.current.creationColor = e.target.value
-                }}
-                MenuProps={styledMenuProps}
-                sx={{
-                  '& .palette-block': {
-                    width: condensedIconWidth,
-                    transform: 'translateX(2px)',
-                  },
-                }}
-              >
-                {palette.map((c, i) => (
-                  <MenuItem
-                    key={c}
-                    value={c}
-                    sx={{
-                      '&&': {
-                        px: '0.5rem',
-                        borderTopLeftRadius: i === 0 ? '8px' : '0',
-                        borderTopRightRadius: i === 0 ? '8px' : '0',
-                        borderBottomLeftRadius:
-                          i === palette.length - 1 ? '8px' : '0',
-                        borderBottomRightRadius:
-                          i === palette.length - 1 ? '8px' : '0',
-                        mb: 0,
-                      },
-                    }}
-                  >
-                    <Box
-                      className="palette-block"
-                      sx={{
-                        backgroundColor: c,
-                        width: colorIconWidth,
-                        height: colorIconHeight,
-                        borderRadius: '2px',
-                      }}
-                    />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-
-            <TextField
-              id="standard-basic"
-              label="Title"
-              variant="standard"
-              defaultValue="Event"
-              onBlur={e => {
-                touchRef.current.creationTitle = e.target.value
+          <FormControl variant="standard" sx={{ mr: rightMargin }}>
+            <InputLabel id="color-label">Color</InputLabel>
+            <Select
+              labelId="color-label"
+              value={selectedColor}
+              onChange={e => {
+                setSelectedColor(e.target.value)
+                touchRef.current.creationColor = e.target.value
               }}
+              MenuProps={styledMenuProps}
               sx={{
-                maxWidth: '14ch',
+                '& .palette-block': {
+                  width: condensedIconWidth,
+                  transform: 'translateX(2px)',
+                },
               }}
-            />
-          </>
+            >
+              {palette.map((c, i) => (
+                <MenuItem
+                  key={c}
+                  value={c}
+                  sx={{
+                    '&&': {
+                      px: '0.5rem',
+                      borderTopLeftRadius: i === 0 ? '8px' : '0',
+                      borderTopRightRadius: i === 0 ? '8px' : '0',
+                      borderBottomLeftRadius:
+                        i === palette.length - 1 ? '8px' : '0',
+                      borderBottomRightRadius:
+                        i === palette.length - 1 ? '8px' : '0',
+                      mb: 0,
+                    },
+                  }}
+                >
+                  <Box
+                    className="palette-block"
+                    sx={{
+                      backgroundColor: c,
+                      width: colorIconWidth,
+                      height: colorIconHeight,
+                      borderRadius: '2px',
+                    }}
+                  />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         )}
+
+        <TextField
+          inputRef={titleRef}
+          id="standard-basic"
+          label="Title"
+          variant="standard"
+          defaultValue="Event"
+          onBlur={e => {
+            touchRef.current.creationTitle = e.target.value
+          }}
+          sx={{
+            maxWidth: '14ch',
+            visibility: type === 'Default' ? 'visible' : 'hidden',
+          }}
+        />
       </span>
       {type !== 'Default' && (
         <div
