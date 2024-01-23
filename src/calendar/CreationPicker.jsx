@@ -48,7 +48,7 @@ const styledMenuProps = {
   },
 }
 
-export function CreationPicker({ touchRef }) {
+export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
   const titleRef = useRef(null)
   const theme = useTheme()
   const eventStyles = useEventStyles()
@@ -62,14 +62,22 @@ export function CreationPicker({ touchRef }) {
   const condensedIconWidth = '1.5rem'
   const colorIconHeight = '1.25rem'
 
+  const isDrawer = layout === 'drawer'
+
   return (
     <div
       style={{
-        height: '7rem',
-        backgroundColor: '#212121f0',
-        borderTop: '1px solid #fff4',
+        boxShadow: active ? '0 0 #f000 inset' : `0 0 1rem ${theme.palette.primary.main} inset`,
+        height: isDrawer ? '7rem' : '5rem',
+        backgroundColor: isDrawer ? '#212121f0' : '#141414f8',
+        borderTop: isDrawer ? '1px solid #fff4' : '1px solid #fff4',
+        borderLeft: isDrawer ? undefined : '1px solid rgba(69, 95, 108, 0.88)',
+        borderBottom: isDrawer ? undefined : '1px solid rgba(64, 149, 192, 0.46)',
+        borderRight: isDrawer ? undefined : '1px solid rgba(25, 58, 75, 0.88)',
         padding: '0.25rem',
         display: 'flex',
+        marginTop: isDrawer ? undefined : '1px',
+        transition: 'box-shadow 1s ease-out'
       }}
     >
       <span>

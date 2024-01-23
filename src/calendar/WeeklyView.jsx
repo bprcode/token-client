@@ -740,7 +740,26 @@ function CreationDrawer({ open, touchRef }) {
       }}
     >
       <Collapse in={open}>
-        <CreationPicker touchRef={touchRef} />
+        <CreationPicker layout="drawer" touchRef={touchRef} />
+      </Collapse>
+    </div>
+  )
+}
+
+function TopDrawer({ open, touchRef }) {
+  const anchorBottom = useMobileBarCheck()
+  return (
+    <div
+      style={{
+        zIndex: 2,
+        position: 'fixed',
+        top: '4rem',
+        right: 0,
+        width: '22rem',
+      }}
+    >
+      <Collapse in={open}>
+        <CreationPicker layout="shade" touchRef={touchRef} active={open} />
       </Collapse>
     </div>
   )
@@ -837,6 +856,8 @@ export function WeeklyView({
           </IconButton>
 
           {!needMobileBar && actionButtons}
+
+          <TopDrawer open={showDrawer} touchRef={touchRef} />
         </ViewHeader>
 
         <WeekBody
