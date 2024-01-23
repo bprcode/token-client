@@ -1,6 +1,7 @@
 import CalendarViewMonthIcon from '@mui/icons-material/CalendarViewMonth'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
+import redX from '../assets/red-x.svg'
 import {
   IconButton,
   Typography,
@@ -444,7 +445,7 @@ function WeekBody({
 
     return (
       <div>
-        <div
+        <Box
           onClick={e => {
             if (action === 'delete') {
               const ep = e.target.closest('.event-pane')
@@ -661,7 +662,7 @@ function WeekBody({
               console.warn(e.message)
             }
           }}
-          style={{
+          sx={{
             touchAction: action === 'create' ? 'none' : undefined,
             paddingLeft: '1px',
             display: 'grid',
@@ -670,6 +671,27 @@ function WeekBody({
             borderTop: '1px solid #aaf3',
             boxShadow: '1rem 1.5rem 2rem #0114',
             filter: showGhost ? 'brightness(85%) saturate(80%)' : undefined,
+            '& .event-pane .pane-inner div': action !== 'delete' ? undefined : {
+              color: '#fff',
+              opacity: 1,
+            },
+            '& .event-pane .pane-inner div': action !== 'delete' ? undefined : {
+              color: '#fff',
+              opacity: 1,
+            },
+            '& .event-pane:before':  action !== 'delete' ? undefined : {
+              content: '""',
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              display: 'block',
+              backgroundColor: '#0009',
+              backgroundImage: `url(${redX})`,
+              backgroundSize: '1rem',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              boxShadow: '0 0 1rem #ff4545ff inset',
+            },
           }}
         >
           {days.map(day => (
@@ -686,7 +708,7 @@ function WeekBody({
               weekEvents={weekEvents}
             />
           ))}
-        </div>
+        </Box>
         {needMobileBar && (
           <div
             style={{
