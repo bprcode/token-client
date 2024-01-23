@@ -121,7 +121,7 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
         if (
           ep ||
           touchRef.current.eventPane ||
-          touchRef.lastTouchBehavior !== 'edit'
+          touchRef.current.lastTouchBehavior === 'create'
         ) {
           // Do not expand.
           return
@@ -359,10 +359,8 @@ function WeekBody({
         if (pageX > touchRef.current.initialPageX) {
           for (let i = 0; i < ghostPaneArray.length; i++) {
             if (i < currentDayCount) {
-              // console.log(i,'on')
               setAugmentedPaneColor(ghostPaneArray[i], activeColor)
             } else {
-              // console.log(i,'off')
               setAugmentedPaneColor(ghostPaneArray[i], augmentedResetColor)
             }
           }
@@ -466,7 +464,6 @@ function WeekBody({
                 color: document.querySelector('.color-field input')?.value,
                 title: document.querySelector('.title-field input')?.value,
               }
-              console.log('test query >>>', selections)
 
               for (
                 let day = touchRef.current.creationStartDay;
@@ -556,7 +553,6 @@ function WeekBody({
 
               const creationColor =
                 selections.color ?? resolveColor(selections.type)
-              console.log('color resolved to:', creationColor)
 
               Object.assign(touchRef.current, {
                 isDragCreating: true,
