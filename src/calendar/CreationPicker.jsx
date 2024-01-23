@@ -49,7 +49,7 @@ const styledMenuProps = {
   },
 }
 
-export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
+export function CreationPicker({ layout = 'drawer', active = true }) {
   const titleRef = useRef(null)
   const theme = useTheme()
   const eventStyles = useEventStyles()
@@ -68,22 +68,26 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
 
   const rightMargin = isDrawer ? '0.5rem' : '1rem'
 
-
   return (
     <div
       style={{
-        boxShadow: active ? '0 0 #f000 inset' : `0 0 1rem ${theme.palette.primary.main} inset`,
+        boxShadow: active
+          ? '0 0 #f000 inset'
+          : `0 0 1rem ${theme.palette.primary.main} inset`,
         height: isDrawer ? '7rem' : '5rem',
         backgroundColor: isDrawer ? '#212121f0' : '#141414f8',
-        borderTop: isDrawer ? '1px solid #fff4' : '1px solid rgba(64, 149, 192, 0.46)',
+        borderTop: isDrawer
+          ? '1px solid #fff4'
+          : '1px solid rgba(64, 149, 192, 0.46)',
         borderLeft: isDrawer ? undefined : '1px solid rgba(64, 149, 192, 0.46)',
-        borderBottom: isDrawer ? undefined : '1px solid rgba(64, 149, 192, 0.46)',
+        borderBottom: isDrawer
+          ? undefined
+          : '1px solid rgba(64, 149, 192, 0.46)',
         borderRight: isDrawer ? undefined : '1px solid rgba(25, 58, 75, 0.88)',
         padding: isDrawer ? '0.25rem' : '0.5rem',
         paddingTop: isDrawer ? '0.25rem' : '1rem',
         display: 'flex',
         transition: 'box-shadow 1s ease-out',
-
       }}
     >
       <span>
@@ -96,18 +100,10 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
         >
           <InputLabel id="event-type-label">Type</InputLabel>
           <Select
+            className="type-field"
             labelId="event-type-label"
             value={type}
-            onChange={e => {
-              setType(e.target.value)
-              touchRef.current.creationType = e.target.value
-              touchRef.current.creationColor =
-                e.target.value === 'Default' ? selectedColor : e.target.value
-              touchRef.current.creationTitle =
-                e.target.value === 'Default'
-                  ? titleRef.current.value
-                  : e.target.value
-            }}
+            onChange={e => setType(e.target.value)}
             MenuProps={styledMenuProps}
           >
             {typeList.map(t => (
@@ -146,12 +142,10 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
           <FormControl variant="standard" sx={{ mr: rightMargin }}>
             <InputLabel id="color-label">Color</InputLabel>
             <Select
+              className="color-field"
               labelId="color-label"
               value={selectedColor}
-              onChange={e => {
-                setSelectedColor(e.target.value)
-                touchRef.current.creationColor = e.target.value
-              }}
+              onChange={e => setSelectedColor(e.target.value)}
               MenuProps={styledMenuProps}
               sx={{
                 '& .palette-block': {
@@ -193,18 +187,13 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
         )}
 
         <TextField
+          className="title-field"
           inputRef={titleRef}
           id="standard-basic"
           label="Title"
           variant="standard"
           defaultValue="Event"
-          onFocus={e => {
-            titleRef.current.select()
-
-          }}
-          onBlur={e => {
-            touchRef.current.creationTitle = e.target.value
-          }}
+          onFocus={() => titleRef.current.select()}
           sx={{
             maxWidth: isDrawer ? '14ch' : '18ch',
             visibility: type === 'Default' ? 'visible' : 'hidden',
@@ -233,7 +222,6 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
             }}
           >
             {isNarrow ? 'Drag calendar to add' : 'Click & drag calendar to add'}
-            
           </div>
         </div>
       )}

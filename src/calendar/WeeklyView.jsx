@@ -118,7 +118,11 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
       onClick={e => {
         const ep = e.target.closest('.event-pane')
         // click was on, or initiated on, an event pane:
-        if (ep || touchRef.current.eventPane) {
+        if (
+          ep ||
+          touchRef.current.eventPane ||
+          touchRef.lastTouchBehavior !== 'edit'
+        ) {
           // Do not expand.
           return
         }
@@ -457,14 +461,13 @@ function WeekBody({
             touchRef.current.isDragCreating = false
 
             if (action === 'create') {
-              console.log(
-                'create placeholder:',
-                touchRef.current.creationStartMinute,
-                touchRef.current.creationFinalMinute,
-                touchRef.current.creationStartDay,
-                touchRef.current.creationFinalDay
-              )
-              console.log('should create events:')
+              const selections = {
+                type: document.querySelector('.type-field input').value,
+                color: document.querySelector('.color-field input')?.value,
+                title: document.querySelector('.title-field input')?.value,
+              }
+              console.log('test query >>>', selections)
+
               for (
                 let day = touchRef.current.creationStartDay;
                 day <= touchRef.current.creationFinalDay;
@@ -477,15 +480,19 @@ function WeekBody({
                   .add(day, 'days')
                   .add(touchRef.current.creationFinalMinute, 'minutes')
 
-                console.log(touchRef.current.creationColor)
-
                 onCreate(
                   createEventObject({
                     startTime: initialTime,
                     endTime: finalTime,
-                    summary: touchRef.current.creationTitle,
+                    summary:
+                      selections.type === 'Default'
+                        ? selections.title
+                        : selections.type,
                     description: ' ',
-                    colorId: touchRef.current.creationColor,
+                    colorId:
+                      selections.type === 'Default'
+                        ? selections.color
+                        : selections.type,
                     id: `idem ${Math.floor(Math.random() * 1e9)}`,
                   })
                 )
@@ -528,6 +535,8 @@ function WeekBody({
             }
           }}
           onPointerDown={e => {
+            touchRef.current.lastTouchBehavior = action
+
             if (action === 'create') {
               onHideDrawer()
               updateTouchBounds(e)
@@ -539,10 +548,16 @@ function WeekBody({
                 (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
               const flooredHour = 24 * (yFraction - (yFraction % (1 / 24)))
 
-              console.log(
-                'color resolved to:',
-                resolveColor(touchRef.current.creationColor)
-              )
+              const selections = {
+                type: document.querySelector('.type-field input').value,
+                color: document.querySelector('.color-field input')?.value,
+                title: document.querySelector('.title-field input')?.value,
+              }
+
+              const creationColor =
+                selections.color ?? resolveColor(selections.type)
+              console.log('color resolved to:', creationColor)
+
               Object.assign(touchRef.current, {
                 isDragCreating: true,
                 creatingDayCount: 0,
@@ -553,7 +568,7 @@ function WeekBody({
                   ...ghostElementRef.current.querySelectorAll('.end-element'),
                 ],
                 augmentedGhostColor: colorizerTheme.palette.augmentColor({
-                  color: { main: resolveColor(touchRef.current.creationColor) },
+                  color: { main: creationColor },
                 }),
                 initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
                 initialTop: e.pageY - window.scrollY,
@@ -728,7 +743,7 @@ function old_CreationDrawer({ action, picks, onPick }) {
   )
 }
 
-function BottomDrawer({ open, touchRef }) {
+function BottomDrawer({ open }) {
   return (
     <div
       style={{
@@ -739,13 +754,13 @@ function BottomDrawer({ open, touchRef }) {
       }}
     >
       <Collapse in={open}>
-        <CreationPicker layout="drawer" touchRef={touchRef} />
+        <CreationPicker layout="drawer" />
       </Collapse>
     </div>
   )
 }
 
-function TopDrawer({ open, touchRef }) {
+function TopDrawer({ open }) {
   return (
     <div
       style={{
@@ -757,15 +772,10 @@ function TopDrawer({ open, touchRef }) {
       }}
     >
       <Collapse in={open}>
-        <CreationPicker layout="shade" touchRef={touchRef} active={open} />
+        <CreationPicker layout="shade" active={open} />
       </Collapse>
     </div>
   )
-}
-
-const defaultTouchState = {
-  creationColor: 'Work',
-  creationTitle: 'Work',
 }
 
 export function WeeklyView({
@@ -777,7 +787,7 @@ export function WeeklyView({
   onUpdate,
   onDelete,
 }) {
-  const touchRef = useRef(defaultTouchState)
+  const touchRef = useRef({})
   const { data: events } = useViewQuery()
   const logger = useLogger()
   const logId = Math.round(Math.random() * 1e6)
@@ -855,14 +865,18 @@ export function WeeklyView({
 
           {!needMobileBar && actionButtons}
 
-          {!needMobileBar && <TopDrawer open={showDrawer} touchRef={touchRef} />}
+          {!needMobileBar && <TopDrawer open={showDrawer} />}
         </ViewHeader>
 
         <WeekBody
           touchRef={touchRef}
           date={date}
           events={events}
-          onCreate={onCreate}
+          onCreate={creation => {
+            setShowDrawer(false)
+            setAction('edit')
+            onCreate(creation)
+          }}
           onExpand={onExpand}
           onUpdate={onUpdate}
           onDelete={onDelete}
@@ -872,9 +886,7 @@ export function WeeklyView({
       {needMobileBar && (
         <MobileBar transparent={showDrawer}>{actionButtons}</MobileBar>
       )}
-      {needMobileBar && 
-      <BottomDrawer open={showDrawer} touchRef={touchRef} />
-      }
+      {needMobileBar && <BottomDrawer open={showDrawer} />}
     </ActionContext.Provider>
   )
 
