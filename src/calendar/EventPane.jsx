@@ -288,6 +288,7 @@ export function EventPane({
   if (label === 'brief') {
     header = duration > 60 && (
       <Box
+      className="brief-title"
         sx={{
           overflow: 'hidden',
           whiteSpace: 'nowrap',
@@ -295,11 +296,12 @@ export function EventPane({
         }}
       >
         {event.summary}
-        {/* <span>{event.summary}</span> */}
       </Box>
     )
     details = duration > 120 && (
-      <div>
+      <div
+      className="brief-details"
+      >
         {shorthandInterval.split('–')[0]}
         <wbr />
         {'–'}

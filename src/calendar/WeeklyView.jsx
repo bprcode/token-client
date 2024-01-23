@@ -671,27 +671,47 @@ function WeekBody({
             borderTop: '1px solid #aaf3',
             boxShadow: '1rem 1.5rem 2rem #0114',
             filter: showGhost ? 'brightness(85%) saturate(80%)' : undefined,
-            '& .event-pane .pane-inner div': action !== 'delete' ? undefined : {
-              color: '#fff',
-              opacity: 1,
-            },
-            '& .event-pane .pane-inner div': action !== 'delete' ? undefined : {
-              color: '#fff',
-              opacity: 1,
-            },
-            '& .event-pane:before':  action !== 'delete' ? undefined : {
-              content: '""',
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              display: 'block',
-              backgroundColor: '#0009',
-              backgroundImage: `url(${redX})`,
-              backgroundSize: '1rem',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              boxShadow: '0 0 1rem #ff4545ff inset',
-            },
+            '& .event-pane .pane-inner div':
+              action !== 'delete'
+                ? undefined
+                : {
+                    color: '#fff',
+                  },
+            '& .event-pane .pane-inner .brief-details':
+              action !== 'delete'
+                ? undefined
+                : {
+                    filter: 'brightness(100%)',
+                  },
+            '& .event-pane:before':
+              action !== 'delete'
+                ? undefined
+                : {
+                    content: '""',
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    display: 'block',
+                    backgroundColor: '#0009',
+
+                    boxShadow: '0 0 1rem #ff4545e0 inset',
+                  },
+            '& .event-pane:after':
+              action !== 'delete'
+                ? undefined
+                : {
+                    zIndex: 1,
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    width: '100%',
+                    height: '100%',
+                    display: 'block',
+                    backgroundImage: `url(${redX})`,
+                    backgroundSize: '0.75rem',
+                    backgroundPosition: 'top 6px right 7px',
+                    backgroundRepeat: 'no-repeat',
+                  },
           }}
         >
           {days.map(day => (
