@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import { useRef, useState } from 'react'
 import { mockPalette, resolveColor, useEventStyles } from './calendarLogic.mjs'
+import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 
 const styledMenuProps = {
   PaperProps: {
@@ -57,12 +58,16 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
   const [type, setType] = useState(typeList[0])
   const [selectedColor, setSelectedColor] = useState(palette[0])
 
-  const rightMargin = '0.5rem'
   const colorIconWidth = '2.5rem'
   const condensedIconWidth = '1.5rem'
   const colorIconHeight = '1.25rem'
 
   const isDrawer = layout === 'drawer'
+  const isNarrow = useNarrowCheck()
+  const hasMobileBar = useMobileBarCheck()
+
+  const rightMargin = isDrawer ? '0.5rem' : '1rem'
+
 
   return (
     <div
@@ -70,14 +75,15 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
         boxShadow: active ? '0 0 #f000 inset' : `0 0 1rem ${theme.palette.primary.main} inset`,
         height: isDrawer ? '7rem' : '5rem',
         backgroundColor: isDrawer ? '#212121f0' : '#141414f8',
-        borderTop: isDrawer ? '1px solid #fff4' : '1px solid #fff4',
-        borderLeft: isDrawer ? undefined : '1px solid rgba(69, 95, 108, 0.88)',
+        borderTop: isDrawer ? '1px solid #fff4' : '1px solid rgba(64, 149, 192, 0.46)',
+        borderLeft: isDrawer ? undefined : '1px solid rgba(64, 149, 192, 0.46)',
         borderBottom: isDrawer ? undefined : '1px solid rgba(64, 149, 192, 0.46)',
         borderRight: isDrawer ? undefined : '1px solid rgba(25, 58, 75, 0.88)',
-        padding: '0.25rem',
+        padding: isDrawer ? '0.25rem' : '0.5rem',
+        paddingTop: isDrawer ? '0.25rem' : '1rem',
         display: 'flex',
-        marginTop: isDrawer ? undefined : '1px',
-        transition: 'box-shadow 1s ease-out'
+        transition: 'box-shadow 1s ease-out',
+
       }}
     >
       <span>
@@ -85,7 +91,7 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
           variant="standard"
           sx={{
             mr: rightMargin,
-            ml: '0.25rem',
+            ml: isDrawer ? '0.25rem' : '0.75rem',
           }}
         >
           <InputLabel id="event-type-label">Type</InputLabel>
@@ -200,8 +206,10 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
             touchRef.current.creationTitle = e.target.value
           }}
           sx={{
-            maxWidth: '14ch',
+            maxWidth: isDrawer ? '14ch' : '18ch',
             visibility: type === 'Default' ? 'visible' : 'hidden',
+            // Remove from flow without dismounting:
+            position: type === 'Default' ? undefined : 'absolute',
           }}
         />
       </span>
@@ -210,10 +218,11 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
           style={{
             display: 'flex',
             fontSize: '0.75em',
-            flexGrow: 1,
+            flexGrow: hasMobileBar ? 1 : 0,
             height: '48px',
             justifyContent: 'end',
-            alignItems: 'start',
+            alignItems: hasMobileBar ? 'start' : 'end',
+            marginLeft: hasMobileBar ? undefined : 'auto',
             marginRight: '0.75rem',
             color: theme.palette.primary.light,
           }}
@@ -223,7 +232,8 @@ export function CreationPicker({ touchRef, layout = 'drawer', active=true }) {
               paddingBottom: '5px',
             }}
           >
-            Tap & drag to add
+            {isNarrow ? 'Drag calendar to add' : 'Click & drag calendar to add'}
+            
           </div>
         </div>
       )}

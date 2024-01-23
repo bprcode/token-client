@@ -728,8 +728,7 @@ function old_CreationDrawer({ action, picks, onPick }) {
   )
 }
 
-function CreationDrawer({ open, touchRef }) {
-  const anchorBottom = useMobileBarCheck()
+function BottomDrawer({ open, touchRef }) {
   return (
     <div
       style={{
@@ -747,7 +746,6 @@ function CreationDrawer({ open, touchRef }) {
 }
 
 function TopDrawer({ open, touchRef }) {
-  const anchorBottom = useMobileBarCheck()
   return (
     <div
       style={{
@@ -755,7 +753,7 @@ function TopDrawer({ open, touchRef }) {
         position: 'fixed',
         top: '4rem',
         right: 0,
-        width: '22rem',
+        width: '23rem',
       }}
     >
       <Collapse in={open}>
@@ -857,7 +855,7 @@ export function WeeklyView({
 
           {!needMobileBar && actionButtons}
 
-          <TopDrawer open={showDrawer} touchRef={touchRef} />
+          {!needMobileBar && <TopDrawer open={showDrawer} touchRef={touchRef} />}
         </ViewHeader>
 
         <WeekBody
@@ -874,7 +872,9 @@ export function WeeklyView({
       {needMobileBar && (
         <MobileBar transparent={showDrawer}>{actionButtons}</MobileBar>
       )}
-      <CreationDrawer open={showDrawer} touchRef={touchRef} />
+      {needMobileBar && 
+      <BottomDrawer open={showDrawer} touchRef={touchRef} />
+      }
     </ActionContext.Provider>
   )
 
