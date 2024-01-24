@@ -127,7 +127,7 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
           // Do not expand.
           return
         }
-
+        
         // expand the daily view.
         return onExpand(day)
       }}
@@ -448,14 +448,17 @@ function WeekBody({
         <Box
           onClick={e => {
             if (action === 'delete') {
+              console.log('✖️ handling delete ...')
               const ep = e.target.closest('.event-pane')
               const shadow = ep.parentNode.querySelector(
                 `.accent-shadow-${ep.dataset.id.replace(' ', '-')}`
               )
-              if (ep && shadow) {
+              if (shadow) {
+                shadow.style.opacity = 0
+              }
+              if (ep) {
                 ep.style.transition = 'opacity 250ms ease-out'
                 ep.style.boxShadow = '0 0 0 #0000'
-                shadow.style.opacity = 0
                 const ip = ep.querySelector('.pane-inner')
                 if (ip) {
                   ip.style.transition = 'background-color 150ms ease-out'
@@ -463,8 +466,8 @@ function WeekBody({
                 }
                 ep.style.opacity = 0
                 setTimeout(() => onDelete(ep.dataset.id), 300)
-                return
               }
+              return
             }
           }}
           onPointerUp={e => {
@@ -732,9 +735,9 @@ function WeekBody({
             <WeekdayBox
               key={day.format('MM D')}
               touchRef={touchRef}
-              onExpand={() => {
+              onExpand={d => {
                 if (action !== 'create') {
-                  onExpand()
+                  onExpand(d)
                 }
               }}
               day={day}
