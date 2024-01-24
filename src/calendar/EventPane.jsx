@@ -63,11 +63,12 @@ function OverflowArrows({ before, after, accentColor }) {
 }
 
 // drop shadow mock pseudo-element for correct z-indexing:
-function AccentShadow({ hide, positioning }) {
+function AccentShadow({ hide, positioning, id = '' }) {
   if (hide) return
 
   return (
     <div
+      className={`accent-shadow-${id.replace(' ', '-')}`}
       style={{
         ...positioning,
         boxShadow: '0.25rem 0.5rem 1.5rem #0008',
@@ -159,7 +160,11 @@ function BriefPane({
           </Box>
         </Box>
       </BrightHoverBox>
-      <AccentShadow hide={hideShadows} positioning={positioning} />
+      <AccentShadow
+        hide={hideShadows}
+        positioning={positioning}
+        id={event.stableKey ?? event.id}
+      />
     </>
   )
 }
@@ -288,7 +293,7 @@ export function EventPane({
   if (label === 'brief') {
     header = duration > 60 && (
       <Box
-      className="brief-title"
+        className="brief-title"
         sx={{
           overflow: 'hidden',
           whiteSpace: 'nowrap',
@@ -299,9 +304,7 @@ export function EventPane({
       </Box>
     )
     details = duration > 120 && (
-      <div
-      className="brief-details"
-      >
+      <div className="brief-details">
         {shorthandInterval.split('–')[0]}
         <wbr />
         {'–'}
@@ -748,7 +751,11 @@ export function EventPane({
         ></div>
       )}
 
-      <AccentShadow hide={hideShadows} positioning={positioning} />
+      <AccentShadow
+        hide={hideShadows}
+        positioning={positioning}
+        id={event.stableKey ?? event.id}
+      />
     </>
   )
 }

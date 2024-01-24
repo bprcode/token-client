@@ -449,8 +449,21 @@ function WeekBody({
           onClick={e => {
             if (action === 'delete') {
               const ep = e.target.closest('.event-pane')
-              if (ep) {
-                onDelete(ep.dataset.id)
+              const shadow = ep.parentNode.querySelector(
+                `.accent-shadow-${ep.dataset.id.replace(' ', '-')}`
+              )
+              if (ep && shadow) {
+                ep.style.transition = 'opacity 250ms ease-out'
+                ep.style.boxShadow = '0 0 0 #0000'
+                shadow.style.opacity = 0
+                const ip = ep.querySelector('.pane-inner')
+                if (ip) {
+                  ip.style.transition = 'background-color 150ms ease-out'
+                  ip.style.backgroundColor = '#222f'
+                }
+                ep.style.opacity = 0
+                setTimeout(() => onDelete(ep.dataset.id), 300)
+                return
               }
             }
           }}
