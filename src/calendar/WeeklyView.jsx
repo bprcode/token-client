@@ -30,6 +30,7 @@ import { ActionButtons, MobileBar } from './ActionDisplay'
 import { ActionContext, actionList } from './ActionContext.mjs'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { CreationPicker } from './CreationPicker'
+import dayjs from 'dayjs'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
@@ -119,62 +120,72 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
 })
 
 function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
-  return (
-    <HoverableBox
-      className="weekday-box"
-      key={day.format('MM D')}
-      onClick={e => {
-        const ep = e.target.closest('.event-pane')
-        // click was on, or initiated on, an event pane:
-        if (
-          ep ||
-          touchRef.current.eventPane ||
-          touchRef.current.lastTouchBehavior === 'create'
-        ) {
-          // Do not expand.
-          return
-        }
+  // Reconstruct day object from string to avoid broken referential integrity:
+  const dayString = day.toString()
 
-        // expand the daily view.
-        return onExpand(day)
-      }}
-      sx={{
-        px: '0.25rem',
-        pb: '0.5rem',
-        backgroundColor: 'rgb(23, 27, 28)',
-        borderLeft: '1px solid #fff1',
-      }}
-    >
-      <Box
-        align="center"
-        key={day.format('D')}
-        sx={{ pl: [0, 1], pr: [0, 1], pb: 1 }}
-      >
-        <Typography variant="caption">{day.format('ddd')}</Typography>
-        <Typography variant="h5">{day.format('D')}</Typography>
-      </Box>
+  return useMemo(() => {
+    console.log('🛤️ WeekdayBox memoizing')
+    const day = dayjs(dayString)
 
-      <SectionedInterval
-        initial={day.startOf('day')}
-        final={day.endOf('day')}
-        step={[1, 'hour']}
-        outsideHeight="100%"
-        insideHeight={displayHeight}
-        innerLeftPadding={innerLeftPadding}
-        innerRightPadding={innerRightPadding}
-        labelEvery={6}
-        endMargin={'0rem'}
-        action={null}
+    return (
+      <HoverableBox
+        className="weekday-box"
+        key={day.format('MM D')}
+        onClick={e => {
+          const ep = e.target.closest('.event-pane')
+          // click was on, or initiated on, an event pane:
+          if (
+            ep ||
+            touchRef.current.eventPane ||
+            touchRef.current.lastTouchBehavior === 'create'
+          ) {
+            // Do not expand.
+            return
+          }
+
+          if (touchRef.current.lastTouchBehavior !== 'create') {
+            // expand the daily view.
+            return onExpand(day)
+          }
+        }}
+        sx={{
+          px: '0.25rem',
+          pb: '0.5rem',
+          backgroundColor: 'rgb(23, 27, 28)',
+          borderLeft: '1px solid #fff1',
+        }}
       >
-        <DailyBreakdown
-          date={day}
-          events={weekEvents}
-          style={{ height: displayHeight }}
-          labels="brief"
-        />
-      </SectionedInterval>
-    </HoverableBox>
-  )
+        <Box
+          align="center"
+          key={day.format('D')}
+          sx={{ pl: [0, 1], pr: [0, 1], pb: 1 }}
+        >
+          <Typography variant="caption">{day.format('ddd')}</Typography>
+          <Typography variant="h5">{day.format('D')}</Typography>
+        </Box>
+
+        <SectionedInterval
+          initial={day.startOf('day')}
+          final={day.endOf('day')}
+          step={[1, 'hour']}
+          outsideHeight="100%"
+          insideHeight={displayHeight}
+          innerLeftPadding={innerLeftPadding}
+          innerRightPadding={innerRightPadding}
+          labelEvery={6}
+          endMargin={'0rem'}
+          action={null}
+        >
+          <DailyBreakdown
+            date={day}
+            events={weekEvents}
+            style={{ height: displayHeight }}
+            labels="brief"
+          />
+        </SectionedInterval>
+      </HoverableBox>
+    )
+  }, [touchRef, displayHeight, dayString, onExpand, weekEvents])
 }
 
 function handlePointerDown(
@@ -328,8 +339,25 @@ function WeekBody({
   const [showGhost, setShowGhost] = useState(false)
   const action = useContext(ActionContext)
 
+  const dateString = date.toString()
+
+  const filteredEvents = useMemo(() => {
+    console.log('⌛ memoizing filtered events')
+    const date = dayjs(dateString)
+    const startOfWeek = date.startOf('week')
+    const endOfWeek = date.endOf('week')
+
+    return events.filter(e =>
+      isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
+    )
+  }, [dateString, events])
+
   const rv = useMemo(() => {
     const memoBenchStart = Date.now()
+    const date = dayjs(dateString)
+    const startOfWeek = date.startOf('week')
+    const endOfWeek = date.endOf('week')
+
     const colorizerTheme = createTheme({
       palette: { tonalOffset: 0.3 },
     })
@@ -337,12 +365,6 @@ function WeekBody({
       color: { main: ghostFadeInColor },
     })
     const days = []
-    const startOfWeek = date.startOf('week')
-    const endOfWeek = date.endOf('week')
-
-    const weekEvents = events.filter(e =>
-      isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
-    )
 
     function snapDay(pageX) {
       const xFraction =
@@ -781,14 +803,10 @@ function WeekBody({
             <WeekdayBox
               key={day.format('MM D')}
               touchRef={touchRef}
-              onExpand={d => {
-                if (action !== 'create') {
-                  onExpand(d)
-                }
-              }}
+              onExpand={onExpand}
               day={day}
               displayHeight={displayHeight}
-              weekEvents={weekEvents}
+              weekEvents={filteredEvents}
             />
           ))}
         </Box>
@@ -807,8 +825,9 @@ function WeekBody({
     console.log('weekly body assembled in: ', Date.now() - memoBenchStart, 'ms')
     return assembledContents
   }, [
-    date,
+    dateString,
     events,
+    filteredEvents,
     action,
     needMobileBar,
     touchRef,
@@ -816,8 +835,6 @@ function WeekBody({
     onUpdate,
     onDelete,
     onHideDrawer,
-
-    // debug -- currently fixing referential integrity for:
     onCreate,
   ])
 

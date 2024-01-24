@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Button, Paper, Slide } from '@mui/material'
+import { Alert, AlertTitle, Box, Button, Slide } from '@mui/material'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { isOverlap, reduceConcurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
@@ -15,7 +15,6 @@ import { ViewHeader } from '../ViewHeader'
 import { useTheme } from '@emotion/react'
 import { alpha } from '@mui/material/styles'
 import { isEventDuplicate } from '../EventSync'
-import { useCallback } from 'react'
 
 const log = console.log.bind(console)
 
