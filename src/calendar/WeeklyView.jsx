@@ -127,7 +127,7 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
           // Do not expand.
           return
         }
-        
+
         // expand the daily view.
         return onExpand(day)
       }}
@@ -170,6 +170,137 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
   )
 }
 
+function handlePointerDown(
+  e,
+  touchRef,
+  ghostElementRef,
+  action,
+  onHideDrawer,
+  updateTouchBounds,
+  setShowGhost,
+  colorizerTheme,
+  setGhostWeekColor,
+  updateDragCreation,
+  events,
+  updateDragMove
+) {
+  const doubleClickMs = 600
+  touchRef.current.lastTouchBehavior = action
+
+  // Handle create pointer down
+  if (action === 'create') {
+    onHideDrawer()
+    updateTouchBounds(e)
+    setShowGhost('creating')
+
+    // discretize and round down interval to start of hour:
+    const yFraction =
+      (e.pageY - touchRef.current.bounds.top) /
+      (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
+    const flooredHour = 24 * (yFraction - (yFraction % (1 / 24)))
+
+    const selections = {
+      type: document.querySelector('.type-field input').value,
+      color: document.querySelector('.color-field input')?.value,
+      title: document.querySelector('.title-field input')?.value,
+    }
+
+    const creationColor = selections.color ?? resolveColor(selections.type)
+
+    Object.assign(touchRef.current, {
+      isDragCreating: true,
+      creatingDayCount: 0,
+      startLabels: [
+        ...ghostElementRef.current.querySelectorAll('.start-element'),
+      ],
+      endLabels: [...ghostElementRef.current.querySelectorAll('.end-element')],
+      augmentedGhostColor: colorizerTheme.palette.augmentColor({
+        color: { main: creationColor },
+      }),
+      initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
+      initialTop: e.pageY - window.scrollY,
+      flooredY:
+        touchRef.current.bounds.top +
+        (flooredHour *
+          (touchRef.current.bounds.bottom - touchRef.current.bounds.top)) /
+          24,
+
+      width:
+        Math.round(touchRef.current.bounds.containerWidth / 7) -
+        2 * snapGapPixels,
+      height: 0,
+    })
+
+    setGhostWeekColor(touchRef.current.augmentedGhostColor.main)
+
+    updateDragCreation(e.pageX, e.pageY)
+    ghostElementRef.current.style.backgroundColor = 'transparent'
+    ghostElementRef.current.style.border = 'none'
+    const ghostWeek = ghostElementRef.current.querySelector('.ghost-week')
+    ghostWeek.style.gridTemplateColumns = `repeat(7, ${
+      (touchRef.current.bounds.containerWidth - snapGapPixels / 2) / 7 + 'px'
+    })`
+
+    return
+  }
+
+  // Handle delete pointer down -- i.e., skip and leave to the click handler
+  if (action === 'delete') {
+    return
+  }
+
+  // Handle edit pointer down
+  const ep = e.target.closest('.event-pane')
+  // If the pointerDown did not occur within an eventPane,
+  // allow the individual day container to handle it.
+  if (!ep) {
+    touchRef.current.eventPane = null
+    return
+  }
+
+  if (
+    ep === touchRef.current.eventPane &&
+    Date.now() - touchRef.current.lastClickedAt < doubleClickMs
+  ) {
+    console.log('🗡️ Double-tap?', Date.now() - touchRef.current.lastClickedAt)
+  }
+
+  const pickedColor = getComputedStyle(
+    ep.querySelector('.pane-inner')
+  ).backgroundColor
+  const eventRect = ep.getBoundingClientRect()
+
+  updateTouchBounds(e)
+  Object.assign(touchRef.current, {
+    event: events.find(
+      e => e.stableKey === ep.dataset.id || e.id === ep.dataset.id
+    ),
+    eventPane: ep,
+    lastClickedAt: Date.now(),
+    initialLeft: eventRect.left - touchRef.current.bounds.containerLeft,
+    initialTop: eventRect.top - touchRef.current.bounds.containerTop,
+
+    width: Math.round(touchRef.current.bounds.containerWidth / 7) - 8,
+    height: eventRect.height,
+  })
+
+  ghostElementRef.current.style.width = touchRef.current.width + 'px'
+  ghostElementRef.current.style.height = eventRect.height + 'px'
+  // extract the comma-separated argument to rgb(r,g,b):
+  const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
+  ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.75)`
+  ghostElementRef.current.style.border = `0.125rem solid rgb(${rgb})`
+  ghostElementRef.current.style.color = colorizerTheme.palette.augmentColor({
+    color: { main: `rgb(${rgb})` },
+  }).contrastText
+
+  updateDragMove(e.pageX, e.pageY)
+
+  setShowGhost(true)
+  touchRef.current.eventPane.style.filter = 'brightness(40%) saturate(30%)'
+  touchRef.current.eventPane.style.outline = '2px solid yellow'
+}
+
 function WeekBody({
   touchRef,
   date,
@@ -180,9 +311,7 @@ function WeekBody({
   onDelete,
   onHideDrawer,
 }) {
-  const colorizerTheme = createTheme({
-    palette: { tonalOffset: 0.3 },
-  })
+  
   const needMobileBar = useMobileBarCheck()
   const logger = useLogger()
   const benchStart = performance.now()
@@ -194,6 +323,10 @@ function WeekBody({
   const action = useContext(ActionContext)
 
   const rv = useMemo(() => {
+    const memoBenchStart = Date.now()
+    const colorizerTheme = createTheme({
+      palette: { tonalOffset: 0.3 },
+    })
     const augmentedResetColor = colorizerTheme.palette.augmentColor({
       color: { main: ghostFadeInColor },
     })
@@ -443,20 +576,20 @@ function WeekBody({
       d = d.add(1, 'day')
     }
 
-    return (
+    const assembledContents = (
       <div>
         <Box
           onClick={e => {
             if (action === 'delete') {
               console.log('✖️ handling delete ...')
               const ep = e.target.closest('.event-pane')
-              const shadow = ep.parentNode.querySelector(
-                `.accent-shadow-${ep.dataset.id.replace(' ', '-')}`
-              )
-              if (shadow) {
-                shadow.style.opacity = 0
-              }
               if (ep) {
+                const shadow = ep.parentNode.querySelector(
+                  `.accent-shadow-${ep.dataset.id.replace(' ', '-')}`
+                )
+                if (shadow) {
+                  shadow.style.opacity = 0
+                }
                 ep.style.transition = 'opacity 250ms ease-out'
                 ep.style.boxShadow = '0 0 0 #0000'
                 const ip = ep.querySelector('.pane-inner')
@@ -523,19 +656,25 @@ function WeekBody({
               const snappedStart = startOfWeek
                 .add(snappedDay, 'days')
                 .add(snappedMinute, 'minutes')
-              onUpdate(
-                touchRef.current.event.stableKey ?? touchRef.current.event.id,
-                {
-                  startTime: snappedStart,
-                  endTime: snappedStart.add(
-                    touchRef.current.event.endTime.diff(
-                      touchRef.current.event.startTime,
-                      'minutes'
-                    ),
+
+              const update = {
+                startTime: snappedStart,
+                endTime: snappedStart.add(
+                  touchRef.current.event.endTime.diff(
+                    touchRef.current.event.startTime,
                     'minutes'
                   ),
-                }
-              )
+                  'minutes'
+                ),
+              }
+
+              // Only update if the event has been dragged:
+              if (!update.startTime.isSame(touchRef.current.event.startTime)) {
+                onUpdate(
+                  touchRef.current.event.stableKey ?? touchRef.current.event.id,
+                  update
+                )
+              }
 
               touchRef.current.event = null
             }
@@ -548,120 +687,22 @@ function WeekBody({
               touchRef.current.eventPane.style.filter = ''
             }
           }}
-          onPointerDown={e => {
-            touchRef.current.lastTouchBehavior = action
-
-            if (action === 'create') {
-              onHideDrawer()
-              updateTouchBounds(e)
-              setShowGhost('creating')
-
-              // discretize and round down interval to start of hour:
-              const yFraction =
-                (e.pageY - touchRef.current.bounds.top) /
-                (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
-              const flooredHour = 24 * (yFraction - (yFraction % (1 / 24)))
-
-              const selections = {
-                type: document.querySelector('.type-field input').value,
-                color: document.querySelector('.color-field input')?.value,
-                title: document.querySelector('.title-field input')?.value,
-              }
-
-              const creationColor =
-                selections.color ?? resolveColor(selections.type)
-
-              Object.assign(touchRef.current, {
-                isDragCreating: true,
-                creatingDayCount: 0,
-                startLabels: [
-                  ...ghostElementRef.current.querySelectorAll('.start-element'),
-                ],
-                endLabels: [
-                  ...ghostElementRef.current.querySelectorAll('.end-element'),
-                ],
-                augmentedGhostColor: colorizerTheme.palette.augmentColor({
-                  color: { main: creationColor },
-                }),
-                initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
-                initialTop: e.pageY - window.scrollY,
-                flooredY:
-                  touchRef.current.bounds.top +
-                  (flooredHour *
-                    (touchRef.current.bounds.bottom -
-                      touchRef.current.bounds.top)) /
-                    24,
-
-                width:
-                  Math.round(touchRef.current.bounds.containerWidth / 7) -
-                  2 * snapGapPixels,
-                height: 0,
-              })
-
-              setGhostWeekColor(touchRef.current.augmentedGhostColor.main)
-
-              updateDragCreation(e.pageX, e.pageY)
-              ghostElementRef.current.style.backgroundColor = 'transparent'
-              ghostElementRef.current.style.border = 'none'
-              const ghostWeek =
-                ghostElementRef.current.querySelector('.ghost-week')
-              ghostWeek.style.gridTemplateColumns = `repeat(7, ${
-                (touchRef.current.bounds.containerWidth - snapGapPixels / 2) /
-                  7 +
-                'px'
-              })`
-
-              return
-            }
-
-            if (action === 'delete') {
-              return
-            }
-
-            const ep = e.target.closest('.event-pane')
-            // If the event did not occur within an eventPane,
-            // allow the individual day container to handle it.
-            if (!ep) {
-              touchRef.current.eventPane = null
-              return
-            }
-
-            const pickedColor = getComputedStyle(
-              ep.querySelector('.pane-inner')
-            ).backgroundColor
-            const eventRect = ep.getBoundingClientRect()
-
-            updateTouchBounds(e)
-            Object.assign(touchRef.current, {
-              event: events.find(
-                e => e.stableKey === ep.dataset.id || e.id === ep.dataset.id
-              ),
-              eventPane: ep,
-              initialLeft:
-                eventRect.left - touchRef.current.bounds.containerLeft,
-              initialTop: eventRect.top - touchRef.current.bounds.containerTop,
-
-              width: Math.round(touchRef.current.bounds.containerWidth / 7) - 8,
-              height: eventRect.height,
-            })
-
-            ghostElementRef.current.style.width = touchRef.current.width + 'px'
-            ghostElementRef.current.style.height = eventRect.height + 'px'
-            // extract the comma-separated argument to rgb(r,g,b):
-            const rgb = pickedColor.match(/rgb\(([^)]*)\)/)[1]
-            ghostElementRef.current.style.backgroundColor = `rgba(${rgb},0.75)`
-            ghostElementRef.current.style.border = `0.125rem solid rgb(${rgb})`
-            ghostElementRef.current.style.color =
-              colorizerTheme.palette.augmentColor({
-                color: { main: `rgb(${rgb})` },
-              }).contrastText
-
-            updateDragMove(e.pageX, e.pageY)
-
-            setShowGhost(true)
-            touchRef.current.eventPane.style.filter =
-              'brightness(40%) saturate(30%)'
-          }}
+          onPointerDown={e =>
+            handlePointerDown(
+              e,
+              touchRef,
+              ghostElementRef,
+              action,
+              onHideDrawer,
+              updateTouchBounds,
+              setShowGhost,
+              colorizerTheme,
+              setGhostWeekColor,
+              updateDragCreation,
+              events,
+              updateDragMove
+            )
+          }
           onPointerMove={e => {
             try {
               if (action === 'create' && touchRef.current.isDragCreating) {
@@ -757,10 +798,12 @@ function WeekBody({
         )}
       </div>
     )
+
+    console.log('weekly body assembled in: ', Date.now() - memoBenchStart, 'ms')
+    return assembledContents
   }, [
     date,
     events,
-    colorizerTheme,
     onExpand,
     onCreate,
     onUpdate,
@@ -783,18 +826,6 @@ function WeekBody({
       {rv}
       <DragGhost show={showGhost} ref={ghostElementRef} />
     </>
-  )
-}
-
-function old_CreationDrawer({ action, picks, onPick }) {
-  const position = useNarrowCheck() ? 'fixed' : 'sticky'
-
-  return (
-    <div style={{ zIndex: 2, position, bottom: 0, width: '100%' }}>
-      <Collapse in={action === 'create'}>
-        {/* <EventPicker picks={picks} onPick={onPick} /> */}
-      </Collapse>
-    </div>
   )
 }
 
