@@ -10,7 +10,14 @@ import {
   Collapse,
   createTheme,
 } from '@mui/material'
-import { forwardRef, useContext, useMemo, useRef, useState } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useContext,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
@@ -311,7 +318,6 @@ function WeekBody({
   onDelete,
   onHideDrawer,
 }) {
-  
   const needMobileBar = useMobileBarCheck()
   const logger = useLogger()
   const benchStart = performance.now()
@@ -807,10 +813,12 @@ function WeekBody({
     needMobileBar,
     touchRef,
     onExpand,
-    onCreate,
     onUpdate,
     onDelete,
     onHideDrawer,
+
+    // debug -- currently fixing referential integrity for:
+    onCreate,
   ])
 
   const benchEnd = performance.now()
@@ -896,6 +904,16 @@ export function WeeklyView({
 
   const [action, setAction] = useState(actionList[0])
   const [showDrawer, setShowDrawer] = useState(false)
+  const onHideDrawerCallback = useCallback(() => setShowDrawer(false), [])
+  const onCreateCallback = useCallback(
+    creation => {
+      setShowDrawer(false)
+      setAction('edit')
+      onCreate(creation)
+    },
+    [onCreate]
+  )
+
   const actionButtons = (
     <ActionButtons
       onBehavior={b => {
@@ -956,15 +974,11 @@ export function WeeklyView({
           touchRef={touchRef}
           date={date}
           events={events}
-          onCreate={creation => {
-            setShowDrawer(false)
-            setAction('edit')
-            onCreate(creation)
-          }}
+          onCreate={onCreateCallback}
           onExpand={onExpand}
           onUpdate={onUpdate}
           onDelete={onDelete}
-          onHideDrawer={() => setShowDrawer(false)}
+          onHideDrawer={onHideDrawerCallback}
         />
       </ViewContainer>
       {needMobileBar && (

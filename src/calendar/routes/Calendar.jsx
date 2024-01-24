@@ -15,6 +15,7 @@ import { ViewHeader } from '../ViewHeader'
 import { useTheme } from '@emotion/react'
 import { alpha } from '@mui/material/styles'
 import { isEventDuplicate } from '../EventSync'
+import { useCallback } from 'react'
 
 const log = console.log.bind(console)
 
