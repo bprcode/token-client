@@ -298,7 +298,7 @@ function handlePointerDown(
 
   setShowGhost(true)
   touchRef.current.eventPane.style.filter = 'brightness(40%) saturate(30%)'
-  touchRef.current.eventPane.style.outline = '2px solid yellow'
+  // touchRef.current.eventPane.style.outline = '2px solid yellow'
 }
 
 function WeekBody({
@@ -728,7 +728,6 @@ function WeekBody({
             width: '100%',
             borderTop: '1px solid #aaf3',
             boxShadow: '1rem 1.5rem 2rem #0114',
-            filter: showGhost ? 'brightness(85%) saturate(80%)' : undefined,
             '& .event-pane .pane-inner div':
               action !== 'delete'
                 ? undefined
@@ -804,15 +803,14 @@ function WeekBody({
   }, [
     date,
     events,
+    action,
+    needMobileBar,
+    touchRef,
     onExpand,
     onCreate,
     onUpdate,
     onDelete,
     onHideDrawer,
-    action,
-    needMobileBar,
-    touchRef,
-    showGhost,
   ])
 
   const benchEnd = performance.now()
