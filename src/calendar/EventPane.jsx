@@ -92,6 +92,7 @@ function BriefPane({
   hideShadows,
   header,
   event,
+  action,
   children,
 }) {
   return (
@@ -100,8 +101,17 @@ function BriefPane({
         className="event-pane"
         data-id={event.stableKey ?? event.id}
         sx={{
+          '&&:hover': action !== 'create' ? undefined : {
+            // Cancel out parent brightness filter when creating
+            filter: 'brightness(71%)',
+          },
           touchAction: 'none',
-          cursor: 'grab',
+          cursor:
+              action === 'create'
+                ? 'cell'
+                : action === 'delete'
+                ? 'crosshair'
+                : 'grab',
           ...positioning,
           zIndex: 2,
           transition:
@@ -511,6 +521,7 @@ export function EventPane({
           referenceStyle,
           hideShadows,
           event,
+          action,
           header,
         }}
       >

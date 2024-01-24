@@ -679,6 +679,7 @@ function WeekBody({
             touchAction: action === 'create' ? 'none' : undefined,
             paddingLeft: '1px',
             display: 'grid',
+            cursor: action === 'create' ? 'cell' : undefined,
             gridTemplateColumns: 'repeat(7, 1fr)',
             width: '100%',
             borderTop: '1px solid #aaf3',
