@@ -4,6 +4,7 @@ import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import pencilSvg from '../assets/pencil.svg'
 import {
   mockStyles,
   getAugmentedColor,
@@ -26,7 +27,44 @@ function snap15Minute(time, steps) {
   return time.minute(floor.minute() + offset * 15)
 }
 
+const selectableStyles = {
+  '&.selected': {
+    border: '1px solid #ffaf33',
+    backgroundColor: 'blue',
+  },
+  '&.selected::before': {
+    content: '""',
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    display: 'block',
+    backgroundImage: 'radial-gradient(30px, #7e2f08ff 5%, #7e2f0800)',
+  },
+  '&.selected::after': {
+    zIndex: 1,
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    width: '100%',
+    height: '100%',
+    display: 'block',
+    backgroundImage: `url(${pencilSvg})`,
+    backgroundSize: '30px',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  },
+  '&.selected .pane-inner': {
+    backgroundColor: '#6e2a08',
+    boxShadow: '0 0 1rem #ffaf33 inset',
+    border: 'none',
+  },
+  '&.selected .pane-inner div': {
+    color: '#eee',
+  },
+}
+
 const BrightHoverBox = styled(Box)({
+  ...selectableStyles,
   '&&:hover': {
     // Brightness is multiplicative with parent hover filter:
     filter: 'brightness(95%) saturate(80%)',
@@ -101,17 +139,21 @@ function BriefPane({
         className="event-pane"
         data-id={event.stableKey ?? event.id}
         sx={{
-          '&&:hover': action !== 'create' ? undefined : {
-            // Cancel out parent brightness filter when creating
-            filter: 'brightness(71%)',
-          },
+          
+          '&&:hover':
+            action !== 'create'
+              ? undefined
+              : {
+                  // Cancel out parent brightness filter when creating
+                  filter: 'brightness(71%)',
+                },
           touchAction: 'none',
           cursor:
-              action === 'create'
-                ? 'cell'
-                : action === 'delete'
-                ? 'crosshair'
-                : 'grab',
+            action === 'create'
+              ? 'cell'
+              : action === 'delete'
+              ? 'crosshair'
+              : 'grab',
           ...positioning,
           zIndex: 2,
           transition:
@@ -548,11 +590,12 @@ export function EventPane({
   return (
     <>
       <Zoom in={!isFading} appear={false} timeout={250}>
-        <div
+        <Box
           className="event-pane"
           {...eventHandlers}
           data-id={event.stableKey ?? event.id}
-          style={{
+          sx={{
+            ...selectableStyles,
             touchAction: 'none',
             cursor:
               action === 'create'
@@ -731,7 +774,7 @@ export function EventPane({
               </div>
             )}
           </div>
-        </div>
+        </Box>
       </Zoom>
 
       {/* event outline ghost, displayed during drag-resizing: */}

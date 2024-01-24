@@ -188,6 +188,12 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
   }, [touchRef, displayHeight, dayString, onExpand, weekEvents])
 }
 
+function clearSelection(touchRef) {
+  if(touchRef.current.eventPane) {
+    touchRef.current.eventPane.classList.remove('selected')
+  }
+}
+
 function handlePointerDown(
   e,
   touchRef,
@@ -207,6 +213,7 @@ function handlePointerDown(
 
   // Handle create pointer down
   if (action === 'create') {
+    clearSelection(touchRef)
     onHideDrawer()
     updateTouchBounds(e)
     setShowGhost('creating')
@@ -264,17 +271,25 @@ function handlePointerDown(
 
   // Handle delete pointer down -- i.e., skip and leave to the click handler
   if (action === 'delete') {
+    clearSelection(touchRef)
     return
   }
 
   // Handle edit pointer down
   const ep = e.target.closest('.event-pane')
+
+  if(ep !== touchRef.current.eventPane) {
+    clearSelection(touchRef)
+  }
+
   // If the pointerDown did not occur within an eventPane,
   // allow the individual day container to handle it.
   if (!ep) {
     touchRef.current.eventPane = null
     return
   }
+
+  ep.classList.add('selected')
 
   if (
     ep === touchRef.current.eventPane &&
@@ -934,6 +949,7 @@ export function WeeklyView({
   const actionButtons = (
     <ActionButtons
       onBehavior={b => {
+        clearSelection(touchRef)
         setAction(b)
         if (b === 'create') {
           setShowDrawer(true)
