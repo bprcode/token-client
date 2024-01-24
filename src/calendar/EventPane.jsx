@@ -30,17 +30,18 @@ function snap15Minute(time, steps) {
 const selectableStyles = {
   '&.selected': {
     border: '1px solid #ffaf33',
-    backgroundColor: 'blue',
   },
+  /*
   '&.selected::before': {
     content: '""',
     position: 'absolute',
+    top: 0,
     width: '100%',
     height: '100%',
     display: 'block',
     backgroundImage: 'radial-gradient(30px, #7e2f08ff 5%, #7e2f0800)',
-  },
-  '&.selected::after': {
+  },*/
+  /*'&.selected::after': {
     zIndex: 1,
     content: '""',
     position: 'absolute',
@@ -52,7 +53,7 @@ const selectableStyles = {
     backgroundSize: '30px',
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat',
-  },
+  },*/
   '&.selected .pane-inner': {
     backgroundColor: '#6e2a08',
     boxShadow: '0 0 1rem #ffaf33 inset',
@@ -621,9 +622,9 @@ export function EventPane({
           />
 
           {/* Inner container -- overflow hidden */}
-          <div
+          <Box
             className="pane-inner"
-            style={{
+            sx={{
               boxShadow:
                 label === 'none' && `0px 0px 0.75rem ${shadeColor} inset`,
               ...borderStyles,
@@ -773,7 +774,7 @@ export function EventPane({
                 )}
               </div>
             )}
-          </div>
+          </Box>
         </Box>
       </Zoom>
 

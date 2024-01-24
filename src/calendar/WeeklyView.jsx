@@ -211,6 +211,8 @@ function handlePointerDown(
   const doubleClickMs = 600
   touchRef.current.lastTouchBehavior = action
 
+  console.log('🔽 handling pointerDown with action=',action)
+
   // Handle create pointer down
   if (action === 'create') {
     clearSelection(touchRef)
@@ -647,6 +649,7 @@ function WeekBody({
             }
           }}
           onPointerUp={e => {
+            console.log('⬆️ handling pointer up')
             setShowGhost(false)
             setGhostWeekColor(ghostFadeInColor)
             touchRef.current.isDragCreating = false
@@ -747,6 +750,7 @@ function WeekBody({
             )
           }
           onPointerMove={e => {
+            console.log('🐁 handling pointer move current.event=', touchRef.current.event)
             try {
               if (action === 'create' && touchRef.current.isDragCreating) {
                 updateDragCreation(e.pageX, e.pageY)
