@@ -368,6 +368,9 @@ export function CalendarContents({ calendarId }) {
       }),
   }
 
+  console.log('%cCalendarContents rendering with view=', 'color:cyan', view, searchParams)
+
+
   if (viewError) {
     return (
       <ViewContainer>
@@ -477,6 +480,7 @@ export function CalendarContents({ calendarId }) {
   )
 
   function updateParams({ view, date }) {
+    console.log('%cupdateParams called with v,d=','color:',view,date)
     const newParams = new URLSearchParams(searchParams)
     if (view) {
       newParams.set('v', view)

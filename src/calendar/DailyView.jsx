@@ -36,7 +36,7 @@ export function DailyView({
   canUndo,
   date,
 }) {
-  console.log('debug / dailyView rendering')
+  console.time('DailyView rendered')
   const { data: events } = useViewQuery()
   const needMobileBar = useMobileBarCheck()
   const headerRef = useRef(null)
@@ -91,7 +91,7 @@ export function DailyView({
     />
   )
 
-  return (
+  const rv = (
     <ActionContext.Provider value={action}>
       <Box
         sx={{
@@ -198,6 +198,8 @@ export function DailyView({
       </Box>
     </ActionContext.Provider>
   )
+  console.timeEnd('DailyView rendered')
+  return rv
 }
 
 function CreationDrawer({ action, picks, onPick }) {

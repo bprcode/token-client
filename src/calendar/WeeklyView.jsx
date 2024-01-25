@@ -131,6 +131,7 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
     const assembled = <HoverableBox
         className="weekday-box"
         key={day.format('MM D')}
+        onPointerUp={() => console.log('weekday box pointerup', Date.now())}
         onTouchEnd={e => {
           console.log('weekday box touch end', Date.now())
         }}
@@ -158,7 +159,6 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
           pb: '0.5rem',
           backgroundColor: 'rgb(23, 27, 28)',
           borderLeft: '1px solid #fff1',
-          touchAction: 'manipulation',
         }}
       >
         <Box
@@ -774,7 +774,7 @@ function WeekBody({
             }
           }}
           sx={{
-            touchAction: action === 'create' ? 'none' : 'manipulation',
+            touchAction: action === 'create' ? 'none' : undefined,
             paddingLeft: '1px',
             display: 'grid',
             cursor: action === 'create' ? 'cell' : undefined,
@@ -922,6 +922,7 @@ export function WeeklyView({
   onUpdate,
   onDelete,
 }) {
+  console.log('%cWeeklyView rendering', 'color:greenyellow')
   const [shouldDismount, dismount] = useReducer(() => true, false)
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
@@ -964,7 +965,7 @@ export function WeeklyView({
     [onCreate]
   )
   
-  if(shouldDismount) { return <></>}
+  // if(shouldDismount) { return <></>}
 
   const actionButtons = (
     <ActionButtons
