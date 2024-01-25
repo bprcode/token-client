@@ -36,6 +36,7 @@ export function DailyView({
   canUndo,
   date,
 }) {
+  console.log('%cDailyView rendered with date=', 'color: #f0c', date)
   console.time('DailyView rendered')
   const { data: events } = useViewQuery()
   const needMobileBar = useMobileBarCheck()

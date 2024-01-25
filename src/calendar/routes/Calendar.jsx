@@ -1,5 +1,5 @@
 import { Alert, AlertTitle, Box, Button, Slide } from '@mui/material'
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { createSearchParams, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { isOverlap, reduceConcurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
@@ -15,6 +15,7 @@ import { ViewHeader } from '../ViewHeader'
 import { useTheme } from '@emotion/react'
 import { alpha } from '@mui/material/styles'
 import { isEventDuplicate } from '../EventSync'
+import { useState } from 'react'
 
 const log = console.log.bind(console)
 
@@ -349,6 +350,10 @@ export function CalendarContents({ calendarId }) {
     ? dayjs(searchParams.get('d').replaceAll('_', ':'))
     : dayjs()
 
+  const [debugView, setDebugView] = useState(view)
+
+  
+
   const updaters = {
     onCreate: addition =>
       dispatch({
@@ -369,7 +374,16 @@ export function CalendarContents({ calendarId }) {
   }
 
   console.log('%cCalendarContents rendering with view=', 'color:cyan', view, searchParams)
+  console.log('%cand debugView=','color:#aaf',debugView)
 
+  // Workaround for React-Router re-rendering with outdated search params:
+  if(view !== debugView) {
+    return <div style={{
+      width: '100%',
+      height: '100%',
+      backgroundColor: 'purple'
+    }}/>
+  }
 
   if (viewError) {
     return (
@@ -484,6 +498,7 @@ export function CalendarContents({ calendarId }) {
     const newParams = new URLSearchParams(searchParams)
     if (view) {
       newParams.set('v', view)
+      setDebugView(view)
     }
     if (date) {
       newParams.set('d', date.utc().format().replaceAll(':', '_'))

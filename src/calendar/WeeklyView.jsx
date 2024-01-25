@@ -128,7 +128,8 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
     console.time('🛤️ WeekdayBox memoizing')
     const day = dayjs(dayString)
 
-    const assembled = <HoverableBox
+    const assembled = (
+      <HoverableBox
         className="weekday-box"
         key={day.format('MM D')}
         onPointerUp={() => console.log('weekday box pointerup', Date.now())}
@@ -190,14 +191,15 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
           />
         </SectionedInterval>
       </HoverableBox>
+    )
 
-      console.timeEnd('🛤️ WeekdayBox memoizing')
-      return assembled
+    console.timeEnd('🛤️ WeekdayBox memoizing')
+    return assembled
   }, [touchRef, displayHeight, dayString, onExpand, weekEvents])
 }
 
 function clearSelection(touchRef) {
-  if(touchRef.current.eventPane) {
+  if (touchRef.current.eventPane) {
     touchRef.current.eventPane.classList.remove('selected')
   }
 }
@@ -219,7 +221,7 @@ function handlePointerDown(
   const doubleClickMs = 600
   touchRef.current.lastTouchBehavior = action
 
-  console.log('🔽 handling pointerDown with action=',action)
+  console.log('🔽 handling pointerDown with action=', action)
 
   // Handle create pointer down
   if (action === 'create') {
@@ -288,7 +290,7 @@ function handlePointerDown(
   // Handle edit pointer down
   const ep = e.target.closest('.event-pane')
 
-  if(ep !== touchRef.current.eventPane) {
+  if (ep !== touchRef.current.eventPane) {
     clearSelection(touchRef)
   }
 
@@ -923,12 +925,10 @@ export function WeeklyView({
   onDelete,
 }) {
   console.log('%cWeeklyView rendering', 'color:greenyellow')
-  const [shouldDismount, dismount] = useReducer(() => true, false)
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
   const logger = useLogger()
   const logId = Math.round(Math.random() * 1e6)
-  console.time(logId + ' WeeklyCalendar rendered')
 
   const benchStart = performance.now()
   const isSmall = useMediaQuery('(max-width: 600px)')
@@ -952,9 +952,9 @@ export function WeeklyView({
   const onHideDrawerCallback = useCallback(() => setShowDrawer(false), [])
   const onExpandCallback = useCallback(
     d => {
-      dismount()
       onExpand(d)
-    }, [onExpand]
+    },
+    [onExpand]
   )
   const onCreateCallback = useCallback(
     creation => {
@@ -964,8 +964,6 @@ export function WeeklyView({
     },
     [onCreate]
   )
-  
-  // if(shouldDismount) { return <></>}
 
   const actionButtons = (
     <ActionButtons
@@ -980,7 +978,6 @@ export function WeeklyView({
       }}
     />
   )
-
 
   const rv = (
     <ActionContext.Provider value={action}>
@@ -1043,7 +1040,6 @@ export function WeeklyView({
     </ActionContext.Provider>
   )
 
-  console.timeEnd(logId + ' WeeklyCalendar rendered')
   const benchEnd = performance.now()
   setTimeout(
     () =>
