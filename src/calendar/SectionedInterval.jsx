@@ -105,7 +105,7 @@ export function SectionedInterval({
       style={{
         width: '100%',
         overflowY: isNarrow ? undefined : 'auto',
-        touchAction: action === 'create' ? 'none' : undefined,
+        touchAction: action === 'create' ? 'none' : 'manipulation',
         cursor: action === 'create' ? 'cell' : undefined,
       }}
     >

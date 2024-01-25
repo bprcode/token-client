@@ -15,6 +15,7 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from 'react'
@@ -124,14 +125,17 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
   const dayString = day.toString()
 
   return useMemo(() => {
-    console.log('🛤️ WeekdayBox memoizing')
+    console.time('🛤️ WeekdayBox memoizing')
     const day = dayjs(dayString)
 
-    return (
-      <HoverableBox
+    const assembled = <HoverableBox
         className="weekday-box"
         key={day.format('MM D')}
+        onTouchEnd={e => {
+          console.log('weekday box touch end', Date.now())
+        }}
         onClick={e => {
+          console.log('weekday box click', Date.now())
           const ep = e.target.closest('.event-pane')
           // click was on, or initiated on, an event pane:
           if (
@@ -144,6 +148,7 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
           }
 
           if (touchRef.current.lastTouchBehavior !== 'create') {
+            console.log('🪂 expanding')
             // expand the daily view.
             return onExpand(day)
           }
@@ -153,6 +158,7 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
           pb: '0.5rem',
           backgroundColor: 'rgb(23, 27, 28)',
           borderLeft: '1px solid #fff1',
+          touchAction: 'manipulation',
         }}
       >
         <Box
@@ -184,7 +190,9 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
           />
         </SectionedInterval>
       </HoverableBox>
-    )
+
+      console.timeEnd('🛤️ WeekdayBox memoizing')
+      return assembled
   }, [touchRef, displayHeight, dayString, onExpand, weekEvents])
 }
 
@@ -750,7 +758,6 @@ function WeekBody({
             )
           }
           onPointerMove={e => {
-            console.log('🐁 handling pointer move current.event=', touchRef.current.event)
             try {
               if (action === 'create' && touchRef.current.isDragCreating) {
                 updateDragCreation(e.pageX, e.pageY)
@@ -767,7 +774,7 @@ function WeekBody({
             }
           }}
           sx={{
-            touchAction: action === 'create' ? 'none' : undefined,
+            touchAction: action === 'create' ? 'none' : 'manipulation',
             paddingLeft: '1px',
             display: 'grid',
             cursor: action === 'create' ? 'cell' : undefined,
@@ -915,6 +922,7 @@ export function WeeklyView({
   onUpdate,
   onDelete,
 }) {
+  const [shouldDismount, dismount] = useReducer(() => true, false)
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
   const logger = useLogger()
@@ -941,6 +949,12 @@ export function WeeklyView({
   const [action, setAction] = useState(actionList[0])
   const [showDrawer, setShowDrawer] = useState(false)
   const onHideDrawerCallback = useCallback(() => setShowDrawer(false), [])
+  const onExpandCallback = useCallback(
+    d => {
+      dismount()
+      onExpand(d)
+    }, [onExpand]
+  )
   const onCreateCallback = useCallback(
     creation => {
       setShowDrawer(false)
@@ -949,6 +963,8 @@ export function WeeklyView({
     },
     [onCreate]
   )
+  
+  if(shouldDismount) { return <></>}
 
   const actionButtons = (
     <ActionButtons
@@ -963,6 +979,7 @@ export function WeeklyView({
       }}
     />
   )
+
 
   const rv = (
     <ActionContext.Provider value={action}>
@@ -1012,7 +1029,7 @@ export function WeeklyView({
           date={date}
           events={events}
           onCreate={onCreateCallback}
-          onExpand={onExpand}
+          onExpand={onExpandCallback}
           onUpdate={onUpdate}
           onDelete={onDelete}
           onHideDrawer={onHideDrawerCallback}
