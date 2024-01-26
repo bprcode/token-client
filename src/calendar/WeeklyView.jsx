@@ -132,10 +132,6 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
       <HoverableBox
         className="weekday-box"
         key={day.format('MM D')}
-        onPointerUp={() => console.log('weekday box pointerup', Date.now())}
-        onTouchEnd={e => {
-          console.log('weekday box touch end', Date.now())
-        }}
         onClick={e => {
           console.log('weekday box click', Date.now())
           const ep = e.target.closest('.event-pane')
@@ -994,15 +990,13 @@ export function WeeklyView({
     <ActionContext.Provider value={action}>
       <ViewContainer containOverflow={!isNarrow}>
         <ViewHeader gradient={null}>
-          <IconButton aria-label="back to monthly view" onClick={onBackCallback}>
+          <IconButton aria-label="back to monthly view" onPointerDown={onBackCallback}>
             <CalendarViewMonthIcon />
           </IconButton>
           <IconButton
             aria-label="previous week"
-            disableTouchRipple
-            onClick={() => onChange(date.subtract(1, 'week').startOf('week'))}
+            onPointerDown={() => onChange(date.subtract(1, 'week').startOf('week'))}
             sx={{
-              '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
               borderTopRightRadius: 0,
               borderBottomRightRadius: 0,
             }}
@@ -1016,11 +1010,9 @@ export function WeeklyView({
 
           <IconButton
             aria-label="next week"
-            disableTouchRipple
-            onClick={() => onChange(date.add(1, 'week').startOf('week'))}
+            onPointerDown={() => onChange(date.add(1, 'week').startOf('week'))}
             sx={{
               mr: 'auto',
-              '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
               borderBottomLeftRadius: 0,
               borderTopLeftRadius: 0,
             }}

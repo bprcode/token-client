@@ -222,11 +222,9 @@ function MonthHeader({ date, onChange }) {
       }}
     >
       <IconButton
-        disableTouchRipple
         aria-label="previous month"
-        onClick={() => onChange(date.subtract(1, 'month').startOf('month'))}
+        onPointerDown={() => onChange(date.subtract(1, 'month').startOf('month'))}
         sx={{
-          '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
           borderTopRightRadius: 0,
           borderBottomRightRadius: 0,
         }}
@@ -244,10 +242,8 @@ function MonthHeader({ date, onChange }) {
     >
       <IconButton
         aria-label="next month"
-        disableTouchRipple
-        onClick={() => onChange(date.add(1, 'month'))}
+        onPointerDown={() => onChange(date.add(1, 'month'))}
         sx={{
-          '&:active': { boxShadow: '0px 0px 2rem inset #fff4' },
           borderBottomLeftRadius: 0,
           borderTopLeftRadius: 0,
         }}

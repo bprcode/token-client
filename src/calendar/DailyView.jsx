@@ -370,7 +370,7 @@ const DayHeader = forwardRef(function DayHeader(
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"
-        onClick={onBack}
+        onPointerDown={onBack}
       >
         <ArrowBackIcon />
       </IconButton>
