@@ -88,7 +88,7 @@ function GridHeader() {
   )
 }
 
-function MonthGrid({ date, onExpand, events }) {
+function MonthGrid({ date, events }) {
   const activeDay = date.date()
   const activeMonth = date.month()
   const activeYear = date.year()
@@ -179,12 +179,13 @@ function MonthGrid({ date, onExpand, events }) {
       }
       rows.push(
         <HoverableBox
+          className="week-box"
+          data-week={days[i].toString()}
           key={i}
           sx={{
             display: 'grid',
             gridTemplateColumns: 'repeat(7, 1fr)',
           }}
-          onClick={() => onExpand(days[i])}
         >
           {week}
         </HoverableBox>
@@ -201,7 +202,7 @@ function MonthGrid({ date, onExpand, events }) {
         {rows}
       </div>
     )
-  }, [activeDay, activeMonth, activeYear, onExpand, events])
+  }, [activeDay, activeMonth, activeYear, events])
 }
 
 function MonthHeader({ date, onChange }) {
@@ -364,7 +365,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
     [onExpand]
   )
 
-  console.log('%cMonthlyView rendering', 'color:#08f')
+  console.log('%cMonthlyView rendering', 'color:#08f', date.toString())
   if(shouldDismount) {
     console.log('%cdismounting monthly view', 'color:#08f')
     return <></>
@@ -392,9 +393,15 @@ export function MonthlyView({ date, onChange, onExpand }) {
             borderBottom: '1px solid #000a',
             borderRight: '1px solid #0009',
           }}
+          onClick={e => {
+            const weekBox = e.target.closest('.week-box')
+            if(weekBox) {
+              onExpandCallback(dayjs(weekBox.dataset.week))
+            }
+          }}
         >
           <GridHeader />
-          <MonthGrid date={date} events={events} onExpand={onExpandCallback} />
+          <MonthGrid date={date} events={events} />
         </Box>
       </Stack>
     </ViewContainer>
