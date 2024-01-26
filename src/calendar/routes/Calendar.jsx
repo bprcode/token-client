@@ -354,16 +354,10 @@ export function CalendarContents({ calendarId }) {
 
   console.log('searchParams were:', searchParamString)
   const view = searchParams.get('v') || 'month'
-  const date = useMemo(() => {
-    const sp = new URLSearchParams(searchParamString)
-    console.log('%cmemoized searchParams were:', 'color:purple',sp)
-    return sp.has('d')
-    ? dayjs(sp.get('d').replaceAll('_', ':'))
+  const date = searchParams.has('d')
+    ? dayjs(searchParams.get('d').replaceAll('_', ':'))
     : dayjs()
-  }, [searchParamString])
-  // const date = searchParams.has('d')
-  //   ? dayjs(searchParams.get('d').replaceAll('_', ':'))
-  //   : dayjs()
+  const dateString = date.toString()
 
   const updaters = {
     onCreate: addition =>
@@ -470,7 +464,7 @@ export function CalendarContents({ calendarId }) {
             onBack={() => {
               updateParams({ view: 'month' })
             }}
-            date={date}
+            dateString={dateString}
             {...updaters}
             onExpand={date => updateParams({ view: 'day', date })}
             onChange={date => updateParams({ date })}

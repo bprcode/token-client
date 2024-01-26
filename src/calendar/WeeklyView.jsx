@@ -120,37 +120,19 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
   )
 })
 
-function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
+function WeekdayBox({ day, displayHeight, weekEvents }) {
   // Reconstruct day object from string to avoid broken referential integrity:
   const dayString = day.toString()
 
   return useMemo(() => {
-    console.time('🛤️ WeekdayBox memoizing')
+    console.time(`🛤️ WeekdayBox memoizing for: ${dayString}`)
     const day = dayjs(dayString)
 
     const assembled = (
       <HoverableBox
         className="weekday-box"
+        data-day={dayString}
         key={day.format('MM D')}
-        onClick={e => {
-          console.log('weekday box click', Date.now())
-          const ep = e.target.closest('.event-pane')
-          // click was on, or initiated on, an event pane:
-          if (
-            ep ||
-            touchRef.current.eventPane ||
-            touchRef.current.lastTouchBehavior === 'create'
-          ) {
-            // Do not expand.
-            return
-          }
-
-          if (touchRef.current.lastTouchBehavior !== 'create') {
-            console.log('🪂 expanding')
-            // expand the daily view.
-            return onExpand(day)
-          }
-        }}
         sx={{
           px: '0.25rem',
           pb: '0.5rem',
@@ -189,9 +171,9 @@ function WeekdayBox({ touchRef, onExpand, day, displayHeight, weekEvents }) {
       </HoverableBox>
     )
 
-    console.timeEnd('🛤️ WeekdayBox memoizing')
+    console.timeEnd(`🛤️ WeekdayBox memoizing for: ${dayString}`)
     return assembled
-  }, [touchRef, displayHeight, dayString, onExpand, weekEvents])
+  }, [displayHeight, dayString, weekEvents])
 }
 
 function clearSelection(touchRef) {
@@ -344,7 +326,7 @@ function handlePointerDown(
 
 function WeekBody({
   touchRef,
-  date,
+  dateString,
   events,
   onExpand,
   onCreate,
@@ -361,8 +343,6 @@ function WeekBody({
 
   const [showGhost, setShowGhost] = useState(false)
   const action = useContext(ActionContext)
-
-  const dateString = date.toString()
 
   const filteredEvents = useMemo(() => {
     console.log('⌛ memoizing filtered events')
@@ -631,6 +611,28 @@ function WeekBody({
       <div>
         <Box
           onClick={e => {
+            console.log('%cassembledComponents click', 'color:orange')
+            if (action === 'edit') {
+              const ep = e.target.closest('.event-pane')
+              // click was on, or initiated on, an event pane:
+              if (
+                ep ||
+                touchRef.current.eventPane ||
+                touchRef.current.lastTouchBehavior === 'create'
+              ) {
+                // Do not expand.
+                return
+              }
+
+              if (touchRef.current.lastTouchBehavior !== 'create') {
+                console.log('🪂 expanding')
+                const dayBox = e.target.closest('.weekday-box')
+                return onExpand(dayjs(dayBox.dataset.day))
+              }
+
+              return
+            }
+
             if (action === 'delete') {
               console.log('✖️ handling delete ...')
               const ep = e.target.closest('.event-pane')
@@ -912,7 +914,7 @@ function TopDrawer({ open }) {
 }
 
 export function WeeklyView({
-  date,
+  dateString,
   onBack,
   onExpand,
   onChange,
@@ -922,6 +924,7 @@ export function WeeklyView({
 }) {
   console.log('%cWeeklyView rendering', 'color:greenyellow')
   const [shouldDismount, dismount] = useReducer(() => true, false)
+  const [skipDate, setSkipDate] = useState(null)
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
   const logger = useLogger()
@@ -933,6 +936,7 @@ export function WeeklyView({
   const isNarrow = useNarrowCheck()
   const needMobileBar = useMobileBarCheck()
 
+  const date = dayjs(dateString)
   const sunday = date.startOf('week')
   const saturday = sunday.add(6, 'days')
   const isRollover = sunday.month() !== saturday.month()
@@ -967,7 +971,7 @@ export function WeeklyView({
     onBack()
   }, [onBack])
 
-  if(shouldDismount) {
+  if (shouldDismount) {
     console.log('%cdismounting weekly view', 'color:yellowgreen')
     return <></>
   }
@@ -986,16 +990,26 @@ export function WeeklyView({
     />
   )
 
+  if (skipDate?.toString() === dateString) {
+    console.log('%cDATE MATCHES, SHOULD SKIP', 'color:red', dateString)
+  }
+
   const rv = (
     <ActionContext.Provider value={action}>
       <ViewContainer containOverflow={!isNarrow}>
         <ViewHeader gradient={null}>
-          <IconButton aria-label="back to monthly view" onPointerDown={onBackCallback}>
+          <IconButton
+            aria-label="back to monthly view"
+            onPointerDown={onBackCallback}
+          >
             <CalendarViewMonthIcon />
           </IconButton>
           <IconButton
             aria-label="previous week"
-            onPointerDown={() => onChange(date.subtract(1, 'week').startOf('week'))}
+            onPointerDown={() => {
+              setSkipDate(date)
+              onChange(date.subtract(1, 'week').startOf('week'))
+            }}
             sx={{
               borderTopRightRadius: 0,
               borderBottomRightRadius: 0,
@@ -1010,7 +1024,10 @@ export function WeeklyView({
 
           <IconButton
             aria-label="next week"
-            onPointerDown={() => onChange(date.add(1, 'week').startOf('week'))}
+            onPointerDown={() => {
+              setSkipDate(date)
+              onChange(date.add(1, 'week').startOf('week'))
+            }}
             sx={{
               mr: 'auto',
               borderBottomLeftRadius: 0,
@@ -1025,16 +1042,19 @@ export function WeeklyView({
           {!needMobileBar && <TopDrawer open={showDrawer} />}
         </ViewHeader>
 
-        <WeekBody
-          touchRef={touchRef}
-          date={date}
-          events={events}
-          onCreate={onCreateCallback}
-          onExpand={onExpandCallback}
-          onUpdate={onUpdate}
-          onDelete={onDelete}
-          onHideDrawer={onHideDrawerCallback}
-        />
+        {/* Optimization to bypass redundant renders on navigation: */}
+        {skipDate?.toString() !== dateString && (
+          <WeekBody
+            touchRef={touchRef}
+            dateString={dateString}
+            events={events}
+            onCreate={onCreateCallback}
+            onExpand={onExpandCallback}
+            onUpdate={onUpdate}
+            onDelete={onDelete}
+            onHideDrawer={onHideDrawerCallback}
+          />
+        )}
       </ViewContainer>
       {needMobileBar && (
         <MobileBar transparent={showDrawer}>{actionButtons}</MobileBar>
