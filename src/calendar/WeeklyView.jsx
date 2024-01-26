@@ -925,6 +925,7 @@ export function WeeklyView({
   onDelete,
 }) {
   console.log('%cWeeklyView rendering', 'color:greenyellow')
+  const [shouldDismount, dismount] = useReducer(() => true, false)
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
   const logger = useLogger()
@@ -952,6 +953,7 @@ export function WeeklyView({
   const onHideDrawerCallback = useCallback(() => setShowDrawer(false), [])
   const onExpandCallback = useCallback(
     d => {
+      dismount()
       onExpand(d)
     },
     [onExpand]
@@ -964,6 +966,15 @@ export function WeeklyView({
     },
     [onCreate]
   )
+  const onBackCallback = useCallback(() => {
+    dismount()
+    onBack()
+  }, [onBack])
+
+  if(shouldDismount) {
+    console.log('%cdismounting weekly view', 'color:yellowgreen')
+    return <></>
+  }
 
   const actionButtons = (
     <ActionButtons
@@ -983,7 +994,7 @@ export function WeeklyView({
     <ActionContext.Provider value={action}>
       <ViewContainer containOverflow={!isNarrow}>
         <ViewHeader gradient={null}>
-          <IconButton aria-label="back to monthly view" onClick={onBack}>
+          <IconButton aria-label="back to monthly view" onClick={onBackCallback}>
             <CalendarViewMonthIcon />
           </IconButton>
           <IconButton

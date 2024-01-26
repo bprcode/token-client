@@ -12,7 +12,7 @@ import {
   TextField,
   Paper,
 } from '@mui/material'
-import { useMemo } from 'react'
+import { useCallback, useMemo, useReducer } from 'react'
 import dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
@@ -357,7 +357,22 @@ function MonthHeader({ date, onChange }) {
 }
 
 export function MonthlyView({ date, onChange, onExpand }) {
+  const [shouldDismount, dismount] = useReducer(() => true, false)
   const { data: events } = useViewQuery()
+
+  const onExpandCallback = useCallback(
+    d => {
+      dismount()
+      onExpand(d)
+    },
+    [onExpand]
+  )
+
+  console.log('%cMonthlyView rendering', 'color:#08f')
+  if(shouldDismount) {
+    console.log('%cdismounting monthly view', 'color:#08f')
+    return <></>
+  }
 
   return (
     <ViewContainer>
@@ -383,7 +398,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
           }}
         >
           <GridHeader />
-          <MonthGrid date={date} events={events} onExpand={onExpand} />
+          <MonthGrid date={date} events={events} onExpand={onExpandCallback} />
         </Box>
       </Stack>
     </ViewContainer>

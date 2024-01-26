@@ -1,5 +1,10 @@
 import { Alert, AlertTitle, Box, Button, Slide } from '@mui/material'
-import { createSearchParams, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import {
+  createSearchParams,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
 import { isOverlap, reduceConcurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
@@ -15,7 +20,7 @@ import { ViewHeader } from '../ViewHeader'
 import { useTheme } from '@emotion/react'
 import { alpha } from '@mui/material/styles'
 import { isEventDuplicate } from '../EventSync'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 const log = console.log.bind(console)
 
@@ -345,14 +350,20 @@ export function CalendarContents({ calendarId }) {
   })
 
   const [searchParams, setSearchParams] = useSearchParams()
+  const searchParamString = searchParams.toString()
+
+  console.log('searchParams were:', searchParamString)
   const view = searchParams.get('v') || 'month'
-  const date = searchParams.has('d')
-    ? dayjs(searchParams.get('d').replaceAll('_', ':'))
+  const date = useMemo(() => {
+    const sp = new URLSearchParams(searchParamString)
+    console.log('%cmemoized searchParams were:', 'color:purple',sp)
+    return sp.has('d')
+    ? dayjs(sp.get('d').replaceAll('_', ':'))
     : dayjs()
-
-  const [debugView, setDebugView] = useState(view)
-
-  
+  }, [searchParamString])
+  // const date = searchParams.has('d')
+  //   ? dayjs(searchParams.get('d').replaceAll('_', ':'))
+  //   : dayjs()
 
   const updaters = {
     onCreate: addition =>
@@ -371,18 +382,6 @@ export function CalendarContents({ calendarId }) {
         type: 'delete',
         id,
       }),
-  }
-
-  console.log('%cCalendarContents rendering with view=', 'color:cyan', view, searchParams)
-  console.log('%cand debugView=','color:#aaf',debugView)
-
-  // Workaround for React-Router re-rendering with outdated search params:
-  if(view !== debugView) {
-    return <div style={{
-      width: '100%',
-      height: '100%',
-      backgroundColor: 'purple'
-    }}/>
   }
 
   if (viewError) {
@@ -484,7 +483,7 @@ export function CalendarContents({ calendarId }) {
             }}
             date={date}
             {...updaters}
-            onUndo={() => console.log(`debug: not implemented.`)}
+            onUndo={() => console.warn(`Not implemented.`)}
             canUndo={false}
           />
         )}
@@ -494,15 +493,16 @@ export function CalendarContents({ calendarId }) {
   )
 
   function updateParams({ view, date }) {
-    console.log('%cupdateParams called with v,d=','color:',view,date)
+    console.log('%cupdateParams called with v,d=', 'color:', view, date)
     const newParams = new URLSearchParams(searchParams)
     if (view) {
       newParams.set('v', view)
-      setDebugView(view)
     }
     if (date) {
       newParams.set('d', date.utc().format().replaceAll(':', '_'))
     }
+    console.time('setSearchParams')
     setSearchParams(newParams)
+    console.timeEnd('setSearchParams')
   }
 }

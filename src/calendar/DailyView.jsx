@@ -9,7 +9,7 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
-import { forwardRef, useCallback, useMemo, useRef, useState } from 'react'
+import { forwardRef, useCallback, useMemo, useReducer, useRef, useState } from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionButtons, MobileBar } from './ActionDisplay'
 import { ActionContext, actionList } from './ActionContext.mjs'
@@ -37,7 +37,8 @@ export function DailyView({
   date,
 }) {
   console.log('%cDailyView rendered with date=', 'color: #f0c', date)
-  console.time('DailyView rendered')
+
+  const [shouldDismount, dismount] = useReducer(() => true, false)
   const { data: events } = useViewQuery()
   const needMobileBar = useMobileBarCheck()
   const headerRef = useRef(null)
@@ -80,6 +81,16 @@ export function DailyView({
     },
     [onCreate]
   )
+
+  const onBackCallback = useCallback(() => {
+    dismount()
+    onBack()
+  }, [onBack])
+
+  if(shouldDismount) {
+    console.log('%cdismounting daily view', 'color:#f0c')
+    return <></>
+  }
 
   const actionButtons = (
     <ActionButtons
@@ -137,7 +148,7 @@ export function DailyView({
           onClick={() => setSelection(null)}
           header={
             <DayHeader
-              onBack={onBack}
+              onBack={onBackCallback}
               date={date}
               ref={headerRef}
               actionButtons={!needMobileBar && actionButtons}
@@ -199,7 +210,7 @@ export function DailyView({
       </Box>
     </ActionContext.Provider>
   )
-  console.timeEnd('DailyView rendered')
+  
   return rv
 }
 
