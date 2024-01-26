@@ -12,7 +12,7 @@ import {
   TextField,
   Paper,
 } from '@mui/material'
-import { useCallback, useMemo, useReducer } from 'react'
+import { useCallback, useMemo, useReducer, useRef } from 'react'
 import dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
@@ -224,7 +224,9 @@ function MonthHeader({ date, onChange }) {
     >
       <IconButton
         aria-label="previous month"
-        onPointerDown={() => onChange(date.subtract(1, 'month').startOf('month'))}
+        onPointerDown={() =>
+          onChange(date.subtract(1, 'month').startOf('month'))
+        }
         sx={{
           borderTopRightRadius: 0,
           borderBottomRightRadius: 0,
@@ -355,6 +357,7 @@ function MonthHeader({ date, onChange }) {
 
 export function MonthlyView({ date, onChange, onExpand }) {
   const [shouldDismount, dismount] = useReducer(() => true, false)
+  const touchRef = useRef({})
   const { data: events } = useViewQuery()
 
   const onExpandCallback = useCallback(
@@ -366,7 +369,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
   )
 
   console.log('%cMonthlyView rendering', 'color:#08f', date.toString())
-  if(shouldDismount) {
+  if (shouldDismount) {
     console.log('%cdismounting monthly view', 'color:#08f')
     return <></>
   }
@@ -394,9 +397,25 @@ export function MonthlyView({ date, onChange, onExpand }) {
             borderRight: '1px solid #0009',
           }}
           onClick={e => {
+            console.log('onClick', Date.now())
             const weekBox = e.target.closest('.week-box')
-            if(weekBox) {
+            if (weekBox) {
               onExpandCallback(dayjs(weekBox.dataset.week))
+              weekBox.classList.add('tapped')
+            }
+          }}
+          onTouchStart={e => {
+            console.log('touchStart', Date.now())
+            const weekBox = e.target.closest('.week-box')
+            if (weekBox) {
+              touchRef.current.lastTapped = weekBox
+              weekBox.classList.add('tapped')
+            }
+          }}
+          onTouchEnd={e => {
+            console.log('touchend', Date.now())
+            if (touchRef.current.lastTapped) {
+              touchRef.current.lastTapped.classList.remove('tapped')
             }
           }}
         >

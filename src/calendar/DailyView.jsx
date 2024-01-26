@@ -9,7 +9,14 @@ import {
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { SectionedInterval } from './SectionedInterval'
 import { DailyBreakdown } from './DailyBreakdown'
-import { forwardRef, useCallback, useMemo, useReducer, useRef, useState } from 'react'
+import {
+  forwardRef,
+  useCallback,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionButtons, MobileBar } from './ActionDisplay'
 import { ActionContext, actionList } from './ActionContext.mjs'
@@ -87,7 +94,7 @@ export function DailyView({
     onBack()
   }, [onBack])
 
-  if(shouldDismount) {
+  if (shouldDismount) {
     console.log('%cdismounting daily view', 'color:#f0c')
     return <></>
   }
@@ -210,7 +217,7 @@ export function DailyView({
       </Box>
     </ActionContext.Provider>
   )
-  
+
   return rv
 }
 

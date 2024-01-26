@@ -60,8 +60,8 @@ export function gradualShades(j, contrast = 1.0) {
 
 export const HoverableBox = styled(Box)(({ theme }) => ({
   position: 'relative',
-  '&:active': {
-    filter: 'brightness(300%)',
+  '&.tapped': {
+    filter: 'brightness(130%)',
   },
   '&:hover::after': {
     content: '""',
