@@ -61,6 +61,7 @@ export function reconcile({
   log = noop,
   allowRevival = false,
 }) {
+  console.time(`${tag} reconciled`)
   const chillTime = 60 * 1000
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
@@ -197,6 +198,8 @@ export function reconcile({
       merged.push(remote)
     }
   }
+
+  console.timeEnd(`${tag} reconciled`)
 
   return merged
 }
