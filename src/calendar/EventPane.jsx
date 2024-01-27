@@ -90,12 +90,12 @@ function EditIconOverlay() {
     <Box
       className="edit-overlay"
       sx={{
+        width: '100%',
+        height: '100%',
         position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 1,
-        margin: 0,
+        overflow: 'hidden',
+        display: 'grid',
+        placeContent: 'center',
       }}
     >
       <EditIcon
@@ -175,6 +175,7 @@ function BriefPane({
           opacity: event.isDeleting ? 0.3 : 1.0,
         }}
       >
+        <EditIconOverlay />
         <OverflowArrows
           before={overflowBefore}
           after={overflowAfter}
@@ -221,7 +222,6 @@ function BriefPane({
             }}
           >
             {children}
-            <EditIconOverlay />
           </Box>
         </Box>
       </BrightHoverBox>
