@@ -179,6 +179,7 @@ function WeekdayBox({ day, displayHeight, weekEvents }) {
 function clearSelection(touchRef) {
   if (touchRef.current.eventPane) {
     touchRef.current.eventPane.classList.remove('selected')
+    touchRef.current.eventPane.classList.remove('show-pencil')
   }
 }
 
@@ -280,6 +281,7 @@ function handlePointerDown(
   }
 
   ep.classList.add('selected')
+  ep.classList.add('show-pencil')
 
   if (
     ep === touchRef.current.eventPane &&

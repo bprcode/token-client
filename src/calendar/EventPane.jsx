@@ -4,7 +4,6 @@ import AlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
-import pencilSvg from '../assets/pencil.svg'
 import {
   mockStyles,
   getAugmentedColor,
@@ -28,32 +27,15 @@ function snap15Minute(time, steps) {
 }
 
 const selectableStyles = {
+  '& .edit-overlay': {
+    visibility: 'hidden',
+  },
+  '&.show-pencil .edit-overlay, &.full-pane .edit-overlay': {
+    visibility: 'visible',
+  },
   '&.selected': {
     border: '1px solid #ffaf33',
   },
-  /*
-  '&.selected::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    height: '100%',
-    display: 'block',
-    backgroundImage: 'radial-gradient(30px, #7e2f08ff 5%, #7e2f0800)',
-  },*/
-  /*'&.selected::after': {
-    zIndex: 1,
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    height: '100%',
-    display: 'block',
-    backgroundImage: `url(${pencilSvg})`,
-    backgroundSize: '30px',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-  },*/
   '&.selected .pane-inner': {
     backgroundColor: '#6e2a08',
     boxShadow: '0 0 1rem #ffaf33 inset',
@@ -101,6 +83,36 @@ function OverflowArrows({ before, after, accentColor }) {
   )
 }
 
+function EditIconOverlay() {
+  const theme = useTheme()
+
+  return (
+    <Box
+      className="edit-overlay"
+      sx={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: 1,
+        margin: 0,
+      }}
+    >
+      <EditIcon
+        fontSize="large"
+        sx={{
+          color: theme.palette.secondary.light,
+          borderRadius: '50%',
+          padding: '0.625rem',
+          scale: '2.0',
+          backgroundImage:
+            'radial-gradient' + '(closest-side, #7e2f08d0 25%, #7e2f0800 70%)',
+        }}
+      />
+    </Box>
+  )
+}
+
 // drop shadow mock pseudo-element for correct z-indexing:
 function AccentShadow({ hide, positioning, id = '' }) {
   if (hide) return
@@ -140,7 +152,6 @@ function BriefPane({
         className="event-pane"
         data-id={event.stableKey ?? event.id}
         sx={{
-          
           '&&:hover':
             action !== 'create'
               ? undefined
@@ -210,6 +221,7 @@ function BriefPane({
             }}
           >
             {children}
+            <EditIconOverlay />
           </Box>
         </Box>
       </BrightHoverBox>
@@ -592,7 +604,7 @@ export function EventPane({
     <>
       <Zoom in={!isFading} appear={false} timeout={250}>
         <Box
-          className="event-pane"
+          className="event-pane full-pane"
           {...eventHandlers}
           data-id={event.stableKey ?? event.id}
           sx={{
@@ -731,30 +743,31 @@ export function EventPane({
 
                 {/* Icon for opening detailed edit mode: */}
                 {selected && roomForIcon && !ghost && (
-                  <IconButton
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      zIndex: 1,
-                      padding: 0,
-                      margin: 0,
-                    }}
-                  >
-                    <EditIcon
-                      fontSize="large"
-                      sx={{
-                        color: theme.palette.secondary.light,
-                        borderRadius: '50%',
-                        padding: '0.625rem',
-                        scale: '2.5',
-                        backgroundImage:
-                          'radial-gradient' +
-                          '(closest-side, #7e2f08 5%, #7e2f0800)',
-                      }}
-                    />
-                  </IconButton>
+                  <EditIconOverlay />
+                  // <IconButton
+                  //   sx={{
+                  //     position: 'absolute',
+                  //     top: '50%',
+                  //     left: '50%',
+                  //     transform: 'translate(-50%, -50%)',
+                  //     zIndex: 1,
+                  //     padding: 0,
+                  //     margin: 0,
+                  //   }}
+                  // >
+                  //   <EditIcon
+                  //     fontSize="large"
+                  //     sx={{
+                  //       color: theme.palette.secondary.light,
+                  //       borderRadius: '50%',
+                  //       padding: '0.625rem',
+                  //       scale: '2.5',
+                  //       backgroundImage:
+                  //         'radial-gradient' +
+                  //         '(closest-side, #7e2f08 5%, #7e2f0800)',
+                  //     }}
+                  //   />
+                  // </IconButton>
                 )}
 
                 {event.description && label === 'detailed' && (

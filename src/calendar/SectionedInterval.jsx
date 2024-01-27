@@ -104,6 +104,7 @@ export function SectionedInterval({
       className="section-scroll"
       style={{
         width: '100%',
+        overflowX: 'hidden',
         overflowY: isNarrow ? undefined : 'auto',
         touchAction: action === 'create' ? 'none' : 'manipulation',
         cursor: action === 'create' ? 'cell' : undefined,
