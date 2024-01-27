@@ -200,7 +200,12 @@ function handlePointerDown(
   const doubleClickMs = 600
   touchRef.current.lastTouchBehavior = action
 
-  console.log('🔽 handling pointerDown with action=', action, 'from element', e.target)
+  console.log(
+    '🔽 handling pointerDown with action=',
+    action,
+    'from element',
+    e.target
+  )
 
   // Handle create pointer down
   if (action === 'create') {
@@ -280,17 +285,6 @@ function handlePointerDown(
     return
   }
 
-  ep.classList.add('selected')
-  ep.classList.add('show-pencil')
-  if(touchRef.current.selectionTimeout) {
-    clearTimeout(touchRef.current.selectionTimeout)
-  }
-  touchRef.current.selectionTimeout = setTimeout(() => {
-    ep.classList.remove('selected')
-    ep.classList.remove('show-pencil')
-    touchRef.current.selectionTimeout = null
-  }, 4000)
-
   if (
     ep === touchRef.current.eventPane &&
     Date.now() - touchRef.current.lastClickedAt < doubleClickMs
@@ -326,7 +320,7 @@ function handlePointerDown(
   ghostElementRef.current.style.color = colorizerTheme.palette.augmentColor({
     color: { main: `rgb(${rgb})` },
   }).contrastText
-  
+
   updateDragMove(e.pageX, e.pageY)
   // Hide the drag ghost until the first pointer movement:
   ghostElementRef.current.style.visibility = 'hidden'
@@ -715,6 +709,22 @@ function WeekBody({
                 )
               }
               return
+            }
+
+            // If interacting with an event pane,
+            // apply the 'selected' state
+            const ep = e.target.closest('.event-pane')
+            if (ep) {
+              ep.classList.add('selected')
+              ep.classList.add('show-pencil')
+              if (touchRef.current.selectionTimeout) {
+                clearTimeout(touchRef.current.selectionTimeout)
+              }
+              touchRef.current.selectionTimeout = setTimeout(() => {
+                ep.classList.remove('selected')
+                ep.classList.remove('show-pencil')
+                touchRef.current.selectionTimeout = null
+              }, 4000)
             }
 
             if (touchRef.current.eventPane) {

@@ -71,10 +71,8 @@ export const HoverableBox = styled(Box)(({ theme }) => ({
     left: 0,
     width: '100%',
     height: '100%',
+    opacity: 0.5,
     backgroundColor: theme.palette.action.hover,
-  },
-  '&:active::after': {
-    backgroundColor: theme.palette.action.selected,
   },
   '&:hover .section-inner': {
     filter: 'brightness(140%)',
