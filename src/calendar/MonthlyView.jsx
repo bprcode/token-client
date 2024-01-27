@@ -23,6 +23,7 @@ import { HoverableBox, alternatingShades } from '../blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
+import { useNarrowCheck } from './LayoutContext.mjs'
 
 const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
@@ -359,6 +360,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
   const [shouldDismount, dismount] = useReducer(() => true, false)
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
+  const isNarrow = useNarrowCheck()
 
   const onExpandCallback = useCallback(
     d => {
@@ -381,10 +383,11 @@ export function MonthlyView({ date, onChange, onExpand }) {
         direction="column"
         sx={{
           mt: [0, 2],
-          px: [1, 2],
-          mb: 4,
+          pr: 1,
+          pl: isNarrow ? 1 : 4,
+          mb: 2,
           flexGrow: 1,
-          alignItems: 'center',
+          alignItems: isNarrow ? 'center' : 'start',
         }}
       >
         <Box
