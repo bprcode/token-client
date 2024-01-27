@@ -348,7 +348,7 @@ function WeekBody({
   const needMobileBar = useMobileBarCheck()
   const logger = useLogger()
   const benchStart = performance.now()
-  const displayHeight = '520px'
+  const displayHeight = '544px'
 
   const ghostElementRef = useRef(null)
 
