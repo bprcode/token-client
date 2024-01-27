@@ -390,7 +390,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
         <Box
           sx={{
             width: '100%',
-            maxWidth: '876px',
+            maxWidth: '856px',
             marginTop: [1, 2],
             boxShadow: '0.75rem 1.25rem 1.5rem #00081190',
             borderBottom: '1px solid #000a',
