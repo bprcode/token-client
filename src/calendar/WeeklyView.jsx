@@ -714,7 +714,7 @@ function WeekBody({
             // If interacting with an event pane,
             // apply the 'selected' state
             const ep = e.target.closest('.event-pane')
-            if (ep) {
+            if (ep && ep === touchRef.current.eventPane) {
               ep.classList.add('selected')
               ep.classList.add('show-pencil')
               if (touchRef.current.selectionTimeout) {
