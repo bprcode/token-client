@@ -53,8 +53,8 @@ const BrightHoverBox = styled(Box)({
     filter: 'brightness(90%) saturate(80%)',
   },
   '&&&:active': {
-    filter: 'brightness(110%) saturate(70%)'
-  }
+    filter: 'brightness(110%) saturate(70%)',
+  },
 })
 
 function OverflowArrows({ before, after, accentColor }) {
@@ -192,6 +192,7 @@ function BriefPane({
             ...borderStyles,
             ...referenceStyle,
             backgroundColor: accentColor,
+            accentColor: accentColor,
 
             overflow: 'hidden',
             height: '100%',

@@ -302,7 +302,7 @@ function handlePointerDown(
 
   const pickedColor = getComputedStyle(
     ep.querySelector('.pane-inner')
-  ).backgroundColor
+  ).accentColor
   const eventRect = ep.getBoundingClientRect()
 
   updateTouchBounds(e)
