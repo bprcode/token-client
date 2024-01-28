@@ -26,13 +26,6 @@ import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
 
 export function EventEditor({ onClose, onSave, onDelete, event }) {
-  console.log(
-    `Event ${event.id} spanning ${event.startTime.format(
-      'H:mm:ss'
-    )} - ${event.endTime.format('H:mm:ss')}`
-  )
-  console.log('event has colorId:', event.colorId)
-
   const [showConfirm, setShowConfirm] = useState(false)
 
   const sideBySide = useMediaQuery('(min-width: 660px)')
@@ -66,10 +59,9 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
 
   function isChanged() {
     return (
-      summary != event.summary ||
-      type !== event.summary ||
+      summary !== event.summary ||
       colorId !== event.colorId ||
-      description != event.description ||
+      description !== event.description ||
       !startTime.isSame(event.startTime) ||
       !endTime.isSame(event.endTime)
     )

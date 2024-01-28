@@ -636,7 +636,6 @@ function WeekBody({
       <div>
         <Box
           onClick={e => {
-            console.log('%cassembledComponents click', 'color:orange')
             if (action === 'edit') {
               const ep = e.target.closest('.event-pane')
 
@@ -750,11 +749,10 @@ function WeekBody({
               if (touchRef.current.selectionTimeout) {
                 clearTimeout(touchRef.current.selectionTimeout)
               }
-              touchRef.current.selectionTimeout = setTimeout(() => {
-                ep.classList.remove('selected')
-                ep.classList.remove('show-pencil')
-                touchRef.current.selectionTimeout = null
-              }, 4000)
+              touchRef.current.selectionTimeout = setTimeout(
+                () => clearSelection(touchRef),
+                4000
+              )
             }
 
             if (touchRef.current.eventPane) {
@@ -922,6 +920,7 @@ function WeekBody({
     onDelete,
     onHideDrawer,
     onCreate,
+    onEdit,
   ])
 
   const benchEnd = performance.now()
