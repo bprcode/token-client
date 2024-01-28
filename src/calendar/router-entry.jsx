@@ -69,13 +69,11 @@ const router = createBrowserRouter([
             path: 'catalog',
             element: <Catalog />,
             loader: catalogLoader(queryClient),
-            shouldRevalidate: () => false,
           },
           {
             path: 'calendars/:id',
             element: <Calendar />,
             loader: calendarLoader(queryClient),
-            shouldRevalidate: () => false,
           },
         ],
       },
