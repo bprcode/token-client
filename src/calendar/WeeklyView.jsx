@@ -32,6 +32,7 @@ import { ActionContext, actionList } from './ActionContext.mjs'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { CreationPicker } from './CreationPicker'
 import dayjs from 'dayjs'
+import { EventEditor } from './EventEditor'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
@@ -180,6 +181,8 @@ function WeekdayBox({ day, displayHeight, weekEvents }) {
 }
 
 function clearSelection(touchRef) {
+  touchRef.current.lastClickedPane = null
+
   if (touchRef.current.eventPane) {
     touchRef.current.eventPane.classList.remove('selected')
     touchRef.current.eventPane.classList.remove('show-pencil')
@@ -200,7 +203,6 @@ function handlePointerDown(
   events,
   updateDragMove
 ) {
-  const doubleClickMs = 600
   touchRef.current.lastTouchBehavior = action
 
   console.log(
@@ -298,13 +300,6 @@ function handlePointerDown(
     return
   }
 
-  if (
-    ep === touchRef.current.eventPane &&
-    Date.now() - touchRef.current.lastClickedAt < doubleClickMs
-  ) {
-    console.log('🗡️ Double-tap?', Date.now() - touchRef.current.lastClickedAt)
-  }
-
   const pickedColor = getComputedStyle(
     ep.querySelector('.pane-inner')
   ).backgroundColor
@@ -346,6 +341,7 @@ function WeekBody({
   touchRef,
   dateString,
   events,
+  onEdit,
   onExpand,
   onCreate,
   onUpdate,
@@ -637,6 +633,17 @@ function WeekBody({
             console.log('%cassembledComponents click', 'color:orange')
             if (action === 'edit') {
               const ep = e.target.closest('.event-pane')
+
+              if (
+                ep &&
+                touchRef.current.lastClickedPane === ep &&
+                touchRef.current.lastTouchBehavior === 'edit'
+              ) {
+                return onEdit(ep.dataset.id)
+              }
+              
+              touchRef.current.lastClickedPane = ep
+              
               // click was on, or initiated on, an event pane:
               if (
                 ep ||
@@ -971,6 +978,7 @@ export function WeeklyView({
 }) {
   console.log('%cWeeklyView rendering', 'color:greenyellow')
   const [shouldDismount, dismount] = useReducer(() => true, false)
+  const [editingEvent, setEditingEvent] = useState(false)
   const [skipDate, setSkipDate] = useState(null)
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
@@ -1037,10 +1045,6 @@ export function WeeklyView({
     />
   )
 
-  if (skipDate?.toString() === dateString) {
-    console.log('%cDATE MATCHES, SHOULD SKIP', 'color:red', dateString)
-  }
-
   const rv = (
     <ActionContext.Provider value={action}>
       <ViewContainer containOverflow={!isNarrow}>
@@ -1096,6 +1100,7 @@ export function WeeklyView({
             dateString={dateString}
             events={events}
             onCreate={onCreateCallback}
+            onEdit={setEditingEvent}
             onExpand={onExpandCallback}
             onUpdate={onUpdate}
             onDelete={onDelete}
@@ -1107,6 +1112,17 @@ export function WeeklyView({
         <MobileBar transparent={showDrawer}>{actionButtons}</MobileBar>
       )}
       {needMobileBar && <BottomDrawer open={showDrawer} />}
+      {editingEvent && <EventEditor
+            onSave={updates => {
+              onUpdate(editingEvent, updates)
+              setEditingEvent(null)
+            }}
+            onClose={() => setEditingEvent(null)}
+            onDelete={onDelete}
+            event={events.find(
+              e => e.id === editingEvent || e.stableKey === editingEvent
+            )}
+          />}
     </ActionContext.Provider>
   )
 
