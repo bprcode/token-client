@@ -64,7 +64,7 @@ function GhostDay() {
         }}
       >
         <span className="start-element"></span>
-        <wbr />–<wbr />
+        <wbr />
         <span className="end-element" />
       </div>
     </Box>
@@ -578,11 +578,17 @@ function WeekBody({
         .format('h:mma')
         .replace('m', '')
 
+      const isLongEnough = finalMinute - startMinute > 90
+      const startLabel = isLongEnough
+        ? formattedStart
+        : finalMinute - startMinute + 'm'
+      const endLabel = isLongEnough ? '–' + formattedEnd : ''
+
       for (const e of touchRef.current.startLabels) {
-        e.textContent = formattedStart
+        e.textContent = startLabel
       }
       for (const e of touchRef.current.endLabels) {
-        e.textContent = formattedEnd
+        e.textContent = endLabel
       }
     }
 
@@ -641,9 +647,9 @@ function WeekBody({
               ) {
                 return onEdit(ep.dataset.id)
               }
-              
+
               touchRef.current.lastClickedPane = ep
-              
+
               // click was on, or initiated on, an event pane:
               if (
                 ep ||
@@ -1112,17 +1118,19 @@ export function WeeklyView({
         <MobileBar transparent={showDrawer}>{actionButtons}</MobileBar>
       )}
       {needMobileBar && <BottomDrawer open={showDrawer} />}
-      {editingEvent && <EventEditor
-            onSave={updates => {
-              onUpdate(editingEvent, updates)
-              setEditingEvent(null)
-            }}
-            onClose={() => setEditingEvent(null)}
-            onDelete={onDelete}
-            event={events.find(
-              e => e.id === editingEvent || e.stableKey === editingEvent
-            )}
-          />}
+      {editingEvent && (
+        <EventEditor
+          onSave={updates => {
+            onUpdate(editingEvent, updates)
+            setEditingEvent(null)
+          }}
+          onClose={() => setEditingEvent(null)}
+          onDelete={onDelete}
+          event={events.find(
+            e => e.id === editingEvent || e.stableKey === editingEvent
+          )}
+        />
+      )}
     </ActionContext.Provider>
   )
 
