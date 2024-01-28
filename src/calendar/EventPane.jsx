@@ -9,7 +9,14 @@ import {
   getAugmentedColor,
   shorthandInterval as calculateShorthand,
 } from './calendarLogic.mjs'
-import { Box, IconButton, Zoom, useTheme, styled } from '@mui/material'
+import {
+  Box,
+  IconButton,
+  Zoom,
+  useTheme,
+  styled,
+  useMediaQuery,
+} from '@mui/material'
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
 import { useLogger } from './Logger'
@@ -254,6 +261,8 @@ export function EventPane({
   const action = useContext(ActionContext)
   const theme = useTheme()
   const isSelectable = label === 'detailed'
+  const isSqueezed = useMediaQuery('(max-width: 428px)')
+  const isComfy = useMediaQuery('(min-width: 1092px)')
 
   const logger = useLogger()
 
@@ -372,15 +381,35 @@ export function EventPane({
         {event.summary}
       </Box>
     )
-    details = duration > 120 && (
-      <div className="brief-details">
-        {shorthandInterval.split('–')[0]}
-        <wbr />
-        {'–'}
-        <wbr />
-        {shorthandInterval.split('–')[1]}
-      </div>
-    )
+    if (!isSqueezed) {
+      const minDuration = isComfy ? 120 : 150
+      details = duration > minDuration && (
+        <div className="brief-details">
+          {shorthandInterval.split('–')[0]}
+          <wbr />
+          {'–'}
+          <wbr />
+          {shorthandInterval.split('–')[1]}
+        </div>
+      )
+    } else {
+      // Further cut formatting on really narrow screens:
+      details = duration > 150 && (
+        <div className="brief-details">
+          {shorthandInterval
+            .split('–')[0]
+            .replaceAll('a', '')
+            .replaceAll('p', '')}
+          <wbr />
+          {'–'}
+          <wbr />
+          {shorthandInterval
+            .split('–')[1]
+            .replaceAll('a', '')
+            .replaceAll('p', '')}
+        </div>
+      )
+    }
   }
 
   if (label === 'detailed') {
