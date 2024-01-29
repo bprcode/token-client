@@ -415,7 +415,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
               weekBox.classList.add('tapped')
             }
           }}
-          onTouchEnd={e => {
+          onTouchEnd={() => {
             console.log('touchend', Date.now())
             if (touchRef.current.lastTapped) {
               touchRef.current.lastTapped.classList.remove('tapped')

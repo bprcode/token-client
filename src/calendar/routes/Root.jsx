@@ -1,36 +1,41 @@
 import CircularProgress from '@mui/material/CircularProgress'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import { ToggleMenuContext } from '../LayoutContext.mjs'
 import { Box, Container } from '@mui/material'
 import { Outlet, useNavigation } from 'react-router-dom'
 import RouterSidebar from '../RouterSidebar'
 import { FetchDisplay } from '../../go-fetch'
-import SyncStatus from '../SyncStatus'
+import SyncMonitor from '../SyncMonitor.jsx'
 import { useNavigationControl } from '../NavigationControl.jsx'
 import { ConflictDisplay } from '../ConflictDisplay'
 import bokehImage from '../../assets/bokeh.png'
+import { DemoContext } from '../DemoContext.mjs'
 
 export const loader = queryClient => async () => {
   return 'unused'
 }
 
 function Background() {
-  return <Box 
-  className="background-box"
-  sx={{
-    zIndex: -9,
-    position: 'fixed',
-    // Do not use 100vw; causes Chrome horizontal scroll issues:
-    width: '100%',
-    height: '100vh',
-    backgroundImage: `url(${bokehImage})`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    opacity: 0.5,
-  }}/>
+  return (
+    <Box
+      className="background-box"
+      sx={{
+        zIndex: -9,
+        position: 'fixed',
+        // Do not use 100vw; causes Chrome horizontal scroll issues:
+        width: '100%',
+        height: '100vh',
+        backgroundImage: `url(${bokehImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        opacity: 0.5,
+      }}
+    />
+  )
 }
 
 export function Root() {
+  const isLive = useContext(DemoContext) === false
   const [expand, setExpand] = useState(false)
   const navigation = useNavigation()
   useNavigationControl()
@@ -47,8 +52,6 @@ export function Root() {
           height: '100vh',
         }}
       >
-      
-
         <Box
           sx={{
             height: '100%',
@@ -63,9 +66,9 @@ export function Root() {
               position: 'relative',
             }}
           >
-            {/* SyncStatus is kept mounted to allow autosave operations
+            {/* SyncMonitor is kept mounted to allow autosave operations
                 to continue during navigation. */}
-            <SyncStatus />
+            {isLive && <SyncMonitor />}
             <ConflictDisplay tag="views" />
 
             {navigation.state === 'loading' && (

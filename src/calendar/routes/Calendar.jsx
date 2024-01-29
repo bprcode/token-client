@@ -1,6 +1,5 @@
 import { Alert, AlertTitle, Box, Button, Slide } from '@mui/material'
 import {
-  createSearchParams,
   useNavigate,
   useParams,
   useSearchParams,
@@ -20,7 +19,6 @@ import { ViewHeader } from '../ViewHeader'
 import { useTheme } from '@emotion/react'
 import { alpha } from '@mui/material/styles'
 import { isEventDuplicate } from '../EventSync'
-import { useMemo, useState } from 'react'
 
 const log = console.log.bind(console)
 
@@ -353,7 +351,6 @@ export function CalendarContents({ calendarId }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const searchParamString = searchParams.toString()
 
-  console.log('searchParams were:', searchParamString)
   const view = searchParams.get('v') || 'month'
   const date = searchParams.has('d')
     ? dayjs(searchParams.get('d').replaceAll('_', ':'))

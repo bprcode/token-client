@@ -28,12 +28,14 @@ import {
 import { alpha, keyframes } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { reconcile } from '../reconcile.mjs'
 import { ConflictDisplay } from '../ConflictDisplay'
 import { isCalendarDuplicate } from '../../CatalogSync'
+import { DemoContext } from '../DemoContext.mjs'
+import { demoCatalog } from '../calendarLogic.mjs'
 
-function makeCatalogQuery(queryClient) {
+function makeCatalogQuery(queryClient, options = {}) {
   return {
     staleTime: 1 * 60 * 1000,
     queryKey: ['catalog'],
@@ -49,12 +51,14 @@ function makeCatalogQuery(queryClient) {
         isDuplicate: isCalendarDuplicate,
       })
     },
+    ...options,
   }
 }
 
 export const loader =
   queryClient =>
   ({ request, params }) => {
+    console.log('🟨 prefetching catalog query')
     queryClient.prefetchQuery(makeCatalogQuery(queryClient))
 
     return 'unused'
@@ -412,8 +416,22 @@ function CalendarCard({ calendar, children }) {
 }
 
 export function useCatalogQuery() {
+  const isDemo = useContext(DemoContext)
   const queryClient = useQueryClient()
-  return useQuery(makeCatalogQuery(queryClient))
+  console.log('%cWas demo?', 'color:cyan', isDemo)
+  return useQuery(
+    makeCatalogQuery(
+      queryClient,
+      isDemo
+        ? {
+            queryFn: () => {
+              console.log('%cReturning demo catalog', 'color:cyan')
+              return demoCatalog
+            },
+          }
+        : undefined
+    )
+  )
 }
 
 export function Catalog() {

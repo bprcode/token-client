@@ -12,12 +12,21 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { goFetch } from './go-fetch'
+import { DemoContext } from './calendar/DemoContext.mjs'
+import { demoUser } from './calendar/calendarLogic.mjs'
+import { useContext } from 'react'
+
 
 export function useHeartbeatQuery() {
+  const isDemo = useContext(DemoContext)
+
+  const queryFn = isDemo
+    ? () => demoUser
+    : ({ signal }) => goFetch('me', { signal })
   return useQuery({
     staleTime: 2 * 60 * 1000,
     queryKey: ['heartbeat'],
-    queryFn: ({ signal }) => goFetch('me', { signal }),
+    queryFn,
   })
 }
 

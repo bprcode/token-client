@@ -75,6 +75,25 @@ export function createSampleCalendar({ summary }) {
   }
 }
 
+export const demoUser = {
+  email: 'demo@abc.xyz',
+  name: 'Demo Mode',
+  uid: 'demo-uid',
+  iat: Math.round(Date.now() / 1000),
+  exp: Infinity,
+}
+
+export const demoCatalog = [
+  {
+    calendar_id: 'demo-calendar',
+    etag: 'demo-etag',
+    created: dayjs().utc().format(),
+    summary: 'Sample Calendar',
+    primary_author_id: 'demo-user',
+    updated: dayjs().utc().format(),
+  },
+]
+
 function mockDescription(summary) {
   function pickRandom(arr) {
     return arr[Math.floor(arr.length * Math.random())]

@@ -5,7 +5,7 @@ import { useHeartbeatQuery } from '../HeartbeatPanel'
 import { useCacheList } from './cacheTracker.mjs'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 
-export default function SyncStatus() {
+export default function SyncMonitor() {
   const isNarrow = useNarrowCheck()
   const needMobileBar = useMobileBarCheck()
   const { data: heartbeat } = useHeartbeatQuery()

@@ -9,7 +9,7 @@ import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
 import digitalTheme from '../blueDigitalTheme'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import RouterError from './RouterError'
 import { Root, loader as rootLoader } from './routes/Root'
 import { Catalog, loader as catalogLoader } from './routes/Catalog'
@@ -19,6 +19,7 @@ import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
 import { navigateTo } from './NavigationControl.jsx'
+import { DemoContext } from './DemoContext.mjs'
 
 const globalExpiryHandler = error => {
   console.log('🌍 global cache error handler:', error.status, error.message)
@@ -79,6 +80,35 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: 'demo',
+    element: (
+      <DemoContext.Provider value={true}>
+        <Root />
+      </DemoContext.Provider>
+    ),
+    errorElement: <RouterError />,
+    children: [
+      {
+        errorElement: <RouterError />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="/demo/catalog" />,
+          },
+          {
+            path: 'catalog',
+            element: <Catalog />,
+          },
+          {
+            path: 'calendars/:id',
+            element: <Calendar />,
+            loader: calendarLoader(queryClient),
+          },
+        ],
+      },
+    ],
+  },
 ])
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -89,7 +119,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <RouterProvider router={router} />
         </CssBaseline>
       </ThemeProvider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </React.StrictMode>
 )
