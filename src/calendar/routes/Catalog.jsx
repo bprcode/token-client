@@ -309,7 +309,7 @@ function CalendarCard({ calendar, children }) {
     >
       <Box
         component={isEditing || isCreating ? 'div' : Link}
-        to={'/calendars/' + calendar.calendar_id}
+        to={'../calendars/' + calendar.calendar_id}
         sx={{
           color: 'inherit',
           textDecoration: 'none',
@@ -371,7 +371,7 @@ function CalendarCard({ calendar, children }) {
         <Button
           disabled={isCreating}
           component={Link}
-          to={`/calendars/${calendar.calendar_id}`}
+          to={`../calendars/${calendar.calendar_id}`}
         >
           Open
         </Button>
@@ -418,7 +418,7 @@ function CalendarCard({ calendar, children }) {
 export function useCatalogQuery() {
   const isDemo = useContext(DemoContext)
   const queryClient = useQueryClient()
-  console.log('%cWas demo?', 'color:cyan', isDemo)
+  
   return useQuery(
     makeCatalogQuery(
       queryClient,

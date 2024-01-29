@@ -94,6 +94,23 @@ export const demoCatalog = [
   },
 ]
 
+export function mockEventFetch(resource) {
+  console.log('mocking fetch to:', resource)
+  return []
+}
+
+// const parsed = response.map(row => ({
+//   id: row.event_id,
+//   etag: row.etag,
+//   created: dayjs(row.created),
+//   summary: row.summary || 'Default Event',
+//   description: row.description || 'Default Description',
+//   startTime: dayjs(row.start_time),
+//   endTime: dayjs(row.end_time),
+//   colorId: row.color_id,
+// }))
+
+
 function mockDescription(summary) {
   function pickRandom(arr) {
     return arr[Math.floor(arr.length * Math.random())]

@@ -4,7 +4,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom'
-import { isOverlap, reduceConcurrentEvents } from '../calendarLogic.mjs'
+import { isOverlap, mockEventFetch, reduceConcurrentEvents } from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
@@ -19,6 +19,8 @@ import { ViewHeader } from '../ViewHeader'
 import { useTheme } from '@emotion/react'
 import { alpha } from '@mui/material/styles'
 import { isEventDuplicate } from '../EventSync'
+import { useContext } from 'react'
+import { DemoContext } from '../DemoContext.mjs'
 
 const log = console.log.bind(console)
 
@@ -192,6 +194,9 @@ export function useViewQuery() {
 
   const staleTime = 1 * 60 * 1000
 
+  const isDemo = useContext(DemoContext)
+  const fetcher = isDemo ? mockEventFetch : goFetch
+
   return useQuery({
     gcTime: 0,
     staleTime,
@@ -228,7 +233,7 @@ export function useViewQuery() {
       const endpoint = `calendars/${calendar_id}/events`
       const search = new URLSearchParams(filters).toString()
 
-      const response = await goFetch(endpoint + (search && '?' + search))
+      const response = await fetcher(endpoint + (search && '?' + search))
       const parsed = response.map(row => ({
         id: row.event_id,
         etag: row.etag,
@@ -332,6 +337,9 @@ function usePrimaryDispatch() {
   }
 }
 
+/**
+ * Wrapper component to dismount on id change:
+ */
 export function Calendar() {
   const params = useParams()
   return <CalendarContents key={params.id} calendarId={params.id} />
