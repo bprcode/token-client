@@ -5,7 +5,7 @@ import AlignBottomIcon from '@mui/icons-material/VerticalAlignBottom'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import {
-  mockStyles,
+  baseStyles,
   getAugmentedColor,
   shorthandInterval as calculateShorthand,
 } from './calendarLogic.mjs'
@@ -262,7 +262,7 @@ export function EventPane({
   const theme = useTheme()
   const isSelectable = label === 'detailed'
   const isSqueezed = useMediaQuery('(max-width: 428px)')
-  const isComfy = useMediaQuery('(min-width: 1092px)')
+  // const isComfy = useMediaQuery('(min-width: 1092px)')
 
   const logger = useLogger()
 
@@ -328,7 +328,7 @@ export function EventPane({
 
   // Styling constants
   const referenceStyle =
-    mockStyles.get(event.summary) || mockStyles.get('Default')
+    baseStyles.get(event.summary) || baseStyles.get('Default')
   const augmentedColors = getAugmentedColor(event.colorId)
   if (!augmentedColors) {
     console.log('failed to retrieve ', event.colorId)

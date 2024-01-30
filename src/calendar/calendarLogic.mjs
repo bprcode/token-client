@@ -102,56 +102,93 @@ function mockDayEvents(day) {
   const events = []
 
   const isWeekday = day.day() !== 0 && day.day() !== 6
-  const isWorkday = isWeekday ? p(.95) : p(.05)
-  let workStart = p(.90) ? day.add(8, 'hours')
-  : p(.50) ? day.add(7, 'hours') : day.add(9, 'hours')
+  const isWorkday = isWeekday ? p(0.95) : p(0.1)
+  let workStart = p(0.9)
+    ? day.add(8, 'hours')
+    : p(0.5)
+    ? day.add(7, 'hours')
+    : day.add(9, 'hours')
 
-  // debug -- sometimes hitting off-times
-  const eventStartMinute = Math.floor(Math.random() * 23 *4) * 15
+  // debug -- need to fix ending times
+  const eventStartMinute = Math.floor(Math.random() * 23 * 4) * 15
   const eventDuration = Math.min(
     240,
     Math.max(45, Math.ceil(Math.random() * (24 * 60 - eventStartMinute)))
   )
 
-  if(isWeekday ? p(0.05) : p(0.2)) { 
+  if (isWeekday ? p(0.05) : p(0.2)) {
     return events
   }
 
-  if(isWorkday) {
-    const workEnd = workStart.add(p(0.5) ? 8 : 9, 'hours')
-    if(p(0.3)) {
-      events.push(createEventObject({
-        startTime: workStart.subtract(p(0.5) ? 2 : 3, 'hours'),
-        endTime: p(0.5) ? workStart : workStart.subtract(1, 'hours'),
-        summary: 'Exercise',
-      }))
+  if (isWorkday) {
+    const workEnd = workStart.add(pickRandom([7, 8, 9]), 'hours')
+
+    // Work-interrupting appointment
+    if (p(0.08)) {
+      const appointmentStart = workStart.subtract(
+        pickRandom([0, 1, 2]),
+        'hours'
+      )
+      const appointmentEnd = appointmentStart.add(
+        pickRandom([1, 2, 2, 3]),
+        'hours'
+      )
+      workStart = appointmentEnd.add(pickRandom([0, 1]), 'hours')
+      events.push(
+        createEventObject({
+          startTime: appointmentStart,
+          endTime: appointmentEnd,
+          summary: 'Appointment',
+          description: 'See Dr. Alice',
+        })
+      )
+    } else if (p(0.3)) {
+      // Before-work activity
+      const beforeHours = pickRandom([1,2,2])
+      const endGap = beforeHours - pickRandom([Math.min(0,beforeHours-1),0])
+      events.push(
+        createEventObject({
+          startTime: workStart.subtract(beforeHours, 'hours'),
+          endTime: workStart.subtract(beforeHours - endGap, 'hours'),
+          summary: pickRandom(['Study', 'Exercise', 'Exercise']),
+        })
+      )
     }
-    events.push(createEventObject({
-      startTime: workStart,
-      endTime: workEnd,
-      summary: 'Work',
-    }))
-    // events.push(createEventObject({
-    //   startTime: workStart.add(4, 'hours'),
-    //   endTime: workStart.add(5, 'hours'),
-    //   summary: 'Lunch',
-    //   colorId: '#d46239',
-    // }))
-    if(p(0.7)) {
-      events.push(createEventObject({
-        startTime: workEnd.add(p(0.7) ? 1 : 0, 'hours'),
-        endTime: workEnd.add(pickRandom([2,3,4]), 'hours'),
-        summary: pickRandom(['Social', 'Study', 'Exercise'])
-      }))
+    // Main work event
+    events.push(
+      createEventObject({
+        startTime: workStart,
+        endTime: workEnd,
+        summary: 'Work',
+      })
+    )
+    // Mid-work meeting
+    if (p(0.3)) {
+      const meetingStart = workStart.add(pickRandom([0, 1, 2, 3]), 'hours')
+      events.push(
+        createEventObject({
+          startTime: meetingStart,
+          endTime: meetingStart.add(pickRandom([1, 2]), 'hours'),
+          summary: 'Meeting',
+          description: 'Meeting with corporate',
+        })
+      )
+    }
+    // After-work event
+    if (p(0.7)) {
+      events.push(
+        createEventObject({
+          startTime: workEnd.add(p(0.7) ? 1 : 0, 'hours'),
+          endTime: workEnd.add(pickRandom([2, 3, 4]), 'hours'),
+          summary: pickRandom(['Social', 'Study', 'Exercise']),
+        })
+      )
     }
   } else {
-
     const event = createEventObject({
       startTime: day.add(eventStartMinute, 'minutes'),
       endTime: day.add(eventStartMinute + eventDuration, 'minutes'),
-      summary: isWorkday
-        ? 'Work'
-        : pickRandom(['Social', 'Exercise']),
+      summary: pickRandom(['Social', 'Exercise', 'Study']),
     })
     events.push(event)
   }
@@ -176,7 +213,7 @@ export function mockEventFetch(resource) {
     if (!mockEventFetch.days.has(dayString)) {
       const mocked = mockDayEvents(d)
       console.log('mapping mocked', mocked)
-      const json = mocked.map(e =>  ({
+      const json = mocked.map(e => ({
         event_id: e.id,
         etag: e.etag,
         summary: e.summary,
@@ -186,8 +223,7 @@ export function mockEventFetch(resource) {
         end_time: e.endTime.utc().format(),
         color_id: e.colorId,
         calendar_id: demoCatalog[0].calendar_id,
-      })
-    )
+      }))
       mockEventFetch.days.set(dayString, json)
     }
 
@@ -306,11 +342,11 @@ const defaultTheme = createTheme({
  * otherwise return a default color.
  */
 export function resolveColor(colorId) {
-  if (mockStyles.has(colorId)) return mockStyles.get(colorId).accentColor
+  if (baseStyles.has(colorId)) return baseStyles.get(colorId).accentColor
 
   if (recognizedColors.has(colorId)) return recognizedColors.get(colorId)
 
-  return mockStyles.get('Default').accentColor
+  return baseStyles.get('Default').accentColor
 }
 
 /**
@@ -357,7 +393,7 @@ export const mockPalette = [
 
 const recognizedColors = new Map(mockPalette.map(c => [c, c]))
 
-export const mockStyles = new Map([
+export const baseStyles = new Map([
   [
     'Work',
     {
@@ -369,12 +405,32 @@ export const mockStyles = new Map([
     },
   ],
   [
+    'Meeting',
+    {
+      accentColor: '#45b06f',
+      fontSize: '0.75em',
+      augmentedColors: defaultTheme.palette.augmentColor({
+        color: { main: '#45b06f' },
+      }),
+    },
+  ],
+  [
     'Study',
     {
       accentColor: '#e9a47d',
       fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#e9a47d' },
+      }),
+    },
+  ],
+  [
+    'Appointment',
+    {
+      accentColor: '#d46239',
+      fontSize: '0.75em',
+      augmentedColors: defaultTheme.palette.augmentColor({
+        color: { main: '#d46239' },
       }),
     },
   ],
@@ -398,6 +454,7 @@ export const mockStyles = new Map([
       }),
     },
   ],
+
   [
     'Default',
     {
@@ -589,7 +646,7 @@ export function reduceConcurrentEvents(eventList, action) {
 }
 
 export function useEventStyles() {
-  return mockStyles
+  return baseStyles
 }
 
 export function usePalette() {
