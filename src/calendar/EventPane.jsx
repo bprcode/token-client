@@ -208,7 +208,7 @@ function BriefPane({
             flexDirection: 'column',
             transition: 'background-color 0.2s ease-out',
 
-            paddingTop: ['0px', '4px'],
+            paddingTop: ['0px', '2px'],
           }}
         >
           {/* pane header */}
@@ -369,7 +369,7 @@ export function EventPane({
   let details = null
 
   if (label === 'brief') {
-    header = duration > 60 && (
+    header = duration >= 60 && (
       <Box
         className="brief-title"
         sx={{

@@ -94,58 +94,118 @@ export const demoCatalog = [
   },
 ]
 
+function mockDayEvents(day) {
+  function p(probability) {
+    return Math.random() < probability ? true : false
+  }
+
+  const events = []
+
+  const isWeekday = day.day() !== 0 && day.day() !== 6
+  const isWorkday = isWeekday ? p(.95) : p(.05)
+  const workStart = p(.90) ? day.add(8, 'hours')
+  : p(.50) ? day.add(7, 'hours') : day.add(9, 'hours')
+
+  // debug -- sometimes hitting off-times
+  const eventStartMinute = Math.floor(Math.random() * 23 *15) * 4
+  const eventDuration = Math.min(
+    240,
+    Math.max(45, Math.ceil(Math.random() * (24 * 60 - eventStartMinute)))
+  )
+
+  if(p(0.05)) { 
+    return events
+  }
+
+  if(isWorkday) {
+    const workEnd = workStart.add(p(0.5) ? 8 : 9, 'hours')
+    if(p(0.3)) {
+      events.push(createEventObject({
+        startTime: workStart.subtract(p(0.5) ? 2 : 3, 'hours'),
+        endTime: p(0.5) ? workStart : workStart.subtract(1, 'hours'),
+        summary: 'Exercise',
+      }))
+    }
+    events.push(createEventObject({
+      startTime: workStart,
+      endTime: workStart.add(4, 'hours'),
+      summary: 'Work',
+    }))
+    events.push(createEventObject({
+      startTime: workStart.add(4, 'hours'),
+      endTime: workStart.add(5, 'hours'),
+      summary: 'Lunch',
+    }))
+    events.push(createEventObject({
+      startTime: workStart.add(5, 'hours'),
+      endTime: workEnd,
+      summary: 'Work',
+    }))
+    if(p(0.7)) {
+      events.push(createEventObject({
+        startTime: workEnd.add(1, 'hours'),
+        endTime: workEnd.add(pickRandom([2,3,4]), 'hours'),
+        summary: pickRandom(['Social', 'Study', 'Exercise'])
+      }))
+    }
+  } else {
+
+    const event = createEventObject({
+      startTime: day.add(eventStartMinute, 'minutes'),
+      endTime: day.add(eventStartMinute + eventDuration, 'minutes'),
+      summary: isWorkday
+        ? 'Work'
+        : pickRandom(['Social', 'Exercise']),
+    })
+    events.push(event)
+  }
+
+  return events
+}
+
 export function mockEventFetch(resource) {
   mockEventFetch.days ??= new Map()
+  console.log('mocking fetch request for:', resource)
+
   const decoded = decodeURIComponent(resource)
   const searchParams = new URLSearchParams(decoded.split('?')[1])
-  console.log('sp',searchParams)
-  console.log('from',searchParams.get('from'))
-  console.log('to',searchParams.get('to'))
   const intervalStart = dayjs(searchParams.get('from'))
   const intervalEnd = dayjs(searchParams.get('to'))
-  console.log('mocking fetch to:', decoded)
-  console.log('mocking fetch to:', intervalStart)
-  console.log('mocking fetch to:', intervalEnd)
 
   const result = []
   let d = intervalStart
 
-  while(d.isBefore(intervalEnd)) {
+  while (d.isBefore(intervalEnd)) {
     const dayString = d.format('D-MM-YYYY')
-    if(!mockEventFetch.days.has(dayString)) {
-      const eventStartMinute = Math.floor(Math.random() * 23 * 60)
-      const eventDuration = Math.min(240, Math.max(45,
-        Math.ceil(Math.random() * (24*60 - eventStartMinute))))
-
-      const event = createEventObject({
-        startTime: d.add(eventStartMinute, 'minutes'),
-        endTime: d.add(eventStartMinute + eventDuration, 'minutes')
-      })
-      const mockJson = {
-        event_id: event.id,
-        etag: event.etag,
-        created: event.created.utc().format(),
-        description: event.description,
-        start_time: event.startTime.utc().format(),
-        end_time: event.endTime.utc().format(),
-        color_id: event.colorId,
+    if (!mockEventFetch.days.has(dayString)) {
+      const mocked = mockDayEvents(d)
+      console.log('mapping mocked', mocked)
+      const json = mocked.map(e =>  ({
+        event_id: e.id,
+        etag: e.etag,
+        summary: e.summary,
+        created: e.created.utc().format(),
+        description: e.description,
+        start_time: e.startTime.utc().format(),
+        end_time: e.endTime.utc().format(),
+        color_id: e.colorId,
         calendar_id: demoCatalog[0].calendar_id,
-      }
-      mockEventFetch.days.set(dayString, mockJson)
+      })
+    )
+      mockEventFetch.days.set(dayString, json)
     }
 
-    result.push(mockEventFetch.days.get(dayString))
+    result.push(...mockEventFetch.days.get(dayString))
     d = d.add(1, 'day')
   }
   return result
 }
 
+function pickRandom(arr) {
+  return arr[Math.floor(arr.length * Math.random())]
+}
 
 function mockDescription(summary) {
-  function pickRandom(arr) {
-    return arr[Math.floor(arr.length * Math.random())]
-  }
-
   const exerciseDescriptions = [
     'Lift weights',
     'Go for a jog',

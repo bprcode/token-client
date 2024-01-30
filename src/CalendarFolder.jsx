@@ -18,7 +18,6 @@ import {
   Link,
   useLocation,
   useNavigation,
-  useParams,
   useSearchParams,
 } from 'react-router-dom'
 import { TopNavLink } from './TopNavLink'
@@ -93,8 +92,7 @@ function ViewLink({ to = '', label, children }) {
   const toPathname = to.split('?')[0]
   const navPathname = navigation.location && navigation.location.pathname
   const locPathname = location.pathname
-  console.log('locpathname', locPathname)
-  console.log('topath', toPathname)
+
   const toParams = new URLSearchParams(to.split('?')[1] || 'v=')
 
   const navParams = new URLSearchParams(
