@@ -140,17 +140,6 @@ export function mockEventFetch(resource) {
   return result
 }
 
-// const parsed = response.map(row => ({
-//   id: row.event_id,
-//   etag: row.etag,
-//   created: dayjs(row.created),
-//   summary: row.summary || 'Default Event',
-//   description: row.description || 'Default Description',
-//   startTime: dayjs(row.start_time),
-//   endTime: dayjs(row.end_time),
-//   colorId: row.color_id,
-// }))
-
 
 function mockDescription(summary) {
   function pickRandom(arr) {

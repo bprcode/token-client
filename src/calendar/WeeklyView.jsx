@@ -329,7 +329,6 @@ function handlePointerDown(
     color: { main: `rgb(${rgb})` },
   }).contrastText
 
-  updateDragMove(e.pageX, e.pageY)
   // Hide the drag ghost until the first pointer movement:
   ghostElementRef.current.style.visibility = 'hidden'
   touchRef.current.eventPane.style.filter = ''
@@ -595,6 +594,7 @@ function WeekBody({
     function updateDragMove(pageX, pageY) {
       const snappedMinute = snapMinute(pageY)
 
+      clearSelection(touchRef)
       ghostElementRef.current.style.visibility = 'visible'
       touchRef.current.eventPane.style.filter = 'brightness(40%) saturate(30%)'
 
