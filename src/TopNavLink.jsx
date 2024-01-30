@@ -9,8 +9,8 @@ export function TopNavLink({ route, children }) {
   const theme = useTheme()
 
   const isOpen =
-    (location.pathname === route && !navigation.location) ||
-    (navigation.location && navigation.location.pathname === route)
+    (location.pathname.endsWith(route) && !navigation.location) ||
+    (navigation.location && navigation.location.pathname.endsWith(route))
 
   const navParams = new URLSearchParams(
     (navigation.location && navigation.location.search) || 'v='
@@ -23,9 +23,11 @@ export function TopNavLink({ route, children }) {
   const isBaseView = isOpen && !navView && !locView
 
   const isNavTarget =
-    navigation.location && navigation.location.pathname === route && !navView
+    navigation.location &&
+    navigation.location.pathname.endsWith(route) &&
+    !navView
 
-  const isCurrentLocation = location.pathname === route && !locView
+  const isCurrentLocation = location.pathname.endsWith(route) && !locView
 
   return (
     <ListItem disablePadding>

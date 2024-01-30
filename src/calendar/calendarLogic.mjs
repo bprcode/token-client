@@ -95,8 +95,49 @@ export const demoCatalog = [
 ]
 
 export function mockEventFetch(resource) {
-  console.log('mocking fetch to:', resource)
-  return []
+  mockEventFetch.days ??= new Map()
+  const decoded = decodeURIComponent(resource)
+  const searchParams = new URLSearchParams(decoded.split('?')[1])
+  console.log('sp',searchParams)
+  console.log('from',searchParams.get('from'))
+  console.log('to',searchParams.get('to'))
+  const intervalStart = dayjs(searchParams.get('from'))
+  const intervalEnd = dayjs(searchParams.get('to'))
+  console.log('mocking fetch to:', decoded)
+  console.log('mocking fetch to:', intervalStart)
+  console.log('mocking fetch to:', intervalEnd)
+
+  const result = []
+  let d = intervalStart
+
+  while(d.isBefore(intervalEnd)) {
+    const dayString = d.format('D-MM-YYYY')
+    if(!mockEventFetch.days.has(dayString)) {
+      const eventStartMinute = Math.floor(Math.random() * 23 * 60)
+      const eventDuration = Math.min(240, Math.max(45,
+        Math.ceil(Math.random() * (24*60 - eventStartMinute))))
+
+      const event = createEventObject({
+        startTime: d.add(eventStartMinute, 'minutes'),
+        endTime: d.add(eventStartMinute + eventDuration, 'minutes')
+      })
+      const mockJson = {
+        event_id: event.id,
+        etag: event.etag,
+        created: event.created.utc().format(),
+        description: event.description,
+        start_time: event.startTime.utc().format(),
+        end_time: event.endTime.utc().format(),
+        color_id: event.colorId,
+        calendar_id: demoCatalog[0].calendar_id,
+      }
+      mockEventFetch.days.set(dayString, mockJson)
+    }
+
+    result.push(mockEventFetch.days.get(dayString))
+    d = d.add(1, 'day')
+  }
+  return result
 }
 
 // const parsed = response.map(row => ({

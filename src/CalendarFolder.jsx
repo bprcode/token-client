@@ -18,6 +18,7 @@ import {
   Link,
   useLocation,
   useNavigation,
+  useParams,
   useSearchParams,
 } from 'react-router-dom'
 import { TopNavLink } from './TopNavLink'
@@ -33,8 +34,8 @@ export function CalendarFolder({ route, title }) {
   const dayQuery = sp.has('d') ? '&d=' + sp.get('d') : ''
 
   const isOpen =
-    (location.pathname === route && !navigation.location) ||
-    (navigation.location && navigation.location.pathname === route)
+    (location.pathname.endsWith(route) && !navigation.location) ||
+    (navigation.location && navigation.location.pathname.endsWith(route))
 
   return (
     <ListItem disablePadding>
@@ -92,6 +93,8 @@ function ViewLink({ to = '', label, children }) {
   const toPathname = to.split('?')[0]
   const navPathname = navigation.location && navigation.location.pathname
   const locPathname = location.pathname
+  console.log('locpathname', locPathname)
+  console.log('topath', toPathname)
   const toParams = new URLSearchParams(to.split('?')[1] || 'v=')
 
   const navParams = new URLSearchParams(
@@ -103,8 +106,9 @@ function ViewLink({ to = '', label, children }) {
   const navView = navParams.get('v')
   const locView = locParams.get('v')
 
-  const isNavTarget = navPathname === toPathname && toView === navView
-  const isCurrentLocation = toPathname === locPathname && toView === locView
+  const isNavTarget = navPathname?.endsWith(toPathname) && toView === navView
+  const isCurrentLocation =
+    locPathname.endsWith(toPathname) && toView === locView
 
   return (
     <ListItem

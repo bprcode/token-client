@@ -68,7 +68,7 @@ function NavSection() {
     >
       <List disablePadding>
         {catalog.data && (
-          <TopNavLink route="/catalog">
+          <TopNavLink route="catalog">
             <HomeIcon sx={{ mr: 1 }} />
             All Calendars
           </TopNavLink>
@@ -78,7 +78,7 @@ function NavSection() {
           if (c.isDeleting || c.etag === 'creating') return
           return (
             <CalendarFolder
-              route={`/calendars/${c.calendar_id}`}
+              route={`calendars/${c.calendar_id}`}
               key={key}
               title={c.summary}
             />
