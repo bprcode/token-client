@@ -382,8 +382,8 @@ export function EventPane({
       </Box>
     )
     if (!isSqueezed) {
-      const minDuration = isComfy ? 120 : 150
-      details = duration > minDuration && (
+      const minDuration = 120
+      details = duration >= minDuration && (
         <div className="brief-details">
           {shorthandInterval.split('–')[0]}
           <wbr />

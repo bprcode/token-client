@@ -103,17 +103,17 @@ function mockDayEvents(day) {
 
   const isWeekday = day.day() !== 0 && day.day() !== 6
   const isWorkday = isWeekday ? p(.95) : p(.05)
-  const workStart = p(.90) ? day.add(8, 'hours')
+  let workStart = p(.90) ? day.add(8, 'hours')
   : p(.50) ? day.add(7, 'hours') : day.add(9, 'hours')
 
   // debug -- sometimes hitting off-times
-  const eventStartMinute = Math.floor(Math.random() * 23 *15) * 4
+  const eventStartMinute = Math.floor(Math.random() * 23 *4) * 15
   const eventDuration = Math.min(
     240,
     Math.max(45, Math.ceil(Math.random() * (24 * 60 - eventStartMinute)))
   )
 
-  if(p(0.05)) { 
+  if(isWeekday ? p(0.05) : p(0.2)) { 
     return events
   }
 
@@ -128,22 +128,18 @@ function mockDayEvents(day) {
     }
     events.push(createEventObject({
       startTime: workStart,
-      endTime: workStart.add(4, 'hours'),
-      summary: 'Work',
-    }))
-    events.push(createEventObject({
-      startTime: workStart.add(4, 'hours'),
-      endTime: workStart.add(5, 'hours'),
-      summary: 'Lunch',
-    }))
-    events.push(createEventObject({
-      startTime: workStart.add(5, 'hours'),
       endTime: workEnd,
       summary: 'Work',
     }))
+    // events.push(createEventObject({
+    //   startTime: workStart.add(4, 'hours'),
+    //   endTime: workStart.add(5, 'hours'),
+    //   summary: 'Lunch',
+    //   colorId: '#d46239',
+    // }))
     if(p(0.7)) {
       events.push(createEventObject({
-        startTime: workEnd.add(1, 'hours'),
+        startTime: workEnd.add(p(0.7) ? 1 : 0, 'hours'),
         endTime: workEnd.add(pickRandom([2,3,4]), 'hours'),
         summary: pickRandom(['Social', 'Study', 'Exercise'])
       }))
