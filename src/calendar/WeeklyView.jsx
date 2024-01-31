@@ -205,8 +205,7 @@ function handlePointerDown(
   colorizerTheme,
   setGhostWeekColor,
   updateDragCreation,
-  events,
-  updateDragMove
+  events
 ) {
   touchRef.current.lastTouchBehavior = action
 
@@ -224,11 +223,12 @@ function handlePointerDown(
     updateTouchBounds(e)
     setShowGhost('creating')
 
+    const yBounds = touchRef.current.bounds.y[touchRef.current.initialDayOfWeek]
+
     // discretize and round down interval to start of hour:
-    const yFraction =
-      (e.pageY - touchRef.current.bounds.top) /
-      (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
-    const flooredHour = 24 * (yFraction - (yFraction % (1 / 24)))
+    const yFraction = (e.pageY - yBounds.top) / (yBounds.bottom - yBounds.top)
+    const flooredHour =
+      yBounds.dayLength * (yFraction - (yFraction % (1 / yBounds.dayLength)))
 
     const selections = {
       type: document.querySelector('.type-field input').value,
@@ -251,10 +251,8 @@ function handlePointerDown(
       initialLeft: e.pageX - touchRef.current.bounds.containerLeft,
       initialTop: e.pageY - window.scrollY,
       flooredY:
-        touchRef.current.bounds.top +
-        (flooredHour *
-          (touchRef.current.bounds.bottom - touchRef.current.bounds.top)) /
-          24,
+        yBounds.top +
+        (flooredHour * (yBounds.bottom - yBounds.top)) / yBounds.dayLength,
 
       width:
         Math.round(touchRef.current.bounds.containerWidth / 7) -
@@ -408,14 +406,16 @@ function WeekBody({
       )
     }
 
-    function snapMinute(pageY) {
+    function snapMinute(dayOfWeek, pageY) {
+      const yBounds = touchRef.current.bounds.y[dayOfWeek]
+
       // Constrain the drag action to its parent bounds
       const top = Math.min(
         // Bottom bound:
-        touchRef.current.bounds.bottom - touchRef.current.height,
+        yBounds.bottom - touchRef.current.height,
         Math.max(
           // Top bound:
-          touchRef.current.bounds.top,
+          yBounds.top,
           // Current relative position:
           pageY +
             window.scrollY -
@@ -427,12 +427,15 @@ function WeekBody({
       const yFraction =
         (top +
           1 - // +1 fixes slight inaccuracy when scrolled:
-          touchRef.current.bounds.top) /
-        (touchRef.current.bounds.bottom - touchRef.current.bounds.top)
+          yBounds.top) /
+        (yBounds.bottom - yBounds.top)
 
       // Snap to the closest 15-minute increment:
       return Math.round(
-        (yFraction - (yFraction % (1 / (24 * 4)))) * 24 * 4 * 15
+        (yFraction - (yFraction % (1 / (yBounds.dayLength * 4)))) *
+          yBounds.dayLength *
+          4 *
+          15
       )
     }
 
@@ -470,10 +473,21 @@ function WeekBody({
         initialPageX: e.pageX,
         initialPageY: e.pageY,
         bounds: {
+          y: [...innerSections].map((s, i) => {
+            const startOfDay = startOfWeek.add(i, 'days').startOf('day')
+            const endOfDay = startOfWeek.add(i, 'days').endOf('day')
+            const dayLength = Math.round(
+              endOfDay.diff(startOfDay) / (1000 * 60 * 60)
+            )
+            const rect = s.getBoundingClientRect()
+            return {
+              top: rect.top + window.scrollY,
+              bottom: rect.bottom + window.scrollY,
+              dayLength,
+            }
+          }),
           left: firstDayBounds.left + window.scrollX,
-          top: lastDayBounds.top + window.scrollY,
           right: lastDayBounds.right + window.scrollX,
-          bottom: lastDayBounds.bottom + window.scrollY,
           containerLeft: container.left + window.scrollX,
           containerWidth: container.width,
           containerTop: container.top + window.scrollY,
@@ -481,13 +495,20 @@ function WeekBody({
         startElement: ghostElementRef.current.querySelector('.start-element'),
         endElement: ghostElementRef.current.querySelector('.end-element'),
       })
+      touchRef.current.initialDayOfWeek = snapDay(e.pageX)
     }
 
     function updateDragCreation(pageX, pageY) {
       ghostElementRef.current.style.visibility = 'visible'
+      const dayOfWeek = snapDay(pageX)
+      const activeDay = startOfWeek.add(dayOfWeek, 'days').startOf('day')
+      const yBounds = touchRef.current.bounds.y[dayOfWeek]
 
-      const pressedMinute = snapMinute(touchRef.current.flooredY)
-      const draggedMinute = snapMinute(pageY)
+      const pressedMinute = snapMinute(
+        touchRef.current.initialPageX,
+        touchRef.current.flooredY
+      )
+      const draggedMinute = snapMinute(dayOfWeek, pageY)
 
       const lowMinute = Math.min(pressedMinute, draggedMinute)
       const highMinute = Math.max(pressedMinute, draggedMinute)
@@ -516,14 +537,14 @@ function WeekBody({
 
       ghostElementRef.current.style.left = snapLeft(leftmost) + 'px'
       ghostElementRef.current.style.top =
-        touchRef.current.bounds.top +
-        (startMinute / (24 * 4 * 15)) *
-          (touchRef.current.bounds.bottom - touchRef.current.bounds.top) +
+        yBounds.top +
+        (startMinute / (yBounds.dayLength * 4 * 15)) *
+          (yBounds.bottom - yBounds.top) +
         'px'
 
       ghostElementRef.current.style.height =
-        ((finalMinute - startMinute) / (24 * 4 * 15)) *
-          (touchRef.current.bounds.bottom - touchRef.current.bounds.top) +
+        ((finalMinute - startMinute) / (yBounds.dayLength * 4 * 15)) *
+          (yBounds.bottom - yBounds.top) +
         'px'
 
       ghostElementRef.current.style.width =
@@ -573,11 +594,11 @@ function WeekBody({
       touchRef.current.creationStartMinute = startMinute
       touchRef.current.creationFinalMinute = finalMinute
 
-      const formattedStart = startOfWeek
+      const formattedStart = activeDay
         .add(startMinute, 'minutes')
         .format('h:mma')
         .replace('m', '')
-      const formattedEnd = startOfWeek
+      const formattedEnd = activeDay
         .add(finalMinute, 'minutes')
         .format('h:mma')
         .replace('m', '')
@@ -597,7 +618,10 @@ function WeekBody({
     }
 
     function updateDragMove(pageX, pageY) {
-      const snappedMinute = snapMinute(pageY)
+      const dayOfWeek = snapDay(pageX)
+
+      const snappedMinute = snapMinute(dayOfWeek, pageY)
+      const yBounds = touchRef.current.bounds.y[dayOfWeek]
 
       clearSelection(touchRef)
       ghostElementRef.current.style.visibility = 'visible'
@@ -606,16 +630,17 @@ function WeekBody({
       // Use the snapped values to place the element
       ghostElementRef.current.style.left = snapLeft(pageX) + 'px'
       ghostElementRef.current.style.top =
-        touchRef.current.bounds.top +
-        (snappedMinute / (24 * 4 * 15)) *
-          (touchRef.current.bounds.bottom - touchRef.current.bounds.top) +
+        yBounds.top +
+        (snappedMinute / (yBounds.dayLength * 4 * 15)) *
+          (yBounds.bottom - yBounds.top) +
         'px'
 
-      const formattedStart = startOfWeek
+      const activeDay = startOfWeek.add(dayOfWeek, 'days').startOf('day')
+      const formattedStart = activeDay
         .add(snappedMinute, 'minutes')
         .format('h:mma')
         .replace('m', '')
-      const formattedEnd = startOfWeek
+      const formattedEnd = activeDay
         .add(
           snappedMinute +
             touchRef.current.event.endTime.diff(
@@ -764,8 +789,8 @@ function WeekBody({
               touchRef.current.eventPane.style.filter = ''
             }
             if (touchRef.current.event) {
-              const snappedMinute = snapMinute(e.pageY)
               const snappedDay = snapDay(e.pageX)
+              const snappedMinute = snapMinute(snappedDay, e.pageY)
               const snappedStart = startOfWeek
                 .add(snappedDay, 'days')
                 .add(snappedMinute, 'minutes')
