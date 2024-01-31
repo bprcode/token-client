@@ -74,7 +74,7 @@ export function SectionedInterval({
     let utcOffset = t.utcOffset()
     while (t.isBefore(final)) {
       const newOffset = t.utcOffset()
-      const DSTchange = newOffset - utcOffset
+      const dstChange = newOffset - utcOffset
       utcOffset = newOffset
 
       j++
@@ -88,11 +88,11 @@ export function SectionedInterval({
             height: stepPercentage + '%',
             width: '100%',
             color: '#fff4',
-            backgroundColor: DSTchange ? '#840' : gradualShades(j),
+            backgroundColor: dstChange ? '#840' : gradualShades(j),
           }}
         >
-          {DSTchange ? (
-            DSTchange < 0 ? (
+          {dstChange ? (
+            dstChange < 0 ? (
               'End DST'
             ) : (
               'Start DST'

@@ -121,13 +121,18 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
   )
 })
 
-function WeekdayBox({ day, displayHeight, weekEvents }) {
+function WeekdayBox({ day, displayHeightPx, weekEvents }) {
   // Reconstruct day object from string to avoid broken referential integrity:
   const dayString = day.toString()
 
   return useMemo(() => {
     console.time(`🛤️ WeekdayBox memoizing for: ${dayString}`)
     const day = dayjs(dayString)
+    const dstLength = Math.round(
+      day.endOf('day').diff(day.startOf('day')) / (1000 * 60 * 60)
+    )
+
+    const dstHeight = Math.round((displayHeightPx * dstLength) / 24) + 'px'
 
     const assembled = (
       <HoverableBox
@@ -158,7 +163,7 @@ function WeekdayBox({ day, displayHeight, weekEvents }) {
           final={day.endOf('day')}
           step={[1, 'hour']}
           outsideHeight="100%"
-          insideHeight={displayHeight}
+          insideHeight={dstHeight}
           innerLeftPadding={innerLeftPadding}
           innerRightPadding={innerRightPadding}
           labelEvery={6}
@@ -168,7 +173,7 @@ function WeekdayBox({ day, displayHeight, weekEvents }) {
           <DailyBreakdown
             date={day}
             events={weekEvents}
-            style={{ height: displayHeight }}
+            style={{ height: dstHeight }}
             labels="brief"
           />
         </SectionedInterval>
@@ -177,7 +182,7 @@ function WeekdayBox({ day, displayHeight, weekEvents }) {
 
     console.timeEnd(`🛤️ WeekdayBox memoizing for: ${dayString}`)
     return assembled
-  }, [displayHeight, dayString, weekEvents])
+  }, [displayHeightPx, dayString, weekEvents])
 }
 
 function clearSelection(touchRef) {
@@ -350,7 +355,7 @@ function WeekBody({
   const needMobileBar = useMobileBarCheck()
   const logger = useLogger()
   const benchStart = performance.now()
-  const displayHeight = '544px'
+  const displayHeightPx = 544
 
   const ghostElementRef = useRef(null)
 
@@ -889,7 +894,7 @@ function WeekBody({
               touchRef={touchRef}
               onExpand={onExpand}
               day={day}
-              displayHeight={displayHeight}
+              displayHeightPx={displayHeightPx}
               weekEvents={filteredEvents}
             />
           ))}
