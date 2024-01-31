@@ -25,6 +25,8 @@ export function SectionedInterval({
   action,
   header,
 }) {
+  //debug
+  labelEvery = 1
   const isNarrow = useNarrowCheck()
   const logger = useLogger()
 
@@ -59,14 +61,22 @@ export function SectionedInterval({
   }, [logger])
 
   const canFitTimes = useMediaQuery('(min-width: 400px)')
+  const timeFormat = canFitTimes ? 'h:mm A' : 'h A'
+
   const sections = useMemo(() => {
+    console.log('sectioning', initial.format(), 'to', final.format())
     const sections = []
     let t = initial
     const t1 = initial.add(...step)
     const stepPercentage = (100 * t1.diff(initial)) / final.diff(initial)
     let n = 0
     let j = -1
+    let utcOffset = t.utcOffset()
     while (t.isBefore(final)) {
+      const newOffset = t.utcOffset()
+      const DSTchange = newOffset - utcOffset
+      utcOffset = newOffset
+
       j++
       sections.push(
         <div
@@ -78,29 +88,38 @@ export function SectionedInterval({
             height: stepPercentage + '%',
             width: '100%',
             color: '#fff4',
-            backgroundColor: gradualShades(j),
+            backgroundColor: DSTchange ? '#840' : gradualShades(j),
           }}
         >
-          <Box
-            sx={{
-              display: j % labelEvery ? 'none' : 'inline',
-              paddingLeft: ['1px','0.25rem'],
-              fontSize: '0.875em',
-            }}
-          >
-            {canFitTimes ? t.format('h:mm A') : t.format('h A')}
-          </Box>
+          {DSTchange ? (
+            DSTchange < 0 ? (
+              'End DST'
+            ) : (
+              'Start DST'
+            )
+          ) : (
+            <Box
+              sx={{
+                display: j % labelEvery ? 'none' : 'inline',
+                paddingLeft: ['1px', '0.25rem'],
+                fontSize: '0.875em',
+              }}
+            >
+              {t.format(timeFormat)}
+            </Box>
+          )}
         </div>
       )
+
       t = t.add(...step)
       n++
     }
     return sections
-  }, [initial, final, step, labelEvery, canFitTimes])
+  }, [initial, final, step, labelEvery, timeFormat])
 
   return (
     <div
-    ref={outerRef}
+      ref={outerRef}
       className="section-scroll"
       style={{
         width: '100%',

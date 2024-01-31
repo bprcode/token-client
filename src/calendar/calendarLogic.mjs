@@ -109,14 +109,8 @@ function mockDayEvents(day) {
     ? day.add(7, 'hours')
     : day.add(9, 'hours')
 
-  // debug -- need to fix ending times
-  const eventStartMinute = Math.floor(Math.random() * 23 * 4) * 15
-  const eventDuration = Math.min(
-    240,
-    Math.max(45, Math.ceil(Math.random() * (24 * 60 - eventStartMinute)))
-  )
-
-  if (isWeekday ? p(0.05) : p(0.2)) {
+  // Chance for empty day:
+  if (isWeekday ? p(0.05) : day.day === 6 ? p(0.2) : p(0.4)) {
     return events
   }
 
@@ -144,8 +138,8 @@ function mockDayEvents(day) {
       )
     } else if (p(0.3)) {
       // Before-work activity
-      const beforeHours = pickRandom([1,2,2])
-      const endGap = beforeHours - pickRandom([Math.min(0,beforeHours-1),0])
+      const beforeHours = pickRandom([1, 2, 3])
+      const endGap = beforeHours - pickRandom([Math.min(0, beforeHours - 1), 0])
       events.push(
         createEventObject({
           startTime: workStart.subtract(beforeHours, 'hours'),
@@ -184,13 +178,35 @@ function mockDayEvents(day) {
         })
       )
     }
-  } else {
-    const event = createEventObject({
-      startTime: day.add(eventStartMinute, 'minutes'),
-      endTime: day.add(eventStartMinute + eventDuration, 'minutes'),
-      summary: pickRandom(['Social', 'Exercise', 'Study']),
-    })
-    events.push(event)
+  }
+  if (!isWorkday) {
+    let startTime = day.add(pickRandom([5, 6, 7, 8, 9]), 'hours')
+    let last = startTime.add(pickRandom([1, 2, 3]), 'hours')
+    let summary = pickRandom(['Exercise', 'Study'])
+
+    events.push(createEventObject({ startTime, endTime: last, summary }))
+
+    let pEvening = 0.8
+    if (p(0.7)) {
+      startTime = last.add(pickRandom([0, 1, 2, 3, 4]), 'hours')
+      last = startTime.add(pickRandom([1, 2, 3]), 'hours')
+      summary = pickRandom(['Social', 'Appointment'])
+
+      events.push(createEventObject({ startTime, endTime: last, summary }))
+      pEvening = 0.5
+    }
+
+    if(p(pEvening)) {
+      const evening = day.add(17, 'hours')
+      if(evening.isAfter(last)) {
+        startTime = evening.add(pickRandom([0,1,2,3]), 'hours')
+      } else {
+        startTime = last.add(1, 'hours')        
+      }
+      last = startTime.add(pickRandom([2,3,4]), 'hours')
+      summary = 'Social'
+      events.push(createEventObject({startTime, endTime: last, summary}))
+    }
   }
 
   return events
