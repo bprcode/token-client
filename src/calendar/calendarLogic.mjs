@@ -65,7 +65,7 @@ export function createSampleCalendar({ summary }) {
     .join('')
   return {
     // text
-    id: String(btoa((Math.random() * 1e6).toFixed())),
+    id: String(Math.round(Math.random()*89999999)+10000000),
     // text
     etag: etag,
     // text
@@ -308,7 +308,7 @@ export function createEventObject({
     .join('')
   return {
     // text
-    id: id ?? String(btoa((Math.random() * 1e6).toFixed())),
+    id: id ?? String(Math.round(Math.random()*89999999)+10000000),
     // text
     etag: etag,
     // RFC3339-compatible datetime

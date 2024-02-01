@@ -64,7 +64,6 @@ export function SectionedInterval({
   const timeFormat = canFitTimes ? 'h:mm A' : 'h A'
 
   const sections = useMemo(() => {
-    console.log('sectioning', initial.format(), 'to', final.format())
     const sections = []
     let t = initial
     const t1 = initial.add(...step)

@@ -500,12 +500,14 @@ function WeekBody({
 
     function updateDragCreation(pageX, pageY) {
       ghostElementRef.current.style.visibility = 'visible'
+
       const dayOfWeek = snapDay(pageX)
       const activeDay = startOfWeek.add(dayOfWeek, 'days').startOf('day')
       const yBounds = touchRef.current.bounds.y[dayOfWeek]
+      
 
       const pressedMinute = snapMinute(
-        touchRef.current.initialPageX,
+        snapDay(touchRef.current.initialPageX),
         touchRef.current.flooredY
       )
       const draggedMinute = snapMinute(dayOfWeek, pageY)
