@@ -111,9 +111,9 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
       }}
     >
       <div style={{ display: isCreating ? 'none' : 'block' }}>
-        <span className="start-element"></span>
+        <span className="move-start-element"></span>
         <wbr />–<wbr />
-        <span className="end-element" />
+        <span className="move-end-element" />
       </div>
 
       <GhostWeek show={isCreating ? true : false} />
@@ -238,6 +238,7 @@ function handlePointerDown(
 
     const creationColor = selections.color ?? resolveColor(selections.type)
 
+    console.log([...ghostElementRef.current.querySelectorAll('.start-element')])
     Object.assign(touchRef.current, {
       isDragCreating: true,
       creatingDayCount: 0,
@@ -492,8 +493,10 @@ function WeekBody({
           containerWidth: container.width,
           containerTop: container.top + window.scrollY,
         },
-        startElement: ghostElementRef.current.querySelector('.start-element'),
-        endElement: ghostElementRef.current.querySelector('.end-element'),
+        startElement: ghostElementRef.current.querySelector(
+          '.move-start-element'
+        ),
+        endElement: ghostElementRef.current.querySelector('.move-end-element'),
       })
       touchRef.current.initialDayOfWeek = snapDay(e.pageX)
     }
@@ -504,7 +507,6 @@ function WeekBody({
       const dayOfWeek = snapDay(pageX)
       const activeDay = startOfWeek.add(dayOfWeek, 'days').startOf('day')
       const yBounds = touchRef.current.bounds.y[dayOfWeek]
-      
 
       const pressedMinute = snapMinute(
         snapDay(touchRef.current.initialPageX),
@@ -596,26 +598,31 @@ function WeekBody({
       touchRef.current.creationStartMinute = startMinute
       touchRef.current.creationFinalMinute = finalMinute
 
-      const formattedStart = activeDay
-        .add(startMinute, 'minutes')
-        .format('h:mma')
-        .replace('m', '')
-      const formattedEnd = activeDay
-        .add(finalMinute, 'minutes')
-        .format('h:mma')
-        .replace('m', '')
-
       const isLongEnough = finalMinute - startMinute > 90
-      const startLabel = isLongEnough
-        ? formattedStart
-        : finalMinute - startMinute + 'm'
-      const endLabel = isLongEnough ? '–' + formattedEnd : ''
 
-      for (const e of touchRef.current.startLabels) {
-        e.textContent = startLabel
+      for (let i = 0; i < touchRef.current.startLabels.length; i++) {
+        const relativeDay = touchRef.current.creationStartDay + i
+
+        const content = isLongEnough
+          ? startOfWeek
+              .add(relativeDay, 'days')
+              .add(startMinute, 'minutes')
+              .format('h:mma')
+          : finalMinute - startMinute + 'm'
+
+        touchRef.current.startLabels[i].textContent = content
       }
-      for (const e of touchRef.current.endLabels) {
-        e.textContent = endLabel
+      for (let i = 0; i < touchRef.current.endLabels.length; i++) {
+        const relativeDay = touchRef.current.creationStartDay + i
+        const content = isLongEnough
+          ? '–' +
+            startOfWeek
+              .add(relativeDay, 'days')
+              .add(finalMinute, 'minutes')
+              .format('h:mma')
+          : ''
+
+        touchRef.current.endLabels[i].textContent = content
       }
     }
 
