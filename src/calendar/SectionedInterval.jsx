@@ -25,8 +25,6 @@ export function SectionedInterval({
   action,
   header,
 }) {
-  //debug
-  labelEvery = 1
   const isNarrow = useNarrowCheck()
   const logger = useLogger()
 
@@ -70,6 +68,7 @@ export function SectionedInterval({
     const stepPercentage = (100 * t1.diff(initial)) / final.diff(initial)
     let n = 0
     let j = -1
+    let labelStep = -1
     let utcOffset = t.utcOffset()
     while (t.isBefore(final)) {
       const newOffset = t.utcOffset()
@@ -77,6 +76,11 @@ export function SectionedInterval({
       utcOffset = newOffset
 
       j++
+      labelStep++
+      if(dstChange) {
+        labelStep += dstChange > 0 ? 1 : -1
+      }
+
       sections.push(
         <div
           key={sections.length}
@@ -99,7 +103,7 @@ export function SectionedInterval({
           ) : (
             <Box
               sx={{
-                display: j % labelEvery ? 'none' : 'inline',
+                display: labelStep % labelEvery ? 'none' : 'inline',
                 paddingLeft: ['1px', '0.25rem'],
                 fontSize: '0.875em',
               }}
