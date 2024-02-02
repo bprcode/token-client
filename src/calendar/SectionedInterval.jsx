@@ -59,6 +59,7 @@ export function SectionedInterval({
   }, [logger])
 
   const canFitTimes = useMediaQuery('(min-width: 400px)')
+  const canFitDst = useMediaQuery('(min-width: 600px)')
   const timeFormat = canFitTimes ? 'h:mm A' : 'h A'
 
   const sections = useMemo(() => {
@@ -77,7 +78,7 @@ export function SectionedInterval({
 
       j++
       labelStep++
-      if(dstChange) {
+      if (dstChange) {
         labelStep += dstChange > 0 ? 1 : -1
       }
 
@@ -95,11 +96,20 @@ export function SectionedInterval({
           }}
         >
           {dstChange ? (
-            dstChange < 0 ? (
-              'End DST'
-            ) : (
-              'Start DST'
-            )
+            <Box
+              sx={{
+                paddingLeft: ['1px', '0.25rem'],
+                fontSize: '0.875em',
+              }}
+            >
+              {dstChange < 0
+                ? canFitDst
+                  ? 'End DST'
+                  : '-DST'
+                : canFitDst
+                ? 'Start DST'
+                : '+DST'}
+            </Box>
           ) : (
             <Box
               sx={{
@@ -118,7 +128,7 @@ export function SectionedInterval({
       n++
     }
     return sections
-  }, [initial, final, step, labelEvery, timeFormat])
+  }, [initial, final, step, labelEvery, timeFormat, canFitDst])
 
   return (
     <div
