@@ -43,7 +43,7 @@ export function DailyView({
   canUndo,
   date,
 }) {
-  console.log('%cDailyView rendered with date=', 'color: #f0c', date)
+  // console.log('%cDailyView rendered with date=', 'color: #f0c', date)
 
   const [shouldDismount, dismount] = useReducer(() => true, false)
   const { data: events } = useViewQuery()
@@ -271,9 +271,13 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
   const initialY = event.clientY - outputBounds.top
 
   // initialize
+  const dayLength = Math.round(
+    date.endOf('day').diff(date.startOf('day')) / (1000 * 60 * 60)
+  )
   let initialTime = startOfDay
     .add(
-      (24 * 60 * (event.clientY - outputBounds.top)) / outputBounds.height,
+      (dayLength * 60 * (event.clientY - outputBounds.top)) /
+        outputBounds.height,
       'minutes'
     )
     .startOf('hour')
@@ -322,7 +326,7 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
   }
 
   function lowMinuteFromPosition(y) {
-    return Math.floor((24 * 60 * y) / outputBounds.height / 15) * 15
+    return Math.floor((dayLength * 60 * y) / outputBounds.height / 15) * 15
   }
 
   // Bypass re-renders for this interaction, as they result in sluggish
@@ -344,14 +348,15 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
 
       const initialMinute = lowMinuteFromPosition(lowY)
       const finalMinute =
-        Math.ceil((24 * 60 * hiY) / outputBounds.height / 15) * 15
+        Math.ceil((dayLength * 60 * hiY) / outputBounds.height / 15) * 15
 
       initialTime = startOfDay.add(initialMinute, 'minutes')
       finalTime = startOfDay.add(finalMinute, 'minutes')
       uiBoxHeader.textContent = shorthandInterval(initialTime, finalTime)
 
-      const snappedStartY = (initialMinute / (24 * 60)) * outputBounds.height
-      const snappedEndY = (finalMinute / (24 * 60)) * outputBounds.height
+      const snappedStartY =
+        (initialMinute / (dayLength * 60)) * outputBounds.height
+      const snappedEndY = (finalMinute / (dayLength * 60)) * outputBounds.height
 
       uiBox.style.left = left + 'px'
       uiBox.style.top = snappedStartY + 'px'
