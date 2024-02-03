@@ -26,11 +26,8 @@ const noop = () => {}
 function snap15Minute(time, steps) {
   if (steps === 0) return time
 
-  const m = time.minute()
-  const floor = time.minute(m - (m % 15))
-
-  const offset = steps < 0 && m % 15 !== 0 ? steps + 1 : steps
-  return time.minute(floor.minute() + offset * 15)
+  const s = time.minute() % 15
+  return time.add(steps * 15 - s, 'minutes')
 }
 
 const selectableStyles = {
@@ -262,7 +259,6 @@ export function EventPane({
   const theme = useTheme()
   const isSelectable = label === 'detailed'
   const isSqueezed = useMediaQuery('(max-width: 428px)')
-  // const isComfy = useMediaQuery('(min-width: 1092px)')
 
   const logger = useLogger()
 
@@ -286,7 +282,7 @@ export function EventPane({
   const fragmentEnd = overflowAfter ? final : event.endTime
 
   const topOffset = fragmentStart.diff(initial)
-  const windowLength = fragmentEnd.diff(fragmentStart)
+  const paneLength = fragmentEnd.diff(fragmentStart)
   const intervalSize = final.diff(initial)
 
   // Calculated CSS properties:
@@ -294,23 +290,25 @@ export function EventPane({
     position: 'absolute',
     top: (topOffset / intervalSize) * 100 + '%',
     left: indent * (100 / columns) + '%',
-    height: (windowLength / intervalSize) * 100 + '%',
+    height: (paneLength / intervalSize) * 100 + '%',
     width: 100 / columns + '%',
   }
 
   // Perform bounds checking on drag actions:
   const earliestStart = initial
   const latestStart = sliding
-    ? final.subtract(windowLength / 1000 / 60, 'minutes')
+    ? final.subtract(paneLength / 1000 / 60, 'minutes')
     : fragmentEnd.subtract(15, 'minutes')
 
   const earliestEnd = sliding
-    ? initial.add(windowLength / 1000 / 60, 'minutes')
+    ? initial.add(paneLength / 1000 / 60, 'minutes')
     : fragmentStart.add(15, 'minutes')
   const latestEnd = final
 
   let boundedStart = snap15Minute(fragmentStart, ghostTop)
-  let boundedEnd = snap15Minute(fragmentEnd, ghostBottom)
+  let boundedEnd = sliding
+    ? boundedStart.add(duration, 'minutes')
+    : snap15Minute(fragmentEnd, ghostBottom)
 
   if (boundedStart.isBefore(earliestStart)) boundedStart = earliestStart
   if (boundedStart.isAfter(latestStart)) boundedStart = latestStart
@@ -530,6 +528,8 @@ export function EventPane({
               (move.clientY - touchStart.y) ** 2
           )
 
+          // Begin actual drag interaction
+          // once the pointer has moved a meaningful distance
           if (distance / tickSize > 1) {
             logger('starting second move...')
             setSliding(true)
