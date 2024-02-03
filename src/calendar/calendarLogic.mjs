@@ -133,7 +133,6 @@ function mockDayEvents(day) {
           startTime: appointmentStart,
           endTime: appointmentEnd,
           summary: 'Appointment',
-          description: 'See Dr. Alice',
         })
       )
     } else if (p(0.3)) {
@@ -164,7 +163,6 @@ function mockDayEvents(day) {
           startTime: meetingStart,
           endTime: meetingStart.add(pickRandom([1, 2]), 'hours'),
           summary: 'Meeting',
-          description: 'Meeting with corporate',
         })
       )
     }
@@ -264,7 +262,7 @@ function mockDescription(summary) {
   const workDescriptions = [
     'In-office',
     'WFH',
-    'Meeting with corporate',
+    'Post results for client',
     'Consult with team',
   ]
 
@@ -273,6 +271,20 @@ function mockDescription(summary) {
     'Compile lab data',
     'Review journal publications',
     'Revise thesis materials',
+  ]
+
+  const appointmentDescriptions = [
+    'Check-up with Dr. Alice',
+    'Visit Dr. Nguyen',
+    'Attend open house',
+    'Online conference',
+  ]
+
+  const meetingDescriptions = [
+    'Meeting with corporate',
+    'Progress update',
+    'Stakeholder check-in',
+    'Discuss renovations',
   ]
 
   const otherDescriptions = [
@@ -289,6 +301,10 @@ function mockDescription(summary) {
       return pickRandom(workDescriptions)
     case 'Study':
       return pickRandom(studyDescriptions)
+    case 'Appointment':
+      return pickRandom(appointmentDescriptions)
+    case 'Meeting':
+      return pickRandom(meetingDescriptions)
     default:
       return pickRandom(otherDescriptions)
   }
