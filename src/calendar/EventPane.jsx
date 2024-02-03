@@ -488,8 +488,9 @@ export function EventPane({
     if (e.buttons !== 1) return
 
     let tickSize = 24
+    const inner = e.currentTarget.closest('.section-inner')
+
     try {
-      const inner = e.currentTarget.closest('.section-inner')
 
       if (!inner) {
         throw Error('EventPane ancestor DOM mismatch')
@@ -507,13 +508,20 @@ export function EventPane({
 
     switch (action) {
       case 'delete':
+        {
         if (isFading) {
           return
         }
 
         setIsFading(true)
+        const shadow = inner.querySelector(`.accent-shadow-${(event.stableKey || event.id).replace(' ', '-')}`)
+        if(shadow) {
+          shadow.style.opacity = 0
+        }
+        
         setTimeout(() => onDelete(event.id), 350)
         return
+      }
       case 'edit':
         logger('setting capture')
         // N.B. working around this Safari setPointerCapture bug:
