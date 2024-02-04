@@ -38,6 +38,12 @@ const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
 const snapGapPixels = 4
 const ghostFadeInColor = '#0000'
+// const log = console.log.bind(console)
+// const time = console.time.bind(console)
+// const timeEnd = console.timeEnd.bind(console)
+const log = () => {}
+const time = () => {}
+const timeEnd = () => {}
 
 function GhostDay() {
   return (
@@ -126,7 +132,7 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
   const dayString = day.toString()
 
   return useMemo(() => {
-    console.time(`🛤️ WeekdayBox memoizing for: ${dayString}`)
+    time(`🛤️ WeekdayBox memoizing for: ${dayString}`)
     const day = dayjs(dayString)
     const dstLength = Math.round(
       day.endOf('day').diff(day.startOf('day')) / (1000 * 60 * 60)
@@ -180,7 +186,7 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
       </HoverableBox>
     )
 
-    console.timeEnd(`🛤️ WeekdayBox memoizing for: ${dayString}`)
+    timeEnd(`🛤️ WeekdayBox memoizing for: ${dayString}`)
     return assembled
   }, [displayHeightPx, dayString, weekEvents])
 }
@@ -209,7 +215,7 @@ function handlePointerDown(
 ) {
   touchRef.current.lastTouchBehavior = action
 
-  console.log(
+  log(
     '🔽 handling pointerDown with action=',
     action,
     'from element',
@@ -238,7 +244,7 @@ function handlePointerDown(
 
     const creationColor = selections.color ?? resolveColor(selections.type)
 
-    console.log([...ghostElementRef.current.querySelectorAll('.start-element')])
+    log([...ghostElementRef.current.querySelectorAll('.start-element')])
     Object.assign(touchRef.current, {
       isDragCreating: true,
       creatingDayCount: 0,
@@ -291,7 +297,7 @@ function handlePointerDown(
   // allow the individual day container to handle it.
   if (!ep) {
     const wb = e.target.closest('.weekday-box')
-    console.log(wb)
+    log(wb)
     if (touchRef.current.brightenBox) {
       touchRef.current.brightenBox.classList.remove('brighten')
     }
@@ -362,7 +368,7 @@ function WeekBody({
   const action = useContext(ActionContext)
 
   const filteredEvents = useMemo(() => {
-    console.log('⌛ memoizing filtered events')
+    log('⌛ memoizing filtered events')
     const date = dayjs(dateString)
     const startOfWeek = date.startOf('week')
     const endOfWeek = date.endOf('week')
@@ -699,7 +705,7 @@ function WeekBody({
               }
 
               if (touchRef.current.lastTouchBehavior !== 'create') {
-                console.log('🪂 expanding')
+                log('🪂 expanding')
                 const dayBox = e.target.closest('.weekday-box')
                 return onExpand(dayjs(dayBox.dataset.day))
               }
@@ -708,7 +714,7 @@ function WeekBody({
             }
 
             if (action === 'delete') {
-              console.log('✖️ handling delete ...')
+              log('✖️ handling delete ...')
               const ep = e.target.closest('.event-pane')
               if (ep) {
                 const shadow = ep.parentNode.querySelector(
@@ -731,7 +737,7 @@ function WeekBody({
             }
           }}
           onPointerUp={e => {
-            console.log('⬆️ handling pointer up')
+            log('⬆️ handling pointer up')
             setShowGhost(false)
             setGhostWeekColor(ghostFadeInColor)
             touchRef.current.isDragCreating = false
@@ -945,7 +951,7 @@ function WeekBody({
       </div>
     )
 
-    console.log('weekly body assembled in: ', Date.now() - memoBenchStart, 'ms')
+    log('weekly body assembled in: ', Date.now() - memoBenchStart, 'ms')
     return assembledContents
   }, [
     dateString,
@@ -1020,7 +1026,7 @@ export function WeeklyView({
   onUpdate,
   onDelete,
 }) {
-  console.log('%cWeeklyView rendering', 'color:greenyellow')
+  log('%cWeeklyView rendering', 'color:greenyellow')
   const [shouldDismount, dismount] = useReducer(() => true, false)
   const [editingEvent, setEditingEvent] = useState(false)
   const [skipDate, setSkipDate] = useState(null)
@@ -1071,7 +1077,7 @@ export function WeeklyView({
   }, [onBack])
 
   if (shouldDismount) {
-    console.log('%cdismounting weekly view', 'color:yellowgreen')
+    log('%cdismounting weekly view', 'color:yellowgreen')
     return <></>
   }
 

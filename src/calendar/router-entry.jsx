@@ -94,7 +94,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="/demo/catalog" />,
+            element: <Navigate to="/demo/calendars/demo-calendar" />,
           },
           {
             path: 'catalog',
@@ -119,7 +119,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <RouterProvider router={router} />
         </CssBaseline>
       </ThemeProvider>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   </React.StrictMode>
 )

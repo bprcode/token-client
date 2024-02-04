@@ -18,6 +18,7 @@ import { CalendarFolder } from '../CalendarFolder'
 import { HeartbeatPanel } from '../HeartbeatPanel'
 import { TopNavLink } from '../TopNavLink'
 import { useCatalogQuery } from './routes/Catalog'
+import { DemoContext } from './DemoContext.mjs'
 
 function SkeletonFolders() {
   const skeletons = Array(5).fill(0)
@@ -52,6 +53,7 @@ function SkeletonFolders() {
 }
 
 function NavSection() {
+  const isDemo = useContext(DemoContext)
   const catalog = useCatalogQuery()
 
   if (catalog.isPending) {
@@ -67,7 +69,7 @@ function NavSection() {
       }}
     >
       <List disablePadding>
-        {catalog.data && (
+        {catalog.data && !isDemo && (
           <TopNavLink route="catalog">
             <HomeIcon sx={{ mr: 1 }} />
             All Calendars

@@ -1,4 +1,4 @@
-import { Alert, AlertTitle, Box, Button, Slide } from '@mui/material'
+import { Alert, AlertTitle, Box, Button } from '@mui/material'
 import {
   useNavigate,
   useParams,
@@ -183,9 +183,9 @@ function serveFromCache(cache, from, to) {
   return cache.filter(e => isOverlap(e.startTime, e.endTime, from, to))
 }
 
-const viewReconcileLog = () => {}
-// const viewReconcileLog = (...args) =>
-//   console.log(`%cView Reconciler>`, `color:darkslategray`, ...args)
+// const viewReconcileLog = () => {}
+const viewReconcileLog = (...args) =>
+  console.log(`%cView Reconciler>`, `color:darkslategray`, ...args)
 
 export function useViewQuery() {
   const { id } = useParams()
@@ -357,7 +357,6 @@ export function CalendarContents({ calendarId }) {
   })
 
   const [searchParams, setSearchParams] = useSearchParams()
-  const searchParamString = searchParams.toString()
 
   const view = searchParams.get('v') || 'month'
   const date = searchParams.has('d')

@@ -281,8 +281,7 @@ const autosaveLogger = (...args) =>
   console.log('%cEvent Autosaver>', 'color:orange', ...args)
 
 export function EventSyncMonitor({ id }) {
-  const { mutate, isPending } =
-    useEventBatchMutation(id)
+  const { mutate, isPending } = useEventBatchMutation(id)
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', id],
     enabled: false,
@@ -290,8 +289,10 @@ export function EventSyncMonitor({ id }) {
   const touched = touchList(primaryCacheData?.stored)
   const getEventTouchList = useCallback(
     queryClient =>
-      touchList(queryClient.getQueryData(['primary cache', id]).stored)
-      .slice(0,50), // heed server size limit in enormous edge case
+      touchList(queryClient.getQueryData(['primary cache', id]).stored).slice(
+        0,
+        50
+      ), // heed server size limit in enormous edge case
     [id]
   )
 

@@ -213,6 +213,7 @@ function mockDayEvents(day) {
 export function mockEventFetch(resource) {
   mockEventFetch.days ??= new Map()
   console.log('mocking fetch request for:', resource)
+  console.log('mockEventFetch.days was', mockEventFetch.days)
 
   const decoded = decodeURIComponent(resource)
   const searchParams = new URLSearchParams(decoded.split('?')[1])
@@ -226,7 +227,6 @@ export function mockEventFetch(resource) {
     const dayString = d.format('D-MM-YYYY')
     if (!mockEventFetch.days.has(dayString)) {
       const mocked = mockDayEvents(d)
-      console.log('mapping mocked', mocked)
       const json = mocked.map(e => ({
         event_id: e.id,
         etag: e.etag,
