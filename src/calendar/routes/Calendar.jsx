@@ -12,7 +12,7 @@ import { DailyView } from '../DailyView'
 import { goFetch } from '../../go-fetch'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { reconcile } from '../reconcile.mjs'
-import { updateCacheData } from '../cacheTracker.mjs'
+import { reviveSessionCache, updateCacheData } from '../cacheTracker.mjs'
 import { LoadingHourglass } from '../LoadingHourglass'
 import { ViewContainer } from '../ViewContainer'
 import { ViewHeader } from '../ViewHeader'
@@ -291,7 +291,11 @@ export const loader =
         return
       }
 
-      return { stored: [], sortedViews: [] }
+      const session = reviveSessionCache(params.id)
+      if(session) {
+        console.log('revived prior session:', session)
+      }
+      return reviveSessionCache(params.id) ?? { stored: [], sortedViews: [] }
     })
     // const data = createSampleWeek(dayjs())
     return 'not yet implemented'

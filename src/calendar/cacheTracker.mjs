@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { debounce } from '../debounce.mjs'
 import { touchList } from './reconcile.mjs'
+import dayjs from 'dayjs'
 
 const lastUpdated = new Map()
 const listeners = new Set()
@@ -30,9 +31,40 @@ const tidyUp = (queryClient, id) => () => {
   }
 }
 
+export function reviveSessionCache(id) {
+  try {
+
+    const last = JSON.parse(sessionStorage['primary cache ' + id])
+
+    // Revive the stringified objects:
+    last.sortedViews = last.sortedViews.map(v => ({
+      ...v,
+      from: dayjs(v.from),
+      to: dayjs(v.to),
+    }))
+    last.stored = last.stored.map(e => ({
+      ...e,
+      created: dayjs(e.created),
+      startTime: dayjs(e.startTime),
+      endTime: dayjs(e.endTime),
+    }))
+  
+    console.log('debug placeholder / session cache was:', last)
+    return last
+    
+  } catch (e) {
+    console.log('no session cache /', e.message)
+    return null
+  }
+}
+
 export function updateCacheData(queryClient, id, updater) {
   const now = Date.now()
   queryClient.setQueryData(['primary cache', id], updater)
+  // debug -- good point for storage?
+  console.log('%cSet primary cache to:', 'color:#0fa', queryClient.getQueryData(['primary cache', id]))
+  sessionStorage['primary cache ' + id] = JSON.stringify(queryClient.getQueryData(['primary cache', id]))
+
   lastUpdated.set(id, now)
 
   const arrayed = readList()
@@ -42,6 +74,8 @@ export function updateCacheData(queryClient, id, updater) {
   }
 
   debounce(`expire cache ${id}`, tidyUp(queryClient, id), tidyTime)()
+  // debug
+  console.log('updateCacheData ran in ', Date.now() - now, 'ms')
 }
 
 export function useCacheList() {
