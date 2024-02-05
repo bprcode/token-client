@@ -64,6 +64,7 @@ export function HeartbeatPanel({ children }) {
       }),
     onSuccess: data => {
       console.log('logout mutation yielded ', data)
+      sessionStorage.clear()
       queryClient.cancelQueries()
       queryClient.setQueryData(['heartbeat'], null)
       navigate('/login')

@@ -204,6 +204,7 @@ function BriefPane({
             display: 'flex',
             flexDirection: 'column',
             transition: 'background-color 0.2s ease-out',
+            fontSize: '0.75em',
 
             paddingTop: ['0px', '2px'],
           }}
@@ -448,7 +449,7 @@ export function EventPane({
         {event.description && (
           <>
             <div>{event.description}</div>
-            <div>
+            {/* <div>
               ID: <span style={{ color: '#8ef' }}>{event.id}</span>
             </div>
             <div>
@@ -466,17 +467,15 @@ export function EventPane({
                 <span style={{ color: '#fe0' }}>{event.originTag}</span>
               </div>
             )}
-
             {event.isDeleting && (
               <div style={{ color: '#f00' }}>isDeleting</div>
             )}
-
             {event.stableKey && (
               <div>
                 stableKey:{' '}
                 <span style={{ color: '#08a' }}>{event.stableKey}</span>
               </div>
-            )}
+            )} */}
           </>
         )}
       </div>
@@ -691,6 +690,7 @@ export function EventPane({
               display: 'flex',
               flexDirection: 'column',
               transition: 'background-color 0.2s ease-out',
+              fontSize: '0.75em',
             }}
           >
             {/* pane header */}

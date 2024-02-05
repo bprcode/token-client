@@ -446,7 +446,6 @@ export const baseStyles = new Map([
     'Work',
     {
       accentColor: '#5283a8',
-      fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#5283a8' },
       }),
@@ -456,7 +455,6 @@ export const baseStyles = new Map([
     'Meeting',
     {
       accentColor: '#45b06f',
-      fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#45b06f' },
       }),
@@ -466,7 +464,6 @@ export const baseStyles = new Map([
     'Study',
     {
       accentColor: '#e9a47d',
-      fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#e9a47d' },
       }),
@@ -476,7 +473,6 @@ export const baseStyles = new Map([
     'Appointment',
     {
       accentColor: '#d46239',
-      fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#d46239' },
       }),
@@ -486,7 +482,6 @@ export const baseStyles = new Map([
     'Exercise',
     {
       accentColor: '#d0518e',
-      fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#d0518e' },
       }),
@@ -496,7 +491,6 @@ export const baseStyles = new Map([
     'Social',
     {
       accentColor: '#635ac9',
-      fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#d0518e' },
       }),
@@ -507,7 +501,6 @@ export const baseStyles = new Map([
     'Default',
     {
       accentColor: '#aac',
-      fontSize: '0.75em',
       augmentedColors: defaultTheme.palette.augmentColor({
         color: { main: '#aac' },
       }),
