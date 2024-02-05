@@ -258,6 +258,7 @@ export function useViewQuery() {
         log: viewReconcileLog,
         isDuplicate: isEventDuplicate,
         allowRevival: true,
+        chillTime: isDemo ? Infinity : undefined,
       })
 
       // Add the new data into the primary cache.

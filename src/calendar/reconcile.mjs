@@ -60,9 +60,10 @@ export function reconcile({
   isDuplicate = noop,
   log = noop,
   allowRevival = false,
+  chillTime = 60 * 1000,
 }) {
   console.time(`${tag} reconciled`)
-  const chillTime = 60 * 1000
+  console.log('using chill time:', chillTime)
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
   const localMap = new Map(localData.map(data => [data[key], data]))
