@@ -20,6 +20,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
 import { navigateTo } from './NavigationControl.jsx'
 import { DemoContext } from './DemoContext.mjs'
+import { TutorialDialog, enableTutorial } from './TutorialDialog.jsx'
 
 const globalExpiryHandler = error => {
   console.log('🌍 global cache error handler:', error.status, error.message)
@@ -82,6 +83,7 @@ const router = createBrowserRouter([
   },
   {
     path: 'demo',
+    loader: enableTutorial,
     element: (
       <DemoContext.Provider value={true}>
         <Root />
@@ -95,10 +97,6 @@ const router = createBrowserRouter([
           {
             index: true,
             element: <Navigate to="/demo/calendars/demo-calendar" />,
-          },
-          {
-            path: 'catalog',
-            element: <Catalog />,
           },
           {
             path: 'calendars/:id',

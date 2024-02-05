@@ -183,9 +183,9 @@ function serveFromCache(cache, from, to) {
   return cache.filter(e => isOverlap(e.startTime, e.endTime, from, to))
 }
 
-// const viewReconcileLog = () => {}
-const viewReconcileLog = (...args) =>
-  console.log(`%cView Reconciler>`, `color:darkslategray`, ...args)
+const viewReconcileLog = () => {}
+// const viewReconcileLog = (...args) =>
+//   console.log(`%cView Reconciler>`, `color:darkslategray`, ...args)
 
 export function useViewQuery() {
   const { id } = useParams()

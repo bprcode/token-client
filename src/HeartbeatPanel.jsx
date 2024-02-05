@@ -15,7 +15,7 @@ import { goFetch } from './go-fetch'
 import { DemoContext } from './calendar/DemoContext.mjs'
 import { demoUser } from './calendar/calendarLogic.mjs'
 import { useContext } from 'react'
-
+import { TutorialDialog } from './calendar/TutorialDialog'
 
 export function useHeartbeatQuery() {
   const isDemo = useContext(DemoContext)
@@ -121,6 +121,7 @@ export function HeartbeatPanel({ children }) {
   return (
     <>
       {heartbeatResult.data && children}
+      {/* <TutorialDialog /> */}
       <List disablePadding sx={{ mt: 'auto' }}>
         <ListItem
           sx={{
@@ -141,6 +142,7 @@ export function HeartbeatPanel({ children }) {
             {interactions}
           </Box>
         </ListItem>
+        <TutorialDialog position="over" tip="tutorial mode" />
       </List>
     </>
   )

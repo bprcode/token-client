@@ -33,6 +33,7 @@ import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { CreationPicker } from './CreationPicker'
 import dayjs from 'dayjs'
 import { EventEditor } from './EventEditor'
+import { TutorialDialog } from './TutorialDialog'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
@@ -1098,6 +1099,7 @@ export function WeeklyView({
   const rv = (
     <ActionContext.Provider value={action}>
       <ViewContainer containOverflow={!isNarrow}>
+        <TutorialDialog tip="drag and drop" />
         <ViewHeader gradient={null}>
           <IconButton
             aria-label="back to monthly view"

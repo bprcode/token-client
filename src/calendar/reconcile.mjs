@@ -63,7 +63,6 @@ export function reconcile({
   chillTime = 60 * 1000,
 }) {
   console.time(`${tag} reconciled`)
-  console.log('using chill time:', chillTime)
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
   const localMap = new Map(localData.map(data => [data[key], data]))
