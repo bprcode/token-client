@@ -3,6 +3,7 @@ import { useReducer } from 'react'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { reviveEvents } from './cacheTracker.mjs'
 
 dayjs.extend(relativeTime)
 dayjs.extend(utc)
@@ -65,7 +66,7 @@ export function createSampleCalendar({ summary }) {
     .join('')
   return {
     // text
-    id: String(Math.round(Math.random()*89999999)+10000000),
+    id: String(Math.round(Math.random() * 89999999) + 10000000),
     // text
     etag: etag,
     // text
@@ -194,16 +195,16 @@ function mockDayEvents(day) {
       pEvening = 0.5
     }
 
-    if(p(pEvening)) {
+    if (p(pEvening)) {
       const evening = day.add(17, 'hours')
-      if(evening.isAfter(last)) {
-        startTime = evening.add(pickRandom([0,1,2,3]), 'hours')
+      if (evening.isAfter(last)) {
+        startTime = evening.add(pickRandom([0, 1, 2, 3]), 'hours')
       } else {
-        startTime = last.add(1, 'hours')        
+        startTime = last.add(1, 'hours')
       }
-      last = startTime.add(pickRandom([2,3,4]), 'hours')
+      last = startTime.add(pickRandom([2, 3, 4]), 'hours')
       summary = 'Social'
-      events.push(createEventObject({startTime, endTime: last, summary}))
+      events.push(createEventObject({ startTime, endTime: last, summary }))
     }
   }
 
@@ -211,9 +212,9 @@ function mockDayEvents(day) {
 }
 
 export function mockEventFetch(resource) {
-  mockEventFetch.days ??= new Map()
+  mockEventFetch.days ??= reviveDemoSession()
+
   console.log('mocking fetch request for:', resource)
-  console.log('mockEventFetch.days was', mockEventFetch.days)
 
   const decoded = decodeURIComponent(resource)
   const searchParams = new URLSearchParams(decoded.split('?')[1])
@@ -244,7 +245,22 @@ export function mockEventFetch(resource) {
     result.push(...mockEventFetch.days.get(dayString))
     d = d.add(1, 'day')
   }
+
+  // Persist the mocked data:
+  sessionStorage['mock demo map'] = JSON.stringify([...mockEventFetch.days])
   return result
+}
+
+function reviveDemoSession() {
+  try {
+    const stored = sessionStorage['mock demo map']
+    const parsed = JSON.parse(stored)
+
+    const revived = parsed.map(([key, list]) => [key, reviveEvents(list)])
+    return new Map(revived)
+  } catch (e) {
+    return new Map()
+  }
 }
 
 function pickRandom(arr) {
@@ -324,7 +340,7 @@ export function createEventObject({
     .join('')
   return {
     // text
-    id: id ?? String(Math.round(Math.random()*89999999)+10000000),
+    id: id ?? String(Math.round(Math.random() * 89999999) + 10000000),
     // text
     etag: etag,
     // RFC3339-compatible datetime

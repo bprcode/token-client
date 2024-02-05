@@ -31,27 +31,29 @@ const tidyUp = (queryClient, id) => () => {
   }
 }
 
+export function reviveEvents(stringified) {
+  return stringified.map(e => ({
+    ...e,
+    created: dayjs(e.created),
+    startTime: dayjs(e.startTime),
+    endTime: dayjs(e.endTime),
+  }))
+}
+
 export function reviveSessionCache(id) {
   try {
-
     const last = JSON.parse(sessionStorage['primary cache ' + id])
 
-    // Revive the stringified objects:
     last.sortedViews = last.sortedViews.map(v => ({
       ...v,
       from: dayjs(v.from),
       to: dayjs(v.to),
     }))
-    last.stored = last.stored.map(e => ({
-      ...e,
-      created: dayjs(e.created),
-      startTime: dayjs(e.startTime),
-      endTime: dayjs(e.endTime),
-    }))
-  
-    console.log('debug placeholder / session cache was:', last)
+
+    last.stored = reviveEvents(last.stored)
+
+    console.log('session cache was:', last)
     return last
-    
   } catch (e) {
     console.log('no session cache /', e.message)
     return null
@@ -61,9 +63,15 @@ export function reviveSessionCache(id) {
 export function updateCacheData(queryClient, id, updater) {
   const now = Date.now()
   queryClient.setQueryData(['primary cache', id], updater)
-  // debug -- good point for storage?
-  console.log('%cSet primary cache to:', 'color:#0fa', queryClient.getQueryData(['primary cache', id]))
-  sessionStorage['primary cache ' + id] = JSON.stringify(queryClient.getQueryData(['primary cache', id]))
+
+  console.log(
+    '%cSet primary cache to:',
+    'color:#0fa',
+    queryClient.getQueryData(['primary cache', id])
+  )
+  sessionStorage['primary cache ' + id] = JSON.stringify(
+    queryClient.getQueryData(['primary cache', id])
+  )
 
   lastUpdated.set(id, now)
 
@@ -74,7 +82,7 @@ export function updateCacheData(queryClient, id, updater) {
   }
 
   debounce(`expire cache ${id}`, tidyUp(queryClient, id), tidyTime)()
-  // debug
+
   console.log('updateCacheData ran in ', Date.now() - now, 'ms')
 }
 

@@ -1,10 +1,10 @@
 import { Alert, AlertTitle, Box, Button } from '@mui/material'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
-  useNavigate,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom'
-import { isOverlap, mockEventFetch, reduceConcurrentEvents } from '../calendarLogic.mjs'
+  isOverlap,
+  mockEventFetch,
+  reduceConcurrentEvents,
+} from '../calendarLogic.mjs'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
@@ -283,8 +283,9 @@ export function useViewQuery() {
 
 export const loader =
   queryClient =>
-  ({ request, params }) => {
-    console.log('🐜 debug / no cache local/route loader implemented.')
+  ({ params }) => {
+    // Initialize the cache for this calendar:
+
     updateCacheData(queryClient, params.id, data => {
       if (data) {
         log(`🌙 primary cache already initialized`)
@@ -292,19 +293,13 @@ export const loader =
       }
 
       const session = reviveSessionCache(params.id)
-      if(session) {
+      if (session) {
         console.log('revived prior session:', session)
       }
       return reviveSessionCache(params.id) ?? { stored: [], sortedViews: [] }
     })
-    // const data = createSampleWeek(dayjs())
-    return 'not yet implemented'
-    // return new Promise(k => {
-    //   setTimeout(() => {
-    //     queryClient.setQueryData(['calendars', params.id], () => data)
-    //     k(null)
-    //   }, Math.random() * 1000 + 500)
-    // })
+
+    return 'unused'
   }
 
 export function resetViewsToCache(queryClient, calendarId) {

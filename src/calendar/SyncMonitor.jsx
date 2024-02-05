@@ -26,7 +26,9 @@ export default function SyncMonitor() {
         <>
           <CatalogSyncMonitor />
           {cacheList.map(c => (
+            c !== 'demo-calendar' ?
             <EventSyncMonitor key={c} id={c} />
+            : null
           ))}
         </>
       )}
