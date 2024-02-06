@@ -216,12 +216,7 @@ function handlePointerDown(
 ) {
   touchRef.current.lastTouchBehavior = action
 
-  log(
-    '🔽 handling pointerDown with action=',
-    action,
-    'from element',
-    e.target
-  )
+  log('🔽 handling pointerDown with action=', action, 'from element', e.target)
 
   // Handle create pointer down
   if (action === 'create') {
@@ -1100,12 +1095,20 @@ export function WeeklyView({
   const rv = (
     <ActionContext.Provider value={action}>
       <ViewContainer containOverflow={!isNarrow}>
-        <TutorialDialog key={tutorialTip} tip={tutorialTip} 
-        position={tutorialTip === 'create' ? 'right' : 'under'}
-        onClose={() => {
-          setTutorialTip('create')
-        }
-          }/>
+        <TutorialDialog
+          key={tutorialTip}
+          tip={tutorialTip}
+          position={
+            tutorialTip === 'create'
+              ? isNarrow
+                ? 'bottom-right'
+                : 'right'
+              : 'under'
+          }
+          onClose={() => {
+            setTutorialTip('create')
+          }}
+        />
         <ViewHeader gradient={null}>
           <IconButton
             aria-label="back to monthly view"

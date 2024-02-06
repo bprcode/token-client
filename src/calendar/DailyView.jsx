@@ -126,7 +126,6 @@ export function DailyView({
         }}
       >
         {needMobileBar && <MobileBar>{actionButtons}</MobileBar>}
-        <TutorialDialog tip="daily tabs" />
 
         <SectionedInterval
           initial={startOfDay}
@@ -165,7 +164,6 @@ export function DailyView({
             />
           }
         >
-
           <DailyBreakdown
             date={date}
             events={events}
@@ -383,6 +381,7 @@ const DayHeader = forwardRef(function DayHeader(
 
   return (
     <ViewHeader ref={ref} gradient={null}>
+      <TutorialDialog tip="daily tabs" sx={{ ml: 0 }} />
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"

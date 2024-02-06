@@ -12,7 +12,7 @@ import {
   TextField,
   Paper,
 } from '@mui/material'
-import { useCallback, useMemo, useReducer, useRef } from 'react'
+import { useCallback, useContext, useMemo, useReducer, useRef } from 'react'
 import dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
@@ -24,6 +24,8 @@ import { ViewHeader } from './ViewHeader'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { useNarrowCheck } from './LayoutContext.mjs'
+import { DemoContext } from './DemoContext.mjs'
+import { TutorialDialog } from './TutorialDialog'
 
 const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
@@ -361,6 +363,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
   const isNarrow = useNarrowCheck()
+  const isDemo = useContext(DemoContext)
 
   const onExpandCallback = useCallback(
     d => {
@@ -379,6 +382,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
   return (
     <ViewContainer>
       <MonthHeader date={date} onChange={onChange} />
+
       <Stack
         direction="column"
         sx={{
@@ -424,6 +428,9 @@ export function MonthlyView({ date, onChange, onExpand }) {
         >
           <GridHeader />
           <MonthGrid date={date} events={events} />
+          {isDemo && isNarrow && (
+            <TutorialDialog position="right" tip="demo mode" />
+          )}
         </Box>
       </Stack>
     </ViewContainer>

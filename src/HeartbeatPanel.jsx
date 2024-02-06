@@ -16,6 +16,7 @@ import { DemoContext } from './calendar/DemoContext.mjs'
 import { demoUser } from './calendar/calendarLogic.mjs'
 import { useContext } from 'react'
 import { TutorialDialog } from './calendar/TutorialDialog'
+import { useNarrowCheck } from './calendar/LayoutContext.mjs'
 
 export function useHeartbeatQuery() {
   const isDemo = useContext(DemoContext)
@@ -35,6 +36,7 @@ export function HeartbeatPanel({ children }) {
   const navigate = useNavigate()
   const theme = useTheme()
   const isDemo = useContext(DemoContext)
+  const isNarrow = useNarrowCheck()
 
   const loginMutation = useMutation({
     mutationFn: () => {
@@ -148,7 +150,7 @@ export function HeartbeatPanel({ children }) {
             {interactions}
           </Box>
         </ListItem>
-        {isDemo && <TutorialDialog position="over" tip="demo mode" />}
+        {isDemo && !isNarrow && <TutorialDialog position="over" tip="demo mode" />}
       </List>
     </>
   )
