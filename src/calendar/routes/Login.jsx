@@ -15,16 +15,19 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useTheme } from '@emotion/react'
 import { resumeOrNavigateTo } from '../NavigationControl.jsx'
+import { useSearchParams } from 'react-router-dom'
 
 function LoginSection() {
   const spacing = 4
 
   const theme = useTheme()
-  const [email, setEmail] = useState('Demo Account')
-  const [displayName, setDisplayName] = useState(' ')
+  const [searchParams] = useSearchParams()
+  const isRegisterLink = searchParams.get('a') === 'register'
+  const [email, setEmail] = useState(isRegisterLink ? '' : 'Demo Account')
+  const [displayName, setDisplayName] = useState(isRegisterLink ? '' : ' ')
   const [invalid, setInvalid] = useState(false)
-  const [password, setPassword] = useState('123')
-  const [showRegister, setShowRegister] = useState(false)
+  const [password, setPassword] = useState(isRegisterLink ? '' : '123')
+  const [showRegister, setShowRegister] = useState(isRegisterLink)
 
   const signInRef = useRef(null)
   const sending = false
@@ -129,7 +132,7 @@ function LoginSection() {
             />
             <Collapse in={showRegister}>
               <TextField
-                sx={{ mb: spacing, width: '100%' }}
+                sx={{ mb: 8, width: '100%' }}
                 label="display name"
                 variant="standard"
                 disabled={sending}

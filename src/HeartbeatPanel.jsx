@@ -34,6 +34,7 @@ export function HeartbeatPanel({ children }) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const theme = useTheme()
+  const isDemo = useContext(DemoContext)
 
   const loginMutation = useMutation({
     mutationFn: () => {
@@ -79,7 +80,7 @@ export function HeartbeatPanel({ children }) {
     </Box>
   )
   if (!loginMutation.isPending && !logoutMutation.isPending) {
-    interactions = heartbeatResult.data?.name ? (
+    interactions = heartbeatResult.data?.email ? (
       <>
         <Avatar
           sx={{
@@ -90,7 +91,7 @@ export function HeartbeatPanel({ children }) {
             height: '30px',
           }}
         >
-          {heartbeatResult.data.name[0]}
+          {(heartbeatResult.data.name || heartbeatResult.data.email)[0]}
         </Avatar>
         <span
           style={{
@@ -101,7 +102,7 @@ export function HeartbeatPanel({ children }) {
             verticalAlign: 'center',
           }}
         >
-          {heartbeatResult.data.name}
+          {heartbeatResult.data.name || heartbeatResult.data.email}
         </span>
         <IconButton onClick={logoutMutation.mutate}>
           <LogoutIcon />
@@ -110,10 +111,15 @@ export function HeartbeatPanel({ children }) {
     ) : (
       <Button
         variant="contained"
-        onClick={loginMutation.mutate}
-        sx={{ mx: 'auto' }}
+        onClick={() => {
+          queryClient.invalidateQueries({
+            queryKey: ['heartbeat'],
+          })
+          navigate('/demo')
+        }}
+        sx={{ mx: 'auto', backgroundColor: '#8dffb4', }}
       >
-        Login Sample User
+        Try a quick demo
       </Button>
     )
   }
@@ -121,7 +127,7 @@ export function HeartbeatPanel({ children }) {
   return (
     <>
       {heartbeatResult.data && children}
-      {/* <TutorialDialog /> */}
+      
       <List disablePadding sx={{ mt: 'auto' }}>
         <ListItem
           sx={{
@@ -142,7 +148,7 @@ export function HeartbeatPanel({ children }) {
             {interactions}
           </Box>
         </ListItem>
-        <TutorialDialog position="over" tip="tutorial mode" />
+        {isDemo && <TutorialDialog position="over" tip="demo mode" />}
       </List>
     </>
   )
