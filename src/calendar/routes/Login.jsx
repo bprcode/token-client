@@ -16,6 +16,7 @@ import { goFetch } from '../../go-fetch'
 import { useTheme } from '@emotion/react'
 import { resumeOrNavigateTo } from '../NavigationControl.jsx'
 import { useSearchParams } from 'react-router-dom'
+import { enableTutorial } from '../TutorialDialog.jsx'
 
 function LoginSection() {
   const spacing = 4
@@ -68,7 +69,10 @@ function LoginSection() {
         body: { email: email.trim(), password, name: name.trim() },
       })
     },
-    onSuccess: onLoginSuccess,
+    onSuccess: data => {
+      enableTutorial()
+      onLoginSuccess(data)
+    },
     onError: error => {
       if (error.status === 403 || error.status === 409) {
         setInvalid(true)

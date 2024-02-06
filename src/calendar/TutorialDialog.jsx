@@ -17,7 +17,7 @@ const tutorialTips = {
     </>
   ),
   'drag and drop': <>Drag and drop events to easily rearrange your schedule.</>,
-  create: (
+  'drag create': (
     <>
       Select the <AddCircleOutlinedIcon sx={{ verticalAlign: 'bottom' }} />,
       then click and drag on the calendar to schedule a new event.

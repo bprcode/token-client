@@ -34,6 +34,7 @@ import { CreationPicker } from './CreationPicker'
 import dayjs from 'dayjs'
 import { EventEditor } from './EventEditor'
 import { TutorialDialog } from './TutorialDialog'
+import { DemoContext } from './DemoContext.mjs'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
@@ -1023,7 +1024,8 @@ export function WeeklyView({
   onDelete,
 }) {
   log('%cWeeklyView rendering', 'color:greenyellow')
-  const [tutorialTip, setTutorialTip] = useState('drag and drop')
+  const isDemo = useContext(DemoContext)
+  const [tutorialTip, setTutorialTip] = useState(isDemo ? 'drag and drop' : 'drag create')
   const [shouldDismount, dismount] = useReducer(() => true, false)
   const [editingEvent, setEditingEvent] = useState(false)
   const [skipDate, setSkipDate] = useState(null)
@@ -1099,14 +1101,14 @@ export function WeeklyView({
           key={tutorialTip}
           tip={tutorialTip}
           position={
-            tutorialTip === 'create'
+            tutorialTip === 'drag create'
               ? isNarrow
                 ? 'bottom-right'
                 : 'right'
               : 'under'
           }
           onClose={() => {
-            setTutorialTip('create')
+              setTutorialTip(isDemo ? 'drag create' : 'drag and drop')
           }}
         />
         <ViewHeader gradient={null}>
