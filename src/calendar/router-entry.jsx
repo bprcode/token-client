@@ -98,6 +98,11 @@ const router = createBrowserRouter([
             index: true,
             element: <Navigate to="/demo/calendars/demo-calendar" />,
           },
+
+          {
+            path: 'login',
+            element: <Navigate to="/demo/calendars/demo-calendar" />,
+          },
           {
             path: 'calendars/:id',
             element: <Calendar />,

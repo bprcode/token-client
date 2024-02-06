@@ -1,12 +1,14 @@
 import CloseIcon from '@mui/icons-material/Close'
+import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import { useTheme } from '@emotion/react'
 import { Box, IconButton } from '@mui/material'
 import { useState } from 'react'
 
 const tutorialTips = {
-  'demo mode': <>Welcome to <strong>demo mode</strong>. Your changes won't be saved.<br/>Ready for a real account? <a href="../../login?a=register">Sign up</a> today!</>,
-  'drag and drop': 'Drag and drop explanation / Lorem ipsum dolor sit amet consectetur, adipisicing elit. '+'Odio pariatur dolore ad maiores omnis rerum debitis unde nobis, numquam nihil necessitatibus a officia optio quisquam et perferendis error est iure?'
-
+  'demo mode': <>Welcome to <strong>Demo Mode</strong>. Your changes won't be saved.<br/>Ready for a real account? <a href="../../login?a=register">Sign up</a> today!</>,
+  'drag and drop': <>Drag and drop events to easily rearrange your schedule.</>,
+  'create': <>Select the <AddCircleOutlinedIcon sx={{verticalAlign: 'bottom',}} />, then click and drag on the calendar to schedule a new event.<br/>You can schedule a whole week of events at once.</>,
+  'daily tabs': <>Tap an event to show its <strong>resize handles</strong>. Drag the handles to resize the event.</>,
 }
 
 export function enableTutorial() {
@@ -23,9 +25,12 @@ export function enableTutorial() {
   return null
 }
 
-export function TutorialDialog({ position, tip }) {
+const noop = () => {}
+
+export function TutorialDialog({ position, tip, onClose = noop }) {
   const [message, setMessage] = useState(() => sessionStorage[tip] ? tutorialTips[tip] : '')
   const isOver = position === 'over'
+  const isRight = position === 'right'
   const theme = useTheme()
 
   return !message ? (
@@ -38,6 +43,7 @@ export function TutorialDialog({ position, tip }) {
 
         bottom: isOver ? '100%' : undefined,
         top: isOver ? undefined : '5rem',
+        right: isRight ? '1rem' : undefined,
 
         backgroundColor: `#ffcd8d`,
         color: '#000',
@@ -71,6 +77,7 @@ export function TutorialDialog({ position, tip }) {
         onPointerDown={() => {
           setMessage(false)
           sessionStorage.removeItem(tip)
+          onClose()
         }}
       >
         <CloseIcon />

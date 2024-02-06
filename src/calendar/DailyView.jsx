@@ -31,6 +31,7 @@ import { ViewHeader } from './ViewHeader'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { useLogger } from './Logger'
 import { useViewQuery } from './routes/Calendar'
+import { TutorialDialog } from './TutorialDialog'
 
 const sectionStep = [1, 'hour']
 
@@ -125,6 +126,8 @@ export function DailyView({
         }}
       >
         {needMobileBar && <MobileBar>{actionButtons}</MobileBar>}
+        <TutorialDialog tip="daily tabs" />
+
         <SectionedInterval
           initial={startOfDay}
           final={endOfDay}
@@ -162,6 +165,7 @@ export function DailyView({
             />
           }
         >
+
           <DailyBreakdown
             date={date}
             events={events}

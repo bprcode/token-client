@@ -1028,6 +1028,7 @@ export function WeeklyView({
   onDelete,
 }) {
   log('%cWeeklyView rendering', 'color:greenyellow')
+  const [tutorialTip, setTutorialTip] = useState('drag and drop')
   const [shouldDismount, dismount] = useReducer(() => true, false)
   const [editingEvent, setEditingEvent] = useState(false)
   const [skipDate, setSkipDate] = useState(null)
@@ -1099,7 +1100,12 @@ export function WeeklyView({
   const rv = (
     <ActionContext.Provider value={action}>
       <ViewContainer containOverflow={!isNarrow}>
-        <TutorialDialog tip="drag and drop" />
+        <TutorialDialog key={tutorialTip} tip={tutorialTip} 
+        position={tutorialTip === 'create' ? 'right' : 'under'}
+        onClose={() => {
+          setTutorialTip('create')
+        }
+          }/>
         <ViewHeader gradient={null}>
           <IconButton
             aria-label="back to monthly view"
