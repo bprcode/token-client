@@ -83,7 +83,7 @@ const router = createBrowserRouter([
   },
   {
     path: 'demo',
-    loader: enableTutorial,
+    loader: () => enableTutorial(),
     element: (
       <DemoContext.Provider value={true}>
         <Root />

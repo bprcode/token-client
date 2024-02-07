@@ -2,9 +2,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import { useTheme } from '@emotion/react'
 import { Box, IconButton } from '@mui/material'
-import { useContext, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNarrowCheck } from './LayoutContext.mjs'
-import { TutorialContext } from './TutorialContext.mjs'
 
 const tutorialTips = {
   'demo mode': (
@@ -34,15 +33,47 @@ const tutorialTips = {
   ),
 }
 
-export function enableTutorial() {
+let tutorialStages = JSON.parse(sessionStorage['tutorial stages'] || '[]')
+const listeners = new Set()
+
+function onUpdateTutorial() {
+  for (const f of listeners) {
+    f(tutorialStages[0])
+  }
+}
+
+function updateTutorial(update) {
+  console.log('updating tutorial to',update)
+  sessionStorage['tutorial stages'] = JSON.stringify(update)
+  tutorialStages = update
+  onUpdateTutorial()
+}
+
+export function advanceTutorial() {
+  console.log('advancing from', tutorialStages, 'to', tutorialStages.slice(1))
+  updateTutorial(tutorialStages.slice(1))
+}
+
+export function useTutorialStage() {
+  const [stage, setStage] = useState(tutorialStages[0])
+
+  useEffect(() => {
+    listeners.add(setStage)
+
+    return () => {
+      listeners.delete(setStage)
+    }
+  }, [])
+
+  return stage
+}
+
+export function enableTutorial(stages) {
   if (!sessionStorage.tutorialEnabled) {
     console.log('%cenabling tutorial', 'color: yellow')
 
     sessionStorage.tutorialEnabled = true
-
-    for (const tip in tutorialTips) {
-      sessionStorage[tip] = true
-    }
+    updateTutorial(stages || Object.keys(tutorialTips))
   }
 
   return null
@@ -51,12 +82,10 @@ export function enableTutorial() {
 const noop = () => {}
 
 export function TutorialDialog({ position, tip, onClose = noop, sx }) {
-  const [message, setMessage] = useState(() =>
-    sessionStorage[tip] ? tutorialTips[tip] : ''
-  )
-
   const theme = useTheme()
   const isNarrow = useNarrowCheck()
+  const currentStage = useTutorialStage()
+  console.log('%ccomparing','color:orange',tip,'to',currentStage)
 
   let location = {}
   switch (position) {
@@ -84,10 +113,11 @@ export function TutorialDialog({ position, tip, onClose = noop, sx }) {
       }
   }
 
-  return !message ? (
-    <></>
-  ) : (
-    <Box
+  if(currentStage !== tip) {
+    return <></>
+  }
+
+  return <Box
       sx={{
         position: isNarrow ? 'fixed' : 'absolute',
         zIndex: 3,
@@ -124,14 +154,12 @@ export function TutorialDialog({ position, tip, onClose = noop, sx }) {
           mt: -0.5,
         }}
         onPointerDown={() => {
-          setMessage(false)
-          sessionStorage.removeItem(tip)
+          advanceTutorial()
           onClose()
         }}
       >
         <CloseIcon />
       </IconButton>
-      {message}
+      {tutorialTips[tip] || '<Missing tutorial text>'}
     </Box>
-  )
 }

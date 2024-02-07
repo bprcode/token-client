@@ -70,7 +70,7 @@ function LoginSection() {
       })
     },
     onSuccess: data => {
-      enableTutorial()
+      enableTutorial(['drag create', 'drag and drop', 'daily tabs'])
       onLoginSuccess(data)
     },
     onError: error => {
