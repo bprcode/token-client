@@ -34,7 +34,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
 
   const palette = usePalette()
   const [colorPick, setColorPick] = useState(
-    palette.includes(event.colorId) ? event.colorId : palette[0]
+    () => palette.includes(event.colorId) ? event.colorId : palette[0]
   )
   const [colorId, setColorId] = useState(event.colorId)
 
@@ -52,7 +52,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
   }
 
   const [type, setType] = useState(
-    isDefaultStyle(event, eventStyles) ? event.summary : 'Other...'
+    () => isDefaultStyle(event, eventStyles) ? event.summary : 'Other...'
   )
 
   const titleColor = getAugmentedColor(colorId)

@@ -2,8 +2,9 @@ import CloseIcon from '@mui/icons-material/Close'
 import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import { useTheme } from '@emotion/react'
 import { Box, IconButton } from '@mui/material'
-import { useState } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import { useNarrowCheck } from './LayoutContext.mjs'
+import { TutorialContext } from './TutorialContext.mjs'
 
 const tutorialTips = {
   'demo mode': (

@@ -12,7 +12,7 @@ function onStatus() {
 }
 
 export function useFetchStatus() {
-  const [status, setStatus] = useState([...fetches.values()])
+  const [status, setStatus] = useState(() => [...fetches.values()])
 
   useEffect(() => {
     listeners.add(setStatus)

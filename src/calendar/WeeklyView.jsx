@@ -1025,7 +1025,9 @@ export function WeeklyView({
 }) {
   log('%cWeeklyView rendering', 'color:greenyellow')
   const isDemo = useContext(DemoContext)
-  const [tutorialTip, setTutorialTip] = useState(isDemo ? 'drag and drop' : 'drag create')
+  const [tutorialTip, setTutorialTip] = useState(
+    isDemo ? 'drag and drop' : 'drag create'
+  )
   const [shouldDismount, dismount] = useReducer(() => true, false)
   const [editingEvent, setEditingEvent] = useState(false)
   const [skipDate, setSkipDate] = useState(null)
@@ -1108,7 +1110,7 @@ export function WeeklyView({
               : 'under'
           }
           onClose={() => {
-              setTutorialTip(isDemo ? 'drag create' : 'drag and drop')
+            setTutorialTip(isDemo ? 'drag create' : 'drag and drop')
           }}
         />
         <ViewHeader gradient={null}>
