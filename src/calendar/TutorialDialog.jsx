@@ -16,6 +16,7 @@ const tutorialTips = {
       today!
     </>
   ),
+  'expand a week': <>Tap on any week to get started.</>,
   'drag and drop': <>Drag and drop events to easily rearrange your schedule.</>,
   'drag create': (
     <>
@@ -52,6 +53,11 @@ function updateTutorial(update) {
 export function advanceTutorial() {
   console.log('advancing from', tutorialStages, 'to', tutorialStages.slice(1))
   updateTutorial(tutorialStages.slice(1))
+}
+
+export function removeTutorialStage(stage) {
+  updateTutorial(tutorialStages.filter(s => s !== stage))
+  console.log('tutorial stages are now:', tutorialStages)
 }
 
 export function useTutorialStage() {

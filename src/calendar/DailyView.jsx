@@ -160,6 +160,7 @@ export function DailyView({
               onBack={onBackCallback}
               date={date}
               ref={headerRef}
+              eventCount={events.length}
               actionButtons={!needMobileBar && actionButtons}
             />
           }
@@ -371,7 +372,7 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
 }
 
 const DayHeader = forwardRef(function DayHeader(
-  { onBack, date, actionButtons },
+  { onBack, date, actionButtons, eventCount },
   ref
 ) {
   const isTiny = useMediaQuery('(max-width: 350px)')
@@ -381,7 +382,7 @@ const DayHeader = forwardRef(function DayHeader(
 
   return (
     <ViewHeader ref={ref} gradient={null}>
-      <TutorialDialog tip="daily tabs" sx={{ ml: 0 }} />
+      {eventCount > 0 && <TutorialDialog tip="daily tabs" sx={{ ml: 0 }} />}
       <IconButton
         sx={{ mt: 0 }}
         aria-label="back to weekly view"

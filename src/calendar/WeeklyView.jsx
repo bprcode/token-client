@@ -33,7 +33,7 @@ import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { CreationPicker } from './CreationPicker'
 import dayjs from 'dayjs'
 import { EventEditor } from './EventEditor'
-import { TutorialDialog } from './TutorialDialog'
+import { TutorialDialog, advanceTutorial, removeTutorialStage, useTutorialStage } from './TutorialDialog'
 import { DemoContext } from './DemoContext.mjs'
 
 const innerLeftPadding = '0rem'
@@ -704,7 +704,10 @@ function WeekBody({
               if (touchRef.current.lastTouchBehavior !== 'create') {
                 log('🪂 expanding')
                 const dayBox = e.target.closest('.weekday-box')
-                return onExpand(dayjs(dayBox.dataset.day))
+                if(dayBox) {
+
+                  return onExpand(dayjs(dayBox.dataset.day))
+                }
               }
 
               return
@@ -1065,8 +1068,16 @@ export function WeeklyView({
       setShowDrawer(false)
       setAction('edit')
       onCreate(creation)
+      removeTutorialStage('drag create')
     },
     [onCreate]
+  )
+  const onUpdateCallback = useCallback(
+    (...updates) => {
+      removeTutorialStage('drag and drop')
+      onUpdate(...updates)
+    },
+    [onUpdate]
   )
   const onBackCallback = useCallback(() => {
     dismount()
@@ -1145,7 +1156,7 @@ export function WeeklyView({
           {!needMobileBar && <TopDrawer open={showDrawer} />}
         </ViewHeader>
 
-        {/* Optimization to bypass redundant renders on navigation: */}
+        {/* Skip to bypass redundant renders on navigation: */}
         {skipDate?.toString() !== dateString && (
           <WeekBody
             touchRef={touchRef}
@@ -1154,7 +1165,7 @@ export function WeeklyView({
             onCreate={onCreateCallback}
             onEdit={setEditingEvent}
             onExpand={onExpandCallback}
-            onUpdate={onUpdate}
+            onUpdate={onUpdateCallback}
             onDelete={onDelete}
             onHideDrawer={onHideDrawerCallback}
           />

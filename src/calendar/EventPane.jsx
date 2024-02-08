@@ -20,6 +20,7 @@ import {
 import { useContext, useState } from 'react'
 import { ActionContext } from './ActionContext.mjs'
 import { useLogger } from './Logger'
+import { removeTutorialStage } from './TutorialDialog'
 
 const noop = () => {}
 
@@ -908,6 +909,7 @@ function PaneControls({
   intervalSize,
 }) {
   function beginTabDrag() {
+    removeTutorialStage('daily tabs')
     onGhostStart()
     onAdjustTop(0)
     onAdjustBottom(0)

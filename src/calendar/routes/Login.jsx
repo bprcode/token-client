@@ -14,7 +14,7 @@ import { ViewContainer } from '../ViewContainer'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useTheme } from '@emotion/react'
-import { resumeOrNavigateTo } from '../NavigationControl.jsx'
+import { navigateTo, resumeOrNavigateTo } from '../NavigationControl.jsx'
 import { useSearchParams } from 'react-router-dom'
 import { enableTutorial } from '../TutorialDialog.jsx'
 
@@ -70,8 +70,15 @@ function LoginSection() {
       })
     },
     onSuccess: data => {
-      enableTutorial(['drag create', 'drag and drop', 'daily tabs'])
-      onLoginSuccess(data)
+      enableTutorial([
+        'expand a week',
+        'drag create',
+        'drag and drop',
+        'daily tabs',
+      ])
+      queryClient.invalidateQueries({ queryKey: ['catalog'] })
+      queryClient.setQueryData(['heartbeat'], data)
+      navigateTo('/catalog')
     },
     onError: error => {
       if (error.status === 403 || error.status === 409) {

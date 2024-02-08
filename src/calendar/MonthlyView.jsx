@@ -25,7 +25,7 @@ import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { useNarrowCheck } from './LayoutContext.mjs'
 import { DemoContext } from './DemoContext.mjs'
-import { TutorialDialog } from './TutorialDialog'
+import { TutorialDialog, removeTutorialStage } from './TutorialDialog'
 
 const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
@@ -367,6 +367,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
 
   const onExpandCallback = useCallback(
     d => {
+      removeTutorialStage('expand a week')
       dismount()
       onExpand(d)
     },
@@ -382,6 +383,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
   return (
     <ViewContainer>
       <MonthHeader date={date} onChange={onChange} />
+      <TutorialDialog tip="expand a week" />
 
       <Stack
         direction="column"
