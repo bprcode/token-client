@@ -16,7 +16,7 @@ import { goFetch } from '../../go-fetch'
 import { useTheme } from '@emotion/react'
 import { navigateTo, resumeOrNavigateTo } from '../NavigationControl.jsx'
 import { useSearchParams } from 'react-router-dom'
-import { enableTutorial } from '../TutorialDialog.jsx'
+import { enableTutorial, removeTutorialStage, updateTutorial } from '../TutorialDialog.jsx'
 
 function LoginSection() {
   const spacing = 4
@@ -70,12 +70,26 @@ function LoginSection() {
       })
     },
     onSuccess: data => {
+      removeTutorialStage('demo mode')
       enableTutorial([
         'expand a week',
         'drag create',
         'drag and drop',
         'daily tabs',
       ])
+      updateTutorial(tutorial => {
+        // In case the user was mid-demo and decided to register,
+        // swap the order of the tutorial steps to fit a blank calendar:
+        const dragDrop = tutorial.indexOf('drag and drop')
+        const dragCreate = tutorial.indexOf('drag create')
+        if(dragDrop > -1 && dragCreate > -1 && dragDrop < dragCreate) {
+          console.log('swapping tutorial steps')
+          tutorial[dragDrop] = 'drag create'
+          tutorial[dragCreate] = 'drag and drop'
+        }
+        return tutorial
+      })
+
       queryClient.invalidateQueries({ queryKey: ['catalog'] })
       queryClient.setQueryData(['heartbeat'], data)
       navigateTo('/catalog')

@@ -383,7 +383,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
   return (
     <ViewContainer>
       <MonthHeader date={date} onChange={onChange} />
-      <TutorialDialog tip="expand a week" />
+      <TutorialDialog tip="expand a week" position="right" />
 
       <Stack
         direction="column"

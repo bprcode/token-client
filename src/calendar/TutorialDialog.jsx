@@ -43,8 +43,12 @@ function onUpdateTutorial() {
   }
 }
 
-function updateTutorial(update) {
-  console.log('updating tutorial to',update)
+export function updateTutorial(update) {
+  if (typeof update === 'function') {
+    update = update(tutorialStages)
+  }
+
+  console.log('updating tutorial to', update)
   sessionStorage['tutorial stages'] = JSON.stringify(update)
   tutorialStages = update
   onUpdateTutorial()
@@ -91,7 +95,7 @@ export function TutorialDialog({ position, tip, onClose = noop, sx }) {
   const theme = useTheme()
   const isNarrow = useNarrowCheck()
   const currentStage = useTutorialStage()
-  console.log('%ccomparing','color:orange',tip,'to',currentStage)
+  console.log('%ccomparing', 'color:orange', tip, 'to', currentStage)
 
   let location = {}
   switch (position) {
@@ -119,11 +123,12 @@ export function TutorialDialog({ position, tip, onClose = noop, sx }) {
       }
   }
 
-  if(currentStage !== tip) {
+  if (currentStage !== tip) {
     return <></>
   }
 
-  return <Box
+  return (
+    <Box
       sx={{
         position: isNarrow ? 'fixed' : 'absolute',
         zIndex: 3,
@@ -168,4 +173,5 @@ export function TutorialDialog({ position, tip, onClose = noop, sx }) {
       </IconButton>
       {tutorialTips[tip] || '<Missing tutorial text>'}
     </Box>
+  )
 }
