@@ -20,7 +20,6 @@ function onConflict(tag, ...latest) {
       id: lastId++,
       timestamp: Date.now(),
       message: tag + '>> ' + latest.map(a => a.toString()).join(''),
-
     })
 
     if (list.length > maxLength) {
@@ -28,19 +27,22 @@ function onConflict(tag, ...latest) {
     }
 
     conflicts.set(tag, list)
-    console.log(`%csetting conflicts:`,'color:blue',conflicts)
+    console.log(
+      `%csetting conflicts:`,
+      'background-color:blue;color:white',
+      conflicts
+    )
   }
 
   for (const [callback, t] of listeners) {
-    if(t === tag) {
+    if (t === tag) {
       callback([...list])
     }
   }
 }
 
 export function useConflictList(tag = 'default') {
-  const [list, setList] = useState(() => conflicts.get(tag) ?? []
-  )
+  const [list, setList] = useState(() => conflicts.get(tag) ?? [])
 
   useEffect(() => {
     listeners.set(setList, tag)
@@ -67,7 +69,7 @@ export function reconcile({
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
   const localMap = new Map(localData.map(data => [data[key], data]))
-  
+
   const creations = localData.filter(data => data.etag === 'creating')
 
   log('mapified local:', localMap)
@@ -126,7 +128,7 @@ export function reconcile({
         onConflict(tag, 'yielding to remote-delete despite recency 🚭')
         log('yielding to remote-delete despite recency 🚭')
         continue
-      } else if(!serverMap.has(local[key])) {
+      } else if (!serverMap.has(local[key])) {
         log('bypassing yield due to allowRevival 🪧')
       }
 
@@ -164,7 +166,8 @@ export function reconcile({
     }
 
     // etags do not match; yield to the server state.
-    onConflict(tag, 
+    onConflict(
+      tag,
       pre,
       `...etag mismatch (${originTag} / ${remote.etag}). ` +
         `Yielding to server copy.`
@@ -192,7 +195,9 @@ export function reconcile({
         }
       }
 
-      if(skip) { continue }
+      if (skip) {
+        continue
+      }
 
       // Local state was missing a remote record. Add it.
       log('local state was missing ', remote[key], ' -- adding.')

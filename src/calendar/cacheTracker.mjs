@@ -12,7 +12,6 @@ function readList() {
   return [...lastUpdated.keys()]
 }
 
-// todo next: gc
 const tidyUp = (queryClient, id) => () => {
   const now = Date.now()
   const age = now - lastUpdated.get(id)

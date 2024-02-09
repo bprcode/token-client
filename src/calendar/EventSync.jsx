@@ -288,11 +288,16 @@ export function EventSyncMonitor({ id }) {
   })
   const touched = touchList(primaryCacheData?.stored)
   const getEventTouchList = useCallback(
-    queryClient =>
-      touchList(queryClient.getQueryData(['primary cache', id]).stored).slice(
-        0,
-        50
-      ), // heed server size limit in enormous edge case
+    queryClient => {
+      try {
+        return touchList(
+          queryClient.getQueryData(['primary cache', id]).stored
+        ).slice(0, 50) // Slice for server size limit in enormous edge case
+      } catch (e) {
+        // If the cache is unavailable (e.g. cleared), return a blank list.
+        return []
+      }
+    },
     [id]
   )
 
