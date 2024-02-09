@@ -6,7 +6,7 @@ const defaultNav = {
 }
 
 const control = { current: defaultNav }
-const ignoreList = ['/login']
+const ignoreList = ['/login', '/login?a=register',]
 
 let redirectedFrom = ''
 

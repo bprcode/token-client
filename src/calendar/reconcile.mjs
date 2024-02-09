@@ -28,6 +28,7 @@ function onConflict(tag, ...latest) {
     }
 
     conflicts.set(tag, list)
+    console.log(`%csetting conflicts:`,'color:blue',conflicts)
   }
 
   for (const [callback, t] of listeners) {

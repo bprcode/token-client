@@ -69,7 +69,7 @@ export function HeartbeatPanel({ children }) {
       console.log('logout mutation yielded ', data)
       sessionStorage.clear()
       queryClient.cancelQueries()
-      queryClient.setQueryData(['heartbeat'], null)
+      queryClient.clear()
       navigate('/login')
     },
   })

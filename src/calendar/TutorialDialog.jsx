@@ -48,20 +48,17 @@ export function updateTutorial(update) {
     update = update(tutorialStages)
   }
 
-  console.log('updating tutorial to', update)
   sessionStorage['tutorial stages'] = JSON.stringify(update)
   tutorialStages = update
   onUpdateTutorial()
 }
 
 export function advanceTutorial() {
-  console.log('advancing from', tutorialStages, 'to', tutorialStages.slice(1))
   updateTutorial(tutorialStages.slice(1))
 }
 
 export function removeTutorialStage(stage) {
   updateTutorial(tutorialStages.filter(s => s !== stage))
-  console.log('tutorial stages are now:', tutorialStages)
 }
 
 export function useTutorialStage() {
@@ -80,8 +77,6 @@ export function useTutorialStage() {
 
 export function enableTutorial(stages) {
   if (!sessionStorage.tutorialEnabled) {
-    console.log('%cenabling tutorial', 'color: yellow')
-
     sessionStorage.tutorialEnabled = true
     updateTutorial(stages || Object.keys(tutorialTips))
   }
@@ -95,7 +90,6 @@ export function TutorialDialog({ position, tip, onClose = noop, sx }) {
   const theme = useTheme()
   const isNarrow = useNarrowCheck()
   const currentStage = useTutorialStage()
-  console.log('%ccomparing', 'color:orange', tip, 'to', currentStage)
 
   let location = {}
   switch (position) {
