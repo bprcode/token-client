@@ -119,6 +119,7 @@ function LoginSection() {
           ml: 'auto',
           mr: 'auto',
           mt: [2, 6],
+          mb: 4,
           boxShadow: '0.75rem 1.625rem 1.25rem #00081190',
           borderBottom: '1px solid #0009',
           borderRight: '1px solid #0009',
@@ -233,7 +234,7 @@ function LoginSection() {
             mx: 'auto',
           }}
         >
-          Want a tour?
+          <span>Want a tour?</span>
           <Button
             variant="contained"
             onClick={() => {
