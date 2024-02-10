@@ -10,12 +10,12 @@ import {
   CircularProgress,
 } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { goFetch } from './go-fetch'
 import { DemoContext } from './calendar/DemoContext.mjs'
 import { demoUser } from './calendar/calendarLogic.mjs'
 import { useContext } from 'react'
-import { TutorialDialog } from './calendar/TutorialDialog'
+import { TutorialDialog, useTutorialStage } from './calendar/TutorialDialog'
 import { useNarrowCheck } from './calendar/LayoutContext.mjs'
 
 export function useHeartbeatQuery() {
@@ -36,6 +36,7 @@ export function HeartbeatPanel({ children }) {
   const navigate = useNavigate()
   const theme = useTheme()
   const isDemo = useContext(DemoContext)
+  const tutorialStage = useTutorialStage()
   const isNarrow = useNarrowCheck()
 
   const loginMutation = useMutation({
@@ -82,7 +83,7 @@ export function HeartbeatPanel({ children }) {
     </Box>
   )
   if (!loginMutation.isPending && !logoutMutation.isPending) {
-    interactions = heartbeatResult.data?.email ? (
+    interactions = heartbeatResult.data?.email && (
       <>
         <Avatar
           sx={{
@@ -110,19 +111,6 @@ export function HeartbeatPanel({ children }) {
           <LogoutIcon />
         </IconButton>
       </>
-    ) : (
-      <Button
-        variant="contained"
-        onClick={() => {
-          queryClient.invalidateQueries({
-            queryKey: ['heartbeat'],
-          })
-          navigate('/demo')
-        }}
-        sx={{ mx: 'auto', backgroundColor: '#8dffb4', }}
-      >
-        Try a quick demo
-      </Button>
     )
   }
 
@@ -131,10 +119,18 @@ export function HeartbeatPanel({ children }) {
       {heartbeatResult.data && children}
       
       <List disablePadding sx={{ mt: 'auto' }}>
-        {heartbeatResult.data?.name === 'Demo Mode' && <ListItem sx={{
-          backgroundColor: 'red',
-        }}>
-          test
+        {isDemo && tutorialStage !== 'demo mode' && <ListItem sx={{
+            display:'flex',
+            justifyContent: 'center',
+            pb: 2,
+        }}
+        component={Link}
+        to="/login?a=register"
+        >
+          <Button variant="outlined">
+
+          Sign Up
+          </Button>
         </ListItem>}
         <ListItem
           sx={{

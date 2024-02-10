@@ -136,25 +136,10 @@ export default function RouterSidebar({ width = '240px', expand }) {
   const isNarrow = useNarrowCheck()
   const toggleMenu = useContext(ToggleMenuContext)
 
-//   const location = useLocation()
-//   if(location.pathname === '/login'){
-    
-//   return <div style={{
-//     backgroundColor: '#400',
-//     width: '20ch',
-//     display: 'grid',
-//     placeContent: 'center',
-//   }}>
-// <div style={{color: 'yellow'}}>
-
-//     {location.pathname}
-// </div>
-// <div style={{color: '#0af'}}>
-
-//     {location.search}
-// </div>
-//   </div>
-//   }
+  const location = useLocation()
+  if (location.pathname === '/login') {
+    return <></>
+  }
 
   const content = (
     <>

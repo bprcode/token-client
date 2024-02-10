@@ -4,7 +4,8 @@ import { useTheme } from '@emotion/react'
 import { Box, IconButton } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNarrowCheck } from './LayoutContext.mjs'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 
 const tutorialTips = {
   'demo mode': (

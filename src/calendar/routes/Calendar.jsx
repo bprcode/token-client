@@ -206,6 +206,10 @@ export function useViewQuery() {
         `🍗 initialData from: ${from.format('MM/D')} to: ${to.format('MM/D')}`
       )
       const cached = queryClient.getQueryData(['primary cache', id])
+      if(!cached) {
+        console.log('%cbypassing cache access', 'color:pink')
+        return null
+      }
       const viewAge = findViewAge(cached.sortedViews, { from, to })
 
       if (viewAge) {
@@ -225,6 +229,10 @@ export function useViewQuery() {
     },
     initialDataUpdatedAt: () => {
       const cached = queryClient.getQueryData(['primary cache', id])
+      if(!cached) {
+        console.log('%cbypassing cache access', 'color:pink')
+        return null
+      }
       const viewAge = findViewAge(cached.sortedViews, { from, to })
 
       return viewAge

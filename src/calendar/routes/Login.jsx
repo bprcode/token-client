@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   CircularProgress,
   Collapse,
@@ -9,14 +10,18 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { ViewContainer } from '../ViewContainer'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useTheme } from '@emotion/react'
 import { navigateTo, resumeOrNavigateTo } from '../NavigationControl.jsx'
-import { useSearchParams } from 'react-router-dom'
-import { enableTutorial, removeTutorialStage, updateTutorial } from '../TutorialDialog.jsx'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import {
+  enableTutorial,
+  removeTutorialStage,
+  updateTutorial,
+} from '../TutorialDialog.jsx'
 
 function LoginSection() {
   const spacing = 4
@@ -33,6 +38,7 @@ function LoginSection() {
   const signInRef = useRef(null)
   const sending = false
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
 
   const onLoginSuccess = data => {
     console.log('mutation success with data: ', data)
@@ -82,7 +88,7 @@ function LoginSection() {
         // swap the order of the tutorial steps to fit a blank calendar:
         const dragDrop = tutorial.indexOf('drag and drop')
         const dragCreate = tutorial.indexOf('drag create')
-        if(dragDrop > -1 && dragCreate > -1 && dragDrop < dragCreate) {
+        if (dragDrop > -1 && dragCreate > -1 && dragDrop < dragCreate) {
           console.log('swapping tutorial steps')
           tutorial[dragDrop] = 'drag create'
           tutorial[dragCreate] = 'drag and drop'
@@ -102,119 +108,147 @@ function LoginSection() {
   })
 
   return (
-    <Paper
-      elevation={1}
-      sx={{
-        py: 6,
-        px: 2,
-        minWidth: [240, 300],
-        maxWidth: 450,
-        ml: 'auto',
-        mr: 'auto',
-        mt: [2, 6],
-        boxShadow: '0.75rem 1.625rem 1.25rem #00081190',
-        borderBottom: '1px solid #0009',
-        borderRight: '1px solid #0009',
-      }}
-    >
-      <form onSubmit={e => e.preventDefault()}>
-        <Container>
-          <Typography variant="h4" component="h2" sx={{ mb: 1 }}>
-            {showRegister ? 'Register' : 'Sign In'}
-          </Typography>
-          <Divider sx={{ mb: spacing }} />
-          <Stack>
-            <TextField
-              sx={{ mb: spacing }}
-              inputRef={signInRef}
-              label="email"
-              helperText={invalid && showRegister ? 'Already in use.' : ' '}
-              variant="standard"
-              disabled={sending}
-              error={invalid}
-              defaultValue={email}
-              onChange={e => {
-                setEmail(e.target.value)
-                setInvalid(false)
-              }}
-            />
-
-            <TextField
-              sx={{ mb: spacing }}
-              label="password"
-              variant="standard"
-              type="password"
-              helperText={
-                invalid && !showRegister ? 'Invalid email or password.' : ' '
-              }
-              disabled={sending}
-              error={invalid}
-              defaultValue={password}
-              onChange={e => {
-                setPassword(e.target.value)
-                setInvalid(false)
-              }}
-            />
-            <Collapse in={showRegister}>
+    <>
+      <Paper
+        elevation={1}
+        sx={{
+          py: 6,
+          px: 2,
+          minWidth: [240, 300],
+          maxWidth: 450,
+          ml: 'auto',
+          mr: 'auto',
+          mt: [2, 6],
+          boxShadow: '0.75rem 1.625rem 1.25rem #00081190',
+          borderBottom: '1px solid #0009',
+          borderRight: '1px solid #0009',
+        }}
+      >
+        <form onSubmit={e => e.preventDefault()}>
+          <Container>
+            <Typography variant="h4" component="h2" sx={{ mb: 1 }}>
+              {showRegister ? 'Register' : 'Sign In'}
+            </Typography>
+            <Divider sx={{ mb: spacing }} />
+            <Stack>
               <TextField
-                sx={{ mb: 8, width: '100%' }}
-                label="display name"
+                sx={{ mb: spacing }}
+                inputRef={signInRef}
+                label="email"
+                helperText={invalid && showRegister ? 'Already in use.' : ' '}
                 variant="standard"
                 disabled={sending}
                 error={invalid}
-                defaultValue={displayName}
+                defaultValue={email}
                 onChange={e => {
-                  setDisplayName(e.target.value)
-                }}
-              />
-            </Collapse>
-
-            <Stack spacing={3}>
-              <Button
-                disabled={loginMutation.isPending || registerMutation.isPending}
-                onClick={() => {
-                  if (showRegister) {
-                    return registerMutation.mutate({
-                      email,
-                      password,
-                      name: displayName,
-                    })
-                  }
-                  loginMutation.mutate({ email, password })
-                }}
-                variant={showRegister ? 'contained' : 'outlined'}
-              >
-                {loginMutation.isPending || registerMutation.isPending ? (
-                  <CircularProgress size="1.5rem" />
-                ) : showRegister ? (
-                  'Sign Up'
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
-
-              <Divider sx={{ mb: 3, mt: 3, color: theme.palette.divider }}>
-                OR
-              </Divider>
-              <Button
-                variant={showRegister ? 'outlined' : 'contained'}
-                disabled={sending}
-                color={showRegister ? 'primary' : 'secondary'}
-                onClick={() => {
-                  if (!showRegister) {
-                    signInRef.current.focus()
-                  }
-                  setShowRegister(s => !s)
+                  setEmail(e.target.value)
                   setInvalid(false)
                 }}
-              >
-                {showRegister ? 'Back' : 'Register'}
-              </Button>
+              />
+
+              <TextField
+                sx={{ mb: spacing }}
+                label="password"
+                variant="standard"
+                type="password"
+                helperText={
+                  invalid && !showRegister ? 'Invalid email or password.' : ' '
+                }
+                disabled={sending}
+                error={invalid}
+                defaultValue={password}
+                onChange={e => {
+                  setPassword(e.target.value)
+                  setInvalid(false)
+                }}
+              />
+              <Collapse in={showRegister}>
+                <TextField
+                  sx={{ mb: 8, width: '100%' }}
+                  label="display name"
+                  variant="standard"
+                  disabled={sending}
+                  error={invalid}
+                  defaultValue={displayName}
+                  onChange={e => {
+                    setDisplayName(e.target.value)
+                  }}
+                />
+              </Collapse>
+
+              <Stack spacing={3}>
+                <Button
+                  disabled={
+                    loginMutation.isPending || registerMutation.isPending
+                  }
+                  onClick={() => {
+                    if (showRegister) {
+                      return registerMutation.mutate({
+                        email,
+                        password,
+                        name: displayName,
+                      })
+                    }
+                    loginMutation.mutate({ email, password })
+                  }}
+                  variant={showRegister ? 'contained' : 'outlined'}
+                >
+                  {loginMutation.isPending || registerMutation.isPending ? (
+                    <CircularProgress size="1.5rem" />
+                  ) : showRegister ? (
+                    'Sign Up'
+                  ) : (
+                    'Sign In'
+                  )}
+                </Button>
+
+                <Divider sx={{ mb: 3, mt: 3, color: theme.palette.divider }}>
+                  OR
+                </Divider>
+                <Button
+                  variant={showRegister ? 'outlined' : 'contained'}
+                  disabled={sending}
+                  color={showRegister ? 'primary' : 'secondary'}
+                  onClick={() => {
+                    if (!showRegister) {
+                      signInRef.current.focus()
+                    }
+                    setShowRegister(s => !s)
+                    setInvalid(false)
+                  }}
+                >
+                  {showRegister ? 'Back' : 'Register'}
+                </Button>
+              </Stack>
             </Stack>
-          </Stack>
-        </Container>
-      </form>
-    </Paper>
+          </Container>
+        </form>
+      </Paper>
+
+      {!showRegister && (
+        <Box
+          sx={{
+            mt: 'auto',
+            mb: 4,
+            mx: 'auto',
+          }}
+        >
+          Want a tour?
+          <Button
+            variant="contained"
+            onClick={() => {
+              queryClient.invalidateQueries({
+                queryKey: ['heartbeat'],
+              })
+              navigate('/demo')
+            }}
+            sx={{ ml: 3, backgroundColor: '#8dffb4' }}
+          >
+            Try a quick demo
+          </Button>
+        </Box>
+      )}
+    </>
   )
 }
 
