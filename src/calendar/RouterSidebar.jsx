@@ -140,7 +140,7 @@ export default function RouterSidebar({ width = '240px', expand }) {
   if (location.pathname === '/login') {
     return <></>
   }
-
+  
   const content = (
     <>
       <HourglassHeader />
@@ -149,7 +149,7 @@ export default function RouterSidebar({ width = '240px', expand }) {
       </HeartbeatPanel>
     </>
   )
-
+  
   return isNarrow ? (
     <Drawer
       open={expand}

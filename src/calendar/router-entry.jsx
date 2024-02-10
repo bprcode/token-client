@@ -73,7 +73,6 @@ const router = createBrowserRouter([
             element: <LoginPage />,
             loader: ({request}) => {
               const searchParams = new URL(request.url).searchParams
-              console.log('sp=',searchParams)
               if(searchParams.get('a') === 'register') {
                 console.log('register link')
                 sessionStorage.clear()

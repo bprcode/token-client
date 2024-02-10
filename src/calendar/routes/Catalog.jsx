@@ -47,7 +47,7 @@ function makeCatalogQuery(queryClient, options = {}) {
         localData: local,
         serverData: fetched,
         key: 'calendar_id',
-        tag: 'calendars',
+        tag: 'catalog',
         isDuplicate: isCalendarDuplicate,
       })
     },

@@ -10,7 +10,7 @@ import {
   CircularProgress,
 } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { goFetch } from './go-fetch'
 import { DemoContext } from './calendar/DemoContext.mjs'
 import { demoUser } from './calendar/calendarLogic.mjs'
@@ -20,6 +20,7 @@ import { useNarrowCheck } from './calendar/LayoutContext.mjs'
 
 export function useHeartbeatQuery() {
   const isDemo = useContext(DemoContext)
+  const { pathname } = useLocation()
 
   const queryFn = isDemo
     ? () => demoUser
@@ -28,6 +29,7 @@ export function useHeartbeatQuery() {
     staleTime: 2 * 60 * 1000,
     queryKey: ['heartbeat'],
     queryFn,
+    enabled: pathname !== '/login',
   })
 }
 
@@ -117,21 +119,21 @@ export function HeartbeatPanel({ children }) {
   return (
     <>
       {heartbeatResult.data && children}
-      
-      <List disablePadding sx={{ mt: 'auto' }}>
-        {isDemo && tutorialStage !== 'demo mode' && <ListItem sx={{
-            display:'flex',
-            justifyContent: 'center',
-            pb: 2,
-        }}
-        component={Link}
-        to="/login?a=register"
-        >
-          <Button variant="outlined">
 
-          Sign Up
-          </Button>
-        </ListItem>}
+      <List disablePadding sx={{ mt: 'auto' }}>
+        {isDemo && tutorialStage !== 'demo mode' && (
+          <ListItem
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              pb: 2,
+            }}
+            component={Link}
+            to="/login?a=register"
+          >
+            <Button variant="outlined">Sign Up</Button>
+          </ListItem>
+        )}
         <ListItem
           sx={{
             backgroundColor: '#0002',
@@ -151,7 +153,9 @@ export function HeartbeatPanel({ children }) {
             {interactions}
           </Box>
         </ListItem>
-        {isDemo && !isNarrow && <TutorialDialog position="over" tip="demo mode" />}
+        {isDemo && !isNarrow && (
+          <TutorialDialog position="over" tip="demo mode" />
+        )}
       </List>
     </>
   )
