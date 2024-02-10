@@ -33,7 +33,12 @@ import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { CreationPicker } from './CreationPicker'
 import dayjs from 'dayjs'
 import { EventEditor } from './EventEditor'
-import { TutorialDialog, advanceTutorial, removeTutorialStage, useTutorialStage } from './TutorialDialog'
+import {
+  TutorialDialog,
+  advanceTutorial,
+  removeTutorialStage,
+  useTutorialStage,
+} from './TutorialDialog'
 import { DemoContext } from './DemoContext.mjs'
 
 const innerLeftPadding = '0rem'
@@ -704,8 +709,7 @@ function WeekBody({
               if (touchRef.current.lastTouchBehavior !== 'create') {
                 log('🪂 expanding')
                 const dayBox = e.target.closest('.weekday-box')
-                if(dayBox) {
-
+                if (dayBox) {
                   return onExpand(dayjs(dayBox.dataset.day))
                 }
               }
@@ -1068,7 +1072,6 @@ export function WeeklyView({
       setShowDrawer(false)
       setAction('edit')
       onCreate(creation)
-      removeTutorialStage('drag create')
     },
     [onCreate]
   )
@@ -1095,6 +1098,7 @@ export function WeeklyView({
         clearSelection(touchRef)
         setAction(b)
         if (b === 'create') {
+          removeTutorialStage('drag create')
           setShowDrawer(true)
         } else {
           setShowDrawer(false)
@@ -1106,7 +1110,9 @@ export function WeeklyView({
   const rv = (
     <ActionContext.Provider value={action}>
       <ViewContainer containOverflow={!isNarrow}>
-        <TutorialDialog tip="drag and drop" position="under" />
+        {events.length > 0 && (
+          <TutorialDialog tip="drag and drop" position="under" />
+        )}
         <TutorialDialog
           tip="drag create"
           position={isNarrow ? 'bottom-right' : 'right'}
