@@ -19,6 +19,7 @@ import { HeartbeatPanel } from '../HeartbeatPanel'
 import { TopNavLink } from '../TopNavLink'
 import { useCatalogQuery } from './routes/Catalog'
 import { DemoContext } from './DemoContext.mjs'
+import { useLocation } from 'react-router-dom'
 
 function SkeletonFolders() {
   const skeletons = Array(5).fill(0)
@@ -134,6 +135,26 @@ export default function RouterSidebar({ width = '240px', expand }) {
   const theme = useTheme()
   const isNarrow = useNarrowCheck()
   const toggleMenu = useContext(ToggleMenuContext)
+
+//   const location = useLocation()
+//   if(location.pathname === '/login'){
+    
+//   return <div style={{
+//     backgroundColor: '#400',
+//     width: '20ch',
+//     display: 'grid',
+//     placeContent: 'center',
+//   }}>
+// <div style={{color: 'yellow'}}>
+
+//     {location.pathname}
+// </div>
+// <div style={{color: '#0af'}}>
+
+//     {location.search}
+// </div>
+//   </div>
+//   }
 
   const content = (
     <>

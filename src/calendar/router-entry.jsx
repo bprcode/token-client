@@ -9,7 +9,12 @@ import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
 import digitalTheme from '../blueDigitalTheme'
 import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
+import {
+  createBrowserRouter,
+  Navigate,
+  redirect,
+  RouterProvider,
+} from 'react-router-dom'
 import RouterError from './RouterError'
 import { Root, loader as rootLoader } from './routes/Root'
 import { Catalog, loader as catalogLoader } from './routes/Catalog'
@@ -66,6 +71,7 @@ const router = createBrowserRouter([
           {
             path: 'login',
             element: <LoginPage />,
+            
           },
           {
             path: 'catalog',

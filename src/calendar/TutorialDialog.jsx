@@ -4,15 +4,14 @@ import { useTheme } from '@emotion/react'
 import { Box, IconButton } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useNarrowCheck } from './LayoutContext.mjs'
+import { Link } from 'react-router-dom'
 
 const tutorialTips = {
   'demo mode': (
     <>
       Welcome to <strong>Demo Mode</strong>. Your changes won't be saved.
       <br />
-      Ready for a real account? <a href="../../login?a=register">
-        Sign up
-      </a>{' '}
+      Ready for a real account? <Link to="/login?a=register">Sign up </Link>
       today!
     </>
   ),
@@ -125,7 +124,7 @@ export function TutorialDialog({ position, tip, onClose = noop, sx }) {
     <Box
       sx={{
         position: isNarrow ? 'fixed' : 'absolute',
-        zIndex: 3,
+        zIndex: 4,
 
         backgroundColor: `#ffcd8d`,
         color: '#000',

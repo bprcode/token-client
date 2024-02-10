@@ -202,7 +202,9 @@ export function useViewQuery() {
     staleTime,
     queryKey: ['views', id, { from: from.toISOString(), to: to.toISOString() }],
     initialData: () => {
-      log(`🍗 initialData function`)
+      log(
+        `🍗 initialData from: ${from.format('MM/D')} to: ${to.format('MM/D')}`
+      )
       const cached = queryClient.getQueryData(['primary cache', id])
       const viewAge = findViewAge(cached.sortedViews, { from, to })
 
@@ -285,18 +287,13 @@ export function useViewQuery() {
 export const loader =
   queryClient =>
   ({ params }) => {
-    // Initialize the cache for this calendar:
+    console.log('%ccalendar loader', 'color:white;background-color:purple')
+    if (queryClient.getQueryData(['primary cache', params.id])) {
+      log(`🌙 primary cache already initialized`)
+      return null
+    }
 
-    updateCacheData(queryClient, params.id, data => {
-      if (data) {
-        log(`🌙 primary cache already initialized`)
-        return
-      }
-
-      const session = reviveSessionCache(params.id)
-      if (session) {
-        console.log('revived prior session:', session)
-      }
+    updateCacheData(queryClient, params.id, () => {
       return reviveSessionCache(params.id) ?? { stored: [], sortedViews: [] }
     })
 

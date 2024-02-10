@@ -9,7 +9,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ViewContainer } from '../ViewContainer'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
@@ -32,8 +32,8 @@ function LoginSection() {
 
   const signInRef = useRef(null)
   const sending = false
-
   const queryClient = useQueryClient()
+
   const onLoginSuccess = data => {
     console.log('mutation success with data: ', data)
     queryClient.invalidateQueries({ queryKey: ['catalog'] })

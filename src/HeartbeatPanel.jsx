@@ -131,6 +131,11 @@ export function HeartbeatPanel({ children }) {
       {heartbeatResult.data && children}
       
       <List disablePadding sx={{ mt: 'auto' }}>
+        {heartbeatResult.data?.name === 'Demo Mode' && <ListItem sx={{
+          backgroundColor: 'red',
+        }}>
+          test
+        </ListItem>}
         <ListItem
           sx={{
             backgroundColor: '#0002',
