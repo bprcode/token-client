@@ -243,7 +243,7 @@ function LoginSection() {
               })
               navigate('/demo')
             }}
-            sx={{ ml: 3, backgroundColor: '#8dffb4' }}
+            sx={{ ml: [2,3], backgroundColor: '#8dffb4' }}
           >
             Try a quick demo
           </Button>

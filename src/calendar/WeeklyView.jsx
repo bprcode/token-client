@@ -33,13 +33,7 @@ import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { CreationPicker } from './CreationPicker'
 import dayjs from 'dayjs'
 import { EventEditor } from './EventEditor'
-import {
-  TutorialDialog,
-  advanceTutorial,
-  removeTutorialStage,
-  useTutorialStage,
-} from './TutorialDialog'
-import { DemoContext } from './DemoContext.mjs'
+import { TutorialDialog, removeTutorialStage } from './TutorialDialog'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
@@ -513,7 +507,6 @@ function WeekBody({
       ghostElementRef.current.style.visibility = 'visible'
 
       const dayOfWeek = snapDay(pageX)
-      const activeDay = startOfWeek.add(dayOfWeek, 'days').startOf('day')
       const yBounds = touchRef.current.bounds.y[dayOfWeek]
 
       const pressedMinute = snapMinute(
@@ -744,13 +737,14 @@ function WeekBody({
             log('⬆️ handling pointer up')
             setShowGhost(false)
             setGhostWeekColor(ghostFadeInColor)
-            touchRef.current.isDragCreating = false
 
             if (touchRef.current.brightenBox) {
               touchRef.current.brightenBox.classList.remove('brighten')
             }
 
-            if (action === 'create') {
+            if (action === 'create' && touchRef.current.isDragCreating) {
+              touchRef.current.isDragCreating = false
+
               const selections = {
                 type: document.querySelector('.type-field input').value,
                 color: document.querySelector('.color-field input')?.value,
@@ -788,6 +782,8 @@ function WeekBody({
               }
               return
             }
+
+            touchRef.current.isDragCreating = false
 
             // If interacting with an event pane,
             // apply the 'selected' state
