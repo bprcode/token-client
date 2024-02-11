@@ -24,10 +24,10 @@ export default function SyncMonitor() {
     >
       {heartbeat && (
         <>
-          {/* <div>
-            <div>Cache List:</div>
+          <div>
+            <div>Tracked cache List:</div>
             {cacheList.map(c=><div key={c}>{c}</div>)}
-          </div> */}
+          </div>
           <CatalogSyncMonitor />
           {cacheList.map(c => (
             c !== 'demo-calendar' ?

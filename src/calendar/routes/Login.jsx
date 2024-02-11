@@ -31,9 +31,10 @@ function LoginSection() {
   const isRegisterLink = searchParams.get('a') === 'register'
   const [email, setEmail] = useState(isRegisterLink ? '' : 'Demo Account')
   const [displayName, setDisplayName] = useState(isRegisterLink ? '' : ' ')
-  const [invalid, setInvalid] = useState(false)
   const [password, setPassword] = useState(isRegisterLink ? '' : '123')
   const [showRegister, setShowRegister] = useState(isRegisterLink)
+
+  const [validation, setValidation] = useState({})
 
   const signInRef = useRef(null)
   const sending = false
@@ -60,7 +61,10 @@ function LoginSection() {
     onSuccess: onLoginSuccess,
     onError: error => {
       if (error.status === 403) {
-        setInvalid(true)
+        setValidation({
+          email: ' ',
+          password: 'Invalid username or password.',
+        })
       }
     },
   })
@@ -102,10 +106,35 @@ function LoginSection() {
     },
     onError: error => {
       if (error.status === 403 || error.status === 409) {
-        setInvalid(true)
+        setValidation({
+          email: 'Already in use.',
+        })
       }
     },
   })
+
+  const onSubmit = () => {
+    const passwordMin = import.meta.env.VITE_ENV === 'development' ? 2 : 8
+
+    if(email.length < 3) {
+      return setValidation({
+        email: 'E-mail required.'
+      })
+    }
+    if(password.length < passwordMin) {
+      return setValidation({
+        password: 'Longer password required.'
+      })
+    }
+    if (showRegister) {
+      return registerMutation.mutate({
+        email,
+        password,
+        name: displayName,
+      })
+    }
+    loginMutation.mutate({ email, password })
+  }
 
   return (
     <>
@@ -125,7 +154,12 @@ function LoginSection() {
           borderRight: '1px solid #0009',
         }}
       >
-        <form onSubmit={e => e.preventDefault()}>
+        <form
+          onSubmit={e => {
+            e.preventDefault()
+            onSubmit()
+          }}
+        >
           <Container>
             <Typography variant="h4" component="h2" sx={{ mb: 1 }}>
               {showRegister ? 'Register' : 'Sign In'}
@@ -136,14 +170,14 @@ function LoginSection() {
                 sx={{ mb: spacing }}
                 inputRef={signInRef}
                 label="email"
-                helperText={invalid && showRegister ? 'Already in use.' : ' '}
+                helperText={validation.email || ' '}
                 variant="standard"
                 disabled={sending}
-                error={invalid}
+                error={validation.email}
                 defaultValue={email}
                 onChange={e => {
                   setEmail(e.target.value)
-                  setInvalid(false)
+                  setValidation({})
                 }}
               />
 
@@ -152,15 +186,13 @@ function LoginSection() {
                 label="password"
                 variant="standard"
                 type="password"
-                helperText={
-                  invalid && !showRegister ? 'Invalid email or password.' : ' '
-                }
+                helperText={validation.password || ' '}
                 disabled={sending}
-                error={invalid}
+                error={validation.password}
                 defaultValue={password}
                 onChange={e => {
                   setPassword(e.target.value)
-                  setInvalid(false)
+                  setValidation({})
                 }}
               />
               <Collapse in={showRegister}>
@@ -169,7 +201,7 @@ function LoginSection() {
                   label="display name"
                   variant="standard"
                   disabled={sending}
-                  error={invalid}
+                  error={false}
                   defaultValue={displayName}
                   onChange={e => {
                     setDisplayName(e.target.value)
@@ -179,19 +211,10 @@ function LoginSection() {
 
               <Stack spacing={3}>
                 <Button
+                  type="submit"
                   disabled={
                     loginMutation.isPending || registerMutation.isPending
                   }
-                  onClick={() => {
-                    if (showRegister) {
-                      return registerMutation.mutate({
-                        email,
-                        password,
-                        name: displayName,
-                      })
-                    }
-                    loginMutation.mutate({ email, password })
-                  }}
                   variant={showRegister ? 'contained' : 'outlined'}
                 >
                   {loginMutation.isPending || registerMutation.isPending ? (
@@ -215,7 +238,7 @@ function LoginSection() {
                       signInRef.current.focus()
                     }
                     setShowRegister(s => !s)
-                    setInvalid(false)
+                    setValidation({})
                   }}
                 >
                   {showRegister ? 'Back' : 'Register'}
@@ -243,7 +266,7 @@ function LoginSection() {
               })
               navigate('/demo')
             }}
-            sx={{ ml: [2,3], backgroundColor: '#8dffb4' }}
+            sx={{ ml: [2, 3], backgroundColor: '#8dffb4' }}
           >
             Try a quick demo
           </Button>
