@@ -12,7 +12,14 @@ import {
   TextField,
   Paper,
 } from '@mui/material'
-import { useCallback, useContext, useMemo, useReducer, useRef } from 'react'
+import {
+  useCallback,
+  useContext,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
@@ -26,6 +33,7 @@ import { useViewQuery } from './routes/Calendar'
 import { useNarrowCheck } from './LayoutContext.mjs'
 import { DemoContext } from './DemoContext.mjs'
 import { TutorialDialog, removeTutorialStage } from './TutorialDialog'
+import { bounceEarly, debounce } from '../debounce.mjs'
 
 const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
@@ -211,6 +219,8 @@ function MonthGrid({ date, events }) {
 function MonthHeader({ date, onChange }) {
   const month = date.format('M')
   const year = date.year()
+  const inputRef = useRef()
+  const [yearInput, setYearInput] = useState(String(year))
 
   const yearOptions = []
   for (let y = year - 5; y <= year + 5; y++) {
@@ -293,13 +303,18 @@ function MonthHeader({ date, onChange }) {
         </Select>
       </FormControl>
       <Autocomplete
+        ref={inputRef}
         freeSolo
         disableClearable
         options={yearOptions}
         value={String(year)}
-        onChange={(event, newValue) => onChange(date.year(newValue.label))}
-        inputValue={String(date.year())}
-        onInputChange={(event, newInputValue) => {
+        onChange={(event, newValue) => {
+          console.log('onChange newValue=', newValue)
+          onChange(date.year(newValue.label || newValue))
+        }}
+        inputValue={yearInput}
+        onInputChange={(event, newInputValue, reason) => {
+          console.log('%coic reason:', 'color:limegreen', reason)
           if (!event) {
             return
           }
@@ -317,8 +332,26 @@ function MonthHeader({ date, onChange }) {
               )
             }
           }
-          onChange(date.year(String(newInputValue)))
+          console.log('yearInput comparison', yearInput, newInputValue)
+          setYearInput(newInputValue)
+          if (reason === 'input') {
+            debounce(
+              'read year input',
+              () => {
+                if (!inputRef.current) {
+                  console.log('skipping ryi read')
+                  return
+                }
+                console.log('bounce landing for ryi')
+                const input = inputRef.current.querySelector('input')
+                console.log('ref check:', input.value)
+                onChange(date.year(input.value))
+              },
+              2000
+            )()
+          }
         }}
+        onBlur={() => bounceEarly('read year input')}
         sx={{
           width: ['6.5ch', '9.25ch'],
           display: 'inline-flex',
