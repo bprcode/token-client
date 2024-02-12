@@ -22,6 +22,7 @@ import {
   removeTutorialStage,
   updateTutorial,
 } from '../TutorialDialog.jsx'
+import { logDebounces } from '../../debounce.mjs'
 
 function LoginSection() {
   const spacing = 4

@@ -31,13 +31,6 @@ function useCatalogBundleMutation() {
       })
     },
     onError: (error, variables) => {
-      console.log('fields were:', Reflect.ownKeys(error))
-      console.log(
-        'error fields were:',
-        error.message,
-        error.status,
-        error.conflict
-      )
       handleCalendarError({
         error,
         original: variables,
@@ -232,6 +225,9 @@ function makeCalendarFetch(variables) {
   })
 }
 
+const blueLog = (...args) =>
+  console.log('%cCatalog Autosaver>', 'color:#08f', ...args)
+
 const getCatalogTouchList = queryClient =>
   touchList(queryClient.getQueryData(['catalog']))
 
@@ -249,6 +245,7 @@ export function CatalogSyncMonitor() {
         isError={isError}
         data={data}
         getTouchList={getCatalogTouchList}
+        log={blueLog}
       />
       <AutosaverStatus
         touchList={list}

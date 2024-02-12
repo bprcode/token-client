@@ -1,7 +1,7 @@
 import { keyframes } from '@mui/material/styles'
 import { useQueryClient } from '@tanstack/react-query'
 import { useEffect, useRef, useState } from 'react'
-import { leadingDebounce, hasDebounce } from './debounce.mjs'
+import { leadingDebounce, hasDebounce, logDebounces } from './debounce.mjs'
 import { Box, CircularProgress, Typography } from '@mui/material'
 
 const noop = () => {}
@@ -37,8 +37,10 @@ export function Autosaver({
 
   useEffect(() => {
     if (!isFetching && !isError) {
-      log(`👁️ Sentinel effect: fetch success?`
-        +` ${Math.floor(Math.random() * 1000000000)}`)
+      log(
+        `👁️ Sentinel effect: fetch success?` +
+          ` ${Math.floor(Math.random() * 1000000000)}`
+      )
       if (hasDebounce(debounceKey)) {
         log(`Autosaver already ran or running.`)
         return

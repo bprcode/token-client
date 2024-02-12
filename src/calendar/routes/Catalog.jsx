@@ -34,6 +34,7 @@ import { ConflictDisplay } from '../ConflictDisplay'
 import { isCalendarDuplicate } from '../../CatalogSync'
 import { DemoContext } from '../DemoContext.mjs'
 import { demoCatalog } from '../calendarLogic.mjs'
+import { bounceEarly } from '../../debounce.mjs'
 
 function makeCatalogQuery(queryClient, options = {}) {
   return {
@@ -143,6 +144,9 @@ function CreationCard() {
         onClick={() => {
           setDisabled(true)
           setTimeout(() => setDisabled(false), 500)
+          // Bypass debounce delay for calendar creation,
+          // since it's a blocking operation for the user:
+          bounceEarly('Catalog autosaver')
 
           createOptimistic()
         }}

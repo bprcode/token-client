@@ -18,18 +18,9 @@ const tidyUp = (queryClient, id) => () => {
   const t = touchList(queryClient.getQueryData(['primary cache', id])?.stored)
 
   if (age < gcTime || t.length !== 0) {
-    console.log(
-      `%c(${id}) tidyUp rebouncing ∆t=${gcTime - age}, t.length=${t.length}`,
-      'background-color:#fa04;color:white'
-    )
     debounce(`expire cache ${id}`, tidyUp(queryClient, id), tidyTime)()
     return
   }
-
-  console.log(
-    `%c(${id}) tidyUp deleting.`,
-    'background-color:#fa04;color:white'
-  )
 
   lastUpdated.delete(id)
   const arrayed = readList()
