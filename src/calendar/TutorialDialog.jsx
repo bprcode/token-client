@@ -158,7 +158,7 @@ export function TutorialDialog({ position, tip, onClose = noop, sx }) {
           mr: -1,
           mt: -0.5,
         }}
-        onPointerDown={() => {
+        onClick={() => {
           advanceTutorial()
           onClose()
         }}

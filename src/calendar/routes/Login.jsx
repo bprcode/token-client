@@ -266,7 +266,8 @@ function LoginSection() {
         <Box
           sx={{
             mt: 'auto',
-            mb: 4,
+            // Extra bottom margin covers overscroll with mobile address bar:
+            mb: [10, 4],
             mx: 'auto',
           }}
         >

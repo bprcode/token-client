@@ -71,17 +71,6 @@ const router = createBrowserRouter([
           {
             path: 'login',
             element: <LoginPage />,
-            // loader: ({request}) => {
-            //   const searchParams = new URL(request.url).searchParams
-            //   if(searchParams.get('a') === 'register') {
-            //     console.log('register link')
-            //     sessionStorage.clear()
-            //     queryClient.cancelQueries()
-            //     queryClient.clear()
-            //   }
-            //   return null
-            // }
-            
           },
           {
             path: 'catalog',
@@ -138,7 +127,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
           <RouterProvider router={router} />
         </CssBaseline>
       </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </QueryClientProvider>
   </React.StrictMode>
 )
