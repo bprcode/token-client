@@ -357,6 +357,7 @@ function WeekBody({
   const logger = useLogger()
   const benchStart = performance.now()
   const displayHeightPx = 544
+  const isModeratelyWide = useMediaQuery('(min-width:500px)')
 
   const ghostElementRef = useRef(null)
 
@@ -559,6 +560,8 @@ function WeekBody({
         (7 * (snapXCeil(rightmost) - snapLeft(leftmost))) /
           (touchRef.current.bounds.right - touchRef.current.bounds.left)
       )
+
+      // Apply fade-in transitions:
       if (currentDayCount !== touchRef.current.creatingDayCount) {
         clearTimeout(touchRef.current.fadeTimeout)
         const activeColor = touchRef.current.augmentedGhostColor
@@ -599,7 +602,16 @@ function WeekBody({
       touchRef.current.creationStartMinute = startMinute
       touchRef.current.creationFinalMinute = finalMinute
 
-      const isLongEnough = finalMinute - startMinute > 90
+      const isLongEnough = isModeratelyWide && finalMinute - startMinute > 90
+
+      function formatDuration(minutes) {
+        if (minutes < 60) return minutes + 'm'
+        const minutePart = minutes % 60
+
+        return (
+          (minutes - minutePart) / 60 + 'h' + (minutePart ? minutePart : '')
+        )
+      }
 
       for (let i = 0; i < touchRef.current.startLabels.length; i++) {
         const relativeDay = touchRef.current.creationStartDay + i
@@ -609,7 +621,7 @@ function WeekBody({
               .add(relativeDay, 'days')
               .add(startMinute, 'minutes')
               .format('h:mma')
-          : finalMinute - startMinute + 'm'
+          : formatDuration(finalMinute - startMinute)
 
         touchRef.current.startLabels[i].textContent = content
       }
@@ -966,6 +978,7 @@ function WeekBody({
     onHideDrawer,
     onCreate,
     onEdit,
+    isModeratelyWide,
   ])
 
   const benchEnd = performance.now()
