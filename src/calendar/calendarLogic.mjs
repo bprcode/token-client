@@ -428,85 +428,35 @@ export function isDefaultStyle(event, styleList) {
   return false
 }
 
-export const mockPalette = [
-  '#942911',
-  '#d46239',
-  '#d99830',
+export const customPalette = [
+  '#93032E',
   '#b5dead',
-  '#45b06f',
-  '#45aeb0',
-  '#518ed0',
-  '#5351d0',
+  '#E2A035',
+  '#59C1C3',
+  '#0E5092',
 ]
 
-const recognizedColors = new Map(mockPalette.map(c => [c, c]))
+const recognizedColors = new Map(customPalette.map(c => [c, c]))
 
 export const baseStyles = new Map([
-  [
-    'Work',
-    {
-      accentColor: '#5283a8',
-      augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#5283a8' },
-      }),
-    },
-  ],
-  [
-    'Meeting',
-    {
-      accentColor: '#45b06f',
-      augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#45b06f' },
-      }),
-    },
-  ],
-  [
-    'Study',
-    {
-      accentColor: '#e9a47d',
-      augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#e9a47d' },
-      }),
-    },
-  ],
-  [
-    'Appointment',
-    {
-      accentColor: '#d46239',
-      augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#d46239' },
-      }),
-    },
-  ],
-  [
-    'Exercise',
-    {
-      accentColor: '#d0518e',
-      augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#d0518e' },
-      }),
-    },
-  ],
-  [
-    'Social',
-    {
-      accentColor: '#635ac9',
-      augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#d0518e' },
-      }),
-    },
-  ],
-
-  [
-    'Default',
-    {
-      accentColor: '#aac',
-      augmentedColors: defaultTheme.palette.augmentColor({
-        color: { main: '#aac' },
-      }),
-    },
-  ],
+  ['Work', '#5283a8'],
+  ['Meeting', '#45b06f'],
+  ['Study', '#F3A780'],
+  ['Appointment', '#d46239'],
+  ['Exercise', '#d0518e'],
+  ['Social', '#635ac9'],
+  ['Default', '#aac'],
 ])
+
+for (const [key, value] of baseStyles) {
+  console.log(key, value)
+  baseStyles.set(key, {
+    accentColor: value,
+    augmentedColors: defaultTheme.palette.augmentColor({
+      color: { main: value },
+    }),
+  })
+}
 
 function isSimilarEvent(a, b) {
   return (
@@ -691,5 +641,5 @@ export function useEventStyles() {
 }
 
 export function usePalette() {
-  return mockPalette
+  return customPalette
 }

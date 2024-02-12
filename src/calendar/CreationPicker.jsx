@@ -8,7 +8,11 @@ import {
   useTheme,
 } from '@mui/material'
 import { useRef, useState } from 'react'
-import { mockPalette, resolveColor, useEventStyles } from './calendarLogic.mjs'
+import {
+  customPalette,
+  resolveColor,
+  useEventStyles,
+} from './calendarLogic.mjs'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 
 const styledMenuProps = {
@@ -54,7 +58,7 @@ export function CreationPicker({ layout = 'drawer', active = true }) {
   const theme = useTheme()
   const eventStyles = useEventStyles()
   const typeList = [...eventStyles.keys()]
-  const palette = mockPalette
+  const palette = customPalette
   const [type, setType] = useState(typeList[0])
   const [selectedColor, setSelectedColor] = useState(palette[0])
 
