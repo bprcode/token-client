@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ViewContainer } from '../ViewContainer'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
@@ -40,6 +40,18 @@ function LoginSection() {
   const sending = false
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+
+  // React Router will re-render prior routes during navigation, hence
+  // re-querying their useQuery bindings, so clearing the cache state
+  // works best after arriving at the login route.
+  useEffect(() => {
+    if (searchParams.get('a') === 'register') {
+      console.log('%cregister link / clearing cache', 'color:yellow')
+      sessionStorage.clear()
+      queryClient.cancelQueries()
+      queryClient.clear()
+    }
+  }, [searchParams, queryClient])
 
   const onLoginSuccess = data => {
     console.log('mutation success with data: ', data)
@@ -116,14 +128,14 @@ function LoginSection() {
   const onSubmit = () => {
     const passwordMin = import.meta.env.VITE_ENV === 'development' ? 2 : 8
 
-    if(email.length < 3) {
+    if (email.length < 3) {
       return setValidation({
-        email: 'E-mail required.'
+        email: 'E-mail required.',
       })
     }
-    if(password.length < passwordMin) {
+    if (password.length < passwordMin) {
       return setValidation({
-        password: 'Longer password required.'
+        password: 'Longer password required.',
       })
     }
     if (showRegister) {

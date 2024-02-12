@@ -4,12 +4,19 @@ import { EventSyncMonitor } from './EventSync'
 import { useHeartbeatQuery } from '../HeartbeatPanel'
 import { useCacheList } from './cacheTracker.mjs'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
+import { useSearchParams } from 'react-router-dom'
 
 export default function SyncMonitor() {
   const isNarrow = useNarrowCheck()
   const needMobileBar = useMobileBarCheck()
   const { data: heartbeat } = useHeartbeatQuery()
   const cacheList = useCacheList()
+
+  const [searchParams] = useSearchParams()
+  if(searchParams.get('a') === 'register') {
+    console.log('%cbypassing SyncMonitor', 'color:magenta')
+    return <></>
+  }
 
   return (
     <Box

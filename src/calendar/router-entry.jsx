@@ -71,16 +71,16 @@ const router = createBrowserRouter([
           {
             path: 'login',
             element: <LoginPage />,
-            loader: ({request}) => {
-              const searchParams = new URL(request.url).searchParams
-              if(searchParams.get('a') === 'register') {
-                console.log('register link')
-                sessionStorage.clear()
-                queryClient.cancelQueries()
-                queryClient.clear()
-              }
-              return null
-            }
+            // loader: ({request}) => {
+            //   const searchParams = new URL(request.url).searchParams
+            //   if(searchParams.get('a') === 'register') {
+            //     console.log('register link')
+            //     sessionStorage.clear()
+            //     queryClient.cancelQueries()
+            //     queryClient.clear()
+            //   }
+            //   return null
+            // }
             
           },
           {
