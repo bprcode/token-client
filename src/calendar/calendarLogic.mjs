@@ -430,9 +430,10 @@ export function isDefaultStyle(event, styleList) {
 
 export const customPalette = [
   '#93032E',
-  '#b5dead',
+  '#CDB4D2',
   '#E2A035',
-  '#59C1C3',
+  '#b5dead',
+  '#546D64',
   '#0E5092',
 ]
 
@@ -440,9 +441,9 @@ const recognizedColors = new Map(customPalette.map(c => [c, c]))
 
 export const baseStyles = new Map([
   ['Work', '#5283a8'],
-  ['Meeting', '#45b06f'],
-  ['Study', '#F3A780'],
-  ['Appointment', '#d46239'],
+  ['Appointment', '#188C6C'],
+  ['Study', '#F9B273'],
+  ['Meeting', '#d46239'],
   ['Exercise', '#d0518e'],
   ['Social', '#635ac9'],
   ['Default', '#aac'],
