@@ -450,7 +450,6 @@ export const baseStyles = new Map([
 ])
 
 for (const [key, value] of baseStyles) {
-  console.log(key, value)
   baseStyles.set(key, {
     accentColor: value,
     augmentedColors: defaultTheme.palette.augmentColor({

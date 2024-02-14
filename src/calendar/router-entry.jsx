@@ -12,7 +12,6 @@ import ReactDOM from 'react-dom/client'
 import {
   createBrowserRouter,
   Navigate,
-  redirect,
   RouterProvider,
 } from 'react-router-dom'
 import RouterError from './RouterError'
@@ -25,7 +24,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
 import { navigateTo } from './NavigationControl.jsx'
 import { DemoContext } from './DemoContext.mjs'
-import { TutorialDialog, enableTutorial } from './TutorialDialog.jsx'
+import { enableTutorial } from './TutorialDialog.jsx'
 
 const globalExpiryHandler = error => {
   console.log('🌍 global cache error handler:', error.status, error.message)
