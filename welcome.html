@@ -19,7 +19,8 @@
       <span class="links">
   
         <span>Login</span>
-        <button class="getstarted">Get Started</button>
+        <a href="/login?a=register" class="button-link get-started">Get Started</a>
+        
       </span>
     </div>
   </header>
@@ -31,7 +32,7 @@
       <h1>Make the most of your time.</h1>
       <h2>ClearTime makes schedules simple.<br>Access anywhere, update instantly.</h2>
     
-      <button class="tryme">See the demo</button>
+      <a href="/demo" class="button-link try-me">See the demo</a>
     </div>
 
   </div>
@@ -90,16 +91,32 @@ header {
   margin-top: 20vh;
 }
 
-.getstarted {
+.button-link {
+  text-decoration: none;
+  border-radius: 4px;
+  width: fit-content;
+  text-transform: uppercase;
+  font: inherit;
+  font-weight: 400;
+  font-size: 1rem;
+  padding: 0.5rem 1.25rem 0.5rem 1.25rem;
+  transform: translateX(-1.5rem);
+  margin: 2rem auto;
+}
+
+.try-me {
+  background-color: #FF852D;
+  color: #000;
+  transform: translateX(-1.5rem);
+  margin: 2rem auto;
+}
+
+.get-started {
   color: #FFA15D;
   border: 1px solid #FFA15D;
   background-color: transparent;
   line-height: 24px;
-}
-
-.tryme {
-  transform: translateX(-1.5rem);
-  margin: 2rem auto;
+  margin-left: 2rem;
 }
 
 .hourglass-icon {
