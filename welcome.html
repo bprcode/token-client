@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
@@ -10,18 +11,28 @@
 </head>
 <body>
   <header>
-    <span class="logo-text"><span class="first">Clear</span><span class="second">Time</span></span>
-    <span class="links">
+    <div class="contain-wide">
 
-      <span>Login</span>
-      <span>Get Started</span>
-    </span>
+      <span class="logo-text"><span class="first">Clear</span><span class="second">Time</span></span>
+      <span class="links">
+  
+        <span>Login</span>
+        <button class="getstarted">Get Started</button>
+      </span>
+    </div>
   </header>
-  <h1>Placeholder landing page</h1>
-  <h2>Some sample text</h2>
-  <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ut beatae totam labore repellendus magni officia sint dolor dolorum, ipsa atque nesciunt aliquam velit non rem excepturi laboriosam voluptatem assumenda minima accusamus hic modi ea error consequuntur. Voluptas, nisi dignissimos dolor sapiente nemo soluta, perspiciatis quam corporis quo minima itaque sequi!</p>
+  
+  <div class="contain">
+    <img class="hourglass" src="/hourglass-feathered.webp" alt="an hourglass where grains of sand swirl like stars">
+    <div class="headline-width mt">
 
-  <button>See the demo</button>
+      <h1>Make the most of your time.</h1>
+      <h2>ClearTime makes schedules simple.<br>Access anywhere, update instantly.</h2>
+    
+      <button class="tryme">See the demo</button>
+    </div>
+
+  </div>
   <footer>
     Footer copy text
   </footer>
@@ -44,11 +55,16 @@ p, h1, h2, h3, h4, h5, h6 {
   hyphens: auto;
 }
 
+h2 {
+  margin-top: 0.5rem;
+  font-weight: 400;
+}
+
 body {
   -webkit-font-smoothing: antialiased;
-  background-color: #222;
-  color: #eee;
-  border: 1px solid orange;
+  background-color: #01010d;
+  color: #FFE0CF;
+  /* border: 1px solid orange; */
   min-height: 100vh;
 
   display: flex;
@@ -58,19 +74,77 @@ body {
 }
 
 header {
-  background-color: #111;
+  z-index: 1;
+  color: #FFDCD1;
   height: 4rem;
   font-size: clamp(1.25rem, 1vw + 1rem, 1.5rem);
   display: flex;
   justify-content: space-between;
-  padding-left: 1rem;
-  padding-right: 1.5rem;
+  /* padding-left: 1rem;
+  padding-right: 1.5rem; */
   align-items: center;
+  border-bottom: 1px solid #FFE7E3;
+}
+
+.mt {
+  margin-top: 20vh;
+}
+
+.getstarted {
+  color: #FFA15D;
+  border: 1px solid #FFA15D;
+  background-color: transparent;
+  line-height: 24px;
+}
+
+.tryme {
+  transform: translateX(-1.5rem);
+  margin: 2rem auto;
+}
+
+.hourglass {
+  position: absolute;
+  right: 0;
+  top: -5vh;
+  height: 90vh;
+  transform: translateX(29%);
+}
+
+.contain {
+  position: relative;
+  /* border: 1px solid cyan; */
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.contain-wide {
+  width: 100%;
+  max-width: 1792px;
+  margin: 0 auto;
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+.headline-width {
+  display: flex;
+  flex-direction: column;
+  /* border: 1px solid magenta; */
+  max-width: 50ch;
+}
+
+.links {
+  width: fit-content;
+  margin-left: auto;
 }
 
 .links span {
   font-size: clamp(1.05rem, 0.25vw + 1rem, 1.3rem);
   margin-left: 1rem;
+}
+
+.links button {
+  margin-left: 2rem;
 }
 
 .logo-text .first {
@@ -82,9 +156,14 @@ header {
 }
 
 button {
-  background-color: #fa0;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1.25rem 0.5rem 1.25rem;
+  background-color: #FF852D;
   text-transform: uppercase;
   font: inherit;
+  font-weight: 400;
+  font-size: 1rem;
   width: fit-content;
 }
 
