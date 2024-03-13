@@ -26,7 +26,11 @@
   </header>
   
   <div class="contain">
-    <img class="hourglass" src="/hourglass-feathered.webp" alt="an hourglass where grains of sand swirl like stars">
+    <div class="bg1">
+      <img class="tail-img" src="/star-tail.webp" alt="a dusky trail of sand and stars" >
+      <img class="hourglass-img" src="/hourglass-feathered.webp" alt="an hourglass where grains of sand swirl like stars">
+
+    </div>
     <div class="headline-width mt">
 
       <h1>Make the most of your time.</h1>
@@ -149,7 +153,22 @@ header {
   transform: translate(0.2rem, 0.3ex);
 }
 
-.hourglass {
+.bg1 {
+  z-index: -1;
+  position: absolute;
+  height: 89vh;
+  width: 100%;
+  box-shadow: 0 0 1rem inset #f00f;
+}
+
+.tail-img {
+  position: absolute;
+  border: 1px solid yellow;
+  bottom: 0;
+  left: -20vh;
+}
+
+.hourglass-img {
   position: absolute;
   right: 0;
   top: -3vh;
