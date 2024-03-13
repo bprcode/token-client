@@ -18,7 +18,7 @@
         <span class="first">Clear</span><span class="second">Time</span></span>
       <span class="links">
   
-        <span>Login</span>
+        <a href="/login" class="login-link">Login</a>
         <a href="/login?a=register" class="button-link get-started">Get Started</a>
         
       </span>
@@ -51,6 +51,12 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
+  /* box-shadow: 0 0 2px inset #eef6 !important; */
+}
+
+:root {
+  --direct-spacing: 1rem;
+  --cousin-spacing: 2.5rem;
 }
 
 p, h1, h2, h3, h4, h5, h6 {
@@ -58,16 +64,21 @@ p, h1, h2, h3, h4, h5, h6 {
   hyphens: auto;
 }
 
+h1 {
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
 h2 {
-  margin-top: 0.5rem;
-  font-weight: 400;
+  font-size: 1.375rem;
+  line-height: 1.5em;
+  font-weight: 300;
 }
 
 body {
   -webkit-font-smoothing: antialiased;
   background-color: #01010d;
   color: #FFE0CF;
-  /* border: 1px solid orange; */
   min-height: 100vh;
 
   display: flex;
@@ -100,15 +111,20 @@ header {
   font-weight: 400;
   font-size: 1rem;
   padding: 0.5rem 1.25rem 0.5rem 1.25rem;
-  transform: translateX(-1.5rem);
-  margin: 2rem auto;
+}
+
+.login-link {
+  text-decoration: none;
+  color: #FFEBEB;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .try-me {
   background-color: #FF852D;
   color: #000;
-  transform: translateX(-1.5rem);
-  margin: 2rem auto;
+  transform: translateX(-3.25rem);
+  margin: var(--cousin-spacing) auto;
 }
 
 .get-started {
@@ -116,7 +132,7 @@ header {
   border: 1px solid #FFA15D;
   background-color: transparent;
   line-height: 24px;
-  margin-left: 2rem;
+  margin-left: var(--cousin-spacing);
 }
 
 .hourglass-icon {
@@ -126,14 +142,13 @@ header {
 .hourglass {
   position: absolute;
   right: 0;
-  top: -5vh;
-  height: 90vh;
+  top: -3vh;
+  height: 89vh;
   transform: translateX(29%);
 }
 
 .contain {
   position: relative;
-  /* border: 1px solid cyan; */
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
@@ -154,7 +169,6 @@ header {
 .headline-width {
   display: flex;
   flex-direction: column;
-  /* border: 1px solid magenta; */
   max-width: 50ch;
 }
 
