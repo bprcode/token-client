@@ -27,11 +27,11 @@
   
   <div class="contain">
     <div class="bg1">
-      <img class="tail-img" src="/tail-test-11.webp" alt="a dusky trail of sand and stars" >
+      <img class="tail-img" src="/tail-test-12.webp" alt="a dusky trail of sand and stars" >
       <img class="hourglass-img" src="/hourglass-feathered.webp" alt="an hourglass where grains of sand swirl like stars">
 
     </div>
-    <div class="headline-width mt">
+    <div class="headline-1 mt">
 
       <h1>Make the most of your time.</h1>
       <h2>ClearTime makes schedules simple.<br>Access anywhere, update instantly.</h2>
@@ -136,6 +136,7 @@ header {
   color: #000000DF;
   transform: translateX(-3.25rem);
   margin: var(--cousin-spacing) auto;
+  box-shadow: 0 0 0.75rem #01010d;
 }
 
 .get-started {
@@ -163,10 +164,12 @@ header {
 
 .tail-img {
   z-index: 1;
-  /* mix-blend-mode: lighten; */
+  mix-blend-mode: lighten;
   position: absolute;
-  bottom: -3vh;
-  right: 40vh;
+  bottom: 2vh;
+  right: 43vh;
+  height: 47vh;
+  /* border: 1px solid cyan; */
 }
 
 .hourglass-img {
@@ -196,10 +199,34 @@ header {
   align-items: baseline;
 }
 
-.headline-width {
+.headline-1 {
+  position: relative;
   display: flex;
   flex-direction: column;
   max-width: 50ch;
+}
+
+.headline-1::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 135%;
+  aspect-ratio: 1;
+  transform: translate(-27%, -37%) rotate(15deg);
+  background: radial-gradient(55.91% 32.26% at 50% 50%, rgba(130, 178, 223, 0.08) 8%, rgba(148, 204, 255, 0.0576) 33%, rgba(120, 190, 255, 0.046848) 47.5%, rgba(0, 133, 255, 0) 70.5%);
+}
+
+.headline-1::after {
+  z-index: -1;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 125%;
+  aspect-ratio: 1;
+  transform: translate(7%, -18%);
+  background: radial-gradient(23.98% 32.79% at 50% 50%, rgba(255, 106, 96, 0.065) 0%, rgba(200, 50, 17, 0) 100%);
 }
 
 .links span {
