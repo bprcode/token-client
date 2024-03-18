@@ -27,8 +27,7 @@
   
   <div class="contain">
     <div class="bg1">
-      <img class="tail-img" src="/tail-test-12.webp" alt="a dusky trail of sand and stars" >
-      <img class="hourglass-img" src="/hourglass-feathered.webp" alt="an hourglass where grains of sand swirl like stars">
+      <img class="hourglass-img-wide" src="/wide-test-5.webp" alt="an hourglass where grains of sand swirl like stars">
 
     </div>
     <div class="headline-1 mt">
@@ -136,11 +135,10 @@ header {
   color: #000000DF;
   transform: translateX(-3.25rem);
   margin: var(--cousin-spacing) auto;
-  box-shadow: 0 0 0.75rem #01010d;
+  box-shadow: 0.5rem -0.75rem 2rem #01010d;
 }
 
 .get-started {
-  /* display: inline-block; */
   color: #FFA15D;
   border: 1px solid #FFA15D90;
   background-color: transparent;
@@ -159,25 +157,14 @@ header {
   position: absolute;
   height: 89vh;
   width: 100%;
-  /* box-shadow: 0 0 1rem inset #f00f; */
 }
 
-.tail-img {
-  z-index: 1;
-  mix-blend-mode: lighten;
-  position: absolute;
-  bottom: 2vh;
-  right: 43vh;
-  height: 47vh;
-  /* border: 1px solid cyan; */
-}
-
-.hourglass-img {
+.hourglass-img-wide {
   position: absolute;
   right: 0;
-  top: -3vh;
-  height: 89vh;
-  transform: translateX(29%);
+  top: 2vh;
+  height: 86vh;
+  transform: translateX(13%);
 }
 
 .contain {
@@ -204,6 +191,7 @@ header {
   display: flex;
   flex-direction: column;
   max-width: 50ch;
+  margin-left: 1rem;
 }
 
 .headline-1::before {
