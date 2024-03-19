@@ -25,9 +25,13 @@
     </div>
   </header>
   
-  <div class="contain">
+  <section class="bg-hourglass">
+
+  </section>
+
+  <div class="contain-section">
     <div class="bg1">
-      <img class="hourglass-img-wide" src="/wide-bg.webp" alt="an hourglass where grains of sand swirl like stars">
+      <!-- <img class="hourglass-img-wide" src="/wide-bg.webp" alt="an hourglass where grains of sand swirl like stars"> -->
 
     </div>
     <div class="headline-1 mt">
@@ -55,7 +59,7 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  /* box-shadow: 0 0 2px inset #eef6 !important; */
+  box-shadow: 0 0 2px inset #eef6 !important;
 }
 
 :root {
@@ -103,6 +107,12 @@ header {
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #FFE7E3;
+}
+
+section {
+  background-color: #f004;
+  height: 90vh;
+  height: 90svh;
 }
 
 .mt {
@@ -159,19 +169,28 @@ header {
   width: 100%;
 }
 
+.bg-hourglass {
+  background-image: url('/wide-bg-2.webp');
+  background-size: auto 86vh;
+  background-repeat: no-repeat;
+  background-position: calc(50% + 100px);
+}
+
 .hourglass-img-wide {
   position: absolute;
   right: 0;
   top: 2vh;
   height: 86vh;
-  transform: translateX(15%);
+  transform: translateX(16%);
 }
 
-.contain {
+.contain-section {
   position: relative;
   width: 100%;
   max-width: 960px;
   margin: 0 auto;
+  height: 90vh;
+  height: 90svh;
 }
 
 .header-contain {
