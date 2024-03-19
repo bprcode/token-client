@@ -26,23 +26,36 @@
   </header>
   
   <section class="bg-hourglass">
+    <div class="contain">
+      <div class="headline-1 mt">
 
+        <h1>Make the most of your time.</h1>
+        <h2>ClearTime makes schedules simple.<br>Access anywhere, update instantly.</h2>
+      
+        <a href="/demo" class="button-link try-me">See the demo</a>
+      </div>
+    </div>
+  
   </section>
 
-  <div class="contain-section">
-    <div class="bg1">
-      <!-- <img class="hourglass-img-wide" src="/wide-bg.webp" alt="an hourglass where grains of sand swirl like stars"> -->
-
+  <section style="background-color: #0f01;">
+    <div class="contain">
+      <p class="mt">Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus inventore quae magnam? Accusamus, quod natus quae similique illum porro nisi repellat fugiat distinctio nesciunt ullam reprehenderit voluptatem debitis vel, totam eaque unde cumque placeat maxime maiores est voluptas consequatur officiis. Ratione soluta officia incidunt at, nihil cupiditate debitis minima. Error.</p>
     </div>
-    <div class="headline-1 mt">
+  </section>
 
-      <h1>Make the most of your time.</h1>
-      <h2>ClearTime makes schedules simple.<br>Access anywhere, update instantly.</h2>
-    
-      <a href="/demo" class="button-link try-me">See the demo</a>
+  <section style="background-color: #f001;">
+    <div class="contain">
+      <p class="mt">Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus inventore quae magnam? Accusamus, quod natus quae similique illum porro nisi repellat fugiat distinctio nesciunt ullam reprehenderit voluptatem debitis vel, totam eaque unde cumque placeat maxime maiores est voluptas consequatur officiis. Ratione soluta officia incidunt at, nihil cupiditate debitis minima. Error.</p>
     </div>
+  </section>
+  <section style="background-color: #00f1;">
+    <div class="contain">
+      <p class="mt">Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus inventore quae magnam? Accusamus, quod natus quae similique illum porro nisi repellat fugiat distinctio nesciunt ullam reprehenderit voluptatem debitis vel, totam eaque unde cumque placeat maxime maiores est voluptas consequatur officiis. Ratione soluta officia incidunt at, nihil cupiditate debitis minima. Error.</p>
+    </div>
+  </section>
 
-  </div>
+
   
   <!-- <footer>
     Footer copy text
@@ -59,7 +72,7 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  box-shadow: 0 0 2px inset #eef6 !important;
+  /* box-shadow: 0 0 2px inset #eef6 !important; */
 }
 
 :root {
@@ -99,7 +112,10 @@ body {
 }
 
 header {
+  position: fixed;
+  width: 100%;
   z-index: 1;
+  background-color: #01010df0;
   color: #FFDCD1;
   height: 4rem;
   font-size: clamp(1.25rem, 1vw + 1rem, 1.5rem);
@@ -110,13 +126,17 @@ header {
 }
 
 section {
-  background-color: #f004;
+  background-color: #01010d;
   height: 90vh;
   height: 90svh;
 }
 
+section:first-of-type {
+  margin-top: 3rem;
+}
+
 .mt {
-  margin-top: 20vh;
+  margin-top: 24vh;
 }
 
 .button-link {
@@ -162,35 +182,16 @@ section {
   transform: translate(0.2rem, 0.3ex);
 }
 
-.bg1 {
-  z-index: -1;
-  position: absolute;
-  height: 89vh;
-  width: 100%;
-}
-
 .bg-hourglass {
   background-image: url('/wide-bg-2.webp');
-  background-size: auto 86vh;
+  background-size: auto 85vh;
   background-repeat: no-repeat;
-  background-position: calc(50% + 100px);
+  background-position: calc(50% + 120px) 2.125rem;
 }
 
-.hourglass-img-wide {
-  position: absolute;
-  right: 0;
-  top: 2vh;
-  height: 86vh;
-  transform: translateX(16%);
-}
-
-.contain-section {
-  position: relative;
-  width: 100%;
+.contain {
   max-width: 960px;
   margin: 0 auto;
-  height: 90vh;
-  height: 90svh;
 }
 
 .header-contain {
@@ -210,7 +211,7 @@ section {
   display: flex;
   flex-direction: column;
   max-width: 50ch;
-  margin-left: 0.5rem;
+  margin-left: 2.5rem;
 }
 
 .headline-1::before {
