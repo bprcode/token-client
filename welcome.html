@@ -38,7 +38,7 @@
   
   </section>
 
-  <section style="background-color: #0f01;">
+  <section>
     <div class="contain">
       <p class="mt">Lorem ipsum dolor sit amet consectetur adipisicing elit. Accusamus inventore quae magnam? Accusamus, quod natus quae similique illum porro nisi repellat fugiat distinctio nesciunt ullam reprehenderit voluptatem debitis vel, totam eaque unde cumque placeat maxime maiores est voluptas consequatur officiis. Ratione soluta officia incidunt at, nihil cupiditate debitis minima. Error.</p>
     </div>
@@ -78,6 +78,7 @@
 :root {
   --cousin-spacing: 2.5rem;
   --h-padding: 1rem;
+  --header-height: 3rem;
   --section-gray: #25254E;
 }
 
@@ -127,12 +128,21 @@ header {
 
 section {
   background-color: #01010d;
-  height: 90vh;
-  height: 90svh;
+  height: calc(100vh - var(--header-height));
+  height: calc(100svh - var(--header-height));
+}
+
+section p {
+  max-width: 40ch;
+  margin: 0 auto;
 }
 
 section:first-of-type {
-  margin-top: 3rem;
+  margin-top: var(--header-height);
+}
+
+section:nth-of-type(2) {
+  background-color: var(--section-gray);
 }
 
 .mt {
@@ -160,10 +170,15 @@ section:first-of-type {
   padding: 0.75rem var(--h-padding) 0.75rem var(--h-padding);
 }
 
+@media (max-width: 440px) {
+  .login-link {
+    display: none;
+  }
+}
+
 .try-me {
   background-color: #FF852D;
   color: #000000DF;
-  transform: translateX(-3.25rem);
   margin: var(--cousin-spacing) auto;
   box-shadow: 0.5rem -0.75rem 2rem #01010d;
 }
@@ -182,11 +197,70 @@ section:first-of-type {
   transform: translate(0.2rem, 0.3ex);
 }
 
+.headline-1 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-width: 50ch;
+  margin: 22vh auto 0 auto;
+  align-items: center;
+}
+
+.headline-1 h1, .headline-1 h2 {
+  text-shadow: 1px 1px 6px #000;
+}
+
 .bg-hourglass {
-  background-image: url('/wide-bg-2.webp');
-  background-size: auto 85vh;
+  background-image: url('/narrow-test.webp');
   background-repeat: no-repeat;
-  background-position: calc(50% + 120px) 2.125rem;
+  background-position: 50% 20px;
+  background-size: auto 110vh;
+}
+
+@media (min-width: 700px) {
+
+  .bg-hourglass {
+    background-image: url('/wide-bg-2.webp');
+    background-size: auto 84vh;
+    background-position: calc(50% + 120px) 2.5rem;
+  }
+
+  .headline-1 {
+    max-width: 50ch;
+    margin-left: 2.5rem;
+    align-items: unset;
+    text-shadow: unset;
+  }
+
+  .headline-1 h1, .headline-1 h2 {
+    text-shadow: unset;
+  }
+  .try-me {
+    transform: translateX(-3.25rem);
+  }
+
+  .headline-1::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 135%;
+    aspect-ratio: 1;
+    transform: translate(-27%, -37%) rotate(15deg);
+    background: radial-gradient(55.91% 32.26% at 50% 50%, rgba(130, 178, 223, 0.08) 8%, rgba(148, 204, 255, 0.0576) 33%, rgba(120, 190, 255, 0.046848) 47.5%, rgba(0, 133, 255, 0) 70.5%);
+  }
+
+  .headline-1::after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 125%;
+    aspect-ratio: 1;
+    transform: translate(7%, -18%);
+    background: radial-gradient(23.98% 32.79% at 50% 50%, rgba(255, 106, 96, 0.065) 0%, rgba(200, 50, 17, 0) 100%);
+  }
 }
 
 .contain {
@@ -204,37 +278,6 @@ section:first-of-type {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-}
-
-.headline-1 {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  max-width: 50ch;
-  margin-left: 2.5rem;
-}
-
-.headline-1::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 135%;
-  aspect-ratio: 1;
-  transform: translate(-27%, -37%) rotate(15deg);
-  background: radial-gradient(55.91% 32.26% at 50% 50%, rgba(130, 178, 223, 0.08) 8%, rgba(148, 204, 255, 0.0576) 33%, rgba(120, 190, 255, 0.046848) 47.5%, rgba(0, 133, 255, 0) 70.5%);
-}
-
-.headline-1::after {
-  z-index: -1;
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 125%;
-  aspect-ratio: 1;
-  transform: translate(7%, -18%);
-  background: radial-gradient(23.98% 32.79% at 50% 50%, rgba(255, 106, 96, 0.065) 0%, rgba(200, 50, 17, 0) 100%);
 }
 
 .links span {
