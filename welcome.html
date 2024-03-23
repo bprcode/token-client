@@ -179,7 +179,7 @@ section:nth-of-type(2) {
 .try-me {
   background-color: #FF852D;
   color: #000000DF;
-  margin: var(--cousin-spacing) auto;
+  margin: var(--cousin-spacing) auto 1rem auto;
   box-shadow: 0.5rem -0.75rem 2rem #01010d;
 }
 
@@ -204,14 +204,16 @@ section:nth-of-type(2) {
   max-width: 50ch;
   margin: 22vh auto 0 auto;
   align-items: center;
+  /* backdrop-filter: brightness(50%); */
 }
 
 .headline-1 h1, .headline-1 h2 {
-  text-shadow: 1px 1px 6px #000;
+  text-shadow: 3px 1px 6px #000,
+    -1px 3px 6px #000;
 }
 
 .bg-hourglass {
-  background-image: url('/narrow-test.webp');
+  background-image: url('/blue-mixed.webp');
   background-repeat: no-repeat;
   background-position: 50% 20px;
   background-size: auto 110vh;
@@ -230,6 +232,7 @@ section:nth-of-type(2) {
     margin-left: 2.5rem;
     align-items: unset;
     text-shadow: unset;
+    backdrop-filter: unset;
   }
 
   .headline-1 h1, .headline-1 h2 {
