@@ -78,7 +78,7 @@
 :root {
   --cousin-spacing: 2rem;
   --h-padding: 1rem;
-  --header-height: 3rem;
+  --header-height: 3.5rem;
   --section-gray: #25254E;
 }
 
@@ -125,7 +125,7 @@ header {
   z-index: 1;
   background-color: #01010df0;
   color: #FFDCD1;
-  height: 4rem;
+  height: var(--header-height);
   font-size: clamp(1.2rem, 1vw + 1rem, 1.5rem);
   display: flex;
   justify-content: space-between;
@@ -194,7 +194,7 @@ section:nth-of-type(2) {
 }
 
 .hourglass-icon {
-  transform: translate(0.2rem, 0.375ex);
+  transform: translate(0.2rem, 0.4ex);
   width: 16px;
 }
 
@@ -238,6 +238,7 @@ section:nth-of-type(2) {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  height: 32px;
 }
 
 .logo-text {
@@ -277,7 +278,7 @@ footer {
   }
 
   .hourglass-icon {
-    transform: translate(0.25rem, 0.175ex);
+    transform: translate(0.225rem, 0.3ex);
     width: unset;
   }
 
