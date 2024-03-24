@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" rel="stylesheet">
-  <title>ClearTime</title>
+  <title>ClearTime | Schedules made simple.</title>
 </head>
 <body>
   <header>
@@ -32,7 +32,7 @@
         <h1>Make the most of your time.</h1>
         <h2>ClearTime makes schedules simple.<br>Access anywhere, update instantly.</h2>
       
-        <a href="/demo" class="button-link try-me">See the demo</a>
+        <a href="/demo" class="button-link see-the-demo">See the demo</a>
       </div>
     </div>
   
@@ -177,11 +177,11 @@ section:nth-of-type(2) {
   padding: 0.75rem var(--h-padding) 0.75rem var(--h-padding);
 }
 
-.try-me {
+.see-the-demo {
   background-color: #FF852D;
   color: #000000DF;
   margin: var(--cousin-spacing) auto 1rem auto;
-  box-shadow: 0.5rem -0.75rem 2rem #01010d;
+  box-shadow: 0rem 0.15rem 1rem #40100df0;
 }
 
 .get-started {
@@ -198,13 +198,6 @@ section:nth-of-type(2) {
   width: 16px;
 }
 
-@media (min-width: 500px) {
-  .hourglass-icon {
-    transform: translate(0.25rem, 0.175ex);
-    width: unset;
-  }
-}
-
 .headline-1 {
   position: relative;
   display: flex;
@@ -216,8 +209,10 @@ section:nth-of-type(2) {
 }
 
 .headline-1 h1, .headline-1 h2 {
-  text-shadow: 3px 1px 6px #000,
-    -1px 3px 6px #000;
+  text-shadow:
+    2px -4px 6px #000,
+    2px 3px 6px #000,
+    -2px 3px 6px #000;
 }
 
 .bg-hourglass {
@@ -276,13 +271,16 @@ footer {
   place-content: center;
 }
 
-@media (min-width: 480px) {
-}
-
 @media (min-width: 500px) {
   :root{
     --h-padding: 1.75rem;
   }
+
+  .hourglass-icon {
+    transform: translate(0.25rem, 0.175ex);
+    width: unset;
+  }
+
   .get-started {
     margin-left: calc(var(--cousin-spacing) - var(--h-padding));
     padding: calc(0.56rem - 1px) 1.25rem calc(0.56rem - 1px) 1.25rem;
@@ -315,7 +313,7 @@ footer {
   .headline-1 h1, .headline-1 h2 {
     text-shadow: unset;
   }
-  .try-me {
+  .see-the-demo {
     transform: translateX(-4rem);
   }
 
@@ -340,6 +338,10 @@ footer {
     aspect-ratio: 1;
     transform: translate(7%, -18%);
     background: radial-gradient(23.98% 32.79% at 50% 50%, rgba(255, 106, 96, 0.065) 0%, rgba(200, 50, 17, 0) 100%);
+  }
+
+  .see-the-demo {
+    box-shadow: 0.5rem -0.75rem 2rem #01010d;
   }
 }
 </style>
