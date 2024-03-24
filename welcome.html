@@ -14,7 +14,7 @@
     <div class="header-contain">
 
       <span class="logo-text">
-        <img class="hourglass-icon" src="/hourglass-heavy.svg" height="28" alt="a small logo of an hourglass">
+        <img class="hourglass-icon" src="/hourglass-heavy.svg" height="24" alt="a small logo of an hourglass">
         <span class="first">Clear</span><span class="second">Time</span></span>
       <span class="links">
   
@@ -77,7 +77,7 @@
 
 :root {
   --cousin-spacing: 2rem;
-  --h-padding: 0.5rem;
+  --h-padding: 1rem;
   --header-height: 3rem;
   --section-gray: #25254E;
 }
@@ -102,6 +102,10 @@ h2 {
   letter-spacing: -0.005em;
 }
 
+html {
+  min-width: 320px;
+}
+
 body {
   -webkit-font-smoothing: antialiased;
   background-color: #01010d;
@@ -117,6 +121,7 @@ body {
 header {
   position: fixed;
   width: 100%;
+  min-width: 320px;
   z-index: 1;
   background-color: #01010df0;
   color: #FFDCD1;
@@ -189,7 +194,15 @@ section:nth-of-type(2) {
 }
 
 .hourglass-icon {
-  transform: translate(0.2rem, 0.35ex);
+  transform: translate(0.2rem, 0.375ex);
+  width: 16px;
+}
+
+@media (min-width: 500px) {
+  .hourglass-icon {
+    transform: translate(0.25rem, 0.175ex);
+    width: unset;
+  }
 }
 
 .headline-1 {
@@ -222,7 +235,7 @@ section:nth-of-type(2) {
 
 .header-contain {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1180px;
   margin: 0 auto;
   padding-left: 0.5rem;
   padding-right: 0.75rem;
@@ -230,15 +243,6 @@ section:nth-of-type(2) {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-}
-
-.links span {
-  font-size: clamp(1.05rem, 0.25vw + 1rem, 1.3rem);
-  margin-left: 1rem;
-}
-
-.links button {
-  margin-left: 2rem;
 }
 
 .logo-text {
@@ -272,17 +276,17 @@ footer {
   place-content: center;
 }
 
-@media (min-width: 360px) {
+@media (min-width: 480px) {
+}
+
+@media (min-width: 500px) {
   :root{
-    --h-padding: 0.75rem;
+    --h-padding: 1.75rem;
   }
   .get-started {
     margin-left: calc(var(--cousin-spacing) - var(--h-padding));
     padding: calc(0.56rem - 1px) 1.25rem calc(0.56rem - 1px) 1.25rem;
   }
-}
-
-@media (min-width: 500px) {
 
 
   .header-contain {
