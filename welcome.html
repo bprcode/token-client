@@ -36,7 +36,7 @@
   
   </section>
 
-  <section>
+  <!-- <section>
     <div class="contain">
       <div class="feature-pane bg-globe">
         <div class="headline-2">
@@ -56,15 +56,15 @@
         </div>
       </div>
     </div>
-  </section>
+  </section> -->
 
-  <section>
-    <div class="contain">
-      <div class="solo-globe">
-        <div class="headline-4">
-          <h2>A calendar for anywhere.</h2>
-          <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
-        </div>
+  <section class="globe-section">
+    <div class="sand-layer"></div>
+    <div class="globe-layer"></div>
+    <div class="centered-contain">
+      <div class="headline-4">
+        <h2>A calendar for anywhere.</h2>
+        <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
       </div>
     </div>
   </section>
@@ -146,7 +146,7 @@ header {
   position: fixed;
   width: 100%;
   min-width: 320px;
-  z-index: 1;
+  z-index: 2;
   background-color: #01010de0;
   color: #FFDCD1;
   height: var(--header-height);
@@ -159,6 +159,7 @@ header {
 }
 
 section {
+  position: relative;
   background-color: #01010d;
   height: calc(100vh - var(--header-height));
   height: calc(100svh - var(--header-height));
@@ -166,39 +167,6 @@ section {
 
 section:first-of-type {
   margin-top: var(--header-height);
-}
-
-section:nth-of-type(2) {
-  background-image: url('/sand-paint.webp');
-  background-repeat: no-repeat;
-  background-position: 75% 120%;
-  background-size: 70vh;
-}
-
-section:nth-of-type(3)::before {
-  /* mirrored background */
-  content: '';
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-image: url('/sand-paint.webp');
-  background-repeat: no-repeat;
-  background-position: 80% 70%;
-  background-size: 60vh;
-  transform: scaleX(-1);
-}
-
-/* reverse parent mirroring */
-section:nth-of-type(3) * {
-  transform: scaleX(-1);
-}
-
-section:nth-of-type(4) {
-  background-image: url('/sand-paint.webp');
-  background-repeat: no-repeat;
-  background-position: 75% 120%;
-  background-size: 70vh;
 }
 
 .feature-pane {
@@ -222,58 +190,64 @@ section:nth-of-type(4) {
   margin-top: 0.8rem;
 }
 
-.bg-globe {
-  background-image: url('/isolated-sphere.webp');
-  background-repeat: no-repeat;
-  background-position: calc(50% - 200px) 5%;
-  background-size: auto 220%;
+.globe-section {
+  height: 120vh;
+  height: 120svh;
 }
 
-.bg-puzzle {
-  background-image: url('/isolated-sphere.webp');
-  background-repeat: no-repeat;
-  background-position: calc(50% + 300px) 5%;
-  background-size: auto 220%;
-}
-
-.solo-globe {
+.globe-layer {
+  z-index: 1;
   width: 100%;
-  height: 85vh;
-  
+  height: 100%;
+  position: absolute;
+
   background-image: url('/isolated-sphere.webp');
   background-repeat: no-repeat;
-  background-position: -50px -70px;
-  background-size: auto 100%;
+  background-position: calc(50% - 38vh) calc(50% - 15vh);
+  background-size: auto 90vh;
 }
 
-.headline-2 {
-  margin: 5rem 2rem 0 auto;
-  max-width: 40ch;
+.sand-layer {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+
+  background-image: url('/sand-paint.webp');
+  background-repeat: no-repeat;
+  background-position: calc(50% + 10vh) calc(50% + 15vh);
+  background-size: auto 70vh;
 }
 
-.headline-3 {
-  margin: 4rem auto 0 3rem;
-  max-width: 40ch;
+.centered-contain {
+  position: relative;
+  z-index: 1;
+  /* border: 1px solid blue; */
+  max-width: 960px;
+  height: 100%;
+  margin: 0 auto;
+  display: grid;
+  place-content: center;
 }
 
 .headline-4 {
-  margin: 5rem 2rem 0 auto;
+  /* border: 1px solid magenta; */
   max-width: 40ch;
-  transform: translate(1rem, 8rem);
+  transform: translate(calc(5vh + 20ch), -20vh);
 }
 
 .headline-4 h2 {
+  font-size: clamp(1.05rem, 0.5vw + 1rem, 1.45rem);
+  margin-bottom: 0.8rem;
+  letter-spacing: -0.005em;
   font-weight: 500;
-  font-size: clamp(1.05rem, 0.6vw + 1rem, 1.75rem);
-  letter-spacing: -0.015em;
 }
 
 .headline-4 p {
   margin-top: 0.75rem;
-  line-height: 1.85;
-  letter-spacing: -0.01em;
-
   font-size: clamp(1.05rem, 0.4vw + 1rem, 1.15rem);
+  line-height: 1.75em;
+  font-weight: 300;
+  letter-spacing: -0.005em;
 
 }
 
