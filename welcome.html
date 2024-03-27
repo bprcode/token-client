@@ -27,7 +27,7 @@
   
   <section class="bg-hourglass">
     <div class="contain">
-      <div class="headline-1 mt">
+      <div class="headline-main mt">
         <h1>Make the most of your time.</h1>
         <h2>ClearTime makes schedules simple.<br>Access anywhere, update instantly.</h2>
         <a href="/demo" class="button-link see-the-demo">See the demo</a>
@@ -36,44 +36,29 @@
   
   </section>
 
-  <!-- <section>
-    <div class="contain">
-      <div class="feature-pane bg-globe">
-        <div class="headline-2">
-          <h2>A calendar for anywhere.</h2>
-          <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section>
-    <div class="contain">
-      <div class="feature-pane bg-puzzle">
-        <div class="headline-3">
-          <h2>Everything just clicks.</h2>
-          <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Impedit deserunt, aspernatur dolor tempora sed dolore neque quis iusto nemo magnam.</p>
-        </div>
-      </div>
-    </div>
-  </section> -->
-
   <section class="globe-section bg-globe">
-    <!-- <div class="sand-layer"></div>
-    <div class="globe-layer"></div> -->
     <div class="centered-contain">
-      <div class="headline-4 shadowed-text">
+      <div class="headline-anywhere shadowed-text">
         <h2>A calendar for anywhere.</h2>
         <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
       </div>
     </div>
   </section>
 
+  <section class="globe-section bg-globe">
+    <div class="centered-contain">
+      <div class="headline-fits shadowed-text">
+        <h2>Everything just fits.</h2>
+        <p>Handle changes easily with </p>
+      </div>
+    </div>
+  </section>
+
 
   
-  <!-- <footer>
+  <footer>
     Footer copy text
-  </footer> -->
+  </footer>
   
 </body>
 </html>
@@ -195,33 +180,9 @@ section:first-of-type {
   height: 120svh;
 }
 
-.globe-layer {
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-
-  background-image: url('/isolated-sphere.webp');
-  background-repeat: no-repeat;
-  background-position: calc(50% - 38vh) calc(50% - 15vh);
-  background-size: auto 90vh;
-}
-
-.sand-layer {
-  width: 100%;
-  height: 100%;
-  position: absolute;
-
-  background-image: url('/sand-paint.webp');
-  background-repeat: no-repeat;
-  background-position: calc(50% + 10vh) calc(50% + 15vh);
-  background-size: auto 70vh;
-}
-
 .centered-contain {
   position: relative;
   z-index: 1;
-  /* border: 1px solid blue; */
   max-width: 960px;
   height: 100%;
   margin: 0 auto;
@@ -229,20 +190,19 @@ section:first-of-type {
   place-content: center;
 }
 
-.headline-4 {
-  /* border: 1px solid magenta; */
+.headline-anywhere {
   max-width: 40ch;
   transform: translate(calc(5vh + 26ch), -38px);
 }
 
-.headline-4 h2 {
+.headline-anywhere h2 {
   font-size: clamp(1.05rem, 0.5vw + 1rem, 1.45rem);
   margin-bottom: 0.8rem;
   letter-spacing: -0.005em;
   font-weight: 500;
 }
 
-.headline-4 p {
+.headline-anywhere p {
   margin-top: 0.75rem;
   font-size: clamp(1.05rem, 0.4vw + 1rem, 1.15rem);
   line-height: 1.75em;
@@ -298,7 +258,7 @@ section:first-of-type {
   width: 16px;
 }
 
-.headline-1 {
+.headline-main {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -314,7 +274,7 @@ section:first-of-type {
     -2px 3px 8px #000;
 }
 
-.headline-1 h1, .headline-1 h2 {
+.headline-main h1, .headline-main h2 {
   text-shadow:
     2px -4px 6px #000,
     2px 3px 6px #000,
@@ -329,7 +289,7 @@ section:first-of-type {
 }
 
 .bg-globe {
-  background-image: url('/merged-sphere.webp');
+  background-image: url('/connection-sphere.webp');
   background-repeat: no-repeat;
   background-position: calc(50% - 80px) calc(50% + 60px);
   background-size: auto 100vh;
@@ -416,7 +376,7 @@ footer {
   }
 
 
-  .headline-1 {
+  .headline-main {
     max-width: 50ch;
     margin-left: 2.5rem;
     align-items: unset;
@@ -424,14 +384,14 @@ footer {
     backdrop-filter: unset;
   }
 
-  .headline-1 h1, .headline-1 h2 {
+  .headline-main h1, .headline-main h2 {
     text-shadow: unset;
   }
   .see-the-demo {
     transform: translateX(-4rem);
   }
 
-  .headline-1::before {
+  .headline-main::before {
     content: '';
     position: absolute;
     top: 0;
@@ -442,7 +402,7 @@ footer {
     background: radial-gradient(55.91% 32.26% at 50% 50%, rgba(130, 178, 223, 0.08) 8%, rgba(148, 204, 255, 0.0576) 33%, rgba(120, 190, 255, 0.046848) 47.5%, rgba(0, 133, 255, 0) 70.5%);
   }
 
-  .headline-1::after {
+  .headline-main::after {
     /* z-index: -1; */
     z-index: 1;
     content: '';
