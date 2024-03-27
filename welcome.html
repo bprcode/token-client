@@ -45,11 +45,11 @@
     </div>
   </section>
 
-  <section class="globe-section bg-globe">
+  <section class="globe-section bg-puzzle">
     <div class="centered-contain">
       <div class="headline-fits shadowed-text">
         <h2>Everything just fits.</h2>
-        <p>Handle changes easily with </p>
+        <p>Easily make changes. Just drag, drop, and go.<br>Plan your week with a single tap.</p>
       </div>
     </div>
   </section>
@@ -139,7 +139,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #FFE7E3;
+  border-bottom: 1px solid #ffc0a1a8;
   backdrop-filter: blur(3px);
 }
 
@@ -195,14 +195,21 @@ section:first-of-type {
   transform: translate(calc(5vh + 26ch), -38px);
 }
 
-.headline-anywhere h2 {
+.headline-fits {
+  max-width: 50ch;
+  transform: translate(calc(-5vh - 26ch), -38px);
+}
+
+.headline-anywhere h2,
+.headline-fits h2 {
   font-size: clamp(1.05rem, 0.5vw + 1rem, 1.45rem);
   margin-bottom: 0.8rem;
   letter-spacing: -0.005em;
   font-weight: 500;
 }
 
-.headline-anywhere p {
+.headline-anywhere p,
+.headline-fits p {
   margin-top: 0.75rem;
   font-size: clamp(1.05rem, 0.4vw + 1rem, 1.15rem);
   line-height: 1.75em;
@@ -295,6 +302,13 @@ section:first-of-type {
   background-size: auto 100vh;
 }
 
+.bg-puzzle {
+  background-image: url('/connection-sphere.webp');
+  background-repeat: no-repeat;
+  background-position: calc(50% + 20vh + 300px) calc(50% + 60px);
+  background-size: auto 100vh;
+}
+
 .contain {
   max-width: 960px;
   margin: 0 auto;
@@ -337,6 +351,8 @@ button {
 }
 
 footer {
+  border-top: 1px solid #FFE7E340;
+  font-weight: 300;
   background-color: #88f4;
   margin-top: auto;
   height: 6rem;
