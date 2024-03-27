@@ -58,11 +58,11 @@
     </div>
   </section> -->
 
-  <section class="globe-section">
-    <div class="sand-layer"></div>
-    <div class="globe-layer"></div>
+  <section class="globe-section bg-globe">
+    <!-- <div class="sand-layer"></div>
+    <div class="globe-layer"></div> -->
     <div class="centered-contain">
-      <div class="headline-4">
+      <div class="headline-4 shadowed-text">
         <h2>A calendar for anywhere.</h2>
         <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
       </div>
@@ -232,7 +232,7 @@ section:first-of-type {
 .headline-4 {
   /* border: 1px solid magenta; */
   max-width: 40ch;
-  transform: translate(calc(5vh + 20ch), -20vh);
+  transform: translate(calc(5vh + 26ch), -38px);
 }
 
 .headline-4 h2 {
@@ -307,6 +307,13 @@ section:first-of-type {
   align-items: center;
 }
 
+.shadowed-text {
+  text-shadow:
+    2px -4px 8px #000,
+    2px 3px 8px #000,
+    -2px 3px 8px #000;
+}
+
 .headline-1 h1, .headline-1 h2 {
   text-shadow:
     2px -4px 6px #000,
@@ -321,6 +328,12 @@ section:first-of-type {
   background-size: auto 110vh;
 }
 
+.bg-globe {
+  background-image: url('/merged-sphere.webp');
+  background-repeat: no-repeat;
+  background-position: calc(50% - 80px) calc(50% + 60px);
+  background-size: auto 100vh;
+}
 
 .contain {
   max-width: 960px;
