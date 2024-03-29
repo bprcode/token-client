@@ -38,7 +38,7 @@
 
   <section class="globe-section bg-globe">
     <div class="centered-contain">
-      <div class="headline-anywhere shadowed-text">
+      <div class="section-headline headline-anywhere shadowed-text">
         <h2>A calendar for anywhere.</h2>
         <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
       </div>
@@ -47,10 +47,20 @@
 
   <section class="globe-section bg-puzzle">
     <div class="centered-contain">
-      <div class="headline-fits shadowed-text">
+      <div class="section-headline headline-fits shadowed-text">
         <h2>Everything just fits.</h2>
         <p>Easily make changes. Just drag, drop, and go.<br>Plan your week with a single tap.</p>
       </div>
+    </div>
+  </section>
+
+  <section class="last-section bg-sunrise">
+    <div class="centered-contain">
+      <div class="section-headline headline-last shadowed-text">
+        <h2>Try it out!</h2>
+        <p>See for yourself how easy schedules can be. No&nbsp;account&nbsp;required, no hassle needed.</p>
+      </div>
+      <a href="/demo" class="button-link demo-last">See the demo</a>
     </div>
   </section>
 
@@ -93,11 +103,6 @@
   --h-padding: 1rem;
   --header-height: 3.5rem;
   --section-gray: #25254E;
-}
-
-p, h1, h2, h3, h4, h5, h6 {
-  overflow-wrap: break-word;
-  hyphens: auto;
 }
 
 p {
@@ -190,8 +195,14 @@ section:first-of-type {
 }
 
 .globe-section {
-  height: 120vh;
-  height: 120svh;
+  height: 110vh;
+  height: 110svh;
+}
+
+.last-section {
+  height: 100vh;
+  height: 100svh;
+
 }
 
 .centered-contain {
@@ -214,16 +225,33 @@ section:first-of-type {
   transform: translate(calc(-5vh - 26ch), -38px);
 }
 
-.headline-anywhere h2,
-.headline-fits h2 {
+.headline-last {
+  max-width: 40ch;
+  transform: translate(0, -196px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.demo-last {
+  background-color: #FF852D;
+  outline: 3px solid #01010dc0;
+  color: #01010dc0;
+  margin: 0 auto;
+  transform: translateY(-10rem);
+  box-shadow: 0 4px 64px #01010d,
+  0 4px 40px #01010d;
+}
+
+.section-headline h2 {
   font-size: clamp(1.05rem, 0.5vw + 1rem, 1.45rem);
   margin-bottom: 0.8rem;
   letter-spacing: -0.005em;
   font-weight: 500;
 }
 
-.headline-anywhere p,
-.headline-fits p {
+.section-headline p {
   margin-top: 0.75rem;
   font-size: clamp(1.05rem, 0.4vw + 1rem, 1.15rem);
   line-height: 1.75em;
@@ -323,6 +351,13 @@ section:first-of-type {
   background-size: auto 100vh;
 }
 
+.bg-sunrise {
+  background-image: url('/star-sunrise.webp');
+  background-repeat: no-repeat;
+  background-position: 50% calc(50% + 70px);
+  background-size: auto 110vh;
+}
+
 .contain {
   max-width: 960px;
   margin: 0 auto;
@@ -366,7 +401,7 @@ button {
 
 footer {
   font-weight: 400;
-  border-top: 1px solid #FFE7E340;
+  border-top: 1px solid #FF9D8D40;
   background-color: #88f4;
   margin-top: auto;
   height: 6rem;
