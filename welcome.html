@@ -36,8 +36,8 @@
   
   </section>
 
-  <section class="globe-section bg-globe">
-    <div class="centered-contain">
+  <section class="globe-section-height bg-globe">
+    <div class="contain middle-right">
       <div class="section-headline headline-anywhere shadowed-text">
         <h2>A calendar for anywhere.</h2>
         <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
@@ -45,8 +45,8 @@
     </div>
   </section>
 
-  <section class="globe-section bg-device">
-    <div class="centered-contain">
+  <section class="device-section-height bg-device">
+    <div class="contain middle-left">
       <div class="section-headline headline-fits shadowed-text">
         <h2>Everything just fits.</h2>
         <p>Easily make changes. Just drag, drop, and go.<br>Plan your week with a single tap.</p>
@@ -55,7 +55,7 @@
   </section>
 
   <section class="last-section bg-sunrise">
-    <div class="centered-contain">
+    <div class="contain center-middle">
       <div class="section-headline headline-last shadowed-text">
         <h2>Try it out!</h2>
         <p>See for yourself how easy schedules can be. No&nbsp;account&nbsp;required, no hassle needed.</p>
@@ -63,8 +63,6 @@
       <a href="/demo" class="button-link demo-last">See the demo</a>
     </div>
   </section>
-
-
   
   <footer>
     <span class="logo-text" style="font-size: 1rem">
@@ -112,14 +110,12 @@ p {
 }
 
 h1 {
-  /* font-size: 1.75rem; */
   font-size: clamp(1.4rem, 1.5vw + 1rem, 1.625rem);
   margin-bottom: 0.8rem;
   letter-spacing: -0.005em;
 }
 
 h2 {
-  /* font-size: 1.375rem; */
   font-size: clamp(1.05rem, 0.4vw + 1rem, 1.3rem);
   line-height: 1.75em;
   font-weight: 300;
@@ -194,40 +190,62 @@ section:first-of-type {
   margin-top: 0.8rem;
 }
 
-.globe-section {
-  height: 110vh;
-  height: 110svh;
+.globe-section-height {
+  height: 120vh;
+  height: 120svh;
+}
+
+.device-section-height {
+  height: 85vh;
+  height: 85svh;
 }
 
 .last-section {
   height: 95vh;
   height: 95svh;
-
 }
 
-.centered-contain {
+.center-middle {
   position: relative;
   z-index: 1;
-  max-width: 960px;
   height: 100%;
-  margin: 0 auto;
   display: grid;
   place-content: center;
 }
 
+.middle-right {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+
+.middle-left {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+}
+
 .headline-anywhere {
   max-width: 40ch;
-  transform: translate(calc(5vh + 26ch), -38px);
+  margin-right: 3rem;
+  transform: translateY(-2rem);
 }
 
 .headline-fits {
   max-width: 50ch;
-  transform: translate(calc(-5vh - 26ch), -38px);
+  margin-left: 3rem;
+  transform: translateY(-2rem);
 }
 
 .headline-last {
   max-width: 40ch;
-  transform: translate(0, -136px);
+  transform: translate(0, -6rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -239,9 +257,9 @@ section:first-of-type {
   outline: 3px solid #01010dc0;
   color: #01010dc0;
   margin: 0 auto;
-  transform: translateY(-6rem);
-  box-shadow: 0 4px 64px #01010d,
-  0 4px 40px #01010d;
+  transform: translateY(-4rem);
+  box-shadow: 0 4px 64px #181d27,
+  0 4px 40px #181d27;
 }
 
 .section-headline h2 {
@@ -347,15 +365,15 @@ section:first-of-type {
 .bg-device {
   background-image: url('/device-example.webp');
   background-repeat: no-repeat;
-  background-position: calc(50% + 250px) calc(50% - 10px);
+  background-position: calc(50% + 200px) calc(50% - 10px);
   background-size: auto 80vh;
 }
 
 .bg-sunrise {
   background-image: url('/star-sunrise.webp');
   background-repeat: no-repeat;
-  background-position: 50% calc(50% + 120px);
-  background-size: auto 100vh;
+  background-position: 50% calc(50% + 160px);
+  background-size: auto 105vh;
 }
 
 .contain {
