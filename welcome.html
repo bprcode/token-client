@@ -58,7 +58,7 @@
     <div class="contain center-middle">
       <div class="section-headline headline-last shadowed-text">
         <h2>Try it out!</h2>
-        <p>See for yourself how easy schedules can be. No&nbsp;account&nbsp;required, no hassle needed.</p>
+        <p>See for yourself how easy schedules can be. No&nbsp;account&nbsp;required, no&nbsp;hassle&nbsp;needed.</p>
       </div>
       <a href="/demo" class="button-link demo-last">See the demo</a>
     </div>
@@ -101,6 +101,7 @@
   --h-padding: 1rem;
   --header-height: 3.5rem;
   --section-gray: #25254E;
+  --headline-side-margin: 1.25rem;
 }
 
 p {
@@ -233,13 +234,13 @@ section:first-of-type {
 
 .headline-anywhere {
   max-width: 40ch;
-  margin-right: 3rem;
+  margin-right: var(--headline-side-margin);
   transform: translateY(-2rem);
 }
 
 .headline-fits {
   max-width: 50ch;
-  margin-left: 3rem;
+  margin-left: var(--headline-side-margin);
   transform: translateY(-2rem);
 }
 
@@ -470,8 +471,7 @@ footer svg {
 }
 
 @media (min-width: 700px) {
-  
-  .bg-hourglass {
+    .bg-hourglass {
     background-image: url('/wide-bg.webp');
     background-size: auto 84vh;
     background-position: calc(50% + 120px) 3rem;
@@ -521,4 +521,11 @@ footer svg {
     box-shadow: -0.5rem 0.25rem 2rem #01010d;
   }
 }
+
+@media (min-width: 800px) {
+  :root {
+    --headline-side-margin: 3rem;
+  }
+}
+
 </style>
