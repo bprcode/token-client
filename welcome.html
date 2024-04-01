@@ -49,12 +49,12 @@
     <div class="contain middle-left">
       <div class="section-headline headline-fits shadowed-text">
         <h2>Everything just fits.</h2>
-        <p>Easily make changes. Just drag, drop, and go.<br>Plan your week with a single tap.</p>
+        <p>Easily make changes. Just drag, drop, and go. Plan your week with a single tap.</p>
       </div>
     </div>
   </section>
 
-  <section class="last-section bg-sunrise">
+  <section class="last-section-height bg-sunrise">
     <div class="contain center-middle">
       <div class="section-headline headline-last shadowed-text">
         <h2>Try it out!</h2>
@@ -201,7 +201,7 @@ section:first-of-type {
   height: 85svh;
 }
 
-.last-section {
+.last-section-height {
   height: 95vh;
   height: 95svh;
 }
@@ -239,7 +239,7 @@ section:first-of-type {
 }
 
 .headline-fits {
-  max-width: 50ch;
+  max-width: 40ch;
   margin-left: var(--headline-side-margin);
   transform: translateY(-2rem);
 }
@@ -505,7 +505,6 @@ footer svg {
   }
 
   .headline-main::after {
-    /* z-index: -1; */
     z-index: 1;
     content: '';
     position: absolute;
@@ -525,6 +524,63 @@ footer svg {
 @media (min-width: 800px) {
   :root {
     --headline-side-margin: 3rem;
+  }
+}
+
+/* debug -- temporary breakpoint structure */
+@media (max-width: 700px) {
+  footer {
+    padding-bottom: var(--header-height);
+    height: calc(6rem + var(--header-height));
+  }
+
+  .bg-globe {
+    border-top: 1px solid rgb(24, 75, 97);
+    background-image: url('/connection-sphere.webp');
+    background-repeat: no-repeat;
+    background-position: calc(50% + 220px) calc(50% + 140px);
+    background-size: auto 90vh;
+  }
+
+  .bg-device {
+    background-image: url('/device-example.webp');
+    background-repeat: no-repeat;
+    background-position: calc(50% - 40px) calc(50% + 70px);
+    background-size: auto 55vh;
+  }
+
+  .globe-section-height {
+    height: 110vh;
+    height: 110svh;
+  }
+
+  .device-section-height {
+    height: 80vh;
+    height: 80svh;
+
+  }
+
+  .last-section-height
+   {
+    height: calc(100vh - var(--header-height));
+    height: calc(100svh - var(--header-height));
+  }
+
+  .middle-right,
+  .middle-left {
+    justify-content: start;
+    margin-left: 1rem;
+  }
+
+  .headline-anywhere {
+    margin-right: 1.25rem;
+    transform: translateY(-10rem);
+  }
+  
+  .headline-fits {
+    margin-left: unset;
+    margin-right: 1.25rem;
+    transform: translateY(-9rem);
   }
 }
 
