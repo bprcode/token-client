@@ -38,7 +38,7 @@
 
   <section class="globe-section-height bg-globe">
     <div class="contain middle-right">
-      <div class="section-headline headline-anywhere shadowed-text">
+      <div class="section-headline headline-anywhere shadowed-text mw40">
         <h2>A calendar for anywhere.</h2>
         <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
       </div>
@@ -47,7 +47,7 @@
 
   <section class="device-section-height bg-device">
     <div class="contain middle-left">
-      <div class="section-headline headline-fits shadowed-text">
+      <div class="section-headline headline-fits shadowed-text mw40">
         <h2>Everything just fits.</h2>
         <p>Easily make changes. Just drag, drop, and go. Plan your week with a single tap.</p>
       </div>
@@ -56,7 +56,7 @@
 
   <section class="last-section-height bg-sunrise">
     <div class="contain center-middle">
-      <div class="section-headline headline-last shadowed-text">
+      <div class="section-headline headline-last shadowed-text mw40">
         <h2>Try it out!</h2>
         <p>See for yourself how easy schedules can be. No&nbsp;account&nbsp;required, no&nbsp;hassle&nbsp;needed.</p>
       </div>
@@ -192,18 +192,18 @@ section:first-of-type {
 }
 
 .globe-section-height {
-  height: 120vh;
-  height: 120svh;
+  height: 110vh;
+  height: 110svh;
 }
 
 .device-section-height {
-  height: 85vh;
-  height: 85svh;
+  height: 80vh;
+  height: 80svh;
 }
 
 .last-section-height {
-  height: 105vh;
-  height: 105svh;
+  height: calc(100vh - var(--header-height));
+  height: calc(100svh - var(--header-height));
 }
 
 .center-middle {
@@ -214,39 +214,35 @@ section:first-of-type {
   place-content: center;
 }
 
-.middle-right {
+.middle-right,
+.middle-left {
+  justify-content: start;
+  margin-left: 1rem;
   position: relative;
   z-index: 1;
   height: 100%;
   display: flex;
-  justify-content: end;
   align-items: center;
 }
 
-.middle-left {
-  position: relative;
-  z-index: 1;
-  height: 100%;
-  display: flex;
-  justify-content: start;
-  align-items: center;
+.mw40 {
+  max-width: 40ch;
 }
 
 .headline-anywhere {
-  max-width: 40ch;
-  margin-right: var(--headline-side-margin);
-  transform: translateY(-2rem);
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  transform: translateY(-10rem);
 }
 
 .headline-fits {
-  max-width: 40ch;
-  margin-left: var(--headline-side-margin);
-  transform: translateY(-2rem);
+  margin-left: 1.5rem;
+  margin-right: 1.5rem;
+  transform: translateY(-9rem);
 }
 
 .headline-last {
-  max-width: 40ch;
-  transform: translate(0, -6.75rem);
+  transform: translate(0, -6.5rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -258,7 +254,7 @@ section:first-of-type {
   outline: 3px solid #01010d70;
   color: #01010dc0;
   margin: 0 auto;
-  transform: translateY(-4.75rem);
+  transform: translateY(-4.5rem);
   box-shadow: 0 16px 64px #313438,
   0 8px 40px #313438,
   0 4px 20px #01010d;
@@ -277,7 +273,6 @@ section:first-of-type {
   line-height: 1.75em;
   font-weight: 300;
   letter-spacing: -0.005em;
-
 }
 
 .mt {
@@ -358,23 +353,24 @@ section:first-of-type {
 }
 
 .bg-globe {
+  border-top: 1px solid rgb(24, 75, 97);
   background-image: url('/connection-sphere.webp');
   background-repeat: no-repeat;
-  background-position: calc(50% - 80px) calc(50% + 60px);
-  background-size: auto 100vh;
+  background-position: calc(50% + 220px) calc(50% + 140px);
+  background-size: auto 90vh;
 }
 
 .bg-device {
   background-image: url('/device-example.webp');
   background-repeat: no-repeat;
-  background-position: calc(50% + 200px) calc(50% - 10px);
-  background-size: auto 80vh;
+  background-position: calc(50% - 40px) calc(50% + 70px);
+  background-size: auto 50vh;
 }
 
 .bg-sunrise {
   background-image: url('/star-sunrise.webp');
   background-repeat: no-repeat;
-  background-position: 50% calc(50% + 120px);
+  background-position: 50% calc(50% + 110px);
   background-size: auto 105vh;
 }
 
@@ -420,13 +416,14 @@ button {
 }
 
 footer {
+  padding-bottom: var(--header-height);
+  height: calc(6rem + var(--header-height));
+
   backdrop-filter: blur(4px);
   z-index: 1;
   font-weight: 400;
   border-top: 1px solid #FF9D8D40;
   background-color: #161424cd;
-  margin-top: -6rem;
-  height: 6rem;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -473,13 +470,30 @@ footer svg {
   }
 }
 
+/* Monitor layout changes */
 @media (min-width: 700px) {
-    .bg-hourglass {
+  footer {
+    margin-top: -6rem;
+    height: 6rem;
+    padding-bottom: unset;
+  }
+
+  .bg-hourglass {
     background-image: url('/wide-bg.webp');
     background-size: auto 84vh;
     background-position: calc(50% + 120px) 3rem;
   }
 
+  .bg-globe {
+    border-top: unset;
+    background-position: calc(50% - 80px) calc(50% + 60px);
+    background-size: auto 100vh;
+  }
+
+  .bg-device {
+    background-position: calc(50% + 200px) calc(50% - 10px);
+    background-size: auto 80vh;
+  }
 
   .headline-main {
     max-width: 50ch;
@@ -522,68 +536,46 @@ footer svg {
   .see-the-demo {
     box-shadow: -0.5rem 0.25rem 2rem #01010d;
   }
+
+  .globe-section-height {
+    height: 120vh;
+    height: 120svh;
+  }
+
+  .device-section-height {
+    height: 85vh;
+    height: 85svh;
+  }
+
+  .last-section-height {
+    height: 105vh;
+    height: 105svh;
+  }
+
+  .middle-right {
+    justify-content: end;
+  }
+
+  .middle-left {
+    justify-content: start;
+  }
+
+  .headline-anywhere {
+    margin-left: unset;
+    margin-right: var(--headline-side-margin);
+    transform: translateY(-2rem);
+  }
+
+  .headline-fits {
+    margin-right: unset;
+    margin-left: var(--headline-side-margin);
+    transform: translateY(-2rem);
+  }
 }
 
 @media (min-width: 800px) {
   :root {
     --headline-side-margin: 3rem;
-  }
-}
-
-/* debug -- temporary breakpoint structure */
-@media (max-width: 700px) {
-  footer {
-    padding-bottom: var(--header-height);
-    height: calc(6rem + var(--header-height));
-  }
-
-  .bg-globe {
-    border-top: 1px solid rgb(24, 75, 97);
-    background-image: url('/connection-sphere.webp');
-    background-repeat: no-repeat;
-    background-position: calc(50% + 220px) calc(50% + 140px);
-    background-size: auto 90vh;
-  }
-
-  .bg-device {
-    background-image: url('/device-example.webp');
-    background-repeat: no-repeat;
-    background-position: calc(50% - 40px) calc(50% + 70px);
-    background-size: auto 55vh;
-  }
-
-  .globe-section-height {
-    height: 110vh;
-    height: 110svh;
-  }
-
-  .device-section-height {
-    height: 80vh;
-    height: 80svh;
-
-  }
-
-  .last-section-height
-   {
-    height: calc(100vh - var(--header-height));
-    height: calc(100svh - var(--header-height));
-  }
-
-  .middle-right,
-  .middle-left {
-    justify-content: start;
-    margin-left: 1rem;
-  }
-
-  .headline-anywhere {
-    margin-right: 1.25rem;
-    transform: translateY(-10rem);
-  }
-  
-  .headline-fits {
-    margin-left: unset;
-    margin-right: 1.25rem;
-    transform: translateY(-9rem);
   }
 }
 
