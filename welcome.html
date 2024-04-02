@@ -100,6 +100,7 @@
   --cousin-spacing: 2rem;
   --h-padding: 1rem;
   --header-height: 3.5rem;
+  --footer-height: calc(2rem + var(--header-height));
   --section-gray: #25254E;
   --headline-side-margin: 1.25rem;
 }
@@ -202,8 +203,8 @@ section:first-of-type {
 }
 
 .last-section-height {
-  height: calc(100vh - var(--header-height));
-  height: calc(100svh - var(--header-height));
+  height: calc(90vh - var(--header-height) + var(--footer-height));
+  height: calc(90svh - var(--header-height) + var(--footer-height));
 }
 
 .center-middle {
@@ -371,7 +372,7 @@ section:first-of-type {
   background-image: url('/star-sunrise.webp');
   background-repeat: no-repeat;
   background-position: 50% calc(50% + 110px);
-  background-size: auto 105vh;
+  background-size: auto calc(105vh);
 }
 
 .contain {
@@ -416,9 +417,8 @@ button {
 }
 
 footer {
-  padding-bottom: var(--header-height);
-  height: calc(6rem + var(--header-height));
-
+  margin-top: calc(-1 * var(--footer-height));
+  height: var(--footer-height);
   backdrop-filter: blur(4px);
   z-index: 1;
   font-weight: 400;
@@ -472,9 +472,11 @@ footer svg {
 
 /* Monitor layout changes */
 @media (min-width: 700px) {
+  :root {
+    --footer-height: 6rem;
+  }
+
   footer {
-    margin-top: -6rem;
-    height: 6rem;
     padding-bottom: unset;
   }
 
@@ -493,6 +495,11 @@ footer svg {
   .bg-device {
     background-position: calc(50% + 200px) calc(50% - 10px);
     background-size: auto 80vh;
+  }
+
+  .bg-sunrise {
+    background-size: auto 105vh;
+    background-position: 50% calc(50% + 110px);
   }
 
   .headline-main {
