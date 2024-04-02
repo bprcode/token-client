@@ -202,8 +202,8 @@ section:first-of-type {
 }
 
 .last-section-height {
-  height: 95vh;
-  height: 95svh;
+  height: 105vh;
+  height: 105svh;
 }
 
 .center-middle {
@@ -246,7 +246,7 @@ section:first-of-type {
 
 .headline-last {
   max-width: 40ch;
-  transform: translate(0, -6rem);
+  transform: translate(0, -6.75rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -255,12 +255,13 @@ section:first-of-type {
 
 .demo-last {
   background-color: #FF852D;
-  outline: 3px solid #01010dc0;
+  outline: 3px solid #01010d70;
   color: #01010dc0;
   margin: 0 auto;
-  transform: translateY(-4rem);
-  box-shadow: 0 4px 64px #181d27,
-  0 4px 40px #181d27;
+  transform: translateY(-4.75rem);
+  box-shadow: 0 16px 64px #313438,
+  0 8px 40px #313438,
+  0 4px 20px #01010d;
 }
 
 .section-headline h2 {
@@ -373,7 +374,7 @@ section:first-of-type {
 .bg-sunrise {
   background-image: url('/star-sunrise.webp');
   background-repeat: no-repeat;
-  background-position: 50% calc(50% + 160px);
+  background-position: 50% calc(50% + 120px);
   background-size: auto 105vh;
 }
 
@@ -419,10 +420,12 @@ button {
 }
 
 footer {
+  backdrop-filter: blur(4px);
+  z-index: 1;
   font-weight: 400;
   border-top: 1px solid #FF9D8D40;
-  background-color: #88f4;
-  margin-top: auto;
+  background-color: #161424cd;
+  margin-top: -6rem;
   height: 6rem;
   display: flex;
   flex-direction: column;
