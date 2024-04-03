@@ -49,7 +49,7 @@
     <div class="contain middle-left">
       <div class="section-headline headline-fits shadowed-text mw40">
         <h2>Everything just fits.</h2>
-        <p>Easily make changes. Just drag, drop, and go. Plan your week with a single tap.</p>
+        <p>Easily make changes. Just drag, drop, and go. <span class="br-380"><br></span>Plan your week with a single tap.</p>
       </div>
     </div>
   </section>
@@ -202,6 +202,10 @@ section:first-of-type {
   max-width: 40ch;
 }
 
+.br-380 {
+  display: none;
+}
+
 .headline-anywhere {
   margin-left: 1.5rem;
   margin-right: 1.5rem;
@@ -215,7 +219,7 @@ section:first-of-type {
 }
 
 .headline-last {
-  transform: translate(0, -6.5rem);
+  transform: translate(0, -6rem);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -318,7 +322,7 @@ section:first-of-type {
 }
 
 .bg-hourglass {
-  background-image: url('/narrow-blue.webp');
+  background-image: url('/narrow-blue-80.webp');
   background-repeat: no-repeat;
   background-position: 50% 20px;
   background-size: auto 110vh;
@@ -326,21 +330,21 @@ section:first-of-type {
 
 .bg-globe {
   border-top: 1px solid rgb(24, 75, 97);
-  background-image: url('/connection-sphere.webp');
+  background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
   background-position: calc(50% + 220px) calc(50% + 140px);
   background-size: auto 90vh;
 }
 
 .bg-device {
-  background-image: url('/device-example.webp');
+  background-image: url('/device-example-80.webp');
   background-repeat: no-repeat;
   background-position: calc(50% - 40px) calc(50% + 70px);
-  background-size: auto 50vh;
+  background-size: auto clamp(320px, 90vw, 420px);
 }
 
 .bg-sunrise {
-  background-image: url('/star-sunrise.webp');
+  background-image: url('/star-sunrise-95.webp');
   background-repeat: no-repeat;
   background-position: 50% calc(50% + 110px);
   background-size: auto calc(105vh);
@@ -425,6 +429,12 @@ footer svg {
   }
 }
 
+@media (min-width: 380px) {
+  .br-380 {
+    display: unset;
+  }
+}
+
 @media (min-width: 500px) {
   :root{
     --h-padding: 1.75rem;
@@ -452,7 +462,7 @@ footer svg {
   }
 
   .bg-hourglass {
-    background-image: url('/wide-bg.webp');
+    background-image: url('/wide-bg-90.webp');
     background-size: auto 84vh;
     background-position: calc(50% + 120px) 3rem;
   }
