@@ -102,6 +102,7 @@
   --header-height: 3.5rem;
   --footer-height: calc(2rem + var(--header-height));
   --headline-side-margin: 1.25rem;
+  --min-section-height: 24rem;
 }
 
 h1 {
@@ -156,8 +157,8 @@ header {
 section {
   position: relative;
   background-color: #01010d;
-  height: max(18rem, calc(100vh - var(--header-height)));
-  height: max(18rem, calc(100svh - var(--header-height)));
+  height: max(var(--min-section-height), calc(100vh - var(--header-height)));
+  height: max(var(--min-section-height), calc(100svh - var(--header-height)));
 }
 
 section:first-of-type {
@@ -165,18 +166,18 @@ section:first-of-type {
 }
 
 .globe-section-height {
-  height: max(24rem, 110vh);
-  height: max(24rem, 110svh);
+  height: max(var(--min-section-height), 110vh);
+  height: max(var(--min-section-height), 110svh);
 }
 
 .device-section-height {
-  height: max(24rem, 95vh);
-  height: max(24rem, 95svh);
+  height: max(var(--min-section-height), 95vh);
+  height: max(var(--min-section-height), 95svh);
 }
 
 .last-section-height {
-  height: max(24rem, calc(90vh - var(--header-height) + var(--footer-height)));
-  height: max(24rem, calc(90svh - var(--header-height) + var(--footer-height)));
+  height: max(var(--min-section-height), calc(90vh - var(--header-height) + var(--footer-height)));
+  height: max(var(--min-section-height), calc(90svh - var(--header-height) + var(--footer-height)));
 }
 
 .center-middle {
@@ -545,18 +546,18 @@ footer svg {
   }
 
   .globe-section-height {
-    height: max(24rem, 120vh);
-    height: max(24rem, 120svh);
+    height: max(var(--min-section-height), 120vh);
+    height: max(var(--min-section-height), 120svh);
   }
 
   .device-section-height {
-    height: max(24rem, 85vh);
-    height: max(24rem, 85svh);
+    height: max(var(--min-section-height), 85vh);
+    height: max(var(--min-section-height), 85svh);
   }
 
   .last-section-height {
-    height: max(24rem, 105vh);
-    height: max(24rem, 105svh);
+    height: max(var(--min-section-height), 105vh);
+    height: max(var(--min-section-height), 105svh);
   }
 
   .middle-right {
