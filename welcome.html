@@ -209,13 +209,13 @@ section:first-of-type {
 .headline-anywhere {
   margin-left: 1.5rem;
   margin-right: 1.5rem;
-  transform: translateY(-8rem);
+  transform: translateY(-7rem);
 }
 
 .headline-fits {
   margin-left: 1.5rem;
   margin-right: 1.5rem;
-  transform: translateY(-10rem);
+  transform: translateY(-8rem);
 }
 
 .headline-last {
@@ -325,7 +325,9 @@ section:first-of-type {
   background-image: url('/narrow-blue-80.webp');
   background-repeat: no-repeat;
   background-position: 50% 20px;
-  background-size: auto 110vh;
+  /* height >= 111vw ensures full horizontal coverage,*/
+  /* based on the source's 996x886 dimensions. */
+  background-size: auto max(111vw, 110vh);
 }
 
 .bg-globe {
