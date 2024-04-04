@@ -93,7 +93,7 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  /* box-shadow: 0 0 2px inset #eef6 !important; */
+  box-shadow: 0 0 2px inset #eef6 !important;
 }
 
 :root {
@@ -156,8 +156,8 @@ header {
 section {
   position: relative;
   background-color: #01010d;
-  height: calc(100vh - var(--header-height));
-  height: calc(100svh - var(--header-height));
+  height: max(18rem, calc(100vh - var(--header-height)));
+  height: max(18rem, calc(100svh - var(--header-height)));
 }
 
 section:first-of-type {
@@ -165,18 +165,18 @@ section:first-of-type {
 }
 
 .globe-section-height {
-  height: 110vh;
-  height: 110svh;
+  height: max(24rem, 110vh);
+  height: max(24rem, 110svh);
 }
 
 .device-section-height {
-  height: 95vh;
-  height: 95svh;
+  height: max(24rem, 95vh);
+  height: max(24rem, 95svh);
 }
 
 .last-section-height {
-  height: calc(90vh - var(--header-height) + var(--footer-height));
-  height: calc(90svh - var(--header-height) + var(--footer-height));
+  height: max(24rem, calc(90vh - var(--header-height) + var(--footer-height)));
+  height: max(24rem, calc(90svh - var(--header-height) + var(--footer-height)));
 }
 
 .center-middle {
@@ -543,18 +543,18 @@ footer svg {
   }
 
   .globe-section-height {
-    height: 120vh;
-    height: 120svh;
+    height: max(24rem, 120vh);
+    height: max(24rem, 120svh);
   }
 
   .device-section-height {
-    height: 85vh;
-    height: 85svh;
+    height: max(24rem, 85vh);
+    height: max(24rem, 85svh);
   }
 
   .last-section-height {
-    height: 105vh;
-    height: 105svh;
+    height: max(24rem, 105vh);
+    height: max(24rem, 105svh);
   }
 
   .middle-right {
