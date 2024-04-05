@@ -93,7 +93,7 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  box-shadow: 0 0 2px inset #eef6 !important;
+  /* box-shadow: 0 0 2px inset #eef6 !important; */
 }
 
 :root {
@@ -103,6 +103,10 @@
   --footer-height: calc(2rem + var(--header-height));
   --headline-side-margin: 1.25rem;
   --min-section-height: 24rem;
+  --first-section-height: max(var(--min-section-height),
+    calc(100vh - var(--header-height)));
+  --first-section-height: max(var(--min-section-height),
+    calc(100svh - var(--header-height)));
 }
 
 h1 {
@@ -157,8 +161,7 @@ header {
 section {
   position: relative;
   background-color: #01010d;
-  height: max(var(--min-section-height), calc(100vh - var(--header-height)));
-  height: max(var(--min-section-height), calc(100svh - var(--header-height)));
+  height: var(--first-section-height);
 }
 
 section:first-of-type {
@@ -329,6 +332,7 @@ section:first-of-type {
   /* height >= 111vw ensures full horizontal coverage,*/
   /* based on the source's 996x886 dimensions. */
   background-size: auto max(111vw, 110vh);
+  background-size: auto max(111vw, 110svh);
 }
 
 .bg-globe {
@@ -337,6 +341,7 @@ section:first-of-type {
   background-repeat: no-repeat;
   background-position: calc(50% + 220px) calc(50% + 140px);
   background-size: auto 90vh;
+  background-size: auto 90svh;
 }
 
 .bg-globe::before {
@@ -363,7 +368,8 @@ section:first-of-type {
   background-image: url('/star-sunrise-95.webp');
   background-repeat: no-repeat;
   background-position: 50% calc(50% + 110px);
-  background-size: auto calc(105vh);
+  background-size: auto 105vh;
+  background-size: auto 105svh;
 }
 
 .contain {
@@ -479,7 +485,12 @@ footer svg {
 
   .bg-hourglass {
     background-image: url('/wide-bg-90.webp');
-    background-size: auto 84vh;
+    background-size: auto clamp(var(--min-section-height) - 3rem,
+      84vh,
+      var(--first-section-height) - 3rem);
+    background-size: auto clamp(var(--min-section-height) - 3rem,
+      84svh,
+      var(--first-section-height) - 3rem);
     background-position: calc(50% + 120px) 3rem;
   }
 
@@ -487,6 +498,7 @@ footer svg {
     border-top: unset;
     background-position: calc(50% - 80px) calc(50% + 60px);
     background-size: auto 100vh;
+    background-size: auto 100svh;
   }
 
   .bg-globe::before {
@@ -496,10 +508,12 @@ footer svg {
   .bg-device {
     background-position: calc(50% + 200px) calc(50% - 10px);
     background-size: auto 80vh;
+    background-size: auto 80svh;
   }
 
   .bg-sunrise {
     background-size: auto 105vh;
+    background-size: auto 105svh;
     background-position: 50% calc(50% + 110px);
   }
 
