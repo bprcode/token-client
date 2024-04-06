@@ -126,6 +126,11 @@
   --last-section-height: clamp(var(--min-section-height),
     calc(90svh - var(--header-height) + var(--footer-height)),
     var(--max-section-height));
+
+  /* height >= 111vw ensures full horizontal coverage, */
+  /* based on the source's 996x886 dimensions. */
+  --hourglass-height: clamp(111vw, 110vh, var(--first-section-height));
+  --hourglass-height: clamp(111vw, 110svh, var(--first-section-height)); 
 }
 
 h1 {
@@ -326,7 +331,9 @@ section:first-of-type {
   display: flex;
   flex-direction: column;
   max-width: 50ch;
-  margin: clamp(5.75rem, 20vw + 6vh, calc(0.275 * var(--first-section-height))) auto 0 auto;
+  margin: 0 auto;
+  transform: translateY(calc(0.21 * var(--hourglass-height)));
+
   align-items: center;
 }
 
@@ -348,10 +355,7 @@ section:first-of-type {
   background-image: url('/narrow-blue-80.webp');
   background-repeat: no-repeat;
   background-position: calc(50% - 5px) 20px;
-  /* height >= 111vw ensures full horizontal coverage,*/
-  /* based on the source's 996x886 dimensions. */
-  background-size: auto clamp(111vw, 110vh, var(--first-section-height));
-  background-size: auto clamp(111vw, 110svh, var(--first-section-height));
+  background-size: auto var(--hourglass-height);
 }
 
 .bg-globe {
@@ -562,6 +566,7 @@ footer svg {
     align-items: unset;
     text-shadow: unset;
     backdrop-filter: unset;
+    transform: unset;
   }
 
   .headline-main h1, .headline-main h2 {
