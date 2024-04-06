@@ -326,7 +326,7 @@ section:first-of-type {
   display: flex;
   flex-direction: column;
   max-width: 50ch;
-  margin: clamp(5.75rem, 20vw, calc(0.325 * var(--first-section-height))) auto 0 auto;
+  margin: clamp(5.75rem, 20vw + 6vh, calc(0.275 * var(--first-section-height))) auto 0 auto;
   align-items: center;
 }
 
@@ -360,9 +360,12 @@ section:first-of-type {
   border-top: 1px solid rgb(24, 75, 97);
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
-  background-position: calc(50% + var(--dx)) var(--dy);
-  background-size: auto max(var(--min-section-height) - var(--dy),  90vh);
-  background-size: auto max(var(--min-section-height) - var(--dy),  90svh);
+  /* background-position: calc(50% + var(--dx)) var(--dy); */
+  /* background-position: right 0 bottom 5px; */
+  background-position: right calc(-0.7 * var(--globe-section-height)) bottom 5px;
+  background-size: auto calc(0.91 * var(--globe-section-height));
+  /* background-size: auto max(var(--min-section-height) - var(--dy),  90vh);
+  background-size: auto max(var(--min-section-height) - var(--dy),  90svh); */
 }
 
 .bg-globe::before {
