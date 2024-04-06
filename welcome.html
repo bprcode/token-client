@@ -102,20 +102,30 @@
   --header-height: 3.5rem;
   --footer-height: calc(2rem + var(--header-height));
   --headline-side-margin: 1.25rem;
-  --min-section-height: 24rem;
-  --first-section-height: max(var(--min-section-height),
-    calc(100vh - var(--header-height)));
-  --first-section-height: max(var(--min-section-height),
-    calc(100svh - var(--header-height)));
 
-  --globe-section-height: max(var(--min-section-height), 110vh);
-  --globe-section-height: max(var(--min-section-height), 110svh);
-  --device-section-height: max(var(--min-section-height), 95vh);
-  --device-section-height: max(var(--min-section-height), 95svh);
-  --last-section-height: max(var(--min-section-height),
-    calc(90vh - var(--header-height) + var(--footer-height)));
-  --last-section-height: max(var(--min-section-height),
-    calc(90svh - var(--header-height) + var(--footer-height)));
+  --min-section-height: 24rem;
+  --max-section-height: 60rem;
+
+  /* use svh units where supported: */
+  --first-section-height: clamp(var(--min-section-height),
+    100vh - var(--header-height), var(--max-section-height));
+  --first-section-height: clamp(var(--min-section-height),
+    100svh - var(--header-height), var(--max-section-height));
+
+  --globe-section-height: clamp(var(--min-section-height), 110vh,
+    var(--max-section-height));
+  --globe-section-height: clamp(var(--min-section-height), 110svh,
+    var(--max-section-height));
+  --device-section-height: clamp(var(--min-section-height), 95vh,
+    var(--max-section-height));
+  --device-section-height: clamp(var(--min-section-height), 95svh,
+    var(--max-section-height));
+  --last-section-height: clamp(var(--min-section-height),
+    calc(90vh - var(--header-height) + var(--footer-height)),
+    var(--max-section-height));
+  --last-section-height: clamp(var(--min-section-height),
+    calc(90svh - var(--header-height) + var(--footer-height)),
+    var(--max-section-height));
 }
 
 h1 {
@@ -170,10 +180,10 @@ header {
 section {
   position: relative;
   background-color: #01010d;
-  height: var(--first-section-height);
 }
 
 section:first-of-type {
+  height: var(--first-section-height);
   margin-top: var(--header-height);
 }
 
@@ -199,6 +209,7 @@ section:first-of-type {
 
 .middle-right,
 .middle-left {
+  /* left-justify on narrow devices, expand to zig-zag placement on wide devices: */
   justify-content: start;
   margin-left: 1rem;
   position: relative;
@@ -213,6 +224,7 @@ section:first-of-type {
 }
 
 .br-380 {
+  /* remove element until 380px width: */
   display: none;
 }
 
@@ -266,6 +278,7 @@ section:first-of-type {
 }
 
 .button-link {
+  /* Emulate Material UI styling: */
   text-decoration: none;
   border-radius: 4px;
   width: fit-content;
@@ -313,7 +326,7 @@ section:first-of-type {
   display: flex;
   flex-direction: column;
   max-width: 50ch;
-  margin: max(6rem, 22vh) auto 0 auto;
+  margin: clamp(5.75rem, 20vw, calc(0.325 * var(--first-section-height))) auto 0 auto;
   align-items: center;
 }
 
@@ -337,8 +350,8 @@ section:first-of-type {
   background-position: calc(50% - 5px) 20px;
   /* height >= 111vw ensures full horizontal coverage,*/
   /* based on the source's 996x886 dimensions. */
-  background-size: auto max(111vw, 110vh);
-  background-size: auto max(111vw, 110svh);
+  background-size: auto clamp(111vw, 110vh, var(--first-section-height));
+  background-size: auto clamp(111vw, 110svh, var(--first-section-height));
 }
 
 .bg-globe {
@@ -486,12 +499,12 @@ footer svg {
   :root {
     --footer-height: 6rem;
 
-    --globe-section-height: max(var(--min-section-height), 120vh);
-    --globe-section-height: max(var(--min-section-height), 120svh);
-    --device-section-height: max(var(--min-section-height), 85vh);
-    --device-section-height: max(var(--min-section-height), 85svh);
-    --last-section-height: max(var(--min-section-height), 105vh);
-    --last-section-height: max(var(--min-section-height), 105svh);
+    --globe-section-height: clamp(var(--min-section-height), 120vh, var(--max-section-height));
+    --globe-section-height: clamp(var(--min-section-height), 120svh, var(--max-section-height));
+    --device-section-height: clamp(var(--min-section-height), 85vh, var(--max-section-height));
+    --device-section-height: clamp(var(--min-section-height), 85svh, var(--max-section-height));
+    --last-section-height: clamp(var(--min-section-height), 105vh, var(--max-section-height));
+    --last-section-height: clamp(var(--min-section-height), 105svh, var(--max-section-height));
   }
 
   footer {
@@ -542,7 +555,7 @@ footer svg {
 
   .headline-main {
     max-width: 50ch;
-    margin-left: 2.5rem;
+    margin: clamp(5.75rem, 20vh, calc(0.325 * var(--first-section-height))) auto 0 2.5rem;
     align-items: unset;
     text-shadow: unset;
     backdrop-filter: unset;
