@@ -93,7 +93,7 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  /* box-shadow: 0 0 2px inset #eef6 !important; */
+  box-shadow: 0 0 2px inset #eef6 !important;
 }
 
 :root {
@@ -328,7 +328,7 @@ section:first-of-type {
 .bg-hourglass {
   background-image: url('/narrow-blue-80.webp');
   background-repeat: no-repeat;
-  background-position: 50% 20px;
+  background-position: calc(50% - 5px) 20px;
   /* height >= 111vw ensures full horizontal coverage,*/
   /* based on the source's 996x886 dimensions. */
   background-size: auto max(111vw, 110vh);
@@ -484,37 +484,45 @@ footer svg {
   }
 
   .bg-hourglass {
+    --dy: 3rem;
     background-image: url('/wide-bg-90.webp');
-    background-size: auto clamp(var(--min-section-height) - 3rem,
+    background-size: auto clamp(var(--min-section-height) - var(--dy),
       84vh,
-      var(--first-section-height) - 3rem);
-    background-size: auto clamp(var(--min-section-height) - 3rem,
+      var(--first-section-height) - var(--dy));
+    background-size: auto clamp(var(--min-section-height) - var(--dy),
       84svh,
-      var(--first-section-height) - 3rem);
-    background-position: calc(50% + 120px) 3rem;
+      var(--first-section-height) - var(--dy));
+    background-position: calc(50% + 120px) var(--dy);
   }
 
   .bg-globe {
+    --dy: 60px;
     border-top: unset;
-    background-position: calc(50% - 80px) calc(50% + 60px);
-    background-size: auto 100vh;
-    background-size: auto 100svh;
+    background-position: calc(50% - 80px) calc(50% + var(--dy));
+    background-size: auto max(var(--min-section-height) - var(--dy),
+      100vh);
+    background-size: auto max(var(--min-section-height) - var(--dy),
+      100svh);
   }
 
   .bg-globe::before {
+    /* disable section border glow on wide viewports: */
     display: none;
   }
 
   .bg-device {
-    background-position: calc(50% + 200px) calc(50% - 10px);
-    background-size: auto 80vh;
-    background-size: auto 80svh;
+    --dy: 10px;
+    background-position: calc(50% + 200px) var(--dy);
+    background-size: auto max(var(--min-section-height) - var(--dy), 80vh);
+    background-size: auto max(var(--min-section-height) - var(--dy), 80svh);
   }
 
   .bg-sunrise {
-    background-size: auto 105vh;
-    background-size: auto 105svh;
-    background-position: 50% calc(50% + 110px);
+    --dy: max(14vh, 60px);
+    --dy: max(14svh, 60px);
+    background-size: auto max(var(--min-section-height) - var(--dy), 105vh);
+    background-size: auto max(var(--min-section-height) - var(--dy), 105svh);
+    background-position: 50% var(--dy);
   }
 
   .headline-main {
