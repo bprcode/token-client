@@ -234,9 +234,9 @@ section:first-of-type {
 }
 
 .headline-anywhere {
-  margin-left: 1.5rem;
+  margin-left: auto;
   margin-right: 1.5rem;
-  transform: translateY(-7rem);
+  transform: translateY(calc(-0.3 * var(--globe-section-height)));
 }
 
 .headline-fits {
@@ -359,15 +359,17 @@ section:first-of-type {
 }
 
 .bg-globe {
-  --dy: calc(100px + 20vh);
-  --dx: calc(110px + 20vh);
+  --bg-height: calc(0.8 * var(--globe-section-height));
+  /* --bottom-offset: clamp(-200px, 1px - 20vw, -60px); */
+  /* --bottom-offset: clamp(-200px, -15vw, 60px); */
+  --bottom-offset: 0px;
   border-top: 1px solid rgb(24, 75, 97);
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
-  /* background-position: calc(50% + var(--dx)) var(--dy); */
-  /* background-position: right 0 bottom 5px; */
-  background-position: right calc(-0.7 * var(--globe-section-height)) bottom 5px;
-  background-size: auto calc(0.91 * var(--globe-section-height));
+  
+  background-position: right calc(-0.7 * var(--globe-section-height)) bottom var(--bottom-offset);
+  background-position: left calc(-0.25 * var(--globe-section-height)) bottom var(--bottom-offset);
+  background-size: auto var(--bg-height);
   /* background-size: auto max(var(--min-section-height) - var(--dy),  90vh);
   background-size: auto max(var(--min-section-height) - var(--dy),  90svh); */
 }
@@ -562,7 +564,7 @@ footer svg {
 
   .headline-main {
     max-width: 50ch;
-    margin: clamp(5.75rem, 20vh, calc(0.325 * var(--first-section-height))) auto 0 2.5rem;
+    margin: clamp(5.75rem, 20vh, calc(0.3 * var(--first-section-height))) auto 0 2.5rem;
     align-items: unset;
     text-shadow: unset;
     backdrop-filter: unset;
