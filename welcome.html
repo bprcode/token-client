@@ -47,9 +47,9 @@
 
   <section class="device-section bg-device">
     <div class="contain middle-left">
-      <div class="section-headline headline-fits shadowed-text max-width-copy">
+      <div class="section-headline headline-fits shadowed-text">
         <h2>Everything just fits.</h2>
-        <p>Easily make changes. Just drag, drop, and go. <span class="br-380"><br></span>Plan your week with a single tap.</p>
+        <p>Easily make changes. Just drag, drop, and go. <span class="br-700"><br></span>Plan your week with a single tap.</p>
       </div>
     </div>
   </section>
@@ -140,8 +140,8 @@ h1 {
 }
 
 h2 {
-  font-size: clamp(1.1rem, 0.35vw + 1rem, 1.25rem);
-  line-height: 1.85em;
+  font-size: clamp(1.0125rem, 0.7vw + 0.6rem, 1.125rem);
+  line-height: 1.5em;
   font-weight: 300;
   letter-spacing: -0.02em;
 }
@@ -221,6 +221,9 @@ section:first-of-type {
   z-index: 1;
   height: 100%;
   display: flex;
+}
+
+.middle-right {
   align-items: center;
 }
 
@@ -228,8 +231,8 @@ section:first-of-type {
   max-width: 40ch;
 }
 
-.br-380 {
-  /* remove element until 380px width: */
+.br-700 {
+  /* remove element until 700px width: */
   display: none;
 }
 
@@ -237,14 +240,15 @@ section:first-of-type {
   margin-left: auto;
   margin-right: 1rem;
   padding-left: 1.5rem;
-  max-width: 33ch;
+  max-width: 38ch;
   transform: translateY(calc(-0.3 * var(--globe-section-height)));
 }
 
 .headline-fits {
   margin-left: 1.5rem;
   margin-right: 1.5rem;
-  transform: translateY(-8rem);
+  margin-top: 2rem;
+  max-width: 32ch;
 }
 
 .headline-last {
@@ -366,7 +370,7 @@ section:first-of-type {
   --drift-right: calc(0.25 * max((100vw - 320px), 0px));
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
-  background-position: left calc(var(--drift-right) - 0.2 * var(--globe-section-height)) bottom 0px;
+  background-position: left calc(var(--drift-right) - 0.175 * var(--globe-section-height)) bottom 0px;
   background-size: auto var(--bg-height);
 }
 
@@ -386,7 +390,7 @@ section:first-of-type {
 .bg-device {
   background-image: url('/device-example-80.webp');
   background-repeat: no-repeat;
-  background-position: calc(50% - 16px - 7vw) calc(50% + 40px);
+  background-position: right -10px bottom calc(0.25 * var(--device-section-height) - 3rem);
   background-size: auto clamp(320px, 90vw, 420px);
 }
 
@@ -477,12 +481,6 @@ footer svg {
   }
 }
 
-@media (min-width: 380px) {
-  .br-380 {
-    display: unset;
-  }
-}
-
 @media (min-width: 500px) {
   :root{
     --h-padding: 1.75rem;
@@ -512,8 +510,17 @@ footer svg {
     --last-section-height: clamp(var(--min-section-height), 105svh, var(--max-section-height));
   }
 
+  h2 {
+    line-height: 1.85em;
+    font-size: clamp(1.1rem, 0.35vw + 1rem, 1.25rem);
+  }
+
   footer {
     padding-bottom: unset;
+  }
+
+  .br-700 {
+    display: unset;
   }
 
   .bg-hourglass {
@@ -571,7 +578,9 @@ footer svg {
     text-shadow: unset;
   }
   .see-the-demo {
-    transform: translateX(-4rem);
+    /* transform: translateX(calc(-5.75rem)); */
+    /* transform: translateX(calc(-4.5rem)); */
+    transform: translateX(calc(-6rem + clamp(0.25rem, 0.05 * (100vw - 700px), 1.5rem)));
   }
 
   .headline-main::before {
@@ -604,8 +613,9 @@ footer svg {
   .middle-right {
     justify-content: end;
   }
-
+  
   .middle-left {
+    align-items: center;
     justify-content: start;
   }
 
@@ -618,8 +628,10 @@ footer svg {
   }
 
   .headline-fits {
+    max-width: 40ch;
     margin-right: unset;
     margin-left: var(--headline-side-margin);
+    margin-top: unset;
     transform: translateY(-2rem);
   }
 }
