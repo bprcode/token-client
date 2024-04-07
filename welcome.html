@@ -99,6 +99,7 @@
 :root {
   --cousin-spacing: 2rem;
   --h-padding: 1rem;
+  --subheadline-offset: 0.85rem;
   --header-height: 3.5rem;
   --footer-height: calc(2rem + var(--header-height));
   --headline-side-margin: 1.25rem;
@@ -135,7 +136,7 @@
 
 h1 {
   font-size: clamp(1.375rem, 1.25vw + 0.8rem, 1.6rem);
-  margin-bottom: 1.5rem;
+  margin-bottom: var(--subheadline-offset);
   letter-spacing: -0.0125em;
 }
 
@@ -268,7 +269,7 @@ section:first-of-type {
 
 .section-headline h2 {
   font-size: clamp(1.25rem, 0.5vw + 1rem, 1.4rem);
-  margin-bottom: 0.85rem;
+  margin-bottom: var(--subheadline-offset);
   letter-spacing: -0.01em;
   font-weight: 500;
 }
@@ -341,9 +342,10 @@ section:first-of-type {
 
 .shadowed-text {
   text-shadow:
-    2px -4px 8px #000,
-    2px 3px 8px #000,
-    -2px 3px 8px #000;
+    2px -4px 8px #01010d,
+    2px 3px 8px #01010d,
+    4px 0px 16px #01010d,
+    -2px 3px 8px #01010d;
 }
 
 .headline-main h1, .headline-main h2 {
@@ -363,10 +365,10 @@ section:first-of-type {
 .bg-globe {
   border-top: 1px solid rgb(24, 75, 97);
   --bg-height: calc(0.725 * var(--globe-section-height));
-  --drift-right: calc(0.3 * max((100vw - 320px), 0px));
+  --drift-right: calc(0.2 * max((100vw - 320px), 0px));
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
-  background-position: left calc(var(--drift-right) - 0.125 * var(--globe-section-height)) top 12rem;
+  background-position: left calc(var(--drift-right) - 0.1 * var(--globe-section-height)) bottom 0px;
   background-size: auto var(--bg-height);
 }
 
@@ -387,7 +389,7 @@ section:first-of-type {
   background-image: url('/device-example-80.webp');
   background-repeat: no-repeat;
   background-position: right -12px top 3rem;
-  background-size: auto clamp(320px, 90vw, 420px);
+  background-size: auto clamp(320px, 85vw, 420px);
 }
 
 .bg-sunrise {
@@ -548,7 +550,7 @@ footer svg {
 
   .bg-device {
     --dy: 10px;
-    background-position: calc(50% + 200px) var(--dy);
+    background-position: calc(50% + 180px) var(--dy);
     background-size: auto max(var(--min-section-height) - var(--dy), 80vh);
     background-size: auto max(var(--min-section-height) - var(--dy), 80svh);
   }
@@ -627,7 +629,7 @@ footer svg {
   .headline-fits {
     max-width: 40ch;
     margin-right: unset;
-    margin-left: var(--headline-side-margin);
+    margin-left: calc(var(--headline-side-margin) + 1.25rem);
     margin-top: unset;
     transform: translateY(-4rem);
   }
