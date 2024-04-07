@@ -249,10 +249,16 @@ section:first-of-type {
 }
 
 .headline-fits {
-  margin-left: 1.5rem;
-  margin-right: 1.5rem;
+  margin-left: 1.25rem;
+  margin-right: 0.75rem;
   margin-top: var(--uniform-top-margin);
   max-width: 32ch;
+}
+
+@media (min-width: 360px) {
+  .headline-fits {
+    margin-left: 8vw;
+  }
 }
 
 .headline-last {
@@ -385,7 +391,6 @@ section:first-of-type {
 /* for narrow, yet landscape viewports, adjust image placement: */
 @media (min-width: 100vh) {
   .bg-globe {
-    box-shadow: inset 0 0 1rem yellowgreen;
     --drift-up: 0.3 * (100vw - 400px);
     background-position: left calc(var(--drift-right) - 0.1 * var(--globe-section-height)) top calc(var(--uniform-top-margin) + 80px - var(--drift-up));
     --width-bounded: 80vw;
@@ -407,18 +412,18 @@ section:first-of-type {
 }
 
 .bg-device {
-  --bg-height: clamp(320px, 75vw, var(--device-section-height) - var(--uniform-top-margin) - 40px);
+  --bg-height: clamp(320px, 70vw, var(--device-section-height) - var(--uniform-top-margin) - 50px);
   background-image: url('/device-example-80.webp');
   background-repeat: no-repeat;
-  background-position: right calc(0.15 * (100vw - 360px)) top calc(var(--uniform-top-margin) + 50px);
+  background-position: right calc(0.3 * (100vw - 360px) - 10px) top calc(var(--uniform-top-margin) + 50px);
   background-size: auto var(--bg-height);
 }
 
 .bg-sunrise {
   background-image: url('/star-sunrise-95.webp');
   background-repeat: no-repeat;
-  background-position: center top;
-  background-size: auto clamp(var(--min-section-height), 105vh, var(--max-section-height));
+  background-position: center top 10px;
+  background-size: auto clamp(var(--min-section-height), calc(1.3 * var(--uniform-section-height)), var(--max-section-height));
 }
 
 .contain {
@@ -469,7 +474,7 @@ footer {
   z-index: 1;
   font-weight: 400;
   border-top: 1px solid #FF9D8D40;
-  background-color: #171429ac;
+  background-color: #151322bd;
   display: flex;
   flex-direction: column;
   justify-content: center;
