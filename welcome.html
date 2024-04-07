@@ -159,18 +159,6 @@ body {
   font-family:'Roboto', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* debug -- ratio warning */
-@media (min-width: 100vh) {
-  section {
-    /* box-shadow: inset 0 0 1rem red !important; */
-  }
-}
-@media (min-width: 700px) {
-  section {
-    /* box-shadow: inset 0 0 1rem blue !important; */
-  }
-}
-
 header {
   position: fixed;
   width: 100%;
@@ -531,7 +519,7 @@ footer svg {
   /* Add breathing room between sections: */
   section:not(:first-of-type) {
     box-shadow: inset 0 0 1rem #f0f4;
-    margin-top: 100px;
+    margin-top: 60px;
   }
 
   h2 {
@@ -548,25 +536,16 @@ footer svg {
   }
 
   .bg-hourglass {
-    --dy: 3rem;
     background-image: url('/wide-bg-90.webp');
-    background-size: auto clamp(var(--min-section-height) - var(--dy),
-      84vh,
-      var(--first-section-height) - var(--dy));
-    background-size: auto clamp(var(--min-section-height) - var(--dy),
-      84svh,
-      var(--first-section-height) - var(--dy));
-    background-position: calc(50% + 100px) 100%;
+    background-size: auto calc(0.925 * var(--first-section-height));
+    background-position: 50% 100%;
   }
 
   .bg-globe {
-    --dy: 60px;
+    --dx: min(1vw, 9.6px);
     border-top: unset;
-    background-position: calc(50% - 80px) calc(50% + var(--dy));
-    background-size: auto max(var(--min-section-height) - var(--dy),
-      100vh);
-    background-size: auto max(var(--min-section-height) - var(--dy),
-      100svh);
+    background-size: auto calc(1 * var(--globe-section-height));
+    background-position: calc(50% - 10ch + 1.5 * var(--dx)) calc(100% + 18px);
   }
 
   .bg-globe::before {
@@ -579,6 +558,9 @@ footer svg {
     background-position: calc(50% + 180px) var(--dy);
     background-size: auto max(var(--min-section-height) - var(--dy), 80vh);
     background-size: auto max(var(--min-section-height) - var(--dy), 80svh);
+
+    background-size: auto calc(0.8 * var(--device-section-height));
+    background-position: calc(50% + 16ch) calc(70%);
   }
 
   .bg-sunrise {
@@ -631,17 +613,11 @@ footer svg {
   }
 
   .middle-right {
-    /* align-items: center; */
     justify-content: end;
   }
   
   .middle-left {
-    /* align-items: center; */
     justify-content: start;
-  }
-
-  .center-middle {
-    /* align-items: center; */
   }
 
   .headline-anywhere {
@@ -654,10 +630,7 @@ footer svg {
   .headline-fits {
     max-width: 40ch;
     margin-right: unset;
-    margin-left: calc(var(--headline-side-margin) + 1.25rem);
-  }
-
-  .headline-last {
+    margin-left: calc(var(--headline-side-margin));
   }
 }
 
