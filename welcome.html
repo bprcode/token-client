@@ -169,6 +169,11 @@ body {
     box-shadow: inset 0 0 1rem red !important;
   }
 }
+@media (min-width: 700px) {
+  section {
+    box-shadow: inset 0 0 1rem blue !important;
+  }
+}
 
 header {
   position: fixed;
@@ -366,7 +371,9 @@ section:first-of-type {
 
 .bg-globe {
   border-top: 1px solid rgb(24, 75, 97);
-  --bg-height: calc(0.8 * var(--globe-section-height));
+  /* Normally cover a fraction of the vertical height, */
+  /* limit size by width in especially narrow resolutions: */
+  --bg-height: clamp(320px, calc(0.8 * var(--globe-section-height)), 160vw);
   --drift-right: calc(0.2 * max((100vw - 320px), 0px));
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
