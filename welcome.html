@@ -93,7 +93,7 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  /* box-shadow: 0 0 2px inset #eef6 !important; */
+  box-shadow: 0 0 2px inset #eef6 !important;
 }
 
 :root {
@@ -108,25 +108,21 @@
   --max-section-height: 60rem;
 
   /* use svh units where supported: */
+  --uniform-section-height: clamp(var(--min-section-height),
+    100vh - var(--header-height), var(--max-section-height));
+  --uniform-section-height: clamp(var(--min-section-height),
+    100svh - var(--header-height), var(--max-section-height));
+
   --first-section-height: clamp(var(--min-section-height),
     100vh - var(--header-height), var(--max-section-height));
   --first-section-height: clamp(var(--min-section-height),
     100svh - var(--header-height), var(--max-section-height));
 
-  --globe-section-height: clamp(var(--min-section-height), 115vh,
-    var(--max-section-height));
-  --globe-section-height: clamp(var(--min-section-height), 115svh,
-    var(--max-section-height));
-  --device-section-height: clamp(var(--min-section-height), 85vh,
-    var(--max-section-height));
-  --device-section-height: clamp(var(--min-section-height), 85svh,
-    var(--max-section-height));
-  --last-section-height: clamp(var(--min-section-height),
-    calc(90vh - var(--header-height) + var(--footer-height)),
-    var(--max-section-height));
-  --last-section-height: clamp(var(--min-section-height),
-    calc(90svh - var(--header-height) + var(--footer-height)),
-    var(--max-section-height));
+  --globe-section-height: var(--uniform-section-height);
+  --device-section-height: var(--uniform-section-height);
+  --last-section-height: var(--uniform-section-height);
+
+  --uniform-top-margin: calc(0.15 * var(--uniform-section-height));
 
   /* height >= 111vw ensures full horizontal coverage, */
   /* based on the source's 996x886 dimensions. */
@@ -195,6 +191,7 @@ section:first-of-type {
 
 .globe-section {
   height: var(--globe-section-height);
+  box-shadow: inset 0 0 2rem orange !important;
 }
 
 .device-section {
@@ -203,6 +200,7 @@ section:first-of-type {
 
 .last-section {
   height: var(--last-section-height);
+  box-shadow: inset 0 0 2rem peru !important;
 }
 
 .center-middle {
@@ -238,13 +236,13 @@ section:first-of-type {
   margin-right: 1rem;
   padding-left: 1.5rem;
   max-width: 38ch;
-  margin-top: 7rem;
+  margin-top: var(--uniform-top-margin);
 }
 
 .headline-fits {
   margin-left: 1.5rem;
   margin-right: 1.5rem;
-  margin-top: 0;
+  margin-top: var(--uniform-top-margin);
   max-width: 32ch;
 }
 
@@ -253,7 +251,7 @@ section:first-of-type {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-top: 4rem;
+  margin-top: var(--uniform-top-margin);
 }
 
 .demo-last {
