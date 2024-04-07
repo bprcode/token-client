@@ -380,7 +380,8 @@ section:first-of-type {
   /* Normally cover a fraction of the vertical height, */
   /* limit size by width in especially narrow resolutions: */
   --width-bounded: min(calc(0.8 * var(--globe-section-height)), 160vw);
-  --bg-height: min(var(--width-bounded), calc(var(--globe-section-height) - var(--uniform-top-margin) - 40px));
+  --line-bounded: min(var(--width-bounded), 40rem);
+  --bg-height: min(var(--line-bounded), calc(var(--globe-section-height) - var(--uniform-top-margin) - 40px));
   --drift-right: calc(0.2 * max((100vw - 320px), 0px));
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
@@ -391,10 +392,10 @@ section:first-of-type {
 /* for narrow, yet landscape viewports, adjust image placement: */
 @media (min-width: 100vh) {
   .bg-globe {
-    --drift-up: 0.3 * (100vw - 400px);
+    --drift-up: 0.35 * max(0px, 100vw - 440px);
     background-position: left calc(var(--drift-right) - 0.1 * var(--globe-section-height)) top calc(var(--uniform-top-margin) + 80px - var(--drift-up));
     --width-bounded: 80vw;
-    --bg-height: min(var(--width-bounded), calc(var(--globe-section-height) - var(--uniform-top-margin) + var(--drift-up) - 40px));
+    --bg-height: min(var(--line-bounded), calc(var(--globe-section-height) - var(--uniform-top-margin) + var(--drift-up) - 40px));
   }
 }
 
@@ -413,10 +414,11 @@ section:first-of-type {
 
 .bg-device {
   --bg-height: clamp(320px, 70vw, var(--device-section-height) - var(--uniform-top-margin) - 50px);
+  --line-bounded: min(var(--bg-height), 26rem);
   background-image: url('/device-example-80.webp');
   background-repeat: no-repeat;
-  background-position: right calc(0.3 * (100vw - 360px) - 10px) top calc(var(--uniform-top-margin) + 50px);
-  background-size: auto var(--bg-height);
+  background-position: right calc(0.25 * (100vw - 360px) - 10px) top calc(var(--uniform-top-margin) + 50px);
+  background-size: auto var(--line-bounded);
 }
 
 .bg-sunrise {
