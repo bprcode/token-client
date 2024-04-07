@@ -103,7 +103,7 @@
   --footer-height: calc(2rem + var(--header-height));
   --headline-side-margin: 1.25rem;
 
-  --min-section-height: 24rem;
+  --min-section-height: 30rem;
   --max-section-height: 60rem;
 
   /* use svh units where supported: */
@@ -235,7 +235,8 @@ section:first-of-type {
 
 .headline-anywhere {
   margin-left: auto;
-  margin-right: 1.5rem;
+  margin-right: 1rem;
+  padding-left: 1.5rem;
   transform: translateY(calc(-0.3 * var(--globe-section-height)));
 }
 
@@ -360,18 +361,11 @@ section:first-of-type {
 
 .bg-globe {
   --bg-height: calc(0.8 * var(--globe-section-height));
-  /* --bottom-offset: clamp(-200px, 1px - 20vw, -60px); */
-  /* --bottom-offset: clamp(-200px, -15vw, 60px); */
-  --bottom-offset: 0px;
-  border-top: 1px solid rgb(24, 75, 97);
+  --drift-right: calc(0.6 * max((100vw - 500px), 0px));
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
-  
-  background-position: right calc(-0.7 * var(--globe-section-height)) bottom var(--bottom-offset);
-  background-position: left calc(-0.25 * var(--globe-section-height)) bottom var(--bottom-offset);
+  background-position: left calc(var(--drift-right) - 0.225 * var(--globe-section-height)) bottom 0px;
   background-size: auto var(--bg-height);
-  /* background-size: auto max(var(--min-section-height) - var(--dy),  90vh);
-  background-size: auto max(var(--min-section-height) - var(--dy),  90svh); */
 }
 
 .bg-globe::before {
@@ -614,6 +608,7 @@ footer svg {
   }
 
   .headline-anywhere {
+    padding-left: unset;
     margin-left: unset;
     margin-right: var(--headline-side-margin);
     transform: translateY(-2rem);
