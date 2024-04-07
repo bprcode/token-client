@@ -373,7 +373,8 @@ section:first-of-type {
   border-top: 1px solid rgb(24, 75, 97);
   /* Normally cover a fraction of the vertical height, */
   /* limit size by width in especially narrow resolutions: */
-  --bg-height: clamp(0px, calc(0.8 * var(--globe-section-height)), 160vw);
+  --width-bounded: min(calc(0.8 * var(--globe-section-height)), 160vw);
+  --bg-height: min(var(--width-bounded), calc(var(--globe-section-height) - var(--uniform-top-margin) - 40px));
   --drift-right: calc(0.2 * max((100vw - 320px), 0px));
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
@@ -384,7 +385,6 @@ section:first-of-type {
 /* for narrow, yet landscape viewports, adjust image placement: */
 @media (min-width: 100vh) {
   .bg-globe {
-    box-shadow: inset 0 0 1rem green !important;
     background-position: left calc(var(--drift-right) - 0.1 * var(--globe-section-height)) top calc(var(--uniform-top-margin) + 80px - 0.3 * (100vw - 400px));
   }
 }
