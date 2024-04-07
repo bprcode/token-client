@@ -113,11 +113,7 @@
   --uniform-section-height: clamp(var(--min-section-height),
     100svh - var(--header-height), var(--max-section-height));
 
-  --first-section-height: clamp(var(--min-section-height),
-    100vh - var(--header-height), var(--max-section-height));
-  --first-section-height: clamp(var(--min-section-height),
-    100svh - var(--header-height), var(--max-section-height));
-
+  --first-section-height: var(--uniform-section-height);
   --globe-section-height: var(--uniform-section-height);
   --device-section-height: var(--uniform-section-height);
   --last-section-height: var(--uniform-section-height);
@@ -171,7 +167,7 @@ body {
 }
 @media (min-width: 700px) {
   section {
-    box-shadow: inset 0 0 1rem blue !important;
+    /* box-shadow: inset 0 0 1rem blue !important; */
   }
 }
 
@@ -523,17 +519,19 @@ footer svg {
   }
 }
 
-/* Monitor layout changes */
+/* Switching into wide/monitor layout */
 @media (min-width: 700px) {
   :root {
     --footer-height: 6rem;
+    --uniform-top-margin: clamp(5.75rem, 26vh, calc(0.3 * var(--first-section-height)));
 
-    --globe-section-height: clamp(var(--min-section-height), 120vh, var(--max-section-height));
-    --globe-section-height: clamp(var(--min-section-height), 120svh, var(--max-section-height));
-    --device-section-height: clamp(var(--min-section-height), 85vh, var(--max-section-height));
-    --device-section-height: clamp(var(--min-section-height), 85svh, var(--max-section-height));
-    --last-section-height: clamp(var(--min-section-height), 105vh, var(--max-section-height));
-    --last-section-height: clamp(var(--min-section-height), 105svh, var(--max-section-height));
+    --last-section-height: calc(var(--uniform-section-height) + var(--footer-height));
+  }
+  
+  /* Add breathing room between sections: */
+  section:not(:first-of-type) {
+    box-shadow: inset 0 0 1rem #f0f4;
+    margin-top: 100px;
   }
 
   h2 {
@@ -558,7 +556,7 @@ footer svg {
     background-size: auto clamp(var(--min-section-height) - var(--dy),
       84svh,
       var(--first-section-height) - var(--dy));
-    background-position: calc(50% + 120px) var(--dy);
+    background-position: calc(50% + 100px) 100%;
   }
 
   .bg-globe {
@@ -593,7 +591,7 @@ footer svg {
 
   .headline-main {
     max-width: 50ch;
-    margin: clamp(5.75rem, 20vh, calc(0.3 * var(--first-section-height))) auto 0 2.5rem;
+    margin: var(--uniform-top-margin) auto 0 2.5rem;
     align-items: unset;
     text-shadow: unset;
     backdrop-filter: unset;
@@ -633,17 +631,17 @@ footer svg {
   }
 
   .middle-right {
-    align-items: center;
+    /* align-items: center; */
     justify-content: end;
   }
   
   .middle-left {
-    align-items: center;
+    /* align-items: center; */
     justify-content: start;
   }
 
   .center-middle {
-    align-items: center;
+    /* align-items: center; */
   }
 
   .headline-anywhere {
@@ -651,19 +649,15 @@ footer svg {
     margin-left: unset;
     max-width: 40ch;
     margin-right: var(--headline-side-margin);
-    transform: translateY(-6rem);
   }
 
   .headline-fits {
     max-width: 40ch;
     margin-right: unset;
     margin-left: calc(var(--headline-side-margin) + 1.25rem);
-    margin-top: unset;
-    transform: translateY(-4rem);
   }
 
   .headline-last {
-    transform: translateY(-10rem);
   }
 }
 
