@@ -38,7 +38,7 @@
 
   <section class="globe-section bg-globe">
     <div class="contain middle-right">
-      <div class="section-headline headline-anywhere shadowed-text mw40">
+      <div class="section-headline headline-anywhere shadowed-text">
         <h2>A calendar for anywhere.</h2>
         <p>Whether you're on staying mobile or working from a desk, ClearTime keeps your schedule available and in-sync.</p>
       </div>
@@ -47,7 +47,7 @@
 
   <section class="device-section bg-device">
     <div class="contain middle-left">
-      <div class="section-headline headline-fits shadowed-text mw40">
+      <div class="section-headline headline-fits shadowed-text max-width-copy">
         <h2>Everything just fits.</h2>
         <p>Easily make changes. Just drag, drop, and go. <span class="br-380"><br></span>Plan your week with a single tap.</p>
       </div>
@@ -56,7 +56,7 @@
 
   <section class="last-section bg-sunrise">
     <div class="contain center-middle">
-      <div class="section-headline headline-last shadowed-text mw40">
+      <div class="section-headline headline-last shadowed-text max-width-copy">
         <h2>Try it out!</h2>
         <p>See for yourself how easy it can be. No&nbsp;account&nbsp;required, no&nbsp;hassle&nbsp;needed.</p>
         <a href="/demo" class="button-link demo-last">See the demo</a>
@@ -93,7 +93,7 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  box-shadow: 0 0 2px inset #eef6 !important;
+  /* box-shadow: 0 0 2px inset #eef6 !important; */
 }
 
 :root {
@@ -103,7 +103,7 @@
   --footer-height: calc(2rem + var(--header-height));
   --headline-side-margin: 1.25rem;
 
-  --min-section-height: 30rem;
+  --min-section-height: 28rem;
   --max-section-height: 60rem;
 
   /* use svh units where supported: */
@@ -112,9 +112,9 @@
   --first-section-height: clamp(var(--min-section-height),
     100svh - var(--header-height), var(--max-section-height));
 
-  --globe-section-height: clamp(var(--min-section-height), 110vh,
+  --globe-section-height: clamp(var(--min-section-height), 120vh,
     var(--max-section-height));
-  --globe-section-height: clamp(var(--min-section-height), 110svh,
+  --globe-section-height: clamp(var(--min-section-height), 120svh,
     var(--max-section-height));
   --device-section-height: clamp(var(--min-section-height), 95vh,
     var(--max-section-height));
@@ -224,7 +224,7 @@ section:first-of-type {
   align-items: center;
 }
 
-.mw40 {
+.max-width-copy {
   max-width: 40ch;
 }
 
@@ -237,6 +237,7 @@ section:first-of-type {
   margin-left: auto;
   margin-right: 1rem;
   padding-left: 1.5rem;
+  max-width: 33ch;
   transform: translateY(calc(-0.3 * var(--globe-section-height)));
 }
 
@@ -360,11 +361,12 @@ section:first-of-type {
 }
 
 .bg-globe {
-  --bg-height: calc(0.8 * var(--globe-section-height));
-  --drift-right: calc(0.6 * max((100vw - 500px), 0px));
+  border-top: 1px solid rgb(24, 75, 97);
+  --bg-height: calc(0.775 * var(--globe-section-height));
+  --drift-right: calc(0.25 * max((100vw - 320px), 0px));
   background-image: url('/connection-sphere-70.webp');
   background-repeat: no-repeat;
-  background-position: left calc(var(--drift-right) - 0.225 * var(--globe-section-height)) bottom 0px;
+  background-position: left calc(var(--drift-right) - 0.2 * var(--globe-section-height)) bottom 0px;
   background-size: auto var(--bg-height);
 }
 
@@ -374,8 +376,8 @@ section:first-of-type {
   width: 100%;
   height: 50px;
   background-image: radial-gradient(ellipse 100% 40px at 50% 0,
-  rgba(24, 75, 97, 0.25),
-  rgb(24, 75, 97, 0));
+  rgba(24, 75, 97, 0.3),
+  rgba(24, 75, 97, 0));
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -610,6 +612,7 @@ footer svg {
   .headline-anywhere {
     padding-left: unset;
     margin-left: unset;
+    max-width: 40ch;
     margin-right: var(--headline-side-margin);
     transform: translateY(-2rem);
   }
