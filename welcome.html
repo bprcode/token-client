@@ -164,7 +164,6 @@ body {
 }
 
 main {
-  box-shadow: inset 0 0 3rem peru !important;
   overflow-x: hidden;
 }
 
@@ -186,8 +185,6 @@ header {
 
 section {
   position: relative;
-  /* background-color: #01010d; */
-  box-shadow: inset 0 0 1rem green;
 }
 
 section:first-of-type {
@@ -196,7 +193,6 @@ section:first-of-type {
 }
 
 .globe-section {
-  border-top: 1px solid rgb(24, 75, 97);
   height: var(--globe-section-height);
 }
 
@@ -376,7 +372,7 @@ section:first-of-type {
 
   /* Normally cover a fraction of the vertical height, */
   /* limit size by width in especially narrow resolutions: */
-  --width-bounded: min(calc(0.8 * var(--globe-section-height)), 160vw);
+  --width-bounded: min(calc(0.7 * var(--globe-section-height)), 160vw);
   --line-bounded: min(var(--width-bounded), 40rem);
   --bg-height: min(var(--line-bounded), calc(var(--globe-section-height) - var(--uniform-top-margin) - 40px));
   --drift-right: calc(0.2 * max((100vw - 320px), 0px));
@@ -397,7 +393,8 @@ section:first-of-type {
   }
 }
 
-.globe-section::before {
+.bg-hourglass::after {
+  border-top: 1px solid rgb(24, 75, 97);
   content: '';
   display: block;
   width: 100%;
@@ -407,6 +404,7 @@ section:first-of-type {
   rgba(24, 75, 97, 0));
   position: absolute;
   left: 50%;
+  bottom: -50px;
   transform: translateX(-50%);
 }
 
@@ -417,18 +415,9 @@ section:first-of-type {
   --bg-height: clamp(320px, 70vw, var(--device-section-height) - var(--uniform-top-margin) - 50px);
   --line-bounded: min(var(--bg-height), 26rem);
   
-  top: var(--uniform-top-margin);
+  top: calc(var(--uniform-top-margin) + 1.75rem);
   left: 1.25rem;
   height: var(--line-bounded);
-}
-
-.bg-device {
-  --bg-height: clamp(320px, 70vw, var(--device-section-height) - var(--uniform-top-margin) - 50px);
-  --line-bounded: min(var(--bg-height), 26rem);
-  background-image: url('/device-example-80.webp');
-  background-repeat: no-repeat;
-  background-position: right calc(0.25 * (100vw - 360px) - 10px) top calc(var(--uniform-top-margin) + 50px);
-  background-size: auto var(--line-bounded);
 }
 
 .bg-sunrise {
@@ -570,8 +559,9 @@ footer svg {
     background-position: calc(50% + 110px) 100%;
   }
 
-  .globe-section {
-    border-top: unset;
+  .bg-hourglass::after {
+    /* disable section border glow on wide viewports: */
+    display: none;
   }
 
   .globe-illustration {
@@ -586,11 +576,6 @@ footer svg {
     bottom: -32px;
   }
 
-  .globe-section::before {
-    /* disable section border glow on wide viewports: */
-    display: none;
-  }
-
   .device-illustration {
     --bg-height: max(320px, calc(0.9 * var(--device-section-height)));
     --line-bounded: min(var(--bg-height), 36rem);
@@ -598,15 +583,6 @@ footer svg {
     height: var(--line-bounded);
     top: var(--uniform-top-margin);
     left: calc(var(--headline-side-margin));
-  }
-
-  .bg-device {
-    background-image: linear-gradient(#f004, #f004);
-    --bg-height: max(320px, calc(0.9 * var(--device-section-height)));
-    --line-bounded: min(var(--bg-height), 36rem);
-
-    background-size: auto var(--line-bounded);
-    background-position: calc(50% + 10ch + 3.5 * var(--1pc)) calc(100% + 0ch);
   }
 
   .bg-sunrise {
