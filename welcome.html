@@ -410,7 +410,7 @@ section:first-of-type {
   position: absolute;
   z-index: -1;
 
-  --h: min(calc(0.8 * (var(--device-section-height))), 1164 / 1550 * 105vw);
+  --h: max(280px, min(calc(0.8 * (var(--device-section-height))), 1164 / 1550 * 105vw));
   --w: calc(1550 / 1164 * var(--h));
 
   height: var(--h);
@@ -571,19 +571,19 @@ footer svg {
     height: var(--h);
 
     left: unset;
-    top: calc(var(--uniform-top-margin) + 14ex - 0.3 * var(--h));
+    top: calc(var(--uniform-top-margin) + 14ex - 0.4 * var(--h));
     /* left edge of headline text minus desired percentage alignment: */
-    right: calc(var(--headline-side-margin) + 40ch - 0.38 * var(--w));
+    right: calc(var(--headline-side-margin) + 40ch - 0.32 * var(--w));
   }
 
   .device-illustration {
-    --w: calc(0.6 * var(--section-w));
+    --w: calc(0.7 * var(--section-w));
     --h: calc(1164 / 1550 * var(--w));
 
     height: var(--h);
 
-    top: calc(var(--uniform-top-margin) + 10ex - 0.4 * var(--h));
-    left: calc(var(--headline-side-margin) + 34ch - 0.1 * var(--w));
+    top: calc(var(--uniform-top-margin) + 10ex - 0.39 * var(--h));
+    left: calc(var(--headline-side-margin) + 34ch - 0.08 * var(--w));
   }
 
   .bg-sunrise {
