@@ -97,10 +97,11 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  box-shadow: 0 0 2px inset #eef6 !important;
+  /* box-shadow: 0 0 2px inset #eef6 !important; */
 }
 
 :root {
+  --section-w: min(100vw, 960px);
   --cousin-spacing: 2rem;
   --h-padding: 1rem;
   --subheadline-offset: 0.85rem;
@@ -189,7 +190,6 @@ section {
 
 /* Add breathing room between sections: */
 section:not(:first-of-type) {
-    box-shadow: inset 0 0 1rem #f204 !important;
     margin-top: 60px;
 }
 
@@ -374,7 +374,6 @@ section:first-of-type {
 
 /* Narrow device, in portrait: illustration placed below headline */
 .globe-illustration {
-  border: 1px solid #ff04;
   position: absolute;
   z-index: -1;
 
@@ -408,11 +407,10 @@ section:first-of-type {
 }
 
 .device-illustration {
-  border: 1px solid #ff04;
   position: absolute;
   z-index: -1;
 
-  --h: min(calc(0.8 * (var(--device-section-height))), 1164 / 1550 * 100vw);
+  --h: min(calc(0.8 * (var(--device-section-height))), 1164 / 1550 * 105vw);
   --w: calc(1550 / 1164 * var(--h));
 
   height: var(--h);
@@ -537,7 +535,6 @@ footer svg {
   
   /* Breathing room between sections: */
   section:not(:first-of-type) {
-    box-shadow: inset 0 0 1rem #f0f4;
     margin-top: 60px;
   }
 
@@ -566,24 +563,27 @@ footer svg {
   }
 
   .globe-illustration {
-    --bg-height: max(320px, calc(1.1 * var(--globe-section-height)));
-    --line-bounded: min(var(--bg-height), 50rem);
+    --h: min(1288 / 1622 * 0.9 * var(--section-w),
+      min(calc(1.2 * var(--globe-section-height)),
+      max(calc(0.7 * (var(--globe-section-height))), 1288 / 1622 * 100vw)));
+    --w: calc(1622 / 1288 * var(--h));
 
-    height: var(--line-bounded);
-    left: calc(50% - 10ch + 1.5 * var(--1pc));
+    height: var(--h);
+
     left: unset;
-    top: unset;
-    right: min(24ch, calc(6ch + 0.3 * (100vw - 700px)));
-    bottom: -32px;
+    top: calc(var(--uniform-top-margin) + 14ex - 0.3 * var(--h));
+    /* left edge of headline text minus desired percentage alignment: */
+    right: calc(var(--headline-side-margin) + 40ch - 0.38 * var(--w));
   }
 
   .device-illustration {
-    --bg-height: max(320px, calc(0.9 * var(--device-section-height)));
-    --line-bounded: min(var(--bg-height), 36rem);
+    --w: calc(0.6 * var(--section-w));
+    --h: calc(1164 / 1550 * var(--w));
 
-    height: var(--line-bounded);
-    top: var(--uniform-top-margin);
-    left: calc(var(--headline-side-margin));
+    height: var(--h);
+
+    top: calc(var(--uniform-top-margin) + 10ex - 0.4 * var(--h));
+    left: calc(var(--headline-side-margin) + 34ch - 0.1 * var(--w));
   }
 
   .bg-sunrise {
