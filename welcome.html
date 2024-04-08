@@ -25,7 +25,7 @@
     </div>
   </header>
     
-  <section class="bg-hourglass">
+  <section class="hourglass-section">
     <div class="contain">
       <div class="headline-main mt">
         <h1>Make the most of your time.</h1>
@@ -56,8 +56,9 @@
       </div>
     </section>
 
-    <section class="last-section bg-sunrise">
+    <section class="last-section">
       <div class="contain center-middle">
+        <img class="sunrise-illustration" src="/star-sunrise-95.webp" alt="a sunrise over an ocean of stars">
         <div class="section-headline headline-last shadowed-text max-width-copy">
           <h2>Try it out!</h2>
           <p>See for yourself how easy it can be. No&nbsp;account&nbsp;required, no&nbsp;hassle&nbsp;needed.</p>
@@ -102,6 +103,8 @@
 
 :root {
   --section-w: min(100vw, 960px);
+  --section-gap: 0px;
+
   --cousin-spacing: 2rem;
   --h-padding: 1rem;
   --subheadline-offset: 0.85rem;
@@ -186,14 +189,19 @@ header {
 
 section {
   position: relative;
+  box-shadow: inset 0 0 1rem purple !important;
 }
 
-/* Add breathing room between sections: */
-section:not(:first-of-type) {
-    margin-top: 60px;
+section:not(.hourglass-section) {
+    margin-top: var(--section-gap);
 }
 
-section:first-of-type {
+/* debug */
+img {
+  opacity: 0.2;
+}
+
+.hourglass-section {
   height: var(--first-section-height);
   margin-top: var(--header-height);
 }
@@ -207,6 +215,9 @@ section:first-of-type {
 }
 
 .last-section {
+  /* place below footer: */
+  z-index: -1;
+  overflow: hidden;
   height: var(--last-section-height);
 }
 
@@ -365,7 +376,7 @@ section:first-of-type {
     -2px 3px 6px #000;
 }
 
-.bg-hourglass {
+.hourglass-section {
   background-image: url('/narrow-blue-80.webp');
   background-repeat: no-repeat;
   background-position: calc(50% - 5px) 20px;
@@ -391,7 +402,7 @@ section:first-of-type {
   left: calc(-0.07 * var(--w));
 }
 
-.bg-hourglass::after {
+.hourglass-section::after {
   border-top: 1px solid rgb(24, 75, 97);
   content: '';
   display: block;
@@ -419,11 +430,18 @@ section:first-of-type {
   right: calc(-0.0 * var(--w));
 }
 
-.bg-sunrise {
-  background-image: url('/star-sunrise-95.webp');
-  background-repeat: no-repeat;
-  background-position: center top 10px;
-  background-size: auto clamp(var(--min-section-height), calc(1.3 * var(--uniform-section-height)), var(--max-section-height));
+.sunrise-illustration {
+  position: absolute;
+  z-index: -1;
+
+  --y-align: 0.285;
+  --h: calc((var(--uniform-top-margin) + 10ex) / var(--y-align));
+  --w: calc(1000 / 866 * var(--h));
+
+  height: var(--h);
+
+  top: calc(var(--uniform-top-margin) + 16ex - var(--y-align) * var(--h));
+  left: calc(50% - 0.5 * var(--w));
 }
 
 .contain {
@@ -447,6 +465,7 @@ section:first-of-type {
 .logo-text {
   letter-spacing: -0.01em;
 }
+
 .logo-text .first {
   font-weight: 700;
 }
@@ -475,6 +494,7 @@ footer {
   font-weight: 400;
   border-top: 1px solid #FF9D8D40;
   background-color: #151322bd;
+  background-color: #1513224d;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -529,13 +549,7 @@ footer svg {
 
     --last-section-height: calc(var(--uniform-section-height) + var(--footer-height));
 
-    /* Clamped equivalent of 1vw: */
-    --1pc: min(1vw, 9.6px);
-  }
-  
-  /* Breathing room between sections: */
-  section:not(:first-of-type) {
-    margin-top: 60px;
+    --section-gap: 60px;
   }
 
   h2 {
@@ -551,13 +565,13 @@ footer svg {
     display: unset;
   }
 
-  .bg-hourglass {
+  .hourglass-section {
     background-image: url('/wide-bg-90.webp');
     background-size: auto calc(0.925 * var(--first-section-height));
     background-position: calc(50% + 110px) 100%;
   }
 
-  .bg-hourglass::after {
+  .hourglass-section::after {
     /* disable section border glow on wide viewports: */
     display: none;
   }
@@ -584,14 +598,6 @@ footer svg {
 
     top: calc(var(--uniform-top-margin) + 10ex - 0.39 * var(--h));
     left: calc(var(--headline-side-margin) + 34ch - 0.08 * var(--w));
-  }
-
-  .bg-sunrise {
-    --dy: max(14vh, 60px);
-    --dy: max(14svh, 60px);
-    background-size: auto max(var(--min-section-height) - var(--dy), 105vh);
-    background-size: auto max(var(--min-section-height) - var(--dy), 105svh);
-    background-position: 50% var(--dy);
   }
 
   .headline-main {
