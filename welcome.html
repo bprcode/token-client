@@ -514,6 +514,9 @@ footer svg {
     --uniform-top-margin: clamp(5.75rem, 26vh, calc(0.3 * var(--first-section-height)));
 
     --last-section-height: calc(var(--uniform-section-height) + var(--footer-height));
+
+    /* Clamped equivalent of 1vw: */
+    --1pc: min(1vw, 9.6px);
   }
   
   /* Add breathing room between sections: */
@@ -542,10 +545,12 @@ footer svg {
   }
 
   .bg-globe {
-    --dx: min(1vw, 9.6px);
+    --bg-height: max(320px, calc(1.0 * var(--globe-section-height)));
+    --line-bounded: min(var(--bg-height), 50rem);
+
     border-top: unset;
-    background-size: auto calc(1 * var(--globe-section-height));
-    background-position: calc(50% - 10ch + 1.5 * var(--dx)) calc(100% + 18px);
+    background-size: auto var(--line-bounded);
+    background-position: calc(50% - 10ch + 1.5 * var(--1pc)) calc(100% + 18px);
   }
 
   .bg-globe::before {
@@ -554,13 +559,11 @@ footer svg {
   }
 
   .bg-device {
-    --dy: 10px;
-    background-position: calc(50% + 180px) var(--dy);
-    background-size: auto max(var(--min-section-height) - var(--dy), 80vh);
-    background-size: auto max(var(--min-section-height) - var(--dy), 80svh);
+    --bg-height: max(320px, calc(0.9 * var(--device-section-height)));
+    --line-bounded: min(var(--bg-height), 36rem);
 
-    background-size: auto calc(0.8 * var(--device-section-height));
-    background-position: calc(50% + 16ch) calc(70%);
+    background-size: auto var(--line-bounded);
+    background-position: calc(50% + 20ch - 1.5 * var(--1pc)) calc(50% - 0ch);
   }
 
   .bg-sunrise {
