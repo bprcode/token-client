@@ -560,6 +560,8 @@ footer svg {
 
     --uniform-section-height: clamp(var(--min-section-height),
       100vh - var(--header-height), var(--max-section-height));
+
+    --x-crunch: max(0px, calc(7ch - 0.25 * (100vw - 700px)));
   }
 
   h2 {
@@ -595,7 +597,7 @@ footer svg {
     left: unset;
     top: calc(var(--uniform-top-margin) + 13ex - 0.4 * var(--h));
     /* left edge of headline text minus desired percentage alignment: */
-    right: calc(var(--headline-side-margin) + 39ch - 0.31 * var(--w));
+    right: calc(var(--headline-side-margin) + 39ch - 0.31 * var(--w) - var(--x-crunch));
   }
 
   .device-illustration {
@@ -603,7 +605,7 @@ footer svg {
     --h: calc(1164 / 1550 * var(--w));
 
     top: calc(var(--uniform-top-margin) + 10ex - 0.39 * var(--h));
-    left: calc(var(--headline-side-margin) + 39ch - 0.07 * var(--w));
+    left: calc(39ch - 0.11 * var(--w) - var(--x-crunch));
     right: unset;
   }
 
@@ -677,6 +679,12 @@ footer svg {
 @media (min-width: 800px) {
   :root {
     --headline-side-margin: 3rem;
+  }
+}
+
+@media (min-width: 1100px) {
+  .device-illustration {
+    left: calc(39ch - 0.03 * var(--w) - var(--x-crunch));
   }
 }
 
