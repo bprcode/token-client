@@ -595,7 +595,7 @@ footer svg {
     left: unset;
     top: calc(var(--uniform-top-margin) + 13ex - 0.4 * var(--h));
     /* left edge of headline text minus desired percentage alignment: */
-    right: calc(var(--headline-side-margin) + 40ch - 0.31 * var(--w));
+    right: calc(var(--headline-side-margin) + 39ch - 0.31 * var(--w));
   }
 
   .device-illustration {
@@ -603,7 +603,7 @@ footer svg {
     --h: calc(1164 / 1550 * var(--w));
 
     top: calc(var(--uniform-top-margin) + 10ex - 0.39 * var(--h));
-    left: calc(var(--headline-side-margin) + 34ch - 0.07 * var(--w));
+    left: calc(var(--headline-side-margin) + 39ch - 0.07 * var(--w));
     right: unset;
   }
 
@@ -664,7 +664,7 @@ footer svg {
     padding-left: unset;
     margin-left: unset;
     max-width: 40ch;
-    margin-right: var(--headline-side-margin);
+    margin-right: calc(var(--headline-side-margin) - 0.25rem);
   }
 
   .headline-fits {
