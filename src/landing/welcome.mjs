@@ -8,7 +8,6 @@ const mainSections = [...document.querySelectorAll('main section')].map(s => ({
   img: s.querySelector('img'),
 }))
 
-
 function overwriteRAF(callback) {
   if (!overwriteRAF.callback) {
     requestAnimationFrame(() => {
@@ -27,9 +26,8 @@ function onScroll(event) {
     for (const s of mainSections) {
       const ny = (s.bottom - scrollBottom) / window.innerHeight
       console.log(s, ny)
-      s.img.style.opacity = (1 - ny)
+      s.img.style.opacity = 1 - ny
     }
-    
   })
 }
 
@@ -37,13 +35,20 @@ function loadImages() {
   const loadList = document.querySelectorAll('.lazy')
 
   for (const i of loadList) {
+    i.addEventListener('load', onLoad)
+
     console.log('should now load ', i.dataset.src)
     setTimeout(() => {
       console.log('setting i', 'to', i.dataset.src)
       i.src = i.dataset.src
-      i.classList.add('seen')
-    }, 1000)
+    }, 0)
   }
+}
+
+function onLoad(event) {
+  console.log('🍱 load event:', event)
+  event.target.classList.add('loaded')
+  event.target.removeEventListener('load', onLoad)
 }
 
 function watchMain(entries, observer) {
@@ -58,25 +63,9 @@ function watchMain(entries, observer) {
   }
 }
 
-// function watchImages(entries, observer) {
-//   for (const e of entries) {
-    
-//     console.log(e.intersectionRatio, e.target)
-//     // console.log(i, 'has intersection ratio', i.intersectionRatio)
-
-//   }
-// }
-
 const loadObserver = new IntersectionObserver(watchMain, {
   threshold: 0.01,
 })
-
-// const imageObserver = new IntersectionObserver(watchImages)
-
-// for(const e of document.querySelectorAll('main section')) {
-//   console.log('checking e:',e.querySelector('img'))
-//   imageObserver.observe(e.querySelector('img'))
-// }
 
 if (window.scrollY === 0) {
   loadObserver.observe(watchedElement)
@@ -87,4 +76,4 @@ if (window.scrollY === 0) {
 
 document.querySelector('h1').innerText = '😴 scrollY=' + window.scrollY
 
-window.addEventListener('scroll', onScroll)
+// window.addEventListener('scroll', onScroll)

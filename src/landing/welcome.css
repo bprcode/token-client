@@ -392,9 +392,10 @@ section:not(.hourglass-section) {
 
 .lazy {
   opacity: 0;
+  transition: opacity 1s ease;
 }
 
-.seen {
+.loaded {
   opacity: 1;
 }
 
