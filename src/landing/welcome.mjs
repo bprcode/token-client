@@ -55,7 +55,7 @@ function onLoad(event) {
     target.classList.remove('lazy')
     target.classList.remove('fade-in')
     target.classList.add('scroll-aware')
-  }, 1000)
+  }, 750)
 
   target.removeEventListener('load', onLoad)
 }
@@ -81,3 +81,11 @@ if (window.scrollY === 0) {
 }
 
 window.addEventListener('scroll', onScroll)
+
+if (
+  navigator.userAgent.includes('Mobile') &&
+  navigator.userAgent.includes('Firefox')
+) {
+  document.querySelector('header').classList.add('firefox-mobile-header')
+  document.querySelector('footer').classList.add('firefox-mobile-footer')
+}
