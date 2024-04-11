@@ -1,5 +1,3 @@
-console.log('welcome.mjs imported.')
-
 const watchedElement = document.querySelector('.globe-section')
 const mainSections = [...document.querySelectorAll('main section')].map(s => ({
   element: s,
@@ -19,14 +17,20 @@ function overwriteRAF(callback) {
   overwriteRAF.callback = callback
 }
 
-function onScroll(event) {
+function onScroll() {
   overwriteRAF(() => {
     const scrollBottom = window.scrollY + window.innerHeight
 
     for (const s of mainSections) {
-      const ny = (s.bottom - scrollBottom) / window.innerHeight
-      console.log(s, ny)
-      s.img.style.opacity = 1 - ny
+      if (!s.img.classList.contains('scroll-aware')) {
+        continue
+      }
+
+      const midline =
+        s.element.offsetTop + s.element.getBoundingClientRect().height / 2
+      const ny = (scrollBottom - midline) / window.innerHeight
+
+      s.img.style.opacity = 0.25 + 2 * ny
     }
   })
 }
@@ -37,18 +41,23 @@ function loadImages() {
   for (const i of loadList) {
     i.addEventListener('load', onLoad)
 
-    console.log('should now load ', i.dataset.src)
     setTimeout(() => {
-      console.log('setting i', 'to', i.dataset.src)
       i.src = i.dataset.src
     }, 0)
   }
 }
 
 function onLoad(event) {
-  console.log('🍱 load event:', event)
-  event.target.classList.add('loaded')
-  event.target.removeEventListener('load', onLoad)
+  const target = event.target
+  target.classList.add('fade-in')
+
+  setTimeout(() => {
+    target.classList.remove('lazy')
+    target.classList.remove('fade-in')
+    target.classList.add('scroll-aware')
+  }, 1000)
+
+  target.removeEventListener('load', onLoad)
 }
 
 function watchMain(entries, observer) {
@@ -56,8 +65,6 @@ function watchMain(entries, observer) {
     console.log(e, 'is intersecting?', e.isIntersecting)
     if (e.isIntersecting) {
       observer.unobserve(watchedElement)
-      document.querySelector('h1').innerText = '👁️ #seen#'
-
       loadImages()
     }
   }
@@ -70,10 +77,7 @@ const loadObserver = new IntersectionObserver(watchMain, {
 if (window.scrollY === 0) {
   loadObserver.observe(watchedElement)
 } else {
-  console.log('immediately load images')
   loadImages()
 }
 
-document.querySelector('h1').innerText = '😴 scrollY=' + window.scrollY
-
-// window.addEventListener('scroll', onScroll)
+window.addEventListener('scroll', onScroll)

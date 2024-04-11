@@ -87,7 +87,7 @@ header {
   width: 100%;
   min-width: 320px;
   z-index: 2;
-  background-color: #01010de0;
+  background-color: #01010dd0;
   color: #FFDCD1;
   height: var(--header-height);
   font-size: clamp(1.2rem, 1vw + 1rem, 1.5rem);
@@ -395,7 +395,11 @@ section:not(.hourglass-section) {
   transition: opacity 1s ease;
 }
 
-.loaded {
+.scroll-aware {
+  transition: opacity 0.1s linear;
+}
+
+.fade-in {
   opacity: 1;
 }
 
