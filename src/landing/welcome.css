@@ -95,6 +95,7 @@ header {
   align-items: center;
   border-bottom: 1px solid #ffc0a1a8;
   backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
 }
 
 section {
@@ -415,6 +416,7 @@ footer {
   margin-top: calc(-1 * var(--footer-height));
   height: var(--footer-height);
   backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
   z-index: 1;
   font-weight: 400;
   border-top: 1px solid #FF9D8D40;
