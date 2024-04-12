@@ -395,10 +395,6 @@ section:not(.hourglass-section) {
   transition: opacity 0.75s ease;
 }
 
-.scroll-aware {
-  transition: opacity 0.3s linear;
-}
-
 .fade-in {
   opacity: 1;
 }

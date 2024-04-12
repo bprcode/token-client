@@ -1,49 +1,11 @@
 const watchedElement = document.querySelector('.globe-section')
-const mainSections = [...document.querySelectorAll('main section')].map(s => ({
-  element: s,
-  midline: s.offsetTop + s.getBoundingClientRect().height / 2,
-  bottom: s.offsetTop + s.getBoundingClientRect().height,
-  img: s.querySelector('img'),
-}))
-
-function overwriteRAF(callback) {
-  if (!overwriteRAF.callback) {
-    requestAnimationFrame(() => {
-      overwriteRAF.callback()
-      overwriteRAF.callback = null
-    })
-  }
-
-  overwriteRAF.callback = callback
-}
-
-function onScroll() {
-  overwriteRAF(() => {
-    const scrollBottom = window.scrollY + window.innerHeight
-
-    for (const s of mainSections) {
-      if (!s.img.classList.contains('scroll-aware')) {
-        continue
-      }
-
-      const midline =
-        s.element.offsetTop + s.element.getBoundingClientRect().height / 2
-      const ny = (scrollBottom - midline) / window.innerHeight
-
-      s.img.style.opacity = 0.25 + 2 * ny
-    }
-  })
-}
 
 function loadImages() {
   const loadList = document.querySelectorAll('.lazy')
 
   for (const i of loadList) {
     i.addEventListener('load', onLoad)
-
-    setTimeout(() => {
-      i.src = i.dataset.src
-    }, 0)
+    i.src = i.dataset.src
   }
 }
 
@@ -54,15 +16,13 @@ function onLoad(event) {
   setTimeout(() => {
     target.classList.remove('lazy')
     target.classList.remove('fade-in')
-    target.classList.add('scroll-aware')
   }, 750)
 
   target.removeEventListener('load', onLoad)
 }
 
-function watchMain(entries, observer) {
+function watch(entries, observer) {
   for (const e of entries) {
-    console.log(e, 'is intersecting?', e.isIntersecting)
     if (e.isIntersecting) {
       observer.unobserve(watchedElement)
       loadImages()
@@ -70,7 +30,7 @@ function watchMain(entries, observer) {
   }
 }
 
-const loadObserver = new IntersectionObserver(watchMain, {
+const loadObserver = new IntersectionObserver(watch, {
   threshold: 0.01,
 })
 
@@ -79,8 +39,6 @@ if (window.scrollY === 0) {
 } else {
   loadImages()
 }
-
-window.addEventListener('scroll', onScroll)
 
 if (
   navigator.userAgent.includes('Mobile') &&
