@@ -5,7 +5,6 @@
 * {
   margin: 0;
   line-height: calc(1em + 0.5rem);
-  /* box-shadow: 0 0 2px inset #eef6 !important; */
 }
 
 :root {
@@ -121,7 +120,7 @@ section:not(.hourglass-section) {
 
 .last-section {
   /* place below footer: */
-  z-index: -1;
+  /* z-index: -1; */
   overflow: hidden;
   height: var(--last-section-height);
 }
@@ -238,7 +237,7 @@ section:not(.hourglass-section) {
 }
 
 .see-the-demo {
-  z-index: 1;
+  z-index: 2;
   background-color: #FF852D;
   color: #000000DF;
   margin: var(--cousin-spacing) auto 0 auto;
@@ -412,9 +411,10 @@ button {
 }
 
 footer {
+  position: relative;
   margin-top: calc(-1 * var(--footer-height));
   height: var(--footer-height);
-  /* backdrop-filter: blur(3px); */
+  backdrop-filter: blur(3px);
   z-index: 1;
   font-weight: 400;
   border-top: 1px solid #FF9D8D40;
