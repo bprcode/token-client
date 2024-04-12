@@ -34,13 +34,13 @@ const loadObserver = new IntersectionObserver(watch, {
   threshold: 0.01,
 })
 
-requestAnimationFrame(() => {
+setTimeout(() => {
   if (window.scrollY === 0) {
     loadObserver.observe(watchedElement)
   } else {
     loadImages()
   }
-})
+}, 100)
 
 if (
   navigator.userAgent.includes('Mobile') &&
