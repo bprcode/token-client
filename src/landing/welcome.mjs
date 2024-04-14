@@ -40,7 +40,7 @@ setTimeout(() => {
   } else {
     loadImages()
   }
-}, 100)
+}, 200)
 
 if (
   navigator.userAgent.includes('Mobile') &&
