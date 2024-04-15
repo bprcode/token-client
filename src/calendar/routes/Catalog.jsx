@@ -31,7 +31,7 @@ import { Link } from 'react-router-dom'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
 import { reconcile } from '../reconcile.mjs'
 import { ConflictDisplay } from '../ConflictDisplay'
-import { isCalendarDuplicate } from '../../CatalogSync'
+import { isCalendarDuplicate } from '../CatalogSync'
 import { DemoContext } from '../DemoContext.mjs'
 import { demoCatalog } from '../calendarLogic.mjs'
 import { bounceEarly } from '../../debounce.mjs'
@@ -422,7 +422,7 @@ function CalendarCard({ calendar, children }) {
 export function useCatalogQuery() {
   const isDemo = useContext(DemoContext)
   const queryClient = useQueryClient()
-  
+
   return useQuery(
     makeCatalogQuery(
       queryClient,

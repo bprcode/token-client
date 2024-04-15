@@ -1,7 +1,7 @@
 import { Box } from '@mui/material'
-import { CatalogSyncMonitor } from '../CatalogSync'
+import { CatalogSyncMonitor } from './CatalogSync'
 import { EventSyncMonitor } from './EventSync'
-import { useHeartbeatQuery } from '../HeartbeatPanel'
+import { useHeartbeatQuery } from './HeartbeatPanel'
 import { useCacheList } from './cacheTracker.mjs'
 import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
 import { useSearchParams } from 'react-router-dom'
@@ -13,7 +13,7 @@ export default function SyncMonitor() {
   const cacheList = useCacheList()
 
   const [searchParams] = useSearchParams()
-  if(searchParams.get('a') === 'register') {
+  if (searchParams.get('a') === 'register') {
     console.log('%cbypassing SyncMonitor', 'color:magenta')
     return <></>
   }
@@ -36,11 +36,9 @@ export default function SyncMonitor() {
             {cacheList.map(c=><div key={c}>{c}</div>)}
           </div> */}
           <CatalogSyncMonitor />
-          {cacheList.map(c => (
-            c !== 'demo-calendar' ?
-            <EventSyncMonitor key={c} id={c} />
-            : null
-          ))}
+          {cacheList.map(c =>
+            c !== 'demo-calendar' ? <EventSyncMonitor key={c} id={c} /> : null
+          )}
         </>
       )}
     </Box>

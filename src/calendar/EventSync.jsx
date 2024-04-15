@@ -4,7 +4,7 @@ import { useCallback, useRef } from 'react'
 import dayjs from 'dayjs'
 import { touchList } from './reconcile.mjs'
 import { resetViewsToCache } from './routes/Calendar'
-import { Autosaver, AutosaverStatus } from '../Autosaver'
+import { Autosaver, AutosaverStatus } from './Autosaver'
 import { backoff, debounce } from '../debounce.mjs'
 import { updateCacheData } from './cacheTracker.mjs'
 

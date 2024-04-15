@@ -20,7 +20,7 @@ import {
   useState,
 } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
-import { HoverableBox } from '../blueDigitalTheme'
+import { HoverableBox } from './blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { useLogger } from './Logger'
 import { createEventObject, isOverlap, resolveColor } from './calendarLogic.mjs'

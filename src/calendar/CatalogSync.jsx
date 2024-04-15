@@ -1,9 +1,9 @@
-import { useCatalogQuery } from './calendar/routes/Catalog'
+import { useCatalogQuery } from './routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { goFetch } from './go-fetch'
+import { goFetch } from '../go-fetch'
 import { useRef } from 'react'
-import { backoff } from './debounce.mjs'
-import { touchList } from './calendar/reconcile.mjs'
+import { backoff } from '../debounce.mjs'
+import { touchList } from './reconcile.mjs'
 import { Autosaver, AutosaverStatus } from './Autosaver'
 
 function useCatalogBundleMutation() {

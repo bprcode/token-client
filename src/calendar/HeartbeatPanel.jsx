@@ -11,12 +11,12 @@ import {
 } from '@mui/material'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { goFetch } from './go-fetch'
-import { DemoContext } from './calendar/DemoContext.mjs'
-import { demoUser } from './calendar/calendarLogic.mjs'
+import { goFetch } from '../go-fetch'
+import { DemoContext } from './DemoContext.mjs'
+import { demoUser } from './calendarLogic.mjs'
 import { useContext } from 'react'
-import { TutorialDialog, useTutorialStage } from './calendar/TutorialDialog'
-import { useNarrowCheck } from './calendar/LayoutContext.mjs'
+import { TutorialDialog, useTutorialStage } from './TutorialDialog'
+import { useNarrowCheck } from './LayoutContext.mjs'
 
 export function useHeartbeatQuery() {
   const isDemo = useContext(DemoContext)

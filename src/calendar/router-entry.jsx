@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-query'
 import { ThemeProvider } from '@mui/material/styles'
 import { CssBaseline } from '@mui/material'
-import digitalTheme from '../blueDigitalTheme'
+import digitalTheme from './blueDigitalTheme'
 import ReactDOM from 'react-dom/client'
 import {
   createBrowserRouter,

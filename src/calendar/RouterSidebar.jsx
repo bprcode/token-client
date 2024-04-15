@@ -14,9 +14,9 @@ import { ToggleMenuContext, useNarrowCheck } from './LayoutContext.mjs'
 import { useContext } from 'react'
 import hourglassPng from '../assets/hourglass2p.png'
 
-import { CalendarFolder } from '../CalendarFolder'
-import { HeartbeatPanel } from '../HeartbeatPanel'
-import { TopNavLink } from '../TopNavLink'
+import { CalendarFolder } from './CalendarFolder'
+import { HeartbeatPanel } from './HeartbeatPanel'
+import { TopNavLink } from './TopNavLink'
 import { useCatalogQuery } from './routes/Catalog'
 import { DemoContext } from './DemoContext.mjs'
 import { useLocation } from 'react-router-dom'
@@ -140,7 +140,7 @@ export default function RouterSidebar({ width = '240px', expand }) {
   if (location.pathname === '/login') {
     return <></>
   }
-  
+
   const content = (
     <>
       <HourglassHeader />
@@ -149,7 +149,7 @@ export default function RouterSidebar({ width = '240px', expand }) {
       </HeartbeatPanel>
     </>
   )
-  
+
   return isNarrow ? (
     <Drawer
       open={expand}

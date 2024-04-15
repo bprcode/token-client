@@ -1,5 +1,5 @@
 import { Box, useMediaQuery } from '@mui/material'
-import { gradualShades } from '../blueDigitalTheme'
+import { gradualShades } from './blueDigitalTheme'
 import { useLogger } from './Logger'
 import { useEffect, useMemo, useRef } from 'react'
 import { useNarrowCheck } from './LayoutContext.mjs'
