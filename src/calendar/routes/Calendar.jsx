@@ -443,7 +443,7 @@ export function CalendarContents({ calendarId }) {
         position: 'relative',
         backgroundColor: 'transparent',
         backgroundImage:
-          'linear-gradient(110deg, #111b20f0 25%, #1d5c1400 70%)',
+          'linear-gradient(110deg, #111b20e0 5%, #1d5c1400 70%)',
       }}
     >
       {/* <Slide
