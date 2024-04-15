@@ -505,7 +505,7 @@ footer svg {
   }
 
   .hourglass-section {
-    background-image: url('/wide-bg-90.webp');
+    background-image: url('/wide-bg-90s.webp');
     background-size: auto calc(0.925 * var(--first-section-height));
     background-position: calc(50% + 110px) 100%;
   }

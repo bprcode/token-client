@@ -8,7 +8,8 @@ import { FetchDisplay } from '../../go-fetch'
 import SyncMonitor from '../SyncMonitor.jsx'
 import { useNavigationControl } from '../NavigationControl.jsx'
 import { ConflictDisplay } from '../ConflictDisplay'
-import bokehImage from '../../assets/bokeh.png'
+import bokehImage from '../../assets/bokeh-revised-g.png'
+// import bokehImage from '../../assets/bokeh.png'
 import { DemoContext } from '../DemoContext.mjs'
 
 export const loader = queryClient => async () => {
@@ -28,7 +29,6 @@ function Background() {
         backgroundImage: `url(${bokehImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        opacity: 0.5,
       }}
     />
   )
