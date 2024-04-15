@@ -8,8 +8,7 @@ import { FetchDisplay } from '../../go-fetch'
 import SyncMonitor from '../SyncMonitor.jsx'
 import { useNavigationControl } from '../NavigationControl.jsx'
 import { ConflictDisplay } from '../ConflictDisplay'
-import bokehImage from '../../assets/bokeh-revised-0.png'
-// import bokehImage from '../../assets/bokeh.png'
+import bokehImage from '../../assets/bokeh-city.webp'
 import { DemoContext } from '../DemoContext.mjs'
 
 export const loader = queryClient => async () => {

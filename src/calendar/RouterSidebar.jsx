@@ -12,7 +12,7 @@ import {
 } from '@mui/material'
 import { ToggleMenuContext, useNarrowCheck } from './LayoutContext.mjs'
 import { useContext } from 'react'
-import hourglassPng from '../assets/hourglass2.png'
+import hourglassPng from '../assets/hourglass2p.png'
 
 import { CalendarFolder } from '../CalendarFolder'
 import { HeartbeatPanel } from '../HeartbeatPanel'

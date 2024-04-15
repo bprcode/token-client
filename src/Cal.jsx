@@ -28,7 +28,7 @@ import { DailyView } from './calendar/DailyView'
 import { ToggleMenuContext, useNarrowCheck } from './calendar/LayoutContext.mjs'
 import { PreferencesContext } from './calendar/PreferencesContext.mjs'
 import { useTheme } from '@mui/material'
-import hourglassPng from './assets/hourglass2.png'
+import hourglassPng from './assets/hourglass2p.png'
 import { LoggerProvider } from './calendar/Logger'
 
 const currentDate = dayjs()
