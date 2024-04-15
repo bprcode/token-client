@@ -381,13 +381,14 @@ function CalendarCard({ calendar, children }) {
         </Button>
 
         <Box ml="auto">
-          <IconButton
+          {/* not yet implemented: */}
+          {/* <IconButton
             disabled={isCreating}
             aria-label="Share"
             onClick={() => console.log('share placeholder')}
           >
             <ShareIcon sx={{ opacity: 0.9 }} />
-          </IconButton>
+          </IconButton> */}
           <IconButton
             aria-label="Rename"
             onClick={() => {

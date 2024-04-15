@@ -39,9 +39,6 @@ const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
 const snapGapPixels = 4
 const ghostFadeInColor = '#0000'
-// const log = console.log.bind(console)
-// const time = console.time.bind(console)
-// const timeEnd = console.timeEnd.bind(console)
 const log = () => {}
 const time = () => {}
 const timeEnd = () => {}

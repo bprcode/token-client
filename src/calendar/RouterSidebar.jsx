@@ -105,12 +105,20 @@ function HourglassHeader() {
         }}
       >
         <HourglassTopIcon
-          sx={{ transform: 'translateY(5px)', mr: 1, opacity: 0.75 }}
+          sx={{
+            transform: 'translateY(5px) scale(110%)',
+            mr: '0.125rem',
+            opacity: 0.65,
+          }}
         />
         <Typography
           variant="h6"
           component="span"
-          sx={{ fontWeight: 500, textShadow: '2px -1px 4px #000' }}
+          sx={{
+            fontWeight: 500,
+            textShadow: '2px -1px 4px #000',
+            letterSpacing: '-0.005em',
+          }}
         >
           Clear
         </Typography>
@@ -121,6 +129,7 @@ function HourglassHeader() {
             fontWeight: 300,
             opacity: 0.9,
             textShadow: '1px -1px 4px #000',
+            letterSpacing: '-0.015em',
           }}
         >
           Time
