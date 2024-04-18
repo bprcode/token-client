@@ -9,8 +9,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        notes: resolve(__dirname, 'notes.html'),
-        cal: resolve(__dirname, 'cal.html'),
+        welcome: resolve(__dirname, 'welcome.html'),
         day: resolve(__dirname, 'day.html'),
       },
     },
