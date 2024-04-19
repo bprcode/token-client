@@ -221,7 +221,7 @@ function useUpdateOptimistic(id) {
   }
 }
 
-function DeleteConfirmDialog({ open, onClose, onDelete }) {
+function DeleteConfirmDialog({ name, open, onClose, onDelete }) {
   return (
     <Dialog
       open={open}
@@ -229,7 +229,7 @@ function DeleteConfirmDialog({ open, onClose, onDelete }) {
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
     >
-      <DialogTitle id="alert-dialog-title">Delete calendar?</DialogTitle>
+      <DialogTitle id="alert-dialog-title">Delete {name}?</DialogTitle>
       <DialogContent>
         <DialogContentText id="alert-dialog-description">
           All calendar contents will be deleted.
@@ -407,6 +407,7 @@ function CalendarCard({ calendar, children }) {
           </IconButton>
         </Box>
         <DeleteConfirmDialog
+          name={calendar.summary}
           open={showConfirmation}
           onClose={toggleConfirmation}
           onDelete={() => {
