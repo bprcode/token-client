@@ -86,7 +86,7 @@ function handleCalendarError({ error, original, queryClient }) {
     const conflict = error.conflict
     console.log('comparing original/conflict:', original, conflict)
     if (conflict && isCalendarDuplicate(original, conflict)) {
-      console.log('🔰 should self-resolve 409 here')
+      console.log('🔰 Detected self-conflict; resolving 409')
       const resolution = {
         ...original,
         etag: conflict.etag,

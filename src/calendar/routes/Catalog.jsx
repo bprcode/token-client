@@ -309,6 +309,7 @@ function CalendarCard({ calendar, children }) {
       sx={{
         opacity: calendar.isDeleting ? 0.5 : undefined,
         animation,
+        display: calendar.isDeleting ? 'none' : 'flex',
       }}
     >
       <Box
@@ -400,7 +401,6 @@ function CalendarCard({ calendar, children }) {
           </IconButton>
           <IconButton
             aria-label="Delete"
-            disabled={calendar.isDeleting}
             onClick={toggleConfirmation}
           >
             <DeleteIcon sx={{ opacity: 0.9 }} />

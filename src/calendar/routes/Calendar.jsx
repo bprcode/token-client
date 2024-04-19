@@ -26,7 +26,7 @@ const log = console.log.bind(console)
 
 function mergeView(list, incoming) {
   const log = () => {}
-  // const log = console.log.bind(console)
+
   const merged = []
   log('mergeViewList(...)', Math.random())
 
@@ -206,7 +206,7 @@ export function useViewQuery() {
         `🍗 initialData from: ${from.format('MM/D')} to: ${to.format('MM/D')}`
       )
       const cached = queryClient.getQueryData(['primary cache', id])
-      if(!cached) {
+      if (!cached) {
         console.log('%cbypassing cache access', 'color:pink')
         return null
       }
@@ -229,7 +229,7 @@ export function useViewQuery() {
     },
     initialDataUpdatedAt: () => {
       const cached = queryClient.getQueryData(['primary cache', id])
-      if(!cached) {
+      if (!cached) {
         console.log('%cbypassing cache access', 'color:pink')
         return null
       }
@@ -443,18 +443,9 @@ export function CalendarContents({ calendarId }) {
         width: '100%',
         position: 'relative',
         backgroundColor: 'transparent',
-        backgroundImage:
-          'linear-gradient(110deg, #111b20e0 5%, #1d5c1400 70%)',
+        backgroundImage: 'linear-gradient(110deg, #111b20e0 5%, #1d5c1400 70%)',
       }}
     >
-      {/* <Slide
-        key={params.id}
-        timeout={350}
-        in={true}
-        direction="left"
-        mountOnEnter
-        unmountOnExit
-      > */}
       <div
         style={{
           position: 'absolute',
@@ -493,7 +484,6 @@ export function CalendarContents({ calendarId }) {
           />
         )}
       </div>
-      {/* </Slide> */}
     </Box>
   )
 
