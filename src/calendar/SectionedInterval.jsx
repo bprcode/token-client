@@ -136,8 +136,8 @@ export function SectionedInterval({
       className="section-scroll"
       style={{
         width: '100%',
-        // DEBUG -- DO NOT ENABLE --
-        // ruins drag detection on creation for some reason??
+        // -- DO NOT ENABLE --
+        // ruins drag detection on creation for some reason?
         // overflowX: 'hidden',
         overflowY: isNarrow ? undefined : 'auto',
         touchAction: action === 'create' ? 'none' : 'manipulation',
