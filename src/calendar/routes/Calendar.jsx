@@ -356,7 +356,7 @@ export function CalendarContents({ calendarId }) {
   const theme = useTheme()
 
   const { data: calendarData, error: viewError } = useViewQuery()
-  // eslint-disable-next-line no-unused-vars -- Load shared cache here
+  // eslint-disable-next-line no-unused-vars -- Load shared cache here:
   const { data: primaryCacheData } = useQuery({
     queryKey: ['primary cache', calendarId],
     enabled: false,
