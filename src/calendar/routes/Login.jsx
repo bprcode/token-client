@@ -24,8 +24,6 @@ import {
 } from '../TutorialDialog.jsx'
 
 function LoginSection() {
-  const spacing = 4
-
   const theme = useTheme()
   const [searchParams] = useSearchParams()
   const isRegisterLink = searchParams.get('a') === 'register'
@@ -149,18 +147,21 @@ function LoginSection() {
   }
 
   return (
-    <>
+    <Box sx={{
+      mx: 'auto',
+    }}>
       <Paper
         elevation={1}
         sx={{
-          py: 6,
+          pt: [3.5, 5],
+          pb: [4.5, 5.25],
           px: 2,
           minWidth: [240, 300],
           maxWidth: 450,
           ml: 'auto',
           mr: 'auto',
           mt: [2, 6],
-          mb: 4,
+          mb: [4, 5],
           boxShadow: '0.75rem 1.625rem 1.25rem #00081190',
           borderBottom: '1px solid #0009',
           borderRight: '1px solid #0009',
@@ -173,13 +174,13 @@ function LoginSection() {
           }}
         >
           <Container>
-            <Typography variant="h4" component="h2" sx={{ mb: 1 }}>
-              {showRegister ? 'Register' : 'Sign In'}
+            <Typography variant="h4" component="h2" sx={{ mb: [0.5, 1] }}>
+              {showRegister ? 'Register' : 'Sign in'}
             </Typography>
-            <Divider sx={{ mb: spacing }} />
+            <Divider sx={{ mb: [4, 5] }} />
             <Stack>
               <TextField
-                sx={{ mb: spacing }}
+                sx={{ mb: [1, 2] }}
                 inputRef={signInRef}
                 label="email"
                 helperText={validation.email || ' '}
@@ -194,7 +195,7 @@ function LoginSection() {
               />
 
               <TextField
-                sx={{ mb: spacing }}
+                sx={{ mb: [3, 4] }}
                 label="password"
                 variant="standard"
                 type="password"
@@ -221,7 +222,7 @@ function LoginSection() {
                 />
               </Collapse>
 
-              <Stack spacing={3}>
+              <Stack spacing={[2, 3]}>
                 <Button
                   type="submit"
                   disabled={
@@ -238,7 +239,7 @@ function LoginSection() {
                   )}
                 </Button>
 
-                <Divider sx={{ mb: 3, mt: 3, color: theme.palette.divider }}>
+                <Divider sx={{color: theme.palette.divider}}>
                   OR
                 </Divider>
                 <Button
@@ -264,10 +265,10 @@ function LoginSection() {
       {!showRegister && (
         <Box
           sx={{
-            mt: 'auto',
-            // Extra bottom margin covers overscroll with mobile address bar:
-            mb: [10, 4],
             mx: 'auto',
+            mb: '1rem',
+            height: '10px',
+            width: 'fit-content',
           }}
         >
           <span>Want a tour?</span>
@@ -279,13 +280,13 @@ function LoginSection() {
               })
               navigate('/demo')
             }}
-            sx={{ ml: [2, 3], backgroundColor: '#8dffb4' }}
+            sx={{ ml: 2, backgroundColor: '#8dffb4' }}
           >
             Try a quick demo
           </Button>
         </Box>
       )}
-    </>
+    </Box>
   )
 }
 
