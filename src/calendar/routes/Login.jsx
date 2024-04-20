@@ -149,6 +149,8 @@ function LoginSection() {
   return (
     <Box sx={{
       mx: 'auto',
+      minHeight: '100lvh',
+      mb: 'calc(100lvh - 100svh)',
     }}>
       <Paper
         elevation={1}
@@ -266,7 +268,7 @@ function LoginSection() {
         <Box
           sx={{
             mx: 'auto',
-            mb: '1rem',
+            mb: '3rem',
             height: '10px',
             width: 'fit-content',
           }}
@@ -292,7 +294,7 @@ function LoginSection() {
 
 export function LoginPage() {
   return (
-    <ViewContainer>
+    <ViewContainer containOverflow={false}>
       <LoginSection />
     </ViewContainer>
   )
