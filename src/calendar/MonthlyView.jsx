@@ -414,7 +414,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
   }
 
   return (
-    <ViewContainer>
+    <ViewContainer containOverflow={false}>
       <MonthHeader date={date} onChange={onChange} />
       <TutorialDialog tip="expand a week" position="right" />
 
@@ -424,7 +424,7 @@ export function MonthlyView({ date, onChange, onExpand }) {
           mt: [0, 2],
           pr: 1,
           pl: isNarrow ? 1 : 4,
-          mb: 2,
+          mb: 'calc(100lvh - 100svh)', // blank space for address bar drag-hide
           flexGrow: 1,
           alignItems: isNarrow ? 'center' : 'start',
         }}
