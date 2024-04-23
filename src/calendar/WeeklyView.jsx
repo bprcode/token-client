@@ -39,7 +39,8 @@ const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
 const snapGapPixels = 4
 const ghostFadeInColor = '#0000'
-const log = () => {}
+// const log = () => {}
+const log = console.log.bind(console)
 const time = () => {}
 const timeEnd = () => {}
 
@@ -125,6 +126,13 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
   )
 })
 
+function touchIntercept(event) {
+  const ep = event.target.closest('.event-pane')
+  if(ep) {
+    event.preventDefault()
+  }
+}
+
 function WeekdayBox({ day, displayHeightPx, weekEvents }) {
   // Reconstruct day object from string to avoid broken referential integrity:
   const dayString = day.toString()
@@ -144,7 +152,8 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
         data-day={dayString}
         key={day.format('MM D')}
         sx={{
-          px: '0.25rem',
+          pl: ['1px', '0.25rem'],
+          pr: ['0px', '0.25rem'],
           pb: '0.5rem',
           backgroundColor: 'rgb(23, 27, 28)',
           borderLeft: '1px solid #fff1',
@@ -371,6 +380,13 @@ function WeekBody({
       isOverlap(startOfWeek, endOfWeek, e.startTime, e.endTime)
     )
   }, [dateString, events])
+
+  const registerTouchStart = useCallback(node => {
+    if(node) {
+      console.log('registering touch start with:',node)
+      node.addEventListener('touchstart', touchIntercept, { passive: false })
+    }
+  }, [])
 
   const rv = useMemo(() => {
     const memoBenchStart = Date.now()
@@ -682,7 +698,9 @@ function WeekBody({
     }
 
     const assembledContents = (
-      <div>
+      <div
+        ref={registerTouchStart}
+      >
         <Box
           onClick={e => {
             if (action === 'edit') {
@@ -976,6 +994,7 @@ function WeekBody({
     onCreate,
     onEdit,
     isModeratelyWide,
+    registerTouchStart,
   ])
 
   const benchEnd = performance.now()
