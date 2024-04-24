@@ -60,28 +60,29 @@ export function gradualShades(j, contrast = 1.0) {
 
 export const HoverableBox = styled(Box)(({ theme }) => ({
   position: 'relative',
-  // debug:
-  // '&.tapped': {
-  //   filter: 'brightness(130%)',
-  // },
-  // '&:hover::after': {
-  //   content: '""',
-  //   display: 'block',
-  //   position: 'absolute',
-  //   top: 0,
-  //   left: 0,
-  //   width: '100%',
-  //   height: '100%',
-  //   opacity: 0.5,
-  //   backgroundColor: theme.palette.action.hover,
-  // },
-  // '&:hover .section-inner': {
-  //   filter: 'brightness(140%)',
-  // },
-  // Cancel the section-inner brightness filter for event panes:
-  // '&:hover .event-pane': {
-  //   filter: 'brightness(71%)',
-  // },
+  [theme.breakpoints.up('sm')]: {
+    '&.tapped': {
+      filter: 'brightness(130%)',
+    },
+    '&:hover::after': {
+      content: '""',
+      display: 'block',
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      opacity: 0.5,
+      backgroundColor: theme.palette.action.hover,
+    },
+    '&:hover .section-inner': {
+      filter: 'brightness(140%)',
+    },
+    // Cancel the section-inner brightness filter for event panes:
+    '&:hover .event-pane': {
+      filter: 'brightness(71%)',
+    },
+  },
 }))
 
 export { barTheme }
