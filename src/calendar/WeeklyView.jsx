@@ -157,9 +157,6 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
           pb: '0.5rem',
           backgroundColor: 'rgb(23, 27, 28)',
           borderLeft: '1px solid #fff1',
-          '&.brighten': {
-            filter: 'brightness(110%)',
-          },
         }}
       >
         <Box
@@ -298,16 +295,6 @@ function handlePointerDown(
   // If the pointerDown did not occur within an eventPane,
   // allow the individual day container to handle it.
   if (!ep) {
-    const wb = e.target.closest('.weekday-box')
-    log(wb)
-    if (touchRef.current.brightenBox) {
-      touchRef.current.brightenBox.classList.remove('brighten')
-    }
-    if (wb) {
-      wb.classList.add('brighten')
-      touchRef.current.brightenBox = wb
-    }
-
     touchRef.current.eventPane = null
     return
   }
@@ -765,10 +752,6 @@ function WeekBody({
             setShowGhost(false)
             setGhostWeekColor(ghostFadeInColor)
 
-            if (touchRef.current.brightenBox) {
-              touchRef.current.brightenBox.classList.remove('brighten')
-            }
-
             if (action === 'create' && touchRef.current.isDragCreating) {
               touchRef.current.isDragCreating = false
 
@@ -863,10 +846,7 @@ function WeekBody({
             setShowGhost(false)
             touchRef.current.event = null
             touchRef.current.isDragCreating = false
-
-            if (touchRef.current.brightenBox) {
-              touchRef.current.brightenBox.classList.remove('brighten')
-            }
+            
             if (touchRef.current.eventPane) {
               touchRef.current.eventPane.style.filter = ''
             }
