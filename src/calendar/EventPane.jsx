@@ -51,16 +51,18 @@ const selectableStyles = {
   },
 }
 
-const BrightHoverBox = styled(Box)({
+const BrightHoverBox = styled(Box)(({ theme }) => ({
   ...selectableStyles,
-  '&&:hover': {
-    // Brightness is multiplicative with parent hover filter:
-    filter: 'brightness(90%) saturate(80%)',
+  [theme.breakpoints.up('sm')]: {
+    '&&:hover': {
+      // Brightness is multiplicative with parent hover filter:
+      filter: 'brightness(90%) saturate(80%)',
+    },
   },
   '&&&:active': {
-    filter: 'brightness(110%) saturate(70%)',
+    filter: 'brightness(120%) saturate(90%)',
   },
-})
+}))
 
 function OverflowArrows({ before, after, accentColor }) {
   return (
