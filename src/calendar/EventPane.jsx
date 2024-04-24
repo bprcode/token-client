@@ -644,7 +644,7 @@ export function EventPane({
   return (
     <>
       <Zoom in={!isFading} appear={false} timeout={250}>
-        <Box
+        <BrightHoverBox
           className="event-pane full-pane"
           {...eventHandlers}
           data-id={event.stableKey ?? event.id}
@@ -830,7 +830,7 @@ export function EventPane({
               </div>
             )}
           </Box>
-        </Box>
+        </BrightHoverBox>
       </Zoom>
 
       {/* event outline ghost, displayed during drag-resizing: */}

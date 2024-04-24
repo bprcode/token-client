@@ -152,8 +152,7 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
         data-day={dayString}
         key={day.format('MM D')}
         sx={{
-          pl: ['1px', '0.25rem'],
-          pr: ['0px', '0.25rem'],
+          px: ['0px', '0.25rem'],
           pb: '0.5rem',
           backgroundColor: 'rgb(23, 27, 28)',
           borderLeft: '1px solid #fff1',
@@ -846,7 +845,7 @@ function WeekBody({
             setShowGhost(false)
             touchRef.current.event = null
             touchRef.current.isDragCreating = false
-            
+
             if (touchRef.current.eventPane) {
               touchRef.current.eventPane.style.filter = ''
             }
@@ -885,12 +884,12 @@ function WeekBody({
           }}
           sx={{
             touchAction: action === 'create' ? 'none' : undefined,
-            paddingLeft: '1px',
             display: 'grid',
             cursor: action === 'create' ? 'cell' : undefined,
             gridTemplateColumns: 'repeat(7, 1fr)',
             width: '100%',
             borderTop: '1px solid #aaf3',
+            borderRight: '1px solid #111f',
             boxShadow: '1rem 1.5rem 2rem #0114',
             '& .event-pane .pane-inner div':
               action !== 'delete'
