@@ -400,31 +400,25 @@ function WeekBody({
 
   // Intercept callbacks: depending on the current action,
   // register an event handler to PreventDefault on various touch events.
-  const registerInterceptPane = useCallback(node => {
-    if (node) {
-      releaseListener(lastInterceptRef.current)
-      lastInterceptRef.current = bindListener(
-        node,
-        'touchstart',
-        interceptPane,
-        { passive: false }
-      )
-    }
-  }, [])
+  const registerIntercept = useCallback(
+    node => {
+      if (!node) {
+        return
+      }
+      const intercepts = {
+        edit: interceptPane,
+        create: interceptAll,
+        delete: interceptNone,
+      }
 
-  const registerInterceptNone = useCallback(node => {
-    if (node) {
-      releaseListener(lastInterceptRef.current)
-      lastInterceptRef.current = bindListener(node, 'touchstart', interceptNone)
-    }
-  }, [])
+      const listener = intercepts[action] || (() => {})
+      console.log('registering for action=', action, 'with args', listener)
 
-  const registerInterceptAll = useCallback(node => {
-    if (node) {
       releaseListener(lastInterceptRef.current)
-      lastInterceptRef.current = bindListener(node, 'touchstart', interceptAll)
-    }
-  }, [])
+      lastInterceptRef.current = bindListener(node, 'touchstart', listener)
+    },
+    [action]
+  )
 
   const rv = useMemo(() => {
     const memoBenchStart = Date.now()
@@ -737,15 +731,7 @@ function WeekBody({
     }
 
     const assembledContents = (
-      <div
-        ref={
-          action === 'edit'
-            ? registerInterceptPane
-            : action === 'create'
-            ? registerInterceptAll
-            : registerInterceptNone
-        }
-      >
+      <div ref={registerIntercept}>
         <Box
           onClick={e => {
             if (action === 'edit') {
@@ -1033,7 +1019,7 @@ function WeekBody({
     onCreate,
     onEdit,
     isModeratelyWide,
-    registerInterceptPane,
+    registerIntercept,
   ])
 
   const benchEnd = performance.now()
