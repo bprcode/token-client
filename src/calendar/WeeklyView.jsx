@@ -212,6 +212,7 @@ function handlePointerDown(
   updateTouchBounds,
   setShowGhost,
   colorizerTheme,
+  needMobileBar,
   setGhostWeekColor,
   updateDragCreation,
   events
@@ -304,6 +305,7 @@ function handlePointerDown(
   const eventRect = ep.getBoundingClientRect()
 
   updateTouchBounds(e)
+  const offsetWidth = needMobileBar ? 0 : -10
   Object.assign(touchRef.current, {
     event: events.find(
       e => e.stableKey === ep.dataset.id || e.id === ep.dataset.id
@@ -313,7 +315,7 @@ function handlePointerDown(
     initialLeft: eventRect.left - touchRef.current.bounds.containerLeft,
     initialTop: eventRect.top - touchRef.current.bounds.containerTop,
 
-    width: Math.round(touchRef.current.bounds.containerWidth / 7) - 8,
+    width: Math.round(touchRef.current.bounds.containerWidth / 7) + offsetWidth,
     height: eventRect.height,
   })
 
@@ -639,6 +641,7 @@ function WeekBody({
     }
 
     function updateDragMove(pageX, pageY) {
+      const offsetLeft = needMobileBar ? -4 : 1
       const dayOfWeek = snapDay(pageX)
 
       const snappedMinute = snapMinute(dayOfWeek, pageY)
@@ -649,7 +652,7 @@ function WeekBody({
       touchRef.current.eventPane.style.filter = 'brightness(40%) saturate(30%)'
 
       // Use the snapped values to place the element
-      ghostElementRef.current.style.left = snapLeft(pageX) + 'px'
+      ghostElementRef.current.style.left = snapLeft(pageX) + offsetLeft + 'px'
       ghostElementRef.current.style.top =
         yBounds.top +
         (snappedMinute / (yBounds.dayLength * 4 * 15)) *
@@ -860,6 +863,7 @@ function WeekBody({
               updateTouchBounds,
               setShowGhost,
               colorizerTheme,
+              needMobileBar,
               setGhostWeekColor,
               updateDragCreation,
               events,
