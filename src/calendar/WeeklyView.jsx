@@ -126,11 +126,39 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
   )
 })
 
-function touchIntercept(event) {
+function interceptPane(event) {
   const ep = event.target.closest('.event-pane')
-  if(ep) {
+  if (ep) {
     event.preventDefault()
   }
+}
+
+function interceptNone() {
+  // no-op
+}
+
+function interceptAll(event) {
+  event.preventDefault()
+}
+
+/** Add a listener, returning all bound parameters */
+function bindListener(node, type, listener, options) {
+  console.log('binding', type, 'listener=', listener, 'to', node)
+  node.addEventListener(type, listener, options)
+  return { node, type, listener, options }
+}
+
+/** Release a listener previously bound with bindListener */
+function releaseListener(binding) {
+  if (!binding) {
+    return
+  }
+  console.log('releasing binding:', binding)
+  binding.node.removeEventListener(
+    binding.type,
+    binding.listener,
+    binding.options
+  )
 }
 
 function WeekdayBox({ day, displayHeightPx, weekEvents }) {
@@ -347,6 +375,7 @@ function WeekBody({
   onDelete,
   onHideDrawer,
 }) {
+  const lastInterceptRef = useRef(null)
   const needMobileBar = useMobileBarCheck()
   const logger = useLogger()
   const benchStart = performance.now()
@@ -369,10 +398,31 @@ function WeekBody({
     )
   }, [dateString, events])
 
-  const registerTouchStart = useCallback(node => {
-    if(node) {
-      console.log('registering touch start with:',node)
-      node.addEventListener('touchstart', touchIntercept, { passive: false })
+  // Intercept callbacks: depending on the current action,
+  // register an event handler to PreventDefault on various touch events.
+  const registerInterceptPane = useCallback(node => {
+    if (node) {
+      releaseListener(lastInterceptRef.current)
+      lastInterceptRef.current = bindListener(
+        node,
+        'touchstart',
+        interceptPane,
+        { passive: false }
+      )
+    }
+  }, [])
+
+  const registerInterceptNone = useCallback(node => {
+    if (node) {
+      releaseListener(lastInterceptRef.current)
+      lastInterceptRef.current = bindListener(node, 'touchstart', interceptNone)
+    }
+  }, [])
+
+  const registerInterceptAll = useCallback(node => {
+    if (node) {
+      releaseListener(lastInterceptRef.current)
+      lastInterceptRef.current = bindListener(node, 'touchstart', interceptAll)
     }
   }, [])
 
@@ -688,7 +738,13 @@ function WeekBody({
 
     const assembledContents = (
       <div
-        ref={registerTouchStart}
+        ref={
+          action === 'edit'
+            ? registerInterceptPane
+            : action === 'create'
+            ? registerInterceptAll
+            : registerInterceptNone
+        }
       >
         <Box
           onClick={e => {
@@ -977,7 +1033,7 @@ function WeekBody({
     onCreate,
     onEdit,
     isModeratelyWide,
-    registerTouchStart,
+    registerInterceptPane,
   ])
 
   const benchEnd = performance.now()
