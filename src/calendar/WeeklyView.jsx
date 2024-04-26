@@ -48,11 +48,8 @@ function GhostDay() {
   return (
     <Box
       sx={{
-        marginLeft: [snapGapPixels / 2 + 'px', 2 * snapGapPixels + 1 + 'px'],
-        marginRight: [
-          2 * snapGapPixels - 1 + 'px',
-          4 * snapGapPixels - 2 + 'px',
-        ],
+        marginLeft: ['0px', 2 * snapGapPixels + 1 + 'px'],
+        marginRight: ['0px', 4 * snapGapPixels - 2 + 'px'],
       }}
     >
       <div
@@ -129,7 +126,7 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
 function interceptPane(event) {
   const ep = event.target.closest('.event-pane')
   if (ep) {
-    console.log('intercepting on',ep)
+    console.log('intercepting on', ep)
     event.preventDefault()
   }
 }
@@ -551,6 +548,7 @@ function WeekBody({
     }
 
     function updateDragCreation(pageX, pageY) {
+      const offsetLeft = needMobileBar ? -3 : -1
       ghostElementRef.current.style.visibility = 'visible'
 
       const dayOfWeek = snapDay(pageX)
@@ -587,7 +585,8 @@ function WeekBody({
       const leftmost = Math.min(pageX, touchRef.current.initialPageX)
       const rightmost = Math.max(pageX, touchRef.current.initialPageX)
 
-      ghostElementRef.current.style.left = snapLeft(leftmost) + 'px'
+      ghostElementRef.current.style.left =
+        snapLeft(leftmost) + offsetLeft + 'px'
       ghostElementRef.current.style.top =
         yBounds.top +
         (startMinute / (yBounds.dayLength * 4 * 15)) *
@@ -600,7 +599,7 @@ function WeekBody({
         'px'
 
       ghostElementRef.current.style.width =
-        snapXCeil(rightmost) - snapLeft(leftmost) + 1 + 'px'
+        snapXCeil(rightmost) + 7 - snapLeft(leftmost) + 'px'
 
       const currentDayCount = Math.round(
         (7 * (snapXCeil(rightmost) - snapLeft(leftmost))) /
@@ -735,7 +734,7 @@ function WeekBody({
       <div ref={registerIntercept}>
         <Box
           onClick={e => {
-            console.log('%cclick handler','color:orange')
+            console.log('%cclick handler', 'color:orange')
             if (action === 'edit') {
               const ep = e.target.closest('.event-pane')
 
@@ -845,13 +844,9 @@ function WeekBody({
             // apply the 'selected' state
             const ep = e.target.closest('.event-pane')
             if (ep && ep === touchRef.current.eventPane) {
-              if(ep.classList.contains('selected')){
-                // DEBUG -- TESTING
-                console.log('✏️✏️ looks like an edit request?')
+              if (ep.classList.contains('selected')) {
                 onEdit(ep.dataset.id)
                 return
-              } else {
-                console.log('✏️ adding pencil')
               }
               ep.classList.add('selected')
               ep.classList.add('show-pencil')
