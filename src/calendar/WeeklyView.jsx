@@ -129,6 +129,7 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
 function interceptPane(event) {
   const ep = event.target.closest('.event-pane')
   if (ep) {
+    console.log('intercepting on',ep)
     event.preventDefault()
   }
 }
@@ -411,7 +412,7 @@ function WeekBody({
         delete: interceptNone,
       }
 
-      const listener = intercepts[action] || (() => {})
+      const listener = intercepts[action] || interceptNone
       console.log('registering for action=', action, 'with args', listener)
 
       releaseListener(lastInterceptRef.current)
@@ -734,6 +735,7 @@ function WeekBody({
       <div ref={registerIntercept}>
         <Box
           onClick={e => {
+            console.log('%cclick handler','color:orange')
             if (action === 'edit') {
               const ep = e.target.closest('.event-pane')
 
@@ -742,7 +744,7 @@ function WeekBody({
                 touchRef.current.lastClickedPane === ep &&
                 touchRef.current.lastTouchBehavior === 'edit'
               ) {
-                return onEdit(ep.dataset.id)
+                return
               }
 
               touchRef.current.lastClickedPane = ep
@@ -843,6 +845,14 @@ function WeekBody({
             // apply the 'selected' state
             const ep = e.target.closest('.event-pane')
             if (ep && ep === touchRef.current.eventPane) {
+              if(ep.classList.contains('selected')){
+                // DEBUG -- TESTING
+                console.log('✏️✏️ looks like an edit request?')
+                onEdit(ep.dataset.id)
+                return
+              } else {
+                console.log('✏️ adding pencil')
+              }
               ep.classList.add('selected')
               ep.classList.add('show-pencil')
               if (touchRef.current.selectionTimeout) {
