@@ -325,6 +325,10 @@ function handlePointerDown(
     return
   }
 
+  // debug
+  console.log('looking for accentColor on:', ep.querySelector('.pane-inner')
+  )
+
   const pickedColor = getComputedStyle(
     ep.querySelector('.pane-inner')
   ).accentColor

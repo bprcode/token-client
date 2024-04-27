@@ -684,6 +684,7 @@ export function EventPane({
                 label === 'none' && `0px 0px 0.75rem ${shadeColor} inset`,
               ...borderStyles,
               ...referenceStyle,
+              accentColor: accentColor,
               backgroundColor:
                 label === 'detailed' ? verboseBackground : accentColor,
 
