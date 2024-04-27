@@ -2,13 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../go-fetch'
 import { useCallback, useRef } from 'react'
 import dayjs from 'dayjs'
-import { touchList } from './reconcile.mjs'
+import { touchList } from './reconcile'
 import { resetViewsToCache } from './routes/Calendar'
 import { Autosaver, AutosaverStatus } from './Autosaver'
-import { backoff, debounce } from '../debounce.mjs'
-import { updateCacheData } from './cacheTracker.mjs'
+import { backoff, debounce } from '../debounce'
+import { updateCacheData } from './cacheTracker'
+import plainLog from '../log'
 
-const log = (...args) => console.log('%cEventSync>', 'color:silver', ...args)
+const log = (...args) => plainLog('%cEventSync>', 'color:silver', ...args)
 
 function makeBatchEntry(event) {
   if (event.etag === 'creating') {
@@ -278,7 +279,7 @@ function handleEventError({ calendarId, error, original, queryClient }) {
 }
 
 const autosaveLogger = (...args) =>
-  console.log('%cEvent Autosaver>', 'color:orange', ...args)
+  plainLog('%cEvent Autosaver>', 'color:orange', ...args)
 
 export function EventSyncMonitor({ id }) {
   const { mutate, isPending } = useEventBatchMutation(id)

@@ -3,7 +3,8 @@ import { useReducer } from 'react'
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { reviveEvents } from './cacheTracker.mjs'
+import { reviveEvents } from './cacheTracker'
+import log from '../log'
 
 dayjs.extend(relativeTime)
 dayjs.extend(utc)
@@ -214,7 +215,7 @@ function mockDayEvents(day) {
 export function mockEventFetch(resource) {
   mockEventFetch.days ??= reviveDemoSession()
 
-  console.log('mocking fetch request for:', resource)
+  log('mocking fetch request for:', resource)
 
   const decoded = decodeURIComponent(resource)
   const searchParams = new URLSearchParams(decoded.split('?')[1])

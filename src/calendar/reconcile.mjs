@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import log from '../log'
 
 const noop = () => {}
 
@@ -27,7 +28,7 @@ function onConflict(tag, ...latest) {
     }
 
     conflicts.set(tag, list)
-    console.log(
+    log(
       `%csetting conflicts:`,
       'background-color:blue;color:white',
       conflicts
@@ -65,7 +66,6 @@ export function reconcile({
   allowRevival = false,
   chillTime = 60 * 1000,
 }) {
-  console.time(`${tag} reconciled`)
   const merged = []
   const serverMap = new Map(serverData.map(data => [data[key], data]))
   const localMap = new Map(localData.map(data => [data[key], data]))
@@ -204,8 +204,6 @@ export function reconcile({
       merged.push(remote)
     }
   }
-
-  console.timeEnd(`${tag} reconciled`)
 
   return merged
 }

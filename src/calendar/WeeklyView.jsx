@@ -22,27 +22,23 @@ import {
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from './blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
-import { useLogger } from './Logger'
-import { createEventObject, isOverlap, resolveColor } from './calendarLogic.mjs'
+import { createEventObject, isOverlap, resolveColor } from './calendarLogic'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
 import { SectionedInterval } from './SectionedInterval'
 import { ActionButtons, MobileBar } from './ActionDisplay'
-import { ActionContext, actionList } from './ActionContext.mjs'
-import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
+import { ActionContext, actionList } from './ActionContext'
+import { useMobileBarCheck, useNarrowCheck } from './LayoutContext'
 import { CreationPicker } from './CreationPicker'
 import dayjs from 'dayjs'
 import { EventEditor } from './EventEditor'
 import { TutorialDialog, removeTutorialStage } from './TutorialDialog'
+import log from '../log'
 
 const innerLeftPadding = '0rem'
 const innerRightPadding = '0rem'
 const snapGapPixels = 4
 const ghostFadeInColor = '#0000'
-// const log = () => {}
-const log = console.log.bind(console)
-const time = () => {}
-const timeEnd = () => {}
 
 function GhostDay() {
   return (
@@ -126,7 +122,7 @@ const DragGhost = forwardRef(function DragGhost({ show }, ref) {
 function interceptPane(event) {
   const ep = event.target.closest('.event-pane')
   if (ep) {
-    console.log('intercepting on', ep)
+    log('intercepting on', ep)
     event.preventDefault()
   }
 }
@@ -141,7 +137,7 @@ function interceptAll(event) {
 
 /** Add a listener, returning all bound parameters */
 function bindListener(node, type, listener, options) {
-  console.log('binding', type, 'listener=', listener, 'to', node)
+  log('binding', type, 'listener=', listener, 'to', node)
   node.addEventListener(type, listener, options)
   return { node, type, listener, options }
 }
@@ -151,7 +147,7 @@ function releaseListener(binding) {
   if (!binding) {
     return
   }
-  console.log('releasing binding:', binding)
+  log('releasing binding:', binding)
   binding.node.removeEventListener(
     binding.type,
     binding.listener,
@@ -164,7 +160,6 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
   const dayString = day.toString()
 
   return useMemo(() => {
-    time(`🛤️ WeekdayBox memoizing for: ${dayString}`)
     const day = dayjs(dayString)
     const dstLength = Math.round(
       day.endOf('day').diff(day.startOf('day')) / (1000 * 60 * 60)
@@ -215,7 +210,6 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
       </HoverableBox>
     )
 
-    timeEnd(`🛤️ WeekdayBox memoizing for: ${dayString}`)
     return assembled
   }, [displayHeightPx, dayString, weekEvents])
 }
@@ -325,10 +319,6 @@ function handlePointerDown(
     return
   }
 
-  // debug
-  console.log('looking for accentColor on:', ep.querySelector('.pane-inner')
-  )
-
   const pickedColor = getComputedStyle(
     ep.querySelector('.pane-inner')
   ).accentColor
@@ -379,8 +369,6 @@ function WeekBody({
 }) {
   const lastInterceptRef = useRef(null)
   const needMobileBar = useMobileBarCheck()
-  const logger = useLogger()
-  const benchStart = performance.now()
   const displayHeightPx = 544
   const isModeratelyWide = useMediaQuery('(min-width:500px)')
 
@@ -414,7 +402,7 @@ function WeekBody({
       }
 
       const listener = intercepts[action] || interceptNone
-      console.log('registering for action=', action, 'with args', listener)
+      log('registering for action=', action, 'with args', listener)
 
       releaseListener(lastInterceptRef.current)
       lastInterceptRef.current = bindListener(node, 'touchstart', listener)
@@ -738,7 +726,6 @@ function WeekBody({
       <div ref={registerIntercept}>
         <Box
           onClick={e => {
-            console.log('%cclick handler', 'color:orange')
             if (action === 'edit') {
               const ep = e.target.closest('.event-pane')
 
@@ -934,7 +921,7 @@ function WeekBody({
 
               updateDragMove(e.pageX, e.pageY)
             } catch (e) {
-              console.warn(e.message)
+              log(e.message)
             }
           }}
           sx={{
@@ -1031,12 +1018,6 @@ function WeekBody({
     registerIntercept,
   ])
 
-  const benchEnd = performance.now()
-  setTimeout(
-    () => logger('CalendarBody rendered in ' + (benchEnd - benchStart) + ' ms'),
-    1000
-  )
-
   return (
     <>
       {rv}
@@ -1095,10 +1076,6 @@ export function WeeklyView({
   const [skipDate, setSkipDate] = useState(null)
   const touchRef = useRef({})
   const { data: events } = useViewQuery()
-  const logger = useLogger()
-  const logId = Math.round(Math.random() * 1e6)
-
-  const benchStart = performance.now()
   const isSmall = useMediaQuery('(max-width: 600px)')
   const isReallySmall = useMediaQuery('(max-width: 320px)')
   const isNarrow = useNarrowCheck()
@@ -1256,13 +1233,5 @@ export function WeeklyView({
     </ActionContext.Provider>
   )
 
-  const benchEnd = performance.now()
-  setTimeout(
-    () =>
-      logger(
-        logId + ' WeeklyCalendar rendered in ' + (benchEnd - benchStart) + ' ms'
-      ),
-    1000
-  )
   return rv
 }

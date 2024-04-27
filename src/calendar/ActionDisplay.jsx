@@ -5,7 +5,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import { AppBar, Box, IconButton, Toolbar, useTheme } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 import { useContext } from 'react'
-import { ActionContext } from './ActionContext.mjs'
+import { ActionContext } from './ActionContext'
 
 export function ActionButtons({ onBehavior, canUndo }) {
   const action = useContext(ActionContext)

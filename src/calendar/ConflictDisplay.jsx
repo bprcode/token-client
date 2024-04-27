@@ -1,8 +1,8 @@
 import { Box, Fade, Paper, Typography, useTheme } from '@mui/material'
-import { clearConflicts, useConflictList } from './reconcile.mjs'
+import { clearConflicts, useConflictList } from './reconcile'
 import { useEffect, useState } from 'react'
 import { alpha } from '@mui/material/styles'
-import { useNarrowCheck } from './LayoutContext.mjs'
+import { useNarrowCheck } from './LayoutContext'
 
 export function ConflictDisplay({ tag }) {
   const { palette } = useTheme()
@@ -33,7 +33,7 @@ export function ConflictDisplay({ tag }) {
           variant="subtitle2"
           color={alpha(palette.text.primary, 0.85)}
         >
-          {`(${tag}) Updated with ${lastCount} ` +
+          {`Updated with ${lastCount} ` +
             `remote change${lastCount > 1 ? 's' : ''}.`}
         </Typography>
       </Paper>

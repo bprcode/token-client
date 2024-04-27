@@ -2,9 +2,10 @@ import { useCatalogQuery } from './routes/Catalog'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../go-fetch'
 import { useRef } from 'react'
-import { backoff } from '../debounce.mjs'
-import { touchList } from './reconcile.mjs'
+import { backoff } from '../debounce'
+import { touchList } from './reconcile'
 import { Autosaver, AutosaverStatus } from './Autosaver'
+import log from '../log'
 
 function useCatalogBundleMutation() {
   const abortRef = useRef(new AbortController())
@@ -13,16 +14,16 @@ function useCatalogBundleMutation() {
 
   const itemMutation = useMutation({
     onMutate: variables => {
-      console.log(`initiating item mutation with variables=`, variables)
+      log(`initiating item mutation with variables=`, variables)
       return { ...variables }
     },
     mutationFn: variables => {
-      console.log(`fetching item mutation with unsaved=`, variables.unsaved)
+      log(`fetching item mutation with unsaved=`, variables.unsaved)
       return makeCalendarFetch(variables)
     },
     onSuccess: (data, variables, context) => {
-      console.log(`item success, variables=`, variables)
-      console.log(`and context=`, context)
+      log(`item success, variables=`, variables)
+      log(`and context=`, context)
 
       handleCalendarSuccess({
         result: data,
@@ -45,7 +46,7 @@ function useCatalogBundleMutation() {
     onMutate: variables => {
       abortRef.current.abort()
       abortRef.current = new AbortController()
-      console.log(
+      log(
         `🟧 Starting bundle mutation with calendars (${variables.length})`,
         variables.map(c => c.calendar_id).join(', '),
         `and variables=`,
@@ -65,13 +66,13 @@ function useCatalogBundleMutation() {
       if (error?.status === 409) {
         const touched = getCatalogTouchList(queryClient)
         if (touched.length === 0) {
-          console.log('Bundle got 409, but no touched records; no refetch.')
+          log('Bundle got 409, but no touched records; no refetch.')
           return
         }
 
-        console.log(`Had outstanding changes; refetching.`)
+        log(`Had outstanding changes; refetching.`)
         backoff(`catalog conflict refetch`, () => {
-          console.log(`⛔ Bundle refetching.`)
+          log(`⛔ Bundle refetching.`)
           queryClient.refetchQueries({ queryKey: ['catalog'] })
         })
       }
@@ -84,9 +85,9 @@ function useCatalogBundleMutation() {
 function handleCalendarError({ error, original, queryClient }) {
   if (error.status === 409) {
     const conflict = error.conflict
-    console.log('comparing original/conflict:', original, conflict)
+    log('comparing original/conflict:', original, conflict)
     if (conflict && isCalendarDuplicate(original, conflict)) {
-      console.log('🔰 Detected self-conflict; resolving 409')
+      log('🔰 Detected self-conflict; resolving 409')
       const resolution = {
         ...original,
         etag: conflict.etag,
@@ -133,10 +134,10 @@ function handleCalendarSuccess({ result, original, queryClient }) {
     }
 
     if (hasSameContent(result, current)) {
-      console.log('🔗 content equivalent, clearing unsaved:', original.unsaved)
+      log('🔗 content equivalent, clearing unsaved:', original.unsaved)
       delete update.unsaved
     } else {
-      console.log('✖️ content mismatch:', current?.summary, result.summary)
+      log('✖️ content mismatch:', current?.summary, result.summary)
     }
 
     queryClient.setQueryData(['catalog'], catalog =>
@@ -226,7 +227,7 @@ function makeCalendarFetch(variables) {
 }
 
 const blueLog = (...args) =>
-  console.log('%cCatalog Autosaver>', 'color:#08f', ...args)
+  log('%cCatalog Autosaver>', 'color:#08f', ...args)
 
 const getCatalogTouchList = queryClient =>
   touchList(queryClient.getQueryData(['catalog']))

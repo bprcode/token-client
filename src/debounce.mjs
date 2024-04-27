@@ -1,11 +1,6 @@
 const timeouts = new Map()
 const callbacks = new Map()
 
-export function logDebounces() {
-  console.log('timeouts:', timeouts)
-  console.log('callbacks:', callbacks)
-}
-
 export function debounce(key, fn, delay = 1000) {
   return (...stuff) => {
     clearTimeout(timeouts.get(key))

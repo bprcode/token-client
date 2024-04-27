@@ -1,8 +1,7 @@
 import { Box, useMediaQuery } from '@mui/material'
 import { gradualShades } from './blueDigitalTheme'
-import { useLogger } from './Logger'
 import { useEffect, useMemo, useRef } from 'react'
-import { useNarrowCheck } from './LayoutContext.mjs'
+import { useNarrowCheck } from './LayoutContext'
 
 const defaultLeftPadding = ['0.5rem', '5rem']
 const defaultRightPadding = '0.5rem'
@@ -26,7 +25,6 @@ export function SectionedInterval({
   header,
 }) {
   const isNarrow = useNarrowCheck()
-  const logger = useLogger()
 
   // the following useEffect is solely to fix a Safari bug where scrolling to
   // the end of the page can cause position: sticky elements to disappear.
@@ -44,19 +42,16 @@ export function SectionedInterval({
     observer.observe(outerRef.current.querySelector('.ending-box'))
     function watchEnd() {
       if (skipFirst) {
-        logger('skipping first observer callback')
         skipFirst = false
         return
       }
-      logger('observer callback' + Math.random())
       viewHeader?.scrollIntoView()
     }
 
     return () => {
-      logger('unobserving')
       observer.unobserve(target)
     }
-  }, [logger])
+  }, [])
 
   const canFitTimes = useMediaQuery('(min-width: 400px)')
   const canFitDst = useMediaQuery('(min-width: 600px)')
@@ -150,7 +145,6 @@ export function SectionedInterval({
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
         onPointerCancel={e => {
-          console.log('😼 pointer cancel')
           onPointerUp(e)
         }}
         onClick={onClick}

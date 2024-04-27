@@ -3,9 +3,8 @@ import AddCircleOutlinedIcon from '@mui/icons-material/AddCircleOutlined'
 import { useTheme } from '@emotion/react'
 import { Box, IconButton } from '@mui/material'
 import { useEffect, useState } from 'react'
-import { useNarrowCheck } from './LayoutContext.mjs'
-import { Link, useNavigate } from 'react-router-dom'
-import { useQueryClient } from '@tanstack/react-query'
+import { useNarrowCheck } from './LayoutContext'
+import { Link } from 'react-router-dom'
 
 const tutorialTips = {
   'demo mode': (

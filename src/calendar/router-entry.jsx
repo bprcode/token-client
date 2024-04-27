@@ -22,14 +22,15 @@ import { LoginPage } from './routes/Login'
 import Index from './routes/Index'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { retryCheck } from '../go-fetch'
-import { navigateTo } from './NavigationControl.jsx'
-import { DemoContext } from './DemoContext.mjs'
-import { enableTutorial } from './TutorialDialog.jsx'
+import { navigateTo } from './NavigationControl'
+import { DemoContext } from './DemoContext'
+import { enableTutorial } from './TutorialDialog'
+import log from '../log'
 
 const globalExpiryHandler = error => {
-  console.log('🌍 global cache error handler:', error.status, error.message)
+  log('🌍 global cache error handler:', error.status, error.message)
   if (error.message?.includes('No identification')) {
-    console.log('❔ No ID')
+    log('❔ No ID')
     queryClient.setQueryData(['heartbeat'], null)
     queryClient.invalidateQueries({ queryKey: ['heartbeat'] })
     navigateTo(`login`)

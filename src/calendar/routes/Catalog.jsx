@@ -30,12 +30,13 @@ import { alpha, keyframes } from '@mui/material/styles'
 import dayjs from 'dayjs'
 import { Link } from 'react-router-dom'
 import { useContext, useEffect, useReducer, useRef, useState } from 'react'
-import { reconcile } from '../reconcile.mjs'
+import { reconcile } from '../reconcile'
 import { ConflictDisplay } from '../ConflictDisplay'
 import { isCalendarDuplicate } from '../CatalogSync'
-import { DemoContext } from '../DemoContext.mjs'
-import { demoCatalog } from '../calendarLogic.mjs'
-import { bounceEarly } from '../../debounce.mjs'
+import { DemoContext } from '../DemoContext'
+import { demoCatalog } from '../calendarLogic'
+import { bounceEarly } from '../../debounce'
+import log from '../../log'
 
 function makeCatalogQuery(queryClient, options = {}) {
   return {
@@ -60,7 +61,7 @@ function makeCatalogQuery(queryClient, options = {}) {
 export const loader =
   queryClient =>
   ({ request, params }) => {
-    console.log('🟨 prefetching catalog query')
+    log('🟨 prefetching catalog query')
     queryClient.prefetchQuery(makeCatalogQuery(queryClient))
 
     return 'unused'
@@ -180,12 +181,12 @@ function useCreateOptimistic() {
       calendar_id: idemKey,
       stableKey: idemKey,
     }
-    console.log('creating with idemKey: ', temporary.calendar_id)
+    log('creating with idemKey: ', temporary.calendar_id)
 
     queryClient.setQueryData(['catalog'], catalog => [...catalog, temporary])
 
     const newKey = randomIdemKey()
-    console.log('setting new idem key to ', newKey)
+    log('setting new idem key to ', newKey)
     setIdemKey(newKey)
   }
 }
@@ -352,7 +353,7 @@ function CalendarCard({ calendar, children }) {
               onClick={e => {
                 if (isEditing) {
                   e.preventDefault()
-                  console.log('TextField preventDefault')
+                  log('TextField preventDefault')
                 }
               }}
               onKeyUp={e => {
@@ -361,7 +362,7 @@ function CalendarCard({ calendar, children }) {
                 }
               }}
               onBlur={e => {
-                console.log('☁️ Blur: e.target.value=', e.target.value)
+                log('☁️ Blur: e.target.value=', e.target.value)
                 updateOptimistic({
                   summary: e.target.value,
                 })
@@ -387,14 +388,14 @@ function CalendarCard({ calendar, children }) {
           {/* <IconButton
             disabled={isCreating}
             aria-label="Share"
-            onClick={() => console.log('share placeholder')}
+            onClick={() => log('share placeholder')}
           >
             <ShareIcon sx={{ opacity: 0.9 }} />
           </IconButton> */}
           <IconButton
             aria-label="Rename"
             onClick={() => {
-              console.log('renaming...')
+              log('renaming...')
               setIsEditing(true)
             }}
           >
@@ -432,7 +433,7 @@ export function useCatalogQuery() {
       isDemo
         ? {
             queryFn: () => {
-              console.log('%cReturning demo catalog', 'color:cyan')
+              log('%cReturning demo catalog', 'color:cyan')
               return demoCatalog
             },
           }

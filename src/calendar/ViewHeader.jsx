@@ -1,7 +1,7 @@
 import MenuIcon from '@mui/icons-material/Menu'
 import { AppBar, IconButton, Toolbar, useMediaQuery } from '@mui/material'
 import { useContext, forwardRef } from 'react'
-import { ToggleMenuContext, useNarrowCheck } from './LayoutContext.mjs'
+import { ToggleMenuContext, useNarrowCheck } from './LayoutContext'
 
 const defaultGradient =
   'linear-gradient(50deg, #132b3acc, #1f535aa6 45%, #296b9e00 90%)'

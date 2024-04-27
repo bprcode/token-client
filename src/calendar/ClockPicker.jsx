@@ -1,10 +1,8 @@
 import { Button, Typography, useTheme } from '@mui/material'
 import { useState } from 'react'
-import { useLogger } from './Logger'
+import log from '../log'
 
 export function ClockPicker({ size = '240px', time, onPick }) {
-  const logger = useLogger()
-
   const theme = useTheme()
   const [mode, setMode] = useState('hours')
   const pi = Math.PI
@@ -203,8 +201,6 @@ export function ClockPicker({ size = '240px', time, onPick }) {
   )
 
   function handlePointerDown(e) {
-    console.log('blue down')
-    logger('clock-outer: down 👇')
     e.preventDefault()
 
     const current = e.currentTarget
@@ -232,7 +228,6 @@ export function ClockPicker({ size = '240px', time, onPick }) {
     }
 
     current.onlostpointercapture = () => {
-      logger('clock-outer: lost ❔')
       current.onpointermove = null
       current.onlostpointercapture = null
 
@@ -252,7 +247,7 @@ export function ClockPicker({ size = '240px', time, onPick }) {
 
     function checkHandSelection() {
       const pointerDegrees = (lastAngle * 180) / Math.PI
-      console.log('lastRadiusSquared=', lastRadiusSquared)
+      log('lastRadiusSquared=', lastRadiusSquared)
 
       const hourDistance = Math.min(
         Math.abs(hourDegrees - pointerDegrees),
@@ -262,9 +257,9 @@ export function ClockPicker({ size = '240px', time, onPick }) {
         Math.abs(minuteDegrees - pointerDegrees),
         Math.abs(360 + pointerDegrees - minuteDegrees)
       )
-      console.log('hourDistance =', hourDistance)
+      log('hourDistance =', hourDistance)
 
-      console.log('1. mode was: ', mode)
+      log('1. mode was: ', mode)
 
       if (lastRadiusSquared < 0.09) {
         if (

@@ -4,15 +4,15 @@ import {
   isOverlap,
   mockEventFetch,
   reduceConcurrentEvents,
-} from '../calendarLogic.mjs'
+} from '../calendarLogic'
 import dayjs from 'dayjs'
 import { MonthlyView } from '../MonthlyView'
 import { WeeklyView } from '../WeeklyView'
 import { DailyView } from '../DailyView'
 import { goFetch } from '../../go-fetch'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { reconcile } from '../reconcile.mjs'
-import { reviveSessionCache, updateCacheData } from '../cacheTracker.mjs'
+import { reconcile } from '../reconcile'
+import { reviveSessionCache, updateCacheData } from '../cacheTracker'
 import { LoadingHourglass } from '../LoadingHourglass'
 import { ViewContainer } from '../ViewContainer'
 import { ViewHeader } from '../ViewHeader'
@@ -20,9 +20,8 @@ import { useTheme } from '@emotion/react'
 import { alpha } from '@mui/material/styles'
 import { isEventDuplicate } from '../EventSync'
 import { useContext } from 'react'
-import { DemoContext } from '../DemoContext.mjs'
-
-const log = console.log.bind(console)
+import { DemoContext } from '../DemoContext'
+import log from '../../log'
 
 function mergeView(list, incoming) {
   const log = () => {}
@@ -96,7 +95,7 @@ function mergeView(list, incoming) {
       continue
     }
 
-    console.warn('Unhandled view collision.')
+    log('Warning: Unhandled view collision.')
     merge(v)
   }
 
@@ -184,8 +183,6 @@ function serveFromCache(cache, from, to) {
 }
 
 const viewReconcileLog = () => {}
-// const viewReconcileLog = (...args) =>
-//   console.log(`%cView Reconciler>`, `color:darkslategray`, ...args)
 
 export function useViewQuery() {
   const { id } = useParams()
@@ -207,7 +204,7 @@ export function useViewQuery() {
       )
       const cached = queryClient.getQueryData(['primary cache', id])
       if (!cached) {
-        console.log('%cbypassing cache access', 'color:pink')
+        log('%cbypassing cache access', 'color:pink')
         return null
       }
       const viewAge = findViewAge(cached.sortedViews, { from, to })
@@ -230,7 +227,7 @@ export function useViewQuery() {
     initialDataUpdatedAt: () => {
       const cached = queryClient.getQueryData(['primary cache', id])
       if (!cached) {
-        console.log('%cbypassing cache access', 'color:pink')
+        log('%cbypassing cache access', 'color:pink')
         return null
       }
       const viewAge = findViewAge(cached.sortedViews, { from, to })
@@ -295,7 +292,7 @@ export function useViewQuery() {
 export const loader =
   queryClient =>
   ({ params }) => {
-    console.log('%ccalendar loader', 'color:white;background-color:purple')
+    log('%ccalendar loader', 'color:white;background-color:purple')
     if (queryClient.getQueryData(['primary cache', params.id])) {
       log(`🌙 primary cache already initialized`)
       return null
@@ -479,7 +476,7 @@ export function CalendarContents({ calendarId }) {
             }}
             date={date}
             {...updaters}
-            onUndo={() => console.warn(`Not implemented.`)}
+            onUndo={() => log(`Not implemented.`)}
             canUndo={false}
           />
         )}
@@ -488,7 +485,7 @@ export function CalendarContents({ calendarId }) {
   )
 
   function updateParams({ view, date }) {
-    console.log('%cupdateParams called with v,d=', 'color:', view, date)
+    log('%cupdateParams called with v,d=', 'color:', view, date)
     const newParams = new URLSearchParams(searchParams)
     if (view) {
       newParams.set('v', view)
@@ -496,8 +493,6 @@ export function CalendarContents({ calendarId }) {
     if (date) {
       newParams.set('d', date.utc().format().replaceAll(':', '_'))
     }
-    console.time('setSearchParams')
     setSearchParams(newParams)
-    console.timeEnd('setSearchParams')
   }
 }

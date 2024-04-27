@@ -24,16 +24,16 @@ import dayjs from 'dayjs'
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore'
 import NavigateNextIcon from '@mui/icons-material/NavigateNext'
 import { AbbreviatedBreakdown } from './AbbreviatedBreakdown'
-import { log } from './log.mjs'
-import { weekdayAbbreviations } from './calendarLogic.mjs'
+import { weekdayAbbreviations } from './calendarLogic'
 import { HoverableBox, alternatingShades } from './blueDigitalTheme'
 import { ViewHeader } from './ViewHeader'
 import { ViewContainer } from './ViewContainer'
 import { useViewQuery } from './routes/Calendar'
-import { useNarrowCheck } from './LayoutContext.mjs'
-import { DemoContext } from './DemoContext.mjs'
+import { useNarrowCheck } from './LayoutContext'
+import { DemoContext } from './DemoContext'
 import { TutorialDialog, removeTutorialStage } from './TutorialDialog'
-import { bounceEarly, debounce } from '../debounce.mjs'
+import { bounceEarly, debounce } from '../debounce'
+import log from '../log'
 
 const ResponsiveTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
@@ -309,12 +309,12 @@ function MonthHeader({ date, onChange }) {
         options={yearOptions}
         value={String(year)}
         onChange={(event, newValue) => {
-          console.log('onChange newValue=', newValue)
+          log('onChange newValue=', newValue)
           onChange(date.year(newValue.label || newValue))
         }}
         inputValue={yearInput}
         onInputChange={(event, newInputValue, reason) => {
-          console.log('%coic reason:', 'color:limegreen', reason)
+          log('%coic reason:', 'color:limegreen', reason)
           if (!event) {
             return
           }
@@ -332,19 +332,16 @@ function MonthHeader({ date, onChange }) {
               )
             }
           }
-          console.log('yearInput comparison', yearInput, newInputValue)
+          log('yearInput comparison', yearInput, newInputValue)
           setYearInput(newInputValue)
           if (reason === 'input') {
             debounce(
               'read year input',
               () => {
                 if (!inputRef.current) {
-                  console.log('skipping ryi read')
                   return
                 }
-                console.log('bounce landing for ryi')
                 const input = inputRef.current.querySelector('input')
-                console.log('ref check:', input.value)
                 onChange(date.year(input.value))
               },
               2000
@@ -407,9 +404,9 @@ export function MonthlyView({ date, onChange, onExpand }) {
     [onExpand]
   )
 
-  console.log('%cMonthlyView rendering', 'color:#08f', date.toString())
+  log('%cMonthlyView rendering', 'color:#08f', date.toString())
   if (shouldDismount) {
-    console.log('%cdismounting monthly view', 'color:#08f')
+    log('%cdismounting monthly view', 'color:#08f')
     return <></>
   }
 
@@ -440,7 +437,6 @@ export function MonthlyView({ date, onChange, onExpand }) {
             borderRight: '1px solid #0009',
           }}
           onClick={e => {
-            console.log('onClick', Date.now())
             const weekBox = e.target.closest('.week-box')
             if (weekBox) {
               onExpandCallback(dayjs(weekBox.dataset.week))
@@ -448,7 +444,6 @@ export function MonthlyView({ date, onChange, onExpand }) {
             }
           }}
           onTouchStart={e => {
-            console.log('touchStart', Date.now())
             const weekBox = e.target.closest('.week-box')
             if (weekBox) {
               touchRef.current.lastTapped = weekBox
@@ -456,7 +451,6 @@ export function MonthlyView({ date, onChange, onExpand }) {
             }
           }}
           onTouchEnd={() => {
-            console.log('touchend', Date.now())
             if (touchRef.current.lastTapped) {
               touchRef.current.lastTapped.classList.remove('tapped')
             }

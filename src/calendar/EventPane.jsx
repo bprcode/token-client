@@ -8,7 +8,7 @@ import {
   baseStyles,
   getAugmentedColor,
   shorthandInterval as calculateShorthand,
-} from './calendarLogic.mjs'
+} from './calendarLogic'
 import {
   Box,
   IconButton,
@@ -18,9 +18,9 @@ import {
   useMediaQuery,
 } from '@mui/material'
 import { useContext, useState } from 'react'
-import { ActionContext } from './ActionContext.mjs'
-import { useLogger } from './Logger'
+import { ActionContext } from './ActionContext'
 import { removeTutorialStage } from './TutorialDialog'
+import log from '../log'
 
 const noop = () => {}
 
@@ -264,8 +264,6 @@ export function EventPane({
   const isSelectable = label === 'detailed'
   const isSqueezed = useMediaQuery('(max-width: 428px)')
 
-  const logger = useLogger()
-
   // Remove shadow elements to improve scrolling performance on Firefox Mobile
   const hideShadows =
     navigator.userAgent.includes('Mobile') &&
@@ -333,7 +331,7 @@ export function EventPane({
     baseStyles.get(event.summary) || baseStyles.get('Default')
   const augmentedColors = getAugmentedColor(event.colorId)
   if (!augmentedColors) {
-    console.log('failed to retrieve ', event.colorId)
+    log('failed to retrieve ', event.colorId)
   }
 
   const accentColor = augmentedColors.main
@@ -501,7 +499,7 @@ export function EventPane({
       const bounds = inner.getBoundingClientRect()
       tickSize = bounds.height / fifteenMinuteSliceCount
     } catch (e) {
-      console.warn('EventPane ancestor DOM mismatch. Using default tickSize.')
+      log('EventPane ancestor DOM mismatch. Using default tickSize.')
     }
 
     const touchStart = { x: e.clientX, y: e.clientY }
@@ -525,14 +523,11 @@ export function EventPane({
         return
       }
       case 'edit':
-        logger('setting capture')
         // N.B. working around this Safari setPointerCapture bug:
         // https://bugs.webkit.org/show_bug.cgi?id=220196
         touchTarget.querySelector('.pane-inner').setPointerCapture(e.pointerId)
 
         touchTarget.onpointermove = move => {
-          logger('move 1: ' + move.clientX)
-
           const distance = Math.sqrt(
             (move.clientX - touchStart.x) ** 2 +
               (move.clientY - touchStart.y) ** 2
@@ -541,15 +536,12 @@ export function EventPane({
           // Begin actual drag interaction
           // once the pointer has moved a meaningful distance
           if (distance / tickSize > 1) {
-            logger('starting second move...')
             setSliding(true)
             setGhost(true)
             setGhostTop(0)
             setGhostBottom(0)
 
             touchTarget.onpointermove = move => {
-              logger('move 2: ' + move.clientX)
-
               const dy = Math.round((move.clientY - touchStart.y) / tickSize)
               setGhostTop(dy)
               setGhostBottom(dy)
@@ -561,7 +553,6 @@ export function EventPane({
   }
 
   function handlePointerUp(e) {
-    logger('handling pointer up')
     setGhost(false)
 
     switch (action) {
@@ -636,7 +627,6 @@ export function EventPane({
           onPointerCancel: () => {
             setSliding(false)
             setGhost(false)
-            logger('interaction cancelled')
           },
           onClick: e => e.stopPropagation(),
         }
@@ -873,7 +863,7 @@ export function EventPane({
   )
 }
 
-function handleTabDrag(event, onAdjust, intervalSize, logger) {
+function handleTabDrag(event, onAdjust, intervalSize) {
   // Set capture to inner div for Safari workaround
   event.currentTarget
     .querySelector('.inner-tab')
@@ -890,12 +880,11 @@ function handleTabDrag(event, onAdjust, intervalSize, logger) {
     const bounds = inner.getBoundingClientRect()
     tickSize = bounds.height / fifteenMinuteSliceCount
   } catch (e) {
-    console.warn('EventPane ancestor DOM mismatch. Using default tickSize.')
+    log('EventPane ancestor DOM mismatch. Using default tickSize.')
   }
 
   const moveStart = event.clientY
   event.currentTarget.onpointermove = move => {
-    logger('tab move: ' + move.clientX)
     onAdjust(Math.round((move.clientY - moveStart) / tickSize))
   }
 }
@@ -918,7 +907,6 @@ function PaneControls({
     onAdjustBottom(0)
   }
 
-  const logger = useLogger()
   const iconColor = augmentedColors.contrastText
 
   const IconButtonStyles = {
@@ -951,18 +939,13 @@ function PaneControls({
           }}
           onPointerDown={e => {
             if (e.buttons !== 1) return
-            logger('top tab down, t=' + e.target.classList[0])
             beginTabDrag()
-            handleTabDrag(e, onAdjustTop, intervalSize, logger)
+            handleTabDrag(e, onAdjustTop, intervalSize)
             e.stopPropagation()
           }}
           onPointerUp={e => {
             onGhostEnd()
-            logger('top-up')
             e.currentTarget.onpointermove = null
-          }}
-          onPointerCancel={() => {
-            logger('🙀 pointer tab cancel')
           }}
         >
           <div
@@ -998,18 +981,13 @@ function PaneControls({
           }}
           onPointerDown={e => {
             if (e.buttons !== 1) return
-            logger('bottom tab down')
             beginTabDrag()
-            handleTabDrag(e, onAdjustBottom, intervalSize, logger)
+            handleTabDrag(e, onAdjustBottom, intervalSize)
             e.stopPropagation()
           }}
           onPointerUp={e => {
             onGhostEnd()
-            logger('bottom-up')
             e.currentTarget.onpointermove = null
-          }}
-          onPointerCancel={() => {
-            logger('🙀 pointer tab cancel')
           }}
         >
           <div

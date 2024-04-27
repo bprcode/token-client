@@ -12,7 +12,7 @@ import {
   useTheme,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import { ToggleMenuContext } from './LayoutContext.mjs'
+import { ToggleMenuContext } from './LayoutContext'
 import { useContext } from 'react'
 import {
   Link,

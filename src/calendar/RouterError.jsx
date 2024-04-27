@@ -7,11 +7,12 @@ import {
   Button,
 } from '@mui/material'
 import { useNavigate, useRouteError } from 'react-router-dom'
+import log from '../log'
 
 export default function RouterError() {
   const navigate = useNavigate()
   const error = useRouteError()
-  console.error(error)
+  log(error)
 
   return (
     <Container maxWidth="sm">

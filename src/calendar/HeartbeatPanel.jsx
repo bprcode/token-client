@@ -12,11 +12,12 @@ import {
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { goFetch } from '../go-fetch'
-import { DemoContext } from './DemoContext.mjs'
-import { demoUser } from './calendarLogic.mjs'
+import { DemoContext } from './DemoContext'
+import { demoUser } from './calendarLogic'
 import { useContext } from 'react'
 import { TutorialDialog, useTutorialStage } from './TutorialDialog'
-import { useNarrowCheck } from './LayoutContext.mjs'
+import { useNarrowCheck } from './LayoutContext'
+import log from '../log'
 
 export function useHeartbeatQuery() {
   const isDemo = useContext(DemoContext)
@@ -55,7 +56,7 @@ export function HeartbeatPanel({ children }) {
       })
     },
     onSuccess: data => {
-      console.log('mutation success with data: ', data)
+      log('mutation success with data: ', data)
       queryClient.invalidateQueries({ queryKey: ['catalog'] })
       queryClient.setQueryData(['heartbeat'], data)
       navigate('/catalog')
@@ -69,7 +70,7 @@ export function HeartbeatPanel({ children }) {
         method: 'DELETE',
       }),
     onSuccess: data => {
-      console.log('logout mutation yielded ', data)
+      log('logout mutation yielded ', data)
       sessionStorage.clear()
       queryClient.cancelQueries()
       queryClient.clear()

@@ -1,8 +1,7 @@
 import { Box, useMediaQuery } from '@mui/material'
 import { EventPane } from './EventPane'
-import { isOverlap } from './calendarLogic.mjs'
+import { isOverlap } from './calendarLogic'
 import { memo, useMemo } from 'react'
-import { useLogger } from './Logger'
 
 export const DailyBreakdown = memo(Breakdown)
 
@@ -17,9 +16,6 @@ function Breakdown({
   onDelete,
   labels = 'detailed',
 }) {
-  const logger = useLogger()
-  const benchStart = performance.now()
-
   const startOfDay = date.startOf('day')
   const startOfNextDay = date.add(1, 'day').startOf('day')
 
@@ -123,13 +119,6 @@ function Breakdown({
         />
       ))}
     </Box>
-  )
-
-  const benchEnd = performance.now()
-  setTimeout(
-    () =>
-      logger('DailyBreakdown rendered in ' + (benchEnd - benchStart) + ' ms'),
-    1000
   )
 
   return rendered

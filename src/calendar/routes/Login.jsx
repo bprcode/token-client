@@ -15,21 +15,25 @@ import { ViewContainer } from '../ViewContainer'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { goFetch } from '../../go-fetch'
 import { useTheme } from '@emotion/react'
-import { navigateTo, resumeOrNavigateTo } from '../NavigationControl.jsx'
+import { navigateTo, resumeOrNavigateTo } from '../NavigationControl'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   enableTutorial,
   removeTutorialStage,
   updateTutorial,
-} from '../TutorialDialog.jsx'
+} from '../TutorialDialog'
+import log from '../../log'
 
 function LoginSection() {
+  const defaultEmail = import.meta.env.DEV ? 'Demo Account' : ''
+  const defaultPass = import.meta.env.DEV ? '123' : ''
+
   const theme = useTheme()
   const [searchParams] = useSearchParams()
   const isRegisterLink = searchParams.get('a') === 'register'
-  const [email, setEmail] = useState(isRegisterLink ? '' : 'Demo Account')
+  const [email, setEmail] = useState(isRegisterLink ? '' : defaultEmail)
   const [displayName, setDisplayName] = useState(isRegisterLink ? '' : ' ')
-  const [password, setPassword] = useState(isRegisterLink ? '' : '123')
+  const [password, setPassword] = useState(isRegisterLink ? '' : defaultPass)
   const [showRegister, setShowRegister] = useState(isRegisterLink)
 
   const [validation, setValidation] = useState({})
@@ -44,7 +48,7 @@ function LoginSection() {
   // works best after arriving at the login route.
   useEffect(() => {
     if (searchParams.get('a') === 'register') {
-      console.log('%cregister link / clearing cache', 'color:yellow')
+      log('%cregister link / clearing cache', 'color:yellow')
       sessionStorage.clear()
       queryClient.cancelQueries()
       queryClient.clear()
@@ -52,7 +56,7 @@ function LoginSection() {
   }, [searchParams, queryClient])
 
   const onLoginSuccess = data => {
-    console.log('mutation success with data: ', data)
+    log('mutation success with data: ', data)
     queryClient.invalidateQueries({ queryKey: ['catalog'] })
     queryClient.setQueryData(['heartbeat'], data)
     resumeOrNavigateTo('/catalog')
@@ -103,7 +107,7 @@ function LoginSection() {
         const dragDrop = tutorial.indexOf('drag and drop')
         const dragCreate = tutorial.indexOf('drag create')
         if (dragDrop > -1 && dragCreate > -1 && dragDrop < dragCreate) {
-          console.log('swapping tutorial steps')
+          log('swapping tutorial steps')
           tutorial[dragDrop] = 'drag create'
           tutorial[dragCreate] = 'drag and drop'
         }
@@ -128,7 +132,7 @@ function LoginSection() {
 
     if (email.length < 3) {
       return setValidation({
-        email: 'E-mail required.',
+        email: 'e-mail required.',
       })
     }
     if (password.length < passwordMin) {
@@ -147,11 +151,13 @@ function LoginSection() {
   }
 
   return (
-    <Box sx={{
-      mx: 'auto',
-      minHeight: '100lvh',
-      mb: 'calc(100lvh - 100svh)',
-    }}>
+    <Box
+      sx={{
+        mx: 'auto',
+        minHeight: '100lvh',
+        mb: 'calc(100lvh - 100svh)',
+      }}
+    >
       <Paper
         elevation={1}
         sx={{
@@ -241,9 +247,7 @@ function LoginSection() {
                   )}
                 </Button>
 
-                <Divider sx={{color: theme.palette.divider}}>
-                  OR
-                </Divider>
+                <Divider sx={{ color: theme.palette.divider }}>OR</Divider>
                 <Button
                   variant={showRegister ? 'outlined' : 'contained'}
                   disabled={sending}

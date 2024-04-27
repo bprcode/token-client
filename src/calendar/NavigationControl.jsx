@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import log from '../log'
 
 const defaultNav = {
-  navigate: () => console.warn(`No navigation controller provided.`),
+  navigate: () => log(`%cNo navigation controller provided.`, 'color:red'),
 }
 
 const control = { current: defaultNav }
@@ -20,7 +21,7 @@ export function navigateTo(route) {
 }
 
 export function resumeOrNavigateTo(route) {
-  console.log('🏡 resumeOrNavigateTo had redirectedFrom = ', redirectedFrom)
+  log('🏡 resumeOrNavigateTo had redirectedFrom = ', redirectedFrom)
   if (redirectedFrom) {
     control.current.navigate(redirectedFrom)
     redirectedFrom = ''
@@ -34,12 +35,12 @@ export function useNavigationControl() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    console.log('⬆️ subscribing to nav control.')
+    log('⬆️ subscribing to nav control.')
     control.current = { navigate }
 
     return () => {
       control.current = defaultNav
-      console.log('🔽 unsubscribing to nav control.')
+      log('🔽 unsubscribing to nav control.')
     }
   }, [navigate])
 }

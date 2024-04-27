@@ -6,7 +6,7 @@ import {
   Select,
   Typography,
 } from '@mui/material'
-import { resolveColor } from './calendarLogic.mjs'
+import { resolveColor } from './calendarLogic'
 
 export function EventTypeSelect({
   type,

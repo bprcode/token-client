@@ -5,7 +5,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import { useEventStyles, usePalette, isDefaultStyle } from './calendarLogic.mjs'
+import { useEventStyles, usePalette, isDefaultStyle } from './calendarLogic'
 import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
 

@@ -1,5 +1,5 @@
 import { Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material'
-import { useNarrowCheck } from './LayoutContext.mjs'
+import { useNarrowCheck } from './LayoutContext'
 
 export function PaletteSelect({ color, onSelect, palette, smaller }) {
   const isNarrow = useNarrowCheck()

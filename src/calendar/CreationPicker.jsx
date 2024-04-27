@@ -12,8 +12,8 @@ import {
   customPalette,
   resolveColor,
   useEventStyles,
-} from './calendarLogic.mjs'
-import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
+} from './calendarLogic'
+import { useMobileBarCheck, useNarrowCheck } from './LayoutContext'
 
 const styledMenuProps = {
   PaperProps: {

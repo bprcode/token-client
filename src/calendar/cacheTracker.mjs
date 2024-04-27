@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { debounce } from '../debounce.mjs'
-import { touchList } from './reconcile.mjs'
+import { debounce } from '../debounce'
+import { touchList } from './reconcile'
 import dayjs from 'dayjs'
+import log from '../log'
 
 const lastUpdated = new Map()
 const listeners = new Set()
@@ -51,10 +52,10 @@ export function reviveSessionCache(id) {
 
     last.stored = reviveEvents(last.stored)
 
-    console.log('session cache was:', last)
+    log('session cache was:', last)
     return last
   } catch (e) {
-    console.log('no session cache /', e.message)
+    log('no session cache /', e.message)
     return null
   }
 }
@@ -63,7 +64,7 @@ export function updateCacheData(queryClient, id, updater) {
   const now = Date.now()
   queryClient.setQueryData(['primary cache', id], updater)
 
-  console.log(
+  log(
     '%cSet primary cache to:',
     'color:#0fa',
     queryClient.getQueryData(['primary cache', id])
@@ -82,7 +83,7 @@ export function updateCacheData(queryClient, id, updater) {
 
   debounce(`expire cache ${id}`, tidyUp(queryClient, id), tidyTime)()
 
-  console.log('updateCacheData ran in ', Date.now() - now, 'ms')
+  log('updateCacheData ran in ', Date.now() - now, 'ms')
 }
 
 export function useCacheList() {

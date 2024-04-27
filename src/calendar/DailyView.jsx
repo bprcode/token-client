@@ -19,19 +19,19 @@ import {
 } from 'react'
 import { EventEditor } from './EventEditor'
 import { ActionButtons, MobileBar } from './ActionDisplay'
-import { ActionContext, actionList } from './ActionContext.mjs'
+import { ActionContext, actionList } from './ActionContext'
 import { EventPicker } from './EventPicker'
 import {
   shorthandInterval,
   createEventObject,
   getAugmentedColor,
   usePalette,
-} from './calendarLogic.mjs'
+} from './calendarLogic'
 import { ViewHeader } from './ViewHeader'
-import { useMobileBarCheck, useNarrowCheck } from './LayoutContext.mjs'
-import { useLogger } from './Logger'
+import { useMobileBarCheck, useNarrowCheck } from './LayoutContext'
 import { useViewQuery } from './routes/Calendar'
 import { TutorialDialog } from './TutorialDialog'
+import log from '../log'
 
 const sectionStep = [1, 'hour']
 
@@ -44,13 +44,10 @@ export function DailyView({
   canUndo,
   date,
 }) {
-  // console.log('%cDailyView rendered with date=', 'color: #f0c', date)
-
   const [shouldDismount, dismount] = useReducer(() => true, false)
   const { data: events } = useViewQuery()
   const needMobileBar = useMobileBarCheck()
   const headerRef = useRef(null)
-  const logger = useLogger()
   const theme = useTheme()
   const secondaryColor = theme.palette.secondary.light
 
@@ -96,7 +93,7 @@ export function DailyView({
   }, [onBack])
 
   if (shouldDismount) {
-    console.log('%cdismounting daily view', 'color:#f0c')
+    log('%cdismounting daily view', 'color:#f0c')
     return <></>
   }
 
@@ -140,7 +137,6 @@ export function DailyView({
               setShutDrawer(true)
               handleCreationTap({
                 event: e,
-                logger,
                 date,
                 picks,
                 applyCreation,
@@ -251,7 +247,7 @@ function overwriteRAF(callback) {
   overwriteRAF.callback = callback
 }
 
-function handleCreationTap({ event, date, logger, picks, applyCreation }) {
+function handleCreationTap({ event, date, picks, applyCreation }) {
   event.stopPropagation()
   event.preventDefault()
 
@@ -346,8 +342,6 @@ function handleCreationTap({ event, date, logger, picks, applyCreation }) {
 
       const lowY = Math.min(initialY, y2)
       const hiY = Math.max(initialY, y2)
-
-      setTimeout(() => logger('overwrite skip: ' + overwriteRAF.skipCount), 100)
 
       const initialMinute = lowMinuteFromPosition(lowY)
       const finalMinute =

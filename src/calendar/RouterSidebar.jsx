@@ -10,7 +10,7 @@ import {
   Typography,
   useTheme,
 } from '@mui/material'
-import { ToggleMenuContext, useNarrowCheck } from './LayoutContext.mjs'
+import { ToggleMenuContext, useNarrowCheck } from './LayoutContext'
 import { useContext } from 'react'
 import hourglassPng from '../assets/hourglass2p.png'
 
@@ -18,7 +18,7 @@ import { CalendarFolder } from './CalendarFolder'
 import { HeartbeatPanel } from './HeartbeatPanel'
 import { TopNavLink } from './TopNavLink'
 import { useCatalogQuery } from './routes/Catalog'
-import { DemoContext } from './DemoContext.mjs'
+import { DemoContext } from './DemoContext'
 import { useLocation } from 'react-router-dom'
 
 function SkeletonFolders() {
