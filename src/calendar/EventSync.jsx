@@ -263,7 +263,7 @@ function handleEventError({ calendarId, error, original, queryClient }) {
         }),
 
       1000
-    )()
+    )
     return
   }
   // Tried to delete something that doesn't exist

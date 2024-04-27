@@ -345,7 +345,7 @@ function MonthHeader({ date, onChange }) {
                 onChange(date.year(input.value))
               },
               2000
-            )()
+            )
           }
         }}
         onBlur={() => bounceEarly('read year input')}

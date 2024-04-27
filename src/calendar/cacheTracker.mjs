@@ -19,7 +19,7 @@ const tidyUp = (queryClient, id) => () => {
   const t = touchList(queryClient.getQueryData(['primary cache', id])?.stored)
 
   if (age < gcTime || t.length !== 0) {
-    debounce(`expire cache ${id}`, tidyUp(queryClient, id), tidyTime)()
+    debounce(`expire cache ${id}`, tidyUp(queryClient, id), tidyTime)
     return
   }
 
@@ -81,7 +81,7 @@ export function updateCacheData(queryClient, id, updater) {
     listen(arrayed)
   }
 
-  debounce(`expire cache ${id}`, tidyUp(queryClient, id), tidyTime)()
+  debounce(`expire cache ${id}`, tidyUp(queryClient, id), tidyTime)
 
   log('updateCacheData ran in ', Date.now() - now, 'ms')
 }
