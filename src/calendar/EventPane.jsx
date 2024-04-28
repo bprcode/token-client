@@ -658,6 +658,8 @@ export function EventPane({
             opacity: !event.isDeleting ? ghost && 0.5 : 0.15,
             userSelect: 'none',
             WebkitUserSelect: 'none',
+            // override for daily view:
+            '&&:hover': {filter: 'brightness(115%)'},
           }}
         >
           <OverflowArrows
