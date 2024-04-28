@@ -98,6 +98,7 @@ function CatalogGrid({ children }) {
         display: 'grid',
         width: '100%',
         padding: 2,
+        mb: 'max(calc(100lvh - 100svh), 1rem)',
         gap: 2,
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gridAutoRows: '300px',
