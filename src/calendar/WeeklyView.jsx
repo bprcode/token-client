@@ -1078,25 +1078,22 @@ export function WeeklyView(props) {
   const { data: events } = useViewQuery()
   const [action, setAction] = useState(actionList[0])
 
-  log('events=', events)
+  const [editingEvent, setEditingEvent] = useState(false)
+
+  const viewMemo = useMemo(
+    () => (
+      <WeeklyViewContents
+        {...{ ...props, events, setAction, setEditingEvent }}
+      />
+    ),
+    [events, props]
+  )
+
   return (
     <ActionContext.Provider value={action}>
-      <Middle {...{ onUpdate, onDelete, events}}>
+      {viewMemo}
 
-      <WeeklyViewHefty {...{ ...props, events, setAction }} />
-      </Middle>
-      
-    </ActionContext.Provider>
-  )
-}
-
-function Middle({ onUpdate, onDelete, events, children}) {
-  const [editingEvent, setEditingEvent] = useState(false)
-  const memoChild = useMemo(() => cloneElement(children, {setEditingEvent}), [children])
-  log('editingEvent=',editingEvent)
-
-  return <>
-  {editingEvent && (
+      {editingEvent && (
         <EventEditor
           onSave={updates => {
             onUpdate(editingEvent, updates)
@@ -1109,11 +1106,11 @@ function Middle({ onUpdate, onDelete, events, children}) {
           )}
         />
       )}
-  {memoChild}
-  </>
+    </ActionContext.Provider>
+  )
 }
 
-function WeeklyViewHefty({
+function WeeklyViewContents({
   events,
   dateString,
   onBack,
