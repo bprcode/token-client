@@ -36,7 +36,6 @@ export function SectionedInterval({
 
     const observer = new IntersectionObserver(watchEnd, {
       root: null,
-      treshold: 1.0,
     })
 
     observer.observe(outerRef.current.querySelector('.ending-box'))

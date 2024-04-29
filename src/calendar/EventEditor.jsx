@@ -14,7 +14,7 @@ import {
   TextField,
   useMediaQuery,
 } from '@mui/material'
-import { useState } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import {
   getAugmentedColor,
   isDefaultStyle,
@@ -26,6 +26,33 @@ import { PaletteSelect } from './ColorSelect'
 import { EventTypeSelect } from './EventTypeSelect'
 
 export function EventEditor({ onClose, onSave, onDelete, event }) {
+  const endDivRef = useRef(null)
+  const shadeCallback = useCallback(node => {
+    if (!node) {
+      if (endDivRef.current) {
+        endDivRef.current.observer.unobserve(endDivRef.current.node)
+        endDivRef.current = null
+      }
+      return
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (e.isIntersecting) {
+          setShowShade(false)
+        } else {
+          setShowShade(true)
+        }
+      }
+    })
+
+    observer.observe(node)
+    endDivRef.current = {
+      observer,
+      node,
+    }
+  }, [])
+
   const [showConfirm, setShowConfirm] = useState(false)
 
   const sideBySide = useMediaQuery('(min-width: 660px)')
@@ -33,8 +60,8 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
   const [description, setDescription] = useState(event.description || '')
 
   const palette = usePalette()
-  const [colorPick, setColorPick] = useState(
-    () => palette.includes(event.colorId) ? event.colorId : palette[0]
+  const [colorPick, setColorPick] = useState(() =>
+    palette.includes(event.colorId) ? event.colorId : palette[0]
   )
   const [colorId, setColorId] = useState(event.colorId)
 
@@ -51,11 +78,13 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
     typeStyles.push({ key: key === 'Default' ? 'Other...' : key, value })
   }
 
-  const [type, setType] = useState(
-    () => isDefaultStyle(event, eventStyles) ? event.summary : 'Other...'
+  const [type, setType] = useState(() =>
+    isDefaultStyle(event, eventStyles) ? event.summary : 'Other...'
   )
 
   const titleColor = getAugmentedColor(colorId)
+
+  const [showShade, setShowShade] = useState(false)
 
   function isChanged() {
     return (
@@ -180,8 +209,20 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
           value={description}
           onChange={e => setDescription(e.target.value)}
         />
+        <div
+          ref={shadeCallback}
+        />
       </DialogContent>
-      <DialogActions sx={{ px: 3, pt: 1, pb: 2 }}>
+      <DialogActions
+        sx={{
+          px: 3,
+          pt: 1,
+          pb: 2,
+          boxShadow: `0 -1.5rem 2.5rem 1.5rem #1b2024${showShade ? 'ff' : '00'}`,
+          transition: 'box-shadow 0.3s ease',
+          zIndex: 1,
+        }}
+      >
         <Button
           variant="outlined"
           sx={{ mr: 2 }}

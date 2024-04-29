@@ -215,6 +215,7 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
 }
 
 function clearSelection(touchRef) {
+  log('%cclearing selection','color:#0af')
   touchRef.current.lastClickedPane = null
 
   if (touchRef.current.eventPane) {
@@ -238,6 +239,7 @@ function handlePointerDown(
   events
 ) {
   touchRef.current.lastTouchBehavior = action
+  delete touchRef.current.lastDrag
 
   log('🔽 handling pointerDown with action=', action, 'from element', e.target)
 
@@ -677,6 +679,15 @@ function WeekBody({
     }
 
     function updateDragMove(pageX, pageY) {
+      touchRef.current.lastDrag ??= { pageX, pageY }
+      const squaredDistance =
+        (touchRef.current.lastDrag.pageX - pageX) ** 2 +
+        (touchRef.current.lastDrag.pageY - pageY) ** 2
+      if (squaredDistance < 0.1) {
+        return
+      }
+      touchRef.current.lastDrag = { pageX, pageY }
+
       const offsetLeft = needMobileBar ? -4 : 1
       const dayOfWeek = snapDay(pageX)
 
