@@ -84,7 +84,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
 
   const titleColor = getAugmentedColor(colorId)
 
-  const [showShade, setShowShade] = useState(false)
+  const [showShade, setShowShade] = useState(true)
 
   function isChanged() {
     return (
@@ -117,6 +117,11 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
         onClose()
       }}
       open={true}
+      sx={{
+        // This seemingly pointless filter fixes a Chrome mobile glitch
+        // where the dialog otherwise flickers when first rendered:
+        filter: 'brightness(100%)',
+      }}
     >
       <DialogTitle
         sx={{
@@ -218,7 +223,7 @@ export function EventEditor({ onClose, onSave, onDelete, event }) {
           px: 3,
           pt: 1,
           pb: 2,
-          boxShadow: `0 -1.5rem 2.5rem 1.5rem #1b2024${showShade ? 'ff' : '00'}`,
+          boxShadow: `0 -1.5rem 2.5rem 1.5rem #222a31${showShade ? 'ff' : '00'}`,
           transition: 'box-shadow 0.3s ease',
           zIndex: 1,
         }}
