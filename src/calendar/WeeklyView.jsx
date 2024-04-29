@@ -18,6 +18,7 @@ import {
   useReducer,
   useRef,
   useState,
+  cloneElement,
 } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from './blueDigitalTheme'
@@ -137,7 +138,6 @@ function interceptAll(event) {
 
 /** Add a listener, returning all bound parameters */
 function bindListener(node, type, listener, options) {
-  log('binding', type, 'listener=', listener, 'to', node)
   node.addEventListener(type, listener, options)
   return { node, type, listener, options }
 }
@@ -147,7 +147,6 @@ function releaseListener(binding) {
   if (!binding) {
     return
   }
-  log('releasing binding:', binding)
   binding.node.removeEventListener(
     binding.type,
     binding.listener,
@@ -215,7 +214,7 @@ function WeekdayBox({ day, displayHeightPx, weekEvents }) {
 }
 
 function clearSelection(touchRef) {
-  log('%cclearing selection','color:#0af')
+  log('%cclearing selection', 'color:#0af')
   touchRef.current.lastClickedPane = null
 
   if (touchRef.current.eventPane) {
@@ -404,7 +403,6 @@ function WeekBody({
       }
 
       const listener = intercepts[action] || interceptNone
-      log('registering for action=', action, 'with args', listener)
 
       releaseListener(lastInterceptRef.current)
       lastInterceptRef.current = bindListener(node, 'touchstart', listener)
@@ -1072,7 +1070,51 @@ function TopDrawer({ open }) {
   )
 }
 
-export function WeeklyView({
+export function WeeklyView(props) {
+  log('%cWeeklyView wrapper rendering', 'color:green')
+
+  const { onUpdate, onDelete } = props
+
+  const { data: events } = useViewQuery()
+  const [action, setAction] = useState(actionList[0])
+
+  log('events=', events)
+  return (
+    <ActionContext.Provider value={action}>
+      <Middle {...{ onUpdate, onDelete, events}}>
+
+      <WeeklyViewHefty {...{ ...props, events, setAction }} />
+      </Middle>
+      
+    </ActionContext.Provider>
+  )
+}
+
+function Middle({ onUpdate, onDelete, events, children}) {
+  const [editingEvent, setEditingEvent] = useState(false)
+  const memoChild = useMemo(() => cloneElement(children, {setEditingEvent}), [children])
+  log('editingEvent=',editingEvent)
+
+  return <>
+  {editingEvent && (
+        <EventEditor
+          onSave={updates => {
+            onUpdate(editingEvent, updates)
+            setEditingEvent(null)
+          }}
+          onClose={() => setEditingEvent(null)}
+          onDelete={onDelete}
+          event={events.find(
+            e => e.id === editingEvent || e.stableKey === editingEvent
+          )}
+        />
+      )}
+  {memoChild}
+  </>
+}
+
+function WeeklyViewHefty({
+  events,
   dateString,
   onBack,
   onExpand,
@@ -1080,13 +1122,15 @@ export function WeeklyView({
   onCreate,
   onUpdate,
   onDelete,
+  setAction,
+  setEditingEvent,
 }) {
   log('%cWeeklyView rendering', 'color:greenyellow')
   const [shouldDismount, dismount] = useReducer(() => true, false)
-  const [editingEvent, setEditingEvent] = useState(false)
+
   const [skipDate, setSkipDate] = useState(null)
   const touchRef = useRef({})
-  const { data: events } = useViewQuery()
+
   const isSmall = useMediaQuery('(max-width: 600px)')
   const isReallySmall = useMediaQuery('(max-width: 320px)')
   const isNarrow = useNarrowCheck()
@@ -1104,7 +1148,6 @@ export function WeeklyView({
       saturday.format(isRollover ? 'MMM D' : 'D')
     : 'Week of ' + sunday.format('MMMM D, YYYY')
 
-  const [action, setAction] = useState(actionList[0])
   const [showDrawer, setShowDrawer] = useState(false)
   const onHideDrawerCallback = useCallback(() => setShowDrawer(false), [])
   const onExpandCallback = useCallback(
@@ -1120,7 +1163,7 @@ export function WeeklyView({
       setAction('edit')
       onCreate(creation)
     },
-    [onCreate]
+    [onCreate, setAction]
   )
   const onUpdateCallback = useCallback(
     (...updates) => {
@@ -1155,7 +1198,7 @@ export function WeeklyView({
   )
 
   const rv = (
-    <ActionContext.Provider value={action}>
+    <>
       <ViewContainer containOverflow={!isNarrow}>
         {events.length > 0 && (
           <TutorialDialog tip="drag and drop" position="under" />
@@ -1228,20 +1271,7 @@ export function WeeklyView({
         <MobileBar transparent={showDrawer}>{actionButtons}</MobileBar>
       )}
       {needMobileBar && <BottomDrawer open={showDrawer} />}
-      {editingEvent && (
-        <EventEditor
-          onSave={updates => {
-            onUpdate(editingEvent, updates)
-            setEditingEvent(null)
-          }}
-          onClose={() => setEditingEvent(null)}
-          onDelete={onDelete}
-          event={events.find(
-            e => e.id === editingEvent || e.stableKey === editingEvent
-          )}
-        />
-      )}
-    </ActionContext.Provider>
+    </>
   )
 
   return rv
