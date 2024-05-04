@@ -107,7 +107,7 @@ function HourglassHeader() {
         <HourglassTopIcon
           sx={{
             transform: 'translateY(5px) scale(110%)',
-            mr: '0.125rem',
+            mr: '0.0625rem',
             opacity: 0.65,
           }}
         />
@@ -120,7 +120,7 @@ function HourglassHeader() {
             letterSpacing: '-0.005em',
           }}
         >
-          Clear
+          Day
         </Typography>
         <Typography
           variant="h6"
@@ -129,10 +129,10 @@ function HourglassHeader() {
             fontWeight: 300,
             opacity: 0.9,
             textShadow: '1px -1px 4px #000',
-            letterSpacing: '-0.015em',
+            letterSpacing: '-0.005em',
           }}
         >
-          Time
+          Sift
         </Typography>
       </Box>
       <Divider />
