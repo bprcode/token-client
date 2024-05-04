@@ -1,4 +1,3 @@
-import HourglassTopIcon from '@mui/icons-material/HourglassTop'
 import HomeIcon from '@mui/icons-material/Home'
 import {
   Box,
@@ -7,7 +6,6 @@ import {
   List,
   Paper,
   Skeleton,
-  Typography,
   useTheme,
 } from '@mui/material'
 import { ToggleMenuContext, useNarrowCheck } from './LayoutContext'
