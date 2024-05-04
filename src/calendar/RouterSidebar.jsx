@@ -13,6 +13,7 @@ import {
 import { ToggleMenuContext, useNarrowCheck } from './LayoutContext'
 import { useContext } from 'react'
 import hourglassPng from '../assets/hourglass2p.png'
+import logoSvg from '../assets/silver-logo.svg'
 
 import { CalendarFolder } from './CalendarFolder'
 import { HeartbeatPanel } from './HeartbeatPanel'
@@ -104,36 +105,10 @@ function HourglassHeader() {
           backgroundColor: '#00182575',
         }}
       >
-        <HourglassTopIcon
-          sx={{
-            transform: 'translateY(5px) scale(110%)',
-            mr: '0.0625rem',
-            opacity: 0.65,
-          }}
-        />
-        <Typography
-          variant="h6"
-          component="span"
-          sx={{
-            fontWeight: 500,
-            textShadow: '2px -1px 4px #000',
-            letterSpacing: '-0.005em',
-          }}
-        >
-          Day
-        </Typography>
-        <Typography
-          variant="h6"
-          component="span"
-          sx={{
-            fontWeight: 300,
-            opacity: 0.9,
-            textShadow: '1px -1px 4px #000',
-            letterSpacing: '-0.005em',
-          }}
-        >
-          Sift
-        </Typography>
+        <img src={logoSvg} style={{
+          marginLeft: '0.5rem',
+        }} />
+        
       </Box>
       <Divider />
     </>
