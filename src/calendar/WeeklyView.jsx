@@ -18,7 +18,6 @@ import {
   useReducer,
   useRef,
   useState,
-  cloneElement,
 } from 'react'
 import { DailyBreakdown } from './DailyBreakdown'
 import { HoverableBox } from './blueDigitalTheme'
